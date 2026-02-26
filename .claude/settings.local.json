@@ -37,7 +37,8 @@
       "Bash(echo \"UNINSTALL_EXIT:$?\")",
       "Bash(echo \"BUILD2_EXIT:$?\")",
       "Bash(git commit -m \"feat: replace lucide-react with @mirohq/design-system icons\")",
-      "Bash(echo \"COMMIT_EXIT:$?\")"
+      "Bash(echo \"COMMIT_EXIT:$?\")",
+      "Bash(git commit -m \"feat: add entrance animation, hover states, staggered content, AI pulse\")"
     ]
   }
 }

@@ -10,3 +10,55 @@ body {
   margin: 0;
   padding: 0;
 }
+
+/* ── Panel entrance ────────────────────────────────────── */
+@keyframes panel-enter {
+  from {
+    transform: translateX(calc(100% + 16px));
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.panel-enter {
+  animation: panel-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Content item stagger ──────────────────────────────── */
+@keyframes item-enter {
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.item-enter {
+  opacity: 0;
+  animation: item-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── AI icon gentle pulse ──────────────────────────────── */
+@keyframes sparks-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%       { opacity: 1;    transform: scale(1.1); }
+}
+
+.sparks-pulse {
+  animation: sparks-pulse 2.4s ease-in-out infinite;
+}
+
+/* ── Refined scrollbar ─────────────────────────────────── */
+.panel-scroll::-webkit-scrollbar       { width: 4px; }
+.panel-scroll::-webkit-scrollbar-track { background: transparent; }
+.panel-scroll::-webkit-scrollbar-thumb {
+  background: #E4E5EA;
+  border-radius: 999px;
+}
+.panel-scroll::-webkit-scrollbar-thumb:hover { background: #C8CAD4; }

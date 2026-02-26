@@ -10,7 +10,7 @@ export function App() {
         backgroundSize: '20px 20px',
       }}
     >
-      <div className="absolute top-2 right-2 bottom-2">
+      <div className="absolute top-2 right-2 bottom-2 panel-enter">
         <SidePanel />
       </div>
     </div>

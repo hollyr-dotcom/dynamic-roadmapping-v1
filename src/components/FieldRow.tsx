@@ -9,9 +9,9 @@ interface FieldRowProps {
 
 export function FieldRow({ icon: Icon, label, isPrimary = false }: FieldRowProps) {
   return (
-    <div className="flex items-center justify-between pl-4 pr-2 py-4 bg-white rounded-xl w-full">
+    <div className="group flex items-center justify-between pl-4 pr-2 py-4 bg-white rounded-xl w-full cursor-pointer transition-colors duration-150 hover:bg-[#F7F8FA]">
       <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#F1F2F5] text-[#222428] shrink-0">
+        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#F1F2F5] text-[#222428] shrink-0 transition-colors duration-150 group-hover:bg-[#E9EAEF]">
           <Icon size="medium" />
         </div>
         <div className="flex flex-col items-start justify-center">
@@ -23,7 +23,7 @@ export function FieldRow({ icon: Icon, label, isPrimary = false }: FieldRowProps
           </span>
           {isPrimary && (
             <span
-              className="font-body text-[#222428] leading-none"
+              className="font-body text-[#656B81] leading-none"
               style={{ fontSize: '12px' }}
             >
               Primary field
@@ -31,7 +31,7 @@ export function FieldRow({ icon: Icon, label, isPrimary = false }: FieldRowProps
           )}
         </div>
       </div>
-      <div className="flex items-center gap-4 opacity-0 text-[#222428]">
+      <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-[#6F7489]">
         <IconPen size="small" />
         <IconDotsSixVertical size="small" />
       </div>
