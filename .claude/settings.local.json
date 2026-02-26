@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create vite@latest . -- --template react-ts)",
+      "Bash(npx create-vite@latest . --template react-ts 2)",
+      "Bash(npm install)",
+      "Bash(printf 'y\\\\n')",
+      "Bash(npx create-vite@latest . --template react-ts)",
+      "Bash(timeout 8 npm run dev)",
+      "Bash(npm run build)",
+      "Bash(git init)",
+      "Bash(git add package.json package-lock.json vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json index.html eslint.config.js README.md src/ public/ docs/)",
+      "Bash(npm install -D tailwindcss@3 postcss autoprefixer)",
+      "Bash(npx tailwindcss init -p)",
+      "Bash(npm install lucide-react)",
+      "Bash(node -e \"const l = require\\(''./node_modules/lucide-react''\\); console.log\\(''Columns2:'', !!l.Columns2, ''Rows3:'', !!l.Rows3, ''Sparkles:'', !!l.Sparkles\\)\")",
+      "Bash(node --input-type=module:*)",
+      "Bash(git add -A)",
+      "Bash(git commit -m \"feat: install lucide-react icons\")"
+    ]
+  }
+}

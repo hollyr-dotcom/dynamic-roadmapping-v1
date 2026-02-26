@@ -1,7 +1,9 @@
+import { X } from 'lucide-react'
+
 export function App() {
   return (
-    <div className="flex items-center justify-center w-screen h-screen bg-blue-500">
-      <p className="font-heading text-white text-2xl font-semibold">Tailwind works</p>
+    <div className="flex items-center justify-center w-screen h-screen bg-gray-100">
+      <X size={32} className="text-gray-800" />
     </div>
   )
 }
