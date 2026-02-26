@@ -1,4 +1,4 @@
-import { Plus, MoreVertical } from 'lucide-react'
+import { IconPlus, IconDotsThreeVertical } from '@mirohq/design-system'
 
 interface SectionHeaderProps {
   label: string
@@ -17,12 +17,12 @@ export function SectionHeader({ label, showActions = false }: SectionHeaderProps
         </span>
       </div>
       {showActions && (
-        <div className="flex items-center">
-          <button className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 text-[#222428]">
-            <Plus size={16} />
+        <div className="flex items-center text-[#222428]">
+          <button className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100">
+            <IconPlus size="small" />
           </button>
-          <button className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 text-[#222428]">
-            <MoreVertical size={16} />
+          <button className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100">
+            <IconDotsThreeVertical size="small" />
           </button>
         </div>
       )}

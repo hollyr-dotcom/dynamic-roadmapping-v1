@@ -18,7 +18,26 @@
       "Bash(git add -A)",
       "Bash(git commit -m \"feat: install lucide-react icons\")",
       "Bash(npx tsc --noEmit)",
-      "Bash(git commit -m \"feat: add canvas, SectionHeader, SettingCell, FieldRow components\")"
+      "Bash(git commit -m \"feat: add canvas, SectionHeader, SettingCell, FieldRow components\")",
+      "Bash(git add src/components/SidePanel.tsx)",
+      "Bash(git commit -m \"feat: add SidePanel component with static data\")",
+      "Bash(git add src/App.tsx)",
+      "Bash(git commit -m \"feat: wire SidePanel into App canvas — static prototype complete\")",
+      "Bash(curl -s http://localhost:5173 -o /dev/null -w \"%{http_code}\")",
+      "mcp__miro-design-system__list-components",
+      "mcp__miro-design-system__get-component-docs",
+      "mcp__miro-design-system__list-getting-started",
+      "mcp__miro-design-system__get-getting-started-docs",
+      "Bash(npm install @mirohq/design-system)",
+      "Bash(node -e \"const m = require\\(''./node_modules/@mirohq/design-system''\\); console.log\\(Object.keys\\(m\\).filter\\(k => /^Icon\\(Ai|Magic|Spark|Bolt|Star|Wand|Assistant\\)/.test\\(k\\)\\).join\\(''\\\\n''\\)\\)\")",
+      "Bash(node -e \":*)",
+      "Bash(echo \"TSC_EXIT:$?\")",
+      "Bash(echo \"BUILD_EXIT:$?\")",
+      "Bash(npm uninstall lucide-react)",
+      "Bash(echo \"UNINSTALL_EXIT:$?\")",
+      "Bash(echo \"BUILD2_EXIT:$?\")",
+      "Bash(git commit -m \"feat: replace lucide-react with @mirohq/design-system icons\")",
+      "Bash(echo \"COMMIT_EXIT:$?\")"
     ]
   }
 }

@@ -1,29 +1,23 @@
-import { type LucideIcon } from 'lucide-react'
+import React from 'react'
 
 interface SettingCellProps {
-  icon: LucideIcon
+  icon: React.ComponentType<{ size?: 'small' | 'medium' | 'large' }>
   label: string
   subtitle: string
   iconBg: 'green' | 'blue' | 'gray'
 }
 
 const iconBgClass = {
-  green: 'bg-[#0FA83C]',
-  blue:  'bg-[#3859FF]',
-  gray:  'bg-[#F1F2F5]',
-} as const
-
-const iconColorClass = {
-  green: 'text-white',
-  blue:  'text-white',
-  gray:  'text-[#222428]',
+  green: 'bg-[#0FA83C] text-white',
+  blue:  'bg-[#3859FF] text-white',
+  gray:  'bg-[#F1F2F5] text-[#222428]',
 } as const
 
 export function SettingCell({ icon: Icon, label, subtitle, iconBg }: SettingCellProps) {
   return (
     <div className="flex items-center gap-4 p-4 bg-white rounded-xl w-full">
       <div className={`flex items-center p-2 rounded-lg shrink-0 ${iconBgClass[iconBg]}`}>
-        <Icon size={24} className={iconColorClass[iconBg]} />
+        <Icon size="medium" />
       </div>
       <div className="flex flex-col items-start justify-center pb-1">
         <span

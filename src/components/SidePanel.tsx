@@ -1,33 +1,36 @@
+import React from 'react'
 import {
-  X,
-  LayoutGrid,
-  Filter,
-  ArrowDownUp,
-  Columns2,
-  Rows3,
-  Type,
-  AlignLeft,
-  CheckCircle,
-  User,
-  Sparkles,
-} from 'lucide-react'
+  IconCross,
+  IconKanban,
+  IconFunnel,
+  IconArrowsDownUp,
+  IconVerticalBlocks,
+  IconHorizontalBlocks,
+  IconTextT,
+  IconTextLinesThree,
+  IconTickCircle,
+  IconUser,
+  IconSparks,
+} from '@mirohq/design-system'
 import { SectionHeader } from './SectionHeader'
 import { SettingCell } from './SettingCell'
 import { FieldRow } from './FieldRow'
 
-const viewSettings = [
-  { label: 'Layout',    subtitle: 'Kanban',                 iconBg: 'green' as const, icon: LayoutGrid  },
-  { label: 'Filter',    subtitle: '24 of 48 items showing', iconBg: 'blue'  as const, icon: Filter       },
-  { label: 'Sort',      subtitle: 'Sorted by Priority',     iconBg: 'blue'  as const, icon: ArrowDownUp  },
-  { label: 'Columns',   subtitle: 'Grouped by Status',      iconBg: 'blue'  as const, icon: Columns2     },
-  { label: 'Swimlanes', subtitle: 'Add a group',            iconBg: 'gray'  as const, icon: Rows3        },
+type MiroIcon = React.ComponentType<{ size?: 'small' | 'medium' | 'large' }>
+
+const viewSettings: { label: string; subtitle: string; iconBg: 'green' | 'blue' | 'gray'; icon: MiroIcon }[] = [
+  { label: 'Layout',    subtitle: 'Kanban',                 iconBg: 'green', icon: IconKanban          },
+  { label: 'Filter',    subtitle: '24 of 48 items showing', iconBg: 'blue',  icon: IconFunnel           },
+  { label: 'Sort',      subtitle: 'Sorted by Priority',     iconBg: 'blue',  icon: IconArrowsDownUp     },
+  { label: 'Columns',   subtitle: 'Grouped by Status',      iconBg: 'blue',  icon: IconVerticalBlocks   },
+  { label: 'Swimlanes', subtitle: 'Add a group',            iconBg: 'gray',  icon: IconHorizontalBlocks },
 ]
 
-const fields = [
-  { label: 'Title',       icon: Type,        isPrimary: true  },
-  { label: 'Description', icon: AlignLeft,   isPrimary: false },
-  { label: 'Status',      icon: CheckCircle, isPrimary: false },
-  { label: 'Person',      icon: User,        isPrimary: false },
+const fields: { label: string; icon: MiroIcon; isPrimary: boolean }[] = [
+  { label: 'Title',       icon: IconTextT,        isPrimary: true  },
+  { label: 'Description', icon: IconTextLinesThree, isPrimary: false },
+  { label: 'Status',      icon: IconTickCircle,   isPrimary: false },
+  { label: 'Person',      icon: IconUser,         isPrimary: false },
 ]
 
 export function SidePanel() {
@@ -36,7 +39,7 @@ export function SidePanel() {
 
       {/* Close button */}
       <button className="absolute top-4 right-4 flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 z-10 text-[#222428]">
-        <X size={20} />
+        <IconCross size="medium" />
       </button>
 
       {/* Scrollable content */}
@@ -84,7 +87,9 @@ export function SidePanel() {
         >
           How can I help set up this view?
         </span>
-        <Sparkles size={22} className="text-[#222428] shrink-0" />
+        <div className="text-[#222428] shrink-0">
+          <IconSparks size="medium" />
+        </div>
       </div>
 
     </div>
