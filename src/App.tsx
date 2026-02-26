@@ -1,3 +1,5 @@
+import { SidePanel } from './components/SidePanel'
+
 export function App() {
   return (
     <div
@@ -8,8 +10,9 @@ export function App() {
         backgroundSize: '20px 20px',
       }}
     >
-      {/* SidePanel will go here in Task 8 */}
-      <div className="absolute top-2 right-2 bottom-2 w-[400px] bg-white rounded-xl" />
+      <div className="absolute top-2 right-2 bottom-2">
+        <SidePanel />
+      </div>
     </div>
   )
 }
