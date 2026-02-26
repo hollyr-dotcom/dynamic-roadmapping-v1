@@ -16,7 +16,9 @@
       "Bash(node -e \"const l = require\\(''./node_modules/lucide-react''\\); console.log\\(''Columns2:'', !!l.Columns2, ''Rows3:'', !!l.Rows3, ''Sparkles:'', !!l.Sparkles\\)\")",
       "Bash(node --input-type=module:*)",
       "Bash(git add -A)",
-      "Bash(git commit -m \"feat: install lucide-react icons\")"
+      "Bash(git commit -m \"feat: install lucide-react icons\")",
+      "Bash(npx tsc --noEmit)",
+      "Bash(git commit -m \"feat: add canvas, SectionHeader, SettingCell, FieldRow components\")"
     ]
   }
 }
