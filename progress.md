@@ -18,7 +18,8 @@ A high-fidelity interactive prototype of the Miro roadmap settings sidebar, runn
 
 | File | Description |
 |------|-------------|
-| `src/components/SidePanel.tsx` | Root panel, all state, navigation logic, AI bar |
+| `src/components/SidePanel.tsx` | Root panel, all state, navigation logic |
+| `src/components/AiBar.tsx` | Interactive AI prompt bar — 4-state machine (idle/typing/loading/success) |
 | `src/components/FilterPage.tsx` | Filter detail page — condition builder |
 | `src/components/SectionHeader.tsx` | Section label rows with optional + / ··· action buttons |
 | `src/components/SettingCell.tsx` | 72px setting row with coloured icon, label, subtitle, chevron |
@@ -54,11 +55,13 @@ A high-fidelity interactive prototype of the Miro roadmap settings sidebar, runn
 - Back button (top-left): `← View settings` or `← Fields` label
 - AI bar placeholder copy is context-aware per page (e.g. "How can I filter this view?")
 
-**AI bar**
+**AI bar (interactive)**
 - Floating pill, centered, `bottom-8` from panel base
-- Custom Miro AI icon (SVG, scale-pulse animation)
-- Placeholder text updates per page
-- Entrance animation decoupled from centering transform (two-div fix)
+- Idle: contextual placeholder, AI icon `sparks-pulse` animation
+- Typing: real `<input>`, blue circular submit button (up-arrow) crossfades in when content present
+- Loading: shimmer sweep animation, AI icon spins (`ai-spin`)
+- Success: "Done. I've made those changes." + green checkmark, 1.5s hold, crossfades back to idle
+- Keyboard: Enter submits, Escape clears and returns to idle
 
 **Filter page** *(new)*
 - Empty state: "No filters applied" + "New filter" button
@@ -109,6 +112,7 @@ A high-fidelity interactive prototype of the Miro roadmap settings sidebar, runn
 src/
   components/
     SidePanel.tsx       — main panel, all state
+    AiBar.tsx           — interactive AI prompt bar (4-state machine)
     FilterPage.tsx      — filter condition builder
     SectionHeader.tsx   — section headers
     SettingCell.tsx     — view setting rows
