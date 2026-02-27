@@ -21,6 +21,7 @@ import { FieldRow } from './FieldRow'
 import { FilterPage, defaultCondition } from './FilterPage'
 import type { FilterCondition } from './FilterPage'
 import { AiBar } from './AiBar'
+import { parseFilterCommand } from '../lib/filterParser'
 
 type MiroIcon = React.ComponentType<{ size?: 'small' | 'medium' | 'large' }>
 
@@ -48,6 +49,12 @@ const fields: { label: string; icon: MiroIcon; isPrimary: boolean; aiPrompt: str
 
 const DROPDOWN_WIDTH = 176 // approximate width of the layout dropdown in px
 
+function filterSubtitle(conditions: FilterCondition[]): string {
+  if (conditions.length === 0) return 'Add a filter'
+  if (conditions.length === 1) return `Filtered by ${conditions[0].field}`
+  return `${conditions.length} filters applied`
+}
+
 export function SidePanel() {
   const [activePage, setActivePage] = useState<ActivePage>(null)
   const [selectedLayout, setSelectedLayout] = useState('Kanban')
@@ -74,6 +81,14 @@ export function SidePanel() {
 
   const handleFilterDelete = (id: string) =>
     setFilterConditions((prev) => prev.filter((c) => c.id !== id))
+
+  const handleAiSubmit = (value: string) => {
+    const result = parseFilterCommand(value, filterConditions)
+    if (result !== null) {
+      setFilterConditions(result)
+      // Do NOT navigate — stay on current page
+    }
+  }
 
   const handleLayoutMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -175,11 +190,7 @@ export function SidePanel() {
                     key={item.label}
                     icon={item.icon}
                     label={item.label}
-                    subtitle={
-                      item.label === 'Filter' && filterConditions.length > 0
-                        ? `${filterConditions.length} filter${filterConditions.length > 1 ? 's' : ''} active`
-                        : item.subtitle
-                    }
+                    subtitle={item.label === 'Filter' ? filterSubtitle(filterConditions) : item.subtitle}
                     iconBg={
                       item.label === 'Filter'
                         ? filterConditions.length > 0 ? 'blue' : 'gray'
@@ -223,7 +234,7 @@ export function SidePanel() {
 
       {/* AI bar */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-[352px]">
-        <AiBar placeholder={aiPrompt} />
+        <AiBar placeholder={aiPrompt} onSubmit={handleAiSubmit} />
       </div>
 
     </div>
