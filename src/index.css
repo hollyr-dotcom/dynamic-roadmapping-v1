@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Roobert PRO — self-hosted */
+@font-face {
+  font-family: 'Roobert PRO';
+  src: url('/fonts/RoobertPRO-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -46,19 +55,36 @@ body {
 
 /* ── AI icon gentle pulse ──────────────────────────────── */
 @keyframes sparks-pulse {
-  0%, 100% { opacity: 0.55; transform: scale(1); }
-  50%       { opacity: 1;    transform: scale(1.1); }
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.1); }
 }
 
 .sparks-pulse {
   animation: sparks-pulse 2.4s ease-in-out infinite;
 }
 
-/* ── Refined scrollbar ─────────────────────────────────── */
-.panel-scroll::-webkit-scrollbar       { width: 4px; }
-.panel-scroll::-webkit-scrollbar-track { background: transparent; }
-.panel-scroll::-webkit-scrollbar-thumb {
-  background: #E4E5EA;
-  border-radius: 999px;
+/* ── AI icon loading spin ──────────────────────────────── */
+@keyframes ai-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
-.panel-scroll::-webkit-scrollbar-thumb:hover { background: #C8CAD4; }
+
+.ai-spin {
+  animation: ai-spin 1s linear infinite;
+}
+
+/* ── AI bar loading shimmer ────────────────────────────── */
+@keyframes bar-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+.bar-shimmer {
+  background: linear-gradient(90deg, #F7F7F7 25%, #EBEBEB 50%, #F7F7F7 75%) !important;
+  background-size: 200% 100% !important;
+  animation: bar-shimmer 1.2s ease-in-out infinite;
+}
+
+/* ── Hidden scrollbar ──────────────────────────────────── */
+.panel-scroll { scrollbar-width: none; }
+.panel-scroll::-webkit-scrollbar { display: none; }
