@@ -31,7 +31,7 @@ type ActivePage = {
 
 const viewSettings: { label: string; subtitle: string; iconBg: 'green' | 'blue' | 'gray'; icon: MiroIcon; aiPrompt: string }[] = [
   { label: 'Layout',    subtitle: 'Kanban',                 iconBg: 'green', icon: IconKanban,          aiPrompt: 'How can I adjust the layout?'   },
-  { label: 'Filter',    subtitle: '24 of 48 items showing', iconBg: 'blue',  icon: IconFunnel,           aiPrompt: 'How can I filter this view?'    },
+  { label: 'Filter',    subtitle: 'Add a filter',           iconBg: 'blue',  icon: IconFunnel,           aiPrompt: 'How can I filter this view?'    },
   { label: 'Sort',      subtitle: 'Sorted by Priority',     iconBg: 'blue',  icon: IconArrowsDownUp,     aiPrompt: 'How can I sort this view?'      },
   { label: 'Columns',   subtitle: 'Grouped by Status',      iconBg: 'blue',  icon: IconVerticalBlocks,   aiPrompt: 'How can I group my columns?'    },
   { label: 'Swimlanes', subtitle: 'Add a group',            iconBg: 'gray',  icon: IconHorizontalBlocks, aiPrompt: 'How can I add swimlanes?'       },
