@@ -74,7 +74,7 @@ function AddFilterButton({ onClick }: { onClick: () => void }) {
     >
       <IconPlus size="small" />
       <span className="font-heading font-semibold" style={{ fontSize: '14px' }}>
-        Add filter
+        New filter
       </span>
     </button>
   )

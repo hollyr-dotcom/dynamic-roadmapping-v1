@@ -184,7 +184,11 @@ export function SidePanel() {
                         ? `${filterConditions.length} filter${filterConditions.length > 1 ? 's' : ''} active`
                         : item.subtitle
                     }
-                    iconBg={item.iconBg}
+                    iconBg={
+                      item.label === 'Filter'
+                        ? filterConditions.length > 0 ? 'blue' : 'gray'
+                        : item.iconBg
+                    }
                     onClick={() => setActivePage({ name: item.label, parent: 'View settings', aiPrompt: item.aiPrompt })}
                   />
                 )
