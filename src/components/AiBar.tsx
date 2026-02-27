@@ -23,8 +23,6 @@ export function AiBar({ placeholder }: AiBarProps) {
   const [state, setState] = useState<BarState>('idle')
   const [value, setValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
-  const valueRef = useRef(value)
-  valueRef.current = value
 
   const hasContent = value.trim().length > 0
   const showSubmitButton = state === 'typing' && hasContent
@@ -56,14 +54,22 @@ export function AiBar({ placeholder }: AiBarProps) {
 
   return (
     <div
-      className={`item-enter relative flex items-center justify-between pl-6 pr-3 rounded-full border-4 border-white h-16 w-full shadow-[0px_12px_32px_0px_rgba(34,36,40,0.2),0px_0px_8px_0px_rgba(34,36,40,0.06)] cursor-text transition-colors duration-300 ${isLoading ? 'bar-shimmer' : 'bg-[#F7F7F7]'}`}
+      className="item-enter relative flex items-center justify-between pl-6 pr-3 bg-[#F7F7F7] rounded-full border-4 border-white h-16 w-full shadow-[0px_12px_32px_0px_rgba(34,36,40,0.2),0px_0px_8px_0px_rgba(34,36,40,0.06)]"
       style={{ animationDelay: '400ms' }}
       onClick={() => {
         if (isInteractive) inputRef.current?.focus()
       }}
     >
-      {/* Left: input + success text overlay */}
-      <div className="flex-1 min-w-0 relative flex items-center">
+      {/* Left: input + loading shimmer text + success text */}
+      <div className="flex-1 min-w-0 relative flex items-center cursor-text">
+        {/* Loading shimmer text */}
+        <span
+          className={`absolute left-0 font-body whitespace-nowrap transition-opacity duration-200 pointer-events-none select-none text-shimmer ${isLoading ? 'opacity-100' : 'opacity-0'}`}
+          style={{ fontSize: '16px', fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}
+        >
+          Working on it&hellip;
+        </span>
+
         {/* Success text */}
         <span
           className={`absolute left-0 font-body text-[#222428] whitespace-nowrap transition-opacity duration-200 pointer-events-none select-none ${isSuccess ? 'opacity-100' : 'opacity-0'}`}
@@ -76,11 +82,10 @@ export function AiBar({ placeholder }: AiBarProps) {
         <input
           ref={inputRef}
           value={value}
-          onChange={e => setValue(e.target.value)}
+          onChange={e => { if (isInteractive) setValue(e.target.value) }}
           onFocus={() => { if (state === 'idle') setState('typing') }}
-          onBlur={() => { setState(prev => prev === 'typing' && !valueRef.current ? 'idle' : prev) }}
           onKeyDown={handleKeyDown}
-          disabled={!isInteractive}
+          readOnly={!isInteractive}
           placeholder={placeholder}
           className={`w-full bg-transparent outline-none font-body text-[#222428] placeholder:text-[#6F7489] transition-opacity duration-200 ${(isLoading || isSuccess) ? 'opacity-0' : 'opacity-100'}`}
           style={{ fontSize: '16px', fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}
@@ -99,8 +104,9 @@ export function AiBar({ placeholder }: AiBarProps) {
 
         {/* Submit button — typing with content */}
         <button
-          className={`absolute flex items-center justify-center w-8 h-8 rounded-full bg-[#4262FF] transition-opacity duration-200 ${showSubmitButton ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          className={`absolute flex items-center justify-center w-8 h-8 rounded-full bg-[#4262FF] cursor-pointer transition-opacity duration-200 ${showSubmitButton ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
           onClick={e => { e.stopPropagation(); handleSubmit() }}
+          onMouseDown={e => e.preventDefault()}
           tabIndex={showSubmitButton ? 0 : -1}
           aria-label="Submit prompt"
         >

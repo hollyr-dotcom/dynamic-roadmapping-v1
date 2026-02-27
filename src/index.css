@@ -79,9 +79,12 @@ body {
   100% { background-position:  200% center; }
 }
 
-.bar-shimmer {
-  background: linear-gradient(90deg, #F7F7F7 25%, #EBEBEB 50%, #F7F7F7 75%) !important;
-  background-size: 200% 100% !important;
+.text-shimmer {
+  background: linear-gradient(90deg, #9CA3AF 25%, #D1D5DB 50%, #9CA3AF 75%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   animation: bar-shimmer 1.2s ease-in-out infinite;
 }
 
