@@ -23,6 +23,8 @@ export function AiBar({ placeholder }: AiBarProps) {
   const [state, setState] = useState<BarState>('idle')
   const [value, setValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const valueRef = useRef(value)
+  valueRef.current = value
 
   const hasContent = value.trim().length > 0
   const showSubmitButton = state === 'typing' && hasContent
@@ -76,7 +78,7 @@ export function AiBar({ placeholder }: AiBarProps) {
           value={value}
           onChange={e => setValue(e.target.value)}
           onFocus={() => { if (state === 'idle') setState('typing') }}
-          onBlur={() => { if (state === 'typing' && !value) setState('idle') }}
+          onBlur={() => { setState(prev => prev === 'typing' && !valueRef.current ? 'idle' : prev) }}
           onKeyDown={handleKeyDown}
           disabled={!isInteractive}
           placeholder={placeholder}
@@ -90,7 +92,7 @@ export function AiBar({ placeholder }: AiBarProps) {
 
         {/* AI icon — idle, typing-empty, loading */}
         <div
-          className={`absolute transition-opacity duration-200 ${(showSubmitButton || isSuccess) ? 'opacity-0' : 'opacity-100'} ${isLoading ? 'ai-spin' : (isIdle ? 'sparks-pulse' : '')}`}
+          className={`absolute transition-opacity duration-200 ${(showSubmitButton || isSuccess) ? 'opacity-0 pointer-events-none' : 'opacity-100'} ${isLoading ? 'ai-spin' : (isIdle ? 'sparks-pulse' : '')}`}
         >
           <AiIcon />
         </div>
