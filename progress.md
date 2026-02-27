@@ -64,6 +64,14 @@ A high-fidelity interactive prototype of the Miro roadmap settings sidebar, runn
 - Keyboard: Enter submits, Escape clears and returns to idle
 - Submit button uses `onMouseDown preventDefault` to keep input focus
 
+**AI bar — filter commands**
+- Natural language commands parse and mutate filter state directly
+- Create: "Show only In Progress items", "Filter where title contains 'bug'", "Only show items with no description"
+- Edit: "Change the status filter to Done"
+- Delete: "Remove/Delete the {field} filter", "Clear/Remove/Delete all filters"
+- Stays on current page — filter icon and subtitle update in place
+- Parser in `src/lib/filterParser.ts` — pure function, fully unit-tested (17 tests)
+
 **Filter page** *(new)*
 - Empty state: "No filters applied" + "New filter" button
 - Add, edit, duplicate, delete conditions
@@ -114,6 +122,7 @@ src/
   components/
     SidePanel.tsx       — main panel, all state
     AiBar.tsx           — interactive AI prompt bar (4-state machine)
+    filterParser.ts         — natural language filter command parser (src/lib/)
     FilterPage.tsx      — filter condition builder
     SectionHeader.tsx   — section headers
     SettingCell.tsx     — view setting rows
