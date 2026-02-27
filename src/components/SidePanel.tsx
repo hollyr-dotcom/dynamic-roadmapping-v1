@@ -20,6 +20,7 @@ import { SettingCell } from './SettingCell'
 import { FieldRow } from './FieldRow'
 import { FilterPage, defaultCondition } from './FilterPage'
 import type { FilterCondition } from './FilterPage'
+import { AiBar } from './AiBar'
 
 type MiroIcon = React.ComponentType<{ size?: 'small' | 'medium' | 'large' }>
 
@@ -44,11 +45,6 @@ const fields: { label: string; icon: MiroIcon; isPrimary: boolean; aiPrompt: str
   { label: 'Person',      icon: IconUser,           isPrimary: false, aiPrompt: 'How can I customize this field?' },
 ]
 
-const AiIcon = () => (
-  <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12.1472 3.80786C13.2845 3.80836 14.2484 6.31429 14.6101 9.81567C15.017 7.17722 15.9354 5.33618 17.0046 5.33618C18.451 5.33633 19.6237 8.70471 19.6238 12.8596C19.6238 17.0147 18.4511 20.3829 17.0046 20.3831C15.9353 20.3831 15.017 18.5423 14.6101 15.9036C14.2484 19.4052 13.2845 21.9119 12.1472 21.9124C10.9773 21.9124 9.98622 19.2609 9.65015 15.6018C9.22866 17.7458 8.33139 19.2278 7.28882 19.2278C5.84254 19.2273 4.66968 16.376 4.66968 12.8596C4.66974 9.34334 5.84258 6.49295 7.28882 6.49243C8.3313 6.49243 9.22862 7.97377 9.65015 10.1174C9.98626 6.45859 10.9773 3.80786 12.1472 3.80786Z" fill="black"/>
-  </svg>
-)
 
 const DROPDOWN_WIDTH = 176 // approximate width of the layout dropdown in px
 
@@ -227,20 +223,7 @@ export function SidePanel() {
 
       {/* AI bar */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-[352px]">
-        <div
-          className="item-enter flex items-center justify-between pl-6 pr-6 bg-[#F7F7F7] rounded-full border-4 border-white h-16 w-full shadow-[0px_12px_32px_0px_rgba(34,36,40,0.2),0px_0px_8px_0px_rgba(34,36,40,0.06)] cursor-text"
-          style={{ animationDelay: '400ms' }}
-        >
-          <span
-            className="font-body text-[#6F7489]"
-            style={{ fontSize: '16px', fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}
-          >
-            {aiPrompt}
-          </span>
-          <div className="shrink-0 sparks-pulse">
-            <AiIcon />
-          </div>
-        </div>
+        <AiBar placeholder={aiPrompt} />
       </div>
 
     </div>
