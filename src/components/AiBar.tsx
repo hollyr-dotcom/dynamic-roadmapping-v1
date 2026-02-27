@@ -17,9 +17,10 @@ const UpArrowIcon = () => (
 
 interface AiBarProps {
   placeholder: string
+  onSubmit?: (value: string) => void
 }
 
-export function AiBar({ placeholder }: AiBarProps) {
+export function AiBar({ placeholder, onSubmit }: AiBarProps) {
   const [state, setState] = useState<BarState>('idle')
   const [value, setValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -33,6 +34,7 @@ export function AiBar({ placeholder }: AiBarProps) {
 
   const handleSubmit = () => {
     if (!hasContent || state !== 'typing') return
+    onSubmit?.(value)
     setState('loading')
     setValue('')
     setTimeout(() => {
