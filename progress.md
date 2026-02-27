@@ -59,9 +59,10 @@ A high-fidelity interactive prototype of the Miro roadmap settings sidebar, runn
 - Floating pill, centered, `bottom-8` from panel base
 - Idle: contextual placeholder, AI icon `sparks-pulse` animation
 - Typing: real `<input>`, blue circular submit button (up-arrow) crossfades in when content present
-- Loading: shimmer sweep animation, AI icon spins (`ai-spin`)
+- Loading: "Working on it…" text shimmer (`background-clip: text` gradient), AI icon spins (`ai-spin`)
 - Success: "Done. I've made those changes." + green checkmark, 1.5s hold, crossfades back to idle
 - Keyboard: Enter submits, Escape clears and returns to idle
+- Submit button uses `onMouseDown preventDefault` to keep input focus
 
 **Filter page** *(new)*
 - Empty state: "No filters applied" + "New filter" button
