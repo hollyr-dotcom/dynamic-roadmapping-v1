@@ -1,11 +1,13 @@
 import { TopNavBar } from './components/TopNavBar'
 import { DatabaseTitle } from './components/DatabaseTitle'
+import { ViewTabsToolbar } from './components/ViewTabsToolbar'
 
 export function App() {
   return (
     <div className="flex flex-col w-screen h-screen bg-white overflow-hidden">
       <TopNavBar />
       <DatabaseTitle />
+      <ViewTabsToolbar />
     </div>
   )
 }
