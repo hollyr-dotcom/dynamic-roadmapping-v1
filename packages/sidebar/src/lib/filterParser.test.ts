@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { parseFilterCommand } from './filterParser'
-import type { FilterCondition } from '../components/FilterPage'
+import type { FilterCondition } from '@spaces/shared'
 
 const empty: FilterCondition[] = []
 

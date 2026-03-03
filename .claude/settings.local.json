@@ -78,7 +78,8 @@
       "Bash(git add progress.md)",
       "Bash(open http://localhost:5175/)",
       "Bash(bun run build)",
-      "Bash(bun run test)"
+      "Bash(bun run test)",
+      "Bash(bun install)"
     ]
   }
 }

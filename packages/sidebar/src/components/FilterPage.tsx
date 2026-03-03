@@ -1,29 +1,6 @@
 import { DropdownMenu, IconDotsThreeVertical, IconPlus } from '@mirohq/design-system'
-
-export type FilterField = 'Status' | 'Person' | 'Title' | 'Description'
-
-export type FilterCondition = {
-  id: string
-  field: FilterField
-  operator: string
-  value: string
-}
-
-const FIELDS: FilterField[] = ['Status', 'Person', 'Title', 'Description']
-
-const OPERATORS: Record<FilterField, string[]> = {
-  Status:      ['is', 'is not'],
-  Person:      ['is', 'is not', 'is empty', 'is not empty'],
-  Title:       ['contains', 'does not contain', 'is empty', 'is not empty'],
-  Description: ['contains', 'does not contain', 'is empty', 'is not empty'],
-}
-
-const STATUS_VALUES = ['Todo', 'In Progress', 'Done']
-const NO_VALUE_OPS = new Set(['is empty', 'is not empty'])
-
-export function defaultCondition(): FilterCondition {
-  return { id: crypto.randomUUID(), field: 'Status', operator: 'is', value: '' }
-}
+import type { FilterField, FilterCondition } from '@spaces/shared'
+import { FILTER_FIELDS, OPERATORS, STATUS_VALUES, NO_VALUE_OPS } from '@spaces/shared'
 
 interface FilterPageProps {
   conditions: FilterCondition[]
@@ -117,7 +94,7 @@ function ConditionCard({ condition, onChange, onDuplicate, onDelete }: Condition
           <DropdownMenu.Portal>
             <DropdownMenu.Content css={{ zIndex: 200 }}>
               <DropdownMenu.RadioGroup value={condition.field} onChange={handleFieldChange}>
-                {FIELDS.map((f) => (
+                {FILTER_FIELDS.map((f) => (
                   <DropdownMenu.RadioItem key={f} value={f} closeOnSelect>
                     {f}
                   </DropdownMenu.RadioItem>

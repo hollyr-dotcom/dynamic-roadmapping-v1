@@ -1,4 +1,4 @@
-import type { FilterCondition } from '../components/FilterPage'
+import type { FilterCondition } from '@spaces/shared'
 
 const STATUS_MAP: Record<string, string> = {
   'todo':        'Todo',

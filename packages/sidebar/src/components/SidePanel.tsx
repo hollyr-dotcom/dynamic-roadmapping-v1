@@ -18,8 +18,9 @@ import {
 import { SectionHeader } from './SectionHeader'
 import { SettingCell } from './SettingCell'
 import { FieldRow } from './FieldRow'
-import { FilterPage, defaultCondition } from './FilterPage'
-import type { FilterCondition } from './FilterPage'
+import { FilterPage } from './FilterPage'
+import type { FilterCondition } from '@spaces/shared'
+import { defaultCondition } from '@spaces/shared'
 import { AiBar } from './AiBar'
 import { parseFilterCommand } from '../lib/filterParser'
 
