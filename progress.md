@@ -1,18 +1,23 @@
-# Roadmap Settings Panel — Progress
+# Spaces Monorepo — Progress
 
-## What We've Built
+## Architecture
 
-A high-fidelity interactive prototype of the Miro roadmap settings sidebar, running locally at `http://localhost:5173`. Built with React 18 + TypeScript + Vite + Tailwind CSS v3, using the Miro Design System (`@mirohq/design-system`) for all components and icons.
+Bun workspace monorepo with three packages sharing types, fields, and sample data.
+
+```
+packages/
+  shared/        — types, field definitions, filter config, sample data
+  sidebar/       — roadmap settings panel (localhost:5173)
+  spaces-table/  — full-screen data table (localhost:5174)
+```
+
+**Stack:** Vite 7 + React 19 + TypeScript 5.9 + Tailwind CSS 3.4 + `@mirohq/design-system` 1.2.15 + Bun 1.3.9
 
 ---
 
-## Current State
+## Sidebar (`packages/sidebar`)
 
-### Stack
-- **Framework:** React 18 + TypeScript + Vite
-- **Styling:** Tailwind CSS v3 with MDS design tokens
-- **Component library:** `@mirohq/design-system` (ThemeProvider, DropdownMenu, icons)
-- **Fonts:** Roobert PRO (self-hosted, SemiBold) for headings · Noto Sans (Google Fonts) for body
+A high-fidelity interactive prototype of the Miro roadmap settings sidebar. See original component list and features below.
 
 ### Components
 
@@ -25,132 +30,85 @@ A high-fidelity interactive prototype of the Miro roadmap settings sidebar, runn
 | `src/components/SettingCell.tsx` | 72px setting row with coloured icon, label, subtitle, chevron |
 | `src/components/FieldRow.tsx` | 72px field row with icon, label, hover pen/drag icons |
 
-### Features Implemented
+### Features
 
-**Panel chrome**
-- 400px wide white panel, 12px corner radius, layered shadow
-- Slide-in entrance animation (`panel-enter`) from right
-- Staggered content fade-in (`item-enter`) with per-section delays
-- Close button (top-right, 32px, 16px icon)
-- Scrollable content area, hidden scrollbar
-
-**List view**
-- FlexAI / Backlog header (Roobert PRO, MDS token colours)
-- View settings section: Layout, Filter, Sort, Columns, Swimlanes
-- Fields section with + and ··· action buttons: Title (primary), Description, Status, Person
-- 0px gap between list items; 2px gap between label and subtitle within each cell
-- Hover states: tinted background + revealed chevron/icons
-- **On/off icon state:** Filter row icon is blue (active) when conditions exist, gray (inactive) when none — matches Swimlanes gray pattern
-
-**Layout dropdown**
-- MDS `DropdownMenu` with `RadioGroup` + `RadioItem` (Table / Kanban / Timeline)
-- MDS icons: `IconTable`, `IconKanban`, `IconTimelineFormat`
-- Floating via `DropdownMenu.Portal` (escapes `overflow-hidden`)
-- Click-position-aware: `alignOffset` computed from click X so the menu opens near where you clicked
-- Controlled open state + fixed backdrop — first click outside closes the menu only, doesn't trigger other elements
-- Subtitle on Layout cell updates to reflect selected option
-
-**In-panel navigation**
-- Clicking Filter, Sort, Columns, Swimlanes, or any Field row opens a detail page
-- Back button (top-left): `← View settings` or `← Fields` label
-- AI bar placeholder copy is context-aware per page (e.g. "How can I filter this view?")
-
-**AI bar (interactive)**
-- Floating pill, centered, `bottom-8` from panel base
-- Idle: contextual placeholder, AI icon `sparks-pulse` animation
-- Typing: real `<input>`, blue circular submit button (up-arrow) crossfades in when content present
-- Loading: "Working on it…" text shimmer (`background-clip: text` gradient), AI icon spins (`ai-spin`)
-- Success: "Done. I've made those changes." + green checkmark, 1.5s hold, crossfades back to idle
-- Keyboard: Enter submits, Escape clears and returns to idle
-- Submit button uses `onMouseDown preventDefault` to keep input focus
-
-**AI bar — filter commands**
-- Natural language commands parse and mutate filter state directly
-- Create: "Show only In Progress items", "Filter where title contains 'bug'", "Only show items with no description"
-- Edit: "Change the status filter to Done"
-- Delete: "Remove/Delete the {field} filter", "Clear/Remove/Delete all filters"
-- Stays on current page — filter icon and subtitle update in place
-- Parser in `src/lib/filterParser.ts` — pure function, fully unit-tested (17 tests)
-
-**Filter page** *(new)*
-- Empty state: "No filters applied" + "New filter" button
-- Add, edit, duplicate, delete conditions
-- Each condition card: field dropdown → operator dropdown → value control (two-line layout)
-- Field-aware operators (Status: is/is not; text fields: contains/does not contain/is empty/is not empty)
-- Value control hides for "is empty" / "is not empty" operators
-- Status value: dropdown (Todo / In Progress / Done); other fields: text input
-- ··· menu per card: Duplicate (inserts copy below) + Delete (danger variant)
-- Filter state lifted to SidePanel — persists across navigation
-- Filter row subtitle: "Add a filter" (off) → "N filter(s) active" (on)
-- Filter row icon: gray (off) → blue (on) as conditions are added/removed
+- 400px white panel with slide-in animation, staggered content fade-in
+- View settings (Layout, Filter, Sort, Columns, Swimlanes) with in-panel navigation
+- Layout dropdown (Table/Kanban/Timeline) with click-position-aware alignment
+- AI bar with natural language filter commands (create/edit/delete), fully unit-tested (17 tests)
+- Filter page with condition builder, field-aware operators, duplicate/delete
+- Filter state lifts to SidePanel, persists across navigation
 
 ---
 
-## Figma Sync
+## Shared Package (`packages/shared`)
 
-- Prototype was captured and sent to Figma file `WvjlAkugJjBIvhhExX5ZYA` (Roadmap Space)
-- Design changes were pulled back via `get_design_context` on node `14:140`
-- Applied: spacing/padding updates, Noto Sans Regular (`fontVariationSettings: "'CTGR' 0, 'wdth' 100"`), SectionHeader alignment and padding, close button position
-
----
-
-## GitHub Repository
-
-- **Repo:** [mikefrommiro/table-views](https://github.com/mikefrommiro/table-views)
-- **Path:** `view-settings-sidebar/` (subfolder — repo is structured for multiple projects)
-- **Branch:** `main`
-- Pushed initial commit with all source, docs/plans, public assets (no `node_modules` or `dist`)
+| File | Description |
+|------|-------------|
+| `src/types.ts` | FieldType, FieldDefinition, FilterField, FilterCondition |
+| `src/fields.ts` | 5 field definitions (title, mentions, customers, estRevenue, companies) |
+| `src/filterConfig.ts` | FILTER_FIELDS, OPERATORS, STATUS_VALUES, NO_VALUE_OPS, defaultCondition() |
+| `src/sampleData.ts` | SpaceRow interface + 18 rows of product feature request data |
+| `src/fields.test.ts` | 3 tests validating data model |
 
 ---
 
-## Next Steps
+## Spaces Table (`packages/spaces-table`)
 
-### Interactions still to build
-- [ ] **Sort page** — sort rule list, add rule, drag to reorder; on/off icon state when active
-- [ ] **Columns page** — column group picker; on/off icon state when grouped
-- [ ] **Swimlanes page** — swimlane group picker; on/off icon state when active
-- [ ] **Field detail pages** — field type selector, visibility toggle, rename
-- [ ] **SectionHeader actions** — + button (add field), ··· button (field menu)
-- [ ] **Layout toggle** — animate subtitle update; consider icon change on open state
+Full-screen data table page.
 
-### Design polish
-- [ ] Page transition animations (slide in/out between list and detail)
-- [ ] Back-button hover state refinement
-- [ ] Keyboard navigation (Esc to go back)
+### Components
 
-### Figma handoff
-- [ ] Re-capture updated prototype to Figma (capture script already in `index.html`)
-- [ ] Share updated node with design team for review
+| File | Description |
+|------|-------------|
+| `src/components/TopNavBar.tsx` | Menu, Miro logo, breadcrumb, presence avatars, notifications, AI sidekick |
+| `src/components/DatabaseTitle.tsx` | Editable title with three-dot context menu (Rename, Duplicate, Delete) |
+| `src/components/ViewTabsToolbar.tsx` | Tabs (All items / Prioritization), search, settings, "New" dropdown |
+| `src/components/DataTable.tsx` | Sticky-header table with row numbers and cell formatters |
+| `src/components/cells/TextCell.tsx` | Text cell (bold primary, regular secondary) |
+| `src/components/cells/NumberCell.tsx` | Number cell with locale formatting |
+| `src/components/cells/CurrencyCell.tsx` | Currency cell ($NNK format) |
+| `src/components/cells/AvatarStackCell.tsx` | Overlapping avatar initials with overflow count |
+
+### Features
+
+- Top nav bar with hamburger, Miro logo, breadcrumb, 3 presence avatars (+4 overflow), notifications badge (3), AI sidekick gradient button
+- Click-to-edit database title, three-dot menu with Rename/Duplicate/Delete
+- MDS Tabs (All items / Prioritization), search + settings icon buttons, "New" dropdown (Text, Number, Status, Person, Date)
+- Data table: 18 rows from shared sample data, sticky header, 56px row height, hover highlight
+- 4 cell formatters: text (bold primary), number (locale), currency ($NK/dash), avatar stack (3 visible + overflow)
+- Thin scrollbar styling
+
+---
+
+## Tests
+
+- **20 tests total** — 17 sidebar filter parser + 3 shared data model
+- Run: `bun run test`
 
 ---
 
 ## Key Files
 
 ```
-src/
-  components/
-    SidePanel.tsx       — main panel, all state
-    AiBar.tsx           — interactive AI prompt bar (4-state machine)
-    FilterPage.tsx      — filter condition builder
-    SectionHeader.tsx   — section headers
-    SettingCell.tsx     — view setting rows
-    FieldRow.tsx        — field rows
-  lib/
-    filterParser.ts     — natural language filter command parser
-    filterParser.test.ts — 17 unit tests for parser
-  index.css             — animations, scrollbar, @font-face
-  main.tsx              — ThemeProvider wrapper
-public/
-  fonts/
-    RoobertPRO-SemiBold.woff2   — self-hosted font
-tailwind.config.js      — heading/body font families
+packages/
+  shared/
+    src/types.ts, fields.ts, filterConfig.ts, sampleData.ts, index.ts
+    src/fields.test.ts
+  sidebar/
+    src/components/ (SidePanel, AiBar, FilterPage, SectionHeader, SettingCell, FieldRow)
+    src/lib/filterParser.ts, filterParser.test.ts
+  spaces-table/
+    src/components/ (TopNavBar, DatabaseTitle, ViewTabsToolbar, DataTable)
+    src/components/cells/ (TextCell, NumberCell, CurrencyCell, AvatarStackCell)
+    src/App.tsx, main.tsx, index.css
 docs/plans/
-  2026-02-26-roadmap-sidebar-design.md — sidebar design doc
-  2026-02-26-roadmap-sidebar.md        — sidebar implementation plan
-  2026-02-27-ai-bar-design.md          — AI bar design doc
-  2026-02-27-ai-bar.md                 — AI bar implementation plan
-  2026-02-27-ai-filter-commands-design.md — AI filter commands design doc
-  2026-02-27-ai-filter-commands.md     — AI filter commands implementation plan
-  2026-02-27-filter-page-design.md     — filter page design doc
-  2026-02-27-filter-page.md            — filter page implementation plan
+  2026-03-03-spaces-table-design.md
 ```
+
+---
+
+## GitHub
+
+- **Repo:** [mikefrommiro/table-views](https://github.com/mikefrommiro/table-views)
+- **Branch:** `master`
