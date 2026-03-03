@@ -7,7 +7,7 @@ interface SectionHeaderProps {
 
 export function SectionHeader({ label, showActions = false }: SectionHeaderProps) {
   return (
-    <div className="flex h-10 items-center justify-between w-full">
+    <div className={`flex h-10 items-center justify-between w-full pl-4 ${showActions ? 'pr-2' : 'pr-4'}`}>
       <div className="flex flex-1 items-center h-full rounded-lg">
         <span
           className="font-heading font-semibold text-[#222428] leading-[1.4]"
@@ -18,10 +18,10 @@ export function SectionHeader({ label, showActions = false }: SectionHeaderProps
       </div>
       {showActions && (
         <div className="flex items-center text-[#222428]">
-          <button className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100">
+          <button className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-[#F1F2F5]">
             <IconPlus size="small" />
           </button>
-          <button className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100">
+          <button className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-[#F1F2F5]">
             <IconDotsThreeVertical size="small" />
           </button>
         </div>

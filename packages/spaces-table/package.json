@@ -1,0 +1,14 @@
+{
+  "name": "@spaces/spaces-table",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@spaces/shared": "workspace:*"
+  }
+}

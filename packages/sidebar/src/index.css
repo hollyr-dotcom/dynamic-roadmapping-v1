@@ -88,6 +88,29 @@ body {
   animation: bar-shimmer 1.2s ease-in-out infinite;
 }
 
+/* ── Filter cell activation fill ──────────────────────── */
+@keyframes filter-cell-wash {
+  0% {
+    transform: scaleX(0);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  65% {
+    transform: scaleX(1);
+    opacity: 1;
+    animation-timing-function: ease-in;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+
+.filter-cell-wash {
+  transform-origin: left center;
+  animation: filter-cell-wash 750ms linear forwards;
+}
+
 /* ── Hidden scrollbar ──────────────────────────────────── */
 .panel-scroll { scrollbar-width: none; }
 .panel-scroll::-webkit-scrollbar { display: none; }

@@ -62,6 +62,8 @@ export function SidePanel() {
   const [layoutOpen, setLayoutOpen] = useState(false)
 
   const [filterConditions, setFilterConditions] = useState<FilterCondition[]>([])
+  const [filterActivating, setFilterActivating] = useState(false)
+  const [filterDeactivating, setFilterDeactivating] = useState(false)
 
   const handleFilterAdd = () =>
     setFilterConditions((prev) => [...prev, defaultCondition()])
@@ -85,8 +87,15 @@ export function SidePanel() {
   const handleAiSubmit = (value: string) => {
     const result = parseFilterCommand(value, filterConditions)
     if (result !== null) {
+      const turningOff = filterConditions.length > 0 && result.length === 0
       setFilterConditions(result)
-      // Do NOT navigate — stay on current page
+      if (turningOff) {
+        setFilterDeactivating(true)
+        setTimeout(() => setFilterDeactivating(false), 600)
+      } else {
+        setFilterActivating(true)
+        setTimeout(() => setFilterActivating(false), 700)
+      }
     }
   }
 
@@ -196,6 +205,8 @@ export function SidePanel() {
                         ? filterConditions.length > 0 ? 'blue' : 'gray'
                         : item.iconBg
                     }
+                    activating={item.label === 'Filter' ? filterActivating : undefined}
+                    deactivating={item.label === 'Filter' ? filterDeactivating : undefined}
                     onClick={() => setActivePage({ name: item.label, parent: 'View settings', aiPrompt: item.aiPrompt })}
                   />
                 )

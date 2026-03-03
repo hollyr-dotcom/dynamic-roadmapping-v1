@@ -6,6 +6,9 @@ interface SettingCellProps {
   label: string
   subtitle: string
   iconBg: 'green' | 'blue' | 'gray'
+  activating?: boolean
+  deactivating?: boolean
+  onClick?: () => void
 }
 
 // Cell background on hover
@@ -36,15 +39,24 @@ const chevronColor = {
   gray:  'text-[#222428]',
 } as const
 
-export function SettingCell({ icon: Icon, label, subtitle, iconBg }: SettingCellProps) {
+export function SettingCell({ icon: Icon, label, subtitle, iconBg, activating, deactivating, onClick }: SettingCellProps) {
   const ChevronIcon = iconBg === 'green' ? IconChevronDown : IconChevronRight
 
   return (
-    <div className={`group flex items-center gap-4 p-4 bg-white rounded-xl w-full cursor-pointer transition-colors duration-150 ${hoverCellBg[iconBg]}`}>
-      <div className={`flex items-center p-2 rounded-lg shrink-0 transition-colors duration-150 ${idleIconContainer[iconBg]} ${hoverIconContainer[iconBg]}`}>
+    <div className={`group relative overflow-hidden flex items-center gap-4 p-4 bg-white rounded-xl w-full cursor-pointer transition-colors duration-150 ${hoverCellBg[iconBg]}`} onClick={onClick}>
+      {activating && (
+        <div
+          className="absolute inset-0 pointer-events-none filter-cell-wash"
+          style={{ background: 'rgba(66, 98, 255, 0.08)' }}
+        />
+      )}
+      <div
+        className={`flex items-center p-2 rounded-lg shrink-0 ${idleIconContainer[iconBg]} ${hoverIconContainer[iconBg]}`}
+        style={{ transition: `background-color ${(activating || deactivating) ? '500ms' : '150ms'} ease, color ${deactivating ? '500ms' : '150ms'} ease` }}
+      >
         <Icon size="medium" />
       </div>
-      <div className="flex flex-col items-start justify-center pb-1 flex-1 min-w-0">
+      <div className="flex flex-col items-start justify-center gap-[2px] pb-1 flex-1 min-w-0">
         <span
           className="font-heading font-semibold text-[#222428] leading-[1.5]"
           style={{ fontSize: '16px' }}
@@ -53,7 +65,7 @@ export function SettingCell({ icon: Icon, label, subtitle, iconBg }: SettingCell
         </span>
         <span
           className="font-body text-[#656B81] leading-none"
-          style={{ fontSize: '12px' }}
+          style={{ fontSize: '12px', fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}
         >
           {subtitle}
         </span>

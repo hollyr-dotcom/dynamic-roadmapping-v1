@@ -34,10 +34,11 @@ export function AiBar({ placeholder, onSubmit }: AiBarProps) {
 
   const handleSubmit = () => {
     if (!hasContent || state !== 'typing') return
-    onSubmit?.(value)
+    const submittedValue = value
     setState('loading')
     setValue('')
     setTimeout(() => {
+      onSubmit?.(submittedValue)
       setState('success')
       setTimeout(() => {
         setState('idle')

@@ -94,6 +94,15 @@ A high-fidelity interactive prototype of the Miro roadmap settings sidebar, runn
 
 ---
 
+## GitHub Repository
+
+- **Repo:** [mikefrommiro/table-views](https://github.com/mikefrommiro/table-views)
+- **Path:** `view-settings-sidebar/` (subfolder — repo is structured for multiple projects)
+- **Branch:** `main`
+- Pushed initial commit with all source, docs/plans, public assets (no `node_modules` or `dist`)
+
+---
+
 ## Next Steps
 
 ### Interactions still to build
@@ -122,11 +131,13 @@ src/
   components/
     SidePanel.tsx       — main panel, all state
     AiBar.tsx           — interactive AI prompt bar (4-state machine)
-    filterParser.ts         — natural language filter command parser (src/lib/)
     FilterPage.tsx      — filter condition builder
     SectionHeader.tsx   — section headers
     SettingCell.tsx     — view setting rows
     FieldRow.tsx        — field rows
+  lib/
+    filterParser.ts     — natural language filter command parser
+    filterParser.test.ts — 17 unit tests for parser
   index.css             — animations, scrollbar, @font-face
   main.tsx              — ThemeProvider wrapper
 public/
@@ -134,6 +145,12 @@ public/
     RoobertPRO-SemiBold.woff2   — self-hosted font
 tailwind.config.js      — heading/body font families
 docs/plans/
-  2026-02-27-filter-page-design.md   — filter page design doc
-  2026-02-27-filter-page.md          — filter page implementation plan
+  2026-02-26-roadmap-sidebar-design.md — sidebar design doc
+  2026-02-26-roadmap-sidebar.md        — sidebar implementation plan
+  2026-02-27-ai-bar-design.md          — AI bar design doc
+  2026-02-27-ai-bar.md                 — AI bar implementation plan
+  2026-02-27-ai-filter-commands-design.md — AI filter commands design doc
+  2026-02-27-ai-filter-commands.md     — AI filter commands implementation plan
+  2026-02-27-filter-page-design.md     — filter page design doc
+  2026-02-27-filter-page.md            — filter page implementation plan
 ```

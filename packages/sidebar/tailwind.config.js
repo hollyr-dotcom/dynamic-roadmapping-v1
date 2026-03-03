@@ -4,8 +4,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        heading: ['Inter', 'sans-serif'],
-        body: ['"Noto Sans"', 'sans-serif'],
+        heading: ['"Roobert PRO"', 'sans-serif'],
+        body: ['var(--fonts-body)'],
       },
     },
   },
