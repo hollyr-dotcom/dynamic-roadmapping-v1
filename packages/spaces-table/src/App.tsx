@@ -1,7 +1,7 @@
-import { TopNavBar } from './components/TopNavBar'
-import { DatabaseTitle } from './components/DatabaseTitle'
-import { ViewTabsToolbar } from './components/ViewTabsToolbar'
-import { DataTable } from './components/DataTable'
+import { TopNavBar } from './components/page/TopNavBar'
+import { DatabaseTitle } from './components/page/DatabaseTitle'
+import { ViewTabsToolbar } from './components/page/ViewTabsToolbar'
+import { DataTable } from './components/table'
 
 export function App() {
   return (
