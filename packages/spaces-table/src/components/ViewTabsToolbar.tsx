@@ -10,9 +10,9 @@ import {
 
 export function ViewTabsToolbar() {
   return (
-    <div className="flex items-center justify-between px-6 pb-4 shrink-0">
+    <div className="flex items-center justify-between px-14 pb-4 shrink-0">
       {/* Left: tabs */}
-      <Tabs defaultValue="all-items" variant="tabs" size="medium">
+      <Tabs defaultValue="all-items" variant="buttons" size="medium">
         <Tabs.List>
           <Tabs.Trigger value="all-items">All items</Tabs.Trigger>
           <Tabs.Trigger value="prioritization">Prioritization</Tabs.Trigger>

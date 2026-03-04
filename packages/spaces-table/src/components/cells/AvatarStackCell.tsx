@@ -24,7 +24,7 @@ export function AvatarStackCell({ values }: AvatarStackCellProps) {
       {visible.map((initials, i) => (
         <div
           key={initials}
-          className="flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-semibold border-2 border-white"
+          className="flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-body font-semibold border-2 border-white"
           style={{
             backgroundColor: hashColor(initials),
             marginLeft: i > 0 ? '-6px' : 0,
@@ -36,7 +36,7 @@ export function AvatarStackCell({ values }: AvatarStackCellProps) {
       ))}
       {overflow > 0 && (
         <span
-          className="text-[#656B81] font-semibold ml-1"
+          className="text-[#656B81] font-body font-semibold ml-1"
           style={{ fontSize: '12px' }}
         >
           +{overflow}

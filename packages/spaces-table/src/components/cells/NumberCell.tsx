@@ -4,7 +4,7 @@ interface NumberCellProps {
 
 export function NumberCell({ value }: NumberCellProps) {
   return (
-    <span className="tabular-nums text-[#222428]" style={{ fontSize: '14px' }}>
+    <span className="font-body tabular-nums text-[#222428]" style={{ fontSize: '14px' }}>
       {value.toLocaleString()}
     </span>
   )

@@ -1,5 +1,7 @@
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { fields, sampleData } from '@spaces/shared'
 import type { FieldDefinition, SpaceRow } from '@spaces/shared'
+import { IconDotsSixVertical, IconChatPlus, IconBookmark } from '@mirohq/design-system'
 import { TextCell } from './cells/TextCell'
 import { NumberCell } from './cells/NumberCell'
 import { CurrencyCell } from './cells/CurrencyCell'
@@ -22,52 +24,123 @@ function CellRenderer({ field, row }: { field: FieldDefinition; row: SpaceRow })
   }
 }
 
-export function DataTable() {
+function RowContextMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete: () => void }) {
   return (
-    <div className="flex-1 overflow-auto table-scroll">
-      <table className="w-full border-collapse">
+    <div className="row-context-menu" onClick={(e) => e.stopPropagation()}>
+      <button onClick={onDuplicate}>Duplicate</button>
+      <button className="danger" onClick={onDelete}>Delete</button>
+    </div>
+  )
+}
+
+export function DataTable() {
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
+  const tableRef = useRef<HTMLDivElement>(null)
+
+  // Deselect when clicking outside the table
+  useEffect(() => {
+    if (!selectedRowId) return
+    const handleClick = (e: MouseEvent) => {
+      if (tableRef.current && !tableRef.current.contains(e.target as Node)) {
+        setSelectedRowId(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [selectedRowId])
+
+  const handleDotsClick = useCallback((rowId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setSelectedRowId((prev) => (prev === rowId ? null : rowId))
+  }, [])
+
+  return (
+    <div ref={tableRef} className="flex-1 overflow-auto table-scroll">
+      <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
         <thead className="sticky top-0 bg-white z-10">
-          <tr className="border-b border-[#E8EAEE]">
+          <tr>
             <th
-              className="text-left font-semibold text-[#9EA3B5] px-3"
-              style={{ fontSize: '12px', width: '56px', minWidth: '56px' }}
-            >
-              #
-            </th>
+              className="pl-14"
+              aria-hidden="true"
+            />
             {fields.map((field) => (
               <th
                 key={field.id}
-                className="text-left font-semibold text-[#9EA3B5] px-3 py-2"
+                className="text-left font-body font-semibold text-[#656B81] h-12"
                 style={{
-                  fontSize: '12px',
-                  minWidth: field.isPrimary ? '320px' : '140px',
+                  fontSize: '14px',
+                  minWidth: field.isPrimary ? '320px' : '128px',
+                  paddingLeft: '12px',
+                  paddingRight: '20px',
                 }}
               >
-                {field.label}
+                <div className="flex items-center gap-2">
+                  {field.isPrimary && (
+                    <IconBookmark size="small" color="icon-neutrals-subtle" />
+                  )}
+                  <span className="truncate">{field.label}</span>
+                </div>
               </th>
             ))}
+            <th className="w-8 min-w-[32px]" aria-hidden="true" />
           </tr>
         </thead>
         <tbody>
-          {sampleData.map((row, idx) => (
-            <tr
-              key={row.id}
-              className="border-b border-[#F1F2F5] hover:bg-[#FAFBFC] transition-colors"
-              style={{ height: '56px' }}
-            >
-              <td
-                className="px-3 text-[#9EA3B5]"
-                style={{ fontSize: '12px' }}
+          {sampleData.map((row, idx) => {
+            const isSelected = selectedRowId === row.id
+            return (
+              <tr
+                key={row.id}
+                className={isSelected ? 'row-selected' : ''}
+                style={{ height: '56px' }}
               >
-                {idx + 1}
-              </td>
-              {fields.map((field) => (
-                <td key={field.id} className="px-3">
-                  <CellRenderer field={field} row={row} />
+                <td className="pl-14 divider-first" style={{ fontSize: '12px' }}>
+                  <div className="flex items-center">
+                    {/* Row number + spacer — idle */}
+                    <div className="row-number w-8 h-8 items-center justify-center text-[#AEB2C0]">
+                      {idx + 1}
+                    </div>
+                    <div className="row-number w-8 h-8 -mr-3" aria-hidden="true" />
+
+                    {/* Drag handle — hover & selected */}
+                    <button
+                      className="row-dots w-8 h-8 items-center justify-center rounded-lg cursor-grab"
+                      onClick={(e) => handleDotsClick(row.id, e)}
+                    >
+                      <IconDotsSixVertical
+                        size="small"
+                        color={isSelected ? 'icon-primary' : 'icon-neutrals-subtle'}
+                      />
+                    </button>
+
+                    {/* Comment button — hover only */}
+                    <button
+                      className="row-comment w-8 h-8 -mr-3 items-center justify-center rounded-lg hover:bg-[#E9EAEF] transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <IconChatPlus size="small" color="icon-neutrals-subtle" />
+                    </button>
+                  </div>
+
+                  {/* Context menu */}
+                  {isSelected && (
+                    <RowContextMenu
+                      onDuplicate={() => setSelectedRowId(null)}
+                      onDelete={() => setSelectedRowId(null)}
+                    />
+                  )}
                 </td>
-              ))}
-            </tr>
-          ))}
+
+                {fields.map((field) => (
+                  <td key={field.id} className="px-3 border-b border-[#F1F2F5]">
+                    <CellRenderer field={field} row={row} />
+                  </td>
+                ))}
+
+                <td className="w-8 min-w-[32px] divider-last" aria-hidden="true" />
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>

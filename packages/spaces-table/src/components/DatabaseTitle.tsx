@@ -6,7 +6,7 @@ import {
 } from '@mirohq/design-system'
 
 export function DatabaseTitle() {
-  const [title, setTitle] = useState('Project Galaxy Backlog')
+  const [title, setTitle] = useState('Backlog')
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(title)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -33,7 +33,7 @@ export function DatabaseTitle() {
   }
 
   return (
-    <div className="flex items-center gap-2 px-6 py-3 shrink-0">
+    <div className="flex items-center gap-2 px-14 py-3 shrink-0">
       {editing ? (
         <input
           ref={inputRef}
@@ -42,12 +42,12 @@ export function DatabaseTitle() {
           onBlur={save}
           onKeyDown={handleKeyDown}
           className="font-heading font-semibold text-[#222428] bg-transparent outline-none border-b-2 border-[#4262FF] leading-[1.4]"
-          style={{ fontSize: '24px' }}
+          style={{ fontSize: '32px' }}
         />
       ) : (
         <h1
           className="font-heading font-semibold text-[#222428] leading-[1.4] cursor-text select-none"
-          style={{ fontSize: '24px' }}
+          style={{ fontSize: '32px' }}
           onClick={() => {
             setDraft(title)
             setEditing(true)

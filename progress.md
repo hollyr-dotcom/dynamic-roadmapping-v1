@@ -61,23 +61,36 @@ Full-screen data table page.
 
 | File | Description |
 |------|-------------|
-| `src/components/TopNavBar.tsx` | Menu, Miro logo, breadcrumb, presence avatars, notifications, AI sidekick |
-| `src/components/DatabaseTitle.tsx` | Editable title with three-dot context menu (Rename, Duplicate, Delete) |
-| `src/components/ViewTabsToolbar.tsx` | Tabs (All items / Prioritization), search, settings, "New" dropdown |
-| `src/components/DataTable.tsx` | Sticky-header table with row numbers and cell formatters |
-| `src/components/cells/TextCell.tsx` | Text cell (bold primary, regular secondary) |
-| `src/components/cells/NumberCell.tsx` | Number cell with locale formatting |
-| `src/components/cells/CurrencyCell.tsx` | Currency cell ($NNK format) |
-| `src/components/cells/AvatarStackCell.tsx` | Overlapping avatar initials with overflow count |
+| `src/components/TopNavBar.tsx` | Hamburger menu, breadcrumb, presence avatars, notifications, AI sidekick |
+| `src/components/DatabaseTitle.tsx` | Editable "Backlog" title (32px Roobert) with three-dot context menu |
+| `src/components/ViewTabsToolbar.tsx` | Panel-style tabs (All items / Prioritization), search, settings, "New" dropdown |
+| `src/components/DataTable.tsx` | Interactive table with row selection, drag handle, comment button, context menu |
+| `src/components/cells/TextCell.tsx` | Text cell (14px Noto Sans regular for all rows) |
+| `src/components/cells/NumberCell.tsx` | Number cell with locale formatting (Noto Sans) |
+| `src/components/cells/CurrencyCell.tsx` | Currency cell, $NNK format (Noto Sans) |
+| `src/components/cells/AvatarStackCell.tsx` | Overlapping avatar initials with overflow count (Noto Sans semibold) |
+
+### Typography
+
+- **Headers:** Roobert PRO semibold (`font-heading`) — database title, nav breadcrumb
+- **Body copy:** Noto Sans regular (`font-body`) — table cells, secondary text
+- **Labels:** Noto Sans semibold (`font-body font-semibold`) — table header labels, avatar initials, buttons
+- Noto Sans loaded via Google Fonts (400 + 600); Roobert PRO self-hosted from `/fonts/`
 
 ### Features
 
-- Top nav bar with hamburger, Miro logo, breadcrumb, 3 presence avatars (+4 overflow), notifications badge (3), AI sidekick gradient button
-- Click-to-edit database title, three-dot menu with Rename/Duplicate/Delete
-- MDS Tabs (All items / Prioritization), search + settings icon buttons, "New" dropdown (Text, Number, Status, Person, Date)
-- Data table: 18 rows from shared sample data, sticky header, 56px row height, hover highlight
-- 4 cell formatters: text (bold primary), number (locale), currency ($NK/dash), avatar stack (3 visible + overflow)
-- Thin scrollbar styling
+- Top nav bar with hamburger, breadcrumb (Roobert), 3 presence avatars (+4 overflow), notifications badge (3), AI sidekick gradient button
+- Nav left padding tuned (12px) so breadcrumb text aligns with database title below
+- Click-to-edit database title "Backlog" (32px Roobert), three-dot menu with Rename/Duplicate/Delete
+- MDS panel-style tabs (`variant="buttons"`), search + settings icon buttons, "New" dropdown (Text, Number, Status, Person, Date)
+- Data table: 18 rows from shared sample data, sticky header, 56px row height
+- 48px page padding on all sections (nav, title, tabs, table), horizontally scrollable edge-to-edge
+- Inset row dividers (48px from each edge), hidden on hover/selection
+- Row hover: rounded 8px background (#FAFBFC), row number replaced by drag handle + comment button (no layout shift — idle state reserves space for both controls)
+- Row selection: click drag handle to select (blue #F2F4FC background, blue icon), context menu with Duplicate/Delete
+- Click outside table or re-click drag handle to deselect
+- 4 cell formatters: text (14px), number (locale), currency ($NK/dash), avatar stack (3 visible + overflow)
+- Thin scrollbar styling, `border-separate` for per-cell border-radius support
 
 ---
 
@@ -105,6 +118,20 @@ packages/
 docs/plans/
   2026-03-03-spaces-table-design.md
 ```
+
+---
+
+## Next Steps
+
+- **Column resizing** — drag column edges to resize, persist widths
+- **Inline cell editing** — click to edit text/number/currency cells in place
+- **Status column** — add a status field with colour-coded chips (e.g. In Progress, Done, Blocked)
+- **Sort interaction** — click column headers to sort ascending/descending with indicator arrow
+- **Filter integration** — connect sidebar filter panel to table data (shared filter state)
+- **Sidebar trigger** — wire the settings icon button in the toolbar to open the sidebar panel
+- **Empty state** — design for zero-row / no-results scenarios
+- **Row reordering** — drag handle actually reorders rows with animation
+- **Keyboard navigation** — arrow keys to move between cells, Enter to edit
 
 ---
 

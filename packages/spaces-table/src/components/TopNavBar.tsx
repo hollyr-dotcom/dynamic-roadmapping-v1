@@ -13,19 +13,12 @@ const avatars = [
 
 export function TopNavBar() {
   return (
-    <div className="flex items-center justify-between h-16 px-4 bg-white shrink-0">
+    <div className="flex items-center justify-between h-16 pr-14 bg-white shrink-0" style={{ paddingLeft: '12px' }}>
       {/* Left: menu + logo + breadcrumb */}
       <div className="flex items-center gap-3">
         <IconButton aria-label="Menu" variant="ghost" size="medium">
           <IconLinesThreeHorizontal />
         </IconButton>
-
-        {/* Miro logotype */}
-        <svg width="72" height="24" viewBox="0 0 72 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M54.416 4.48h4.448v15.04h-4.448V4.48ZM40.544 4.48h4.448v15.04h-4.448V4.48Zm-6.048 0L38.8 19.52h-4.576l-2.816-9.152L28.4 19.52h-4.576l4.304-15.04h4.016l2.352 8.736 2.352-8.736h1.648ZM63.296 12c0-4.416 3.36-7.84 7.84-7.84V8.4A3.571 3.571 0 0 0 67.6 12a3.571 3.571 0 0 0 3.536 3.6v4.24c-4.48 0-7.84-3.424-7.84-7.84Z" fill="#050038"/>
-        </svg>
-
-        <span className="text-[#9EA3B5] text-sm select-none">/</span>
 
         <span
           className="font-heading font-semibold text-[#222428] leading-none select-none"

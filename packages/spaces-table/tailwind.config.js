@@ -5,7 +5,7 @@ export default {
     extend: {
       fontFamily: {
         heading: ['"Roobert PRO"', 'sans-serif'],
-        body: ['var(--fonts-body)'],
+        body: ['"Noto Sans"', 'sans-serif'],
       },
     },
   },
