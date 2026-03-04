@@ -1,80 +1,93 @@
 import {
+  Button,
   IconButton,
   IconLinesThreeHorizontal,
   IconBell,
-  IconSparksFilled,
+  IconChevronRightSmall,
 } from '@mirohq/design-system'
 
 const avatars = [
-  { initials: 'MK', bg: '#4262FF' },
-  { initials: 'AJ', bg: '#F24726' },
-  { initials: 'TS', bg: '#12B76A' },
+  { name: 'MK', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=56&h=56&fit=crop&crop=face' },
+  { name: 'AJ', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=56&h=56&fit=crop&crop=face' },
+  { name: 'TS', img: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=56&h=56&fit=crop&crop=face' },
 ]
 
-export function TopNavBar() {
+interface TopNavBarProps {
+  borderOpacity: number
+  scrollFade: number
+  databaseTitle: string
+}
+
+export function TopNavBar({ borderOpacity, scrollFade, databaseTitle }: TopNavBarProps) {
   return (
-    <div className="flex items-center justify-between h-16 pr-14 bg-white shrink-0" style={{ paddingLeft: '12px' }}>
-      {/* Left: menu + logo + breadcrumb */}
-      <div className="flex items-center gap-3">
-        <IconButton aria-label="Menu" variant="ghost" size="medium">
+    <div
+      className="sticky top-0 z-30 flex items-center justify-between bg-white shrink-0"
+      style={{
+        paddingLeft: '8px',
+        paddingRight: '12px',
+        paddingTop: '8px',
+        paddingBottom: '8px',
+        boxShadow: `inset 0 -1px 0 0 rgba(241, 242, 245, ${borderOpacity})`,
+      }}
+    >
+      {/* Left: menu + breadcrumb */}
+      <div className="flex items-center gap-2">
+        <IconButton aria-label="Menu" variant="ghost" size="large">
           <IconLinesThreeHorizontal />
         </IconButton>
 
-        <span
-          className="font-heading font-semibold text-[#222428] leading-none select-none"
-          style={{ fontSize: '14px' }}
-        >
-          Project Galaxy
-        </span>
+        <div className="flex items-center" style={{ gap: '2px' }}>
+          <span
+            className="font-heading font-semibold text-[#222428] leading-none select-none"
+            style={{ fontSize: '14px' }}
+          >
+            Project Galaxy
+          </span>
+
+          {/* Breadcrumb: chevron + database title — fades in on scroll */}
+          <span
+            className="flex items-center transition-opacity duration-200"
+            style={{ opacity: scrollFade, gap: '2px', color: '#B3B9C4' }}
+          >
+            <IconChevronRightSmall size="small" />
+            <span
+              className="font-heading font-semibold text-[#222428] leading-none select-none"
+              style={{ fontSize: '14px' }}
+            >
+              {databaseTitle}
+            </span>
+          </span>
+        </div>
       </div>
 
-      {/* Right: avatars + notifications + AI */}
+      {/* Right: notifications + avatars */}
       <div className="flex items-center gap-2">
-        {/* Presence avatars */}
-        <div className="flex items-center mr-1">
-          {avatars.map((a, i) => (
-            <div
-              key={a.initials}
-              className="flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-semibold border-2 border-white"
-              style={{
-                backgroundColor: a.bg,
-                marginLeft: i > 0 ? '-6px' : 0,
-                zIndex: avatars.length - i,
-              }}
-            >
-              {a.initials}
-            </div>
-          ))}
-          <div
-            className="flex items-center justify-center w-7 h-7 rounded-full bg-[#F1F2F5] text-[#656B81] text-xs font-semibold border-2 border-white"
-            style={{ marginLeft: '-6px', zIndex: 0 }}
-          >
-            +4
-          </div>
-        </div>
-
         {/* Notifications */}
         <IconButton
           aria-label="Notifications"
           variant="ghost"
-          size="medium"
-          showBadge
-          badgeContent="3"
-          badgeAriaLabel="3 notifications"
+          size="large"
         >
           <IconBell />
         </IconButton>
 
-        {/* AI Sidekick */}
-        <button
-          className="flex items-center justify-center w-8 h-8 rounded-full text-white"
-          style={{
-            background: 'linear-gradient(135deg, #4262FF 0%, #9B59B6 50%, #F97316 100%)',
-          }}
-          aria-label="AI Sidekick"
-        >
-          <IconSparksFilled size="small" />
-        </button>
+        {/* Presence avatars */}
+        <div className="flex items-center mr-1">
+          {avatars.map((a, i) => (
+            <img
+              key={a.name}
+              src={a.img}
+              alt={a.name}
+              className="w-7 h-7 rounded-full border-2 border-white object-cover"
+              style={{
+                marginLeft: i > 0 ? '-6px' : 0,
+                zIndex: avatars.length - i,
+              }}
+            />
+          ))}
+        </div>
+
+        <Button size="medium">Share</Button>
       </div>
     </div>
   )

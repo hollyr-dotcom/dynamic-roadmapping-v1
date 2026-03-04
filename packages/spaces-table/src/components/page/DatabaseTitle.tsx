@@ -1,12 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react'
-import {
-  DropdownMenu,
-  IconButton,
-  IconDotsThree,
-} from '@mirohq/design-system'
+import React, { useRef, useEffect, useState } from 'react'
 
-export function DatabaseTitle() {
-  const [title, setTitle] = useState('Backlog')
+interface DatabaseTitleProps {
+  opacity: number
+  title: string
+  onTitleChange: (title: string) => void
+}
+
+export function DatabaseTitle({ opacity, title, onTitleChange }: DatabaseTitleProps) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(title)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -20,7 +20,7 @@ export function DatabaseTitle() {
 
   const save = () => {
     const trimmed = draft.trim()
-    if (trimmed) setTitle(trimmed)
+    if (trimmed) onTitleChange(trimmed)
     setEditing(false)
   }
 
@@ -33,7 +33,10 @@ export function DatabaseTitle() {
   }
 
   return (
-    <div className="flex items-center gap-2 px-14 py-3 shrink-0">
+    <div
+      className="flex items-center gap-2 px-14 pb-3 shrink-0"
+      style={{ paddingTop: '48px', opacity }}
+    >
       {editing ? (
         <input
           ref={inputRef}
@@ -57,21 +60,6 @@ export function DatabaseTitle() {
         </h1>
       )}
 
-      <DropdownMenu>
-        <DropdownMenu.Trigger asChild>
-          <IconButton aria-label="More options" variant="ghost" size="medium">
-            <IconDotsThree />
-          </IconButton>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Content side="bottom" align="start">
-          <DropdownMenu.Item onSelect={() => { setDraft(title); setEditing(true) }}>
-            Rename
-          </DropdownMenu.Item>
-          <DropdownMenu.Item>Duplicate</DropdownMenu.Item>
-          <DropdownMenu.Separator />
-          <DropdownMenu.Item variant="danger">Delete</DropdownMenu.Item>
-        </DropdownMenu.Content>
-      </DropdownMenu>
     </div>
   )
 }

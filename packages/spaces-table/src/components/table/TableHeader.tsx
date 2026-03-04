@@ -7,7 +7,7 @@ interface TableHeaderProps {
 
 export function TableHeader({ fields }: TableHeaderProps) {
   return (
-    <thead className="sticky top-0 bg-white z-10">
+    <thead className="sticky top-[120px] bg-white z-10"> {/* 56px nav + 64px toolbar */}
       <tr>
         <th
           className="pl-14"
@@ -16,7 +16,7 @@ export function TableHeader({ fields }: TableHeaderProps) {
         {fields.map((field) => (
           <th
             key={field.id}
-            className="text-left font-body font-semibold text-[#656B81] h-12"
+            className="text-left font-body font-semibold text-[#656B81] h-14"
             style={{
               fontSize: '14px',
               minWidth: field.isPrimary ? '320px' : '128px',

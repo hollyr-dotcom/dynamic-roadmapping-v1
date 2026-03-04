@@ -61,17 +61,17 @@ Full-screen data table page, structured as two domains: **page** (the space shel
 
 | File | Description |
 |------|-------------|
-| `TopNavBar.tsx` | Hamburger menu (12px left padding), breadcrumb (Roobert), presence avatars, notifications, AI sidekick |
-| `DatabaseTitle.tsx` | Editable "Backlog" title (32px Roobert) with three-dot context menu |
-| `ViewTabsToolbar.tsx` | Panel-style tabs (All items / Prioritization), search, settings, "New" dropdown |
+| `TopNavBar.tsx` | Sticky nav (top-0, z-30) with hamburger, breadcrumb (Roobert #222428), notification bell, 3 Unsplash photo avatars; 8px padding all sides; 1px bottom border (#F1F2F5) fades in on scroll |
+| `DatabaseTitle.tsx` | Editable "Backlog" title (32px Roobert), 48px top spacing; opacity fades out on scroll in sync with nav border |
+| `ViewTabsToolbar.tsx` | Panel-style tabs (All items / Prioritization), search, AI sidekick, settings, plus, three-dot icon buttons (all medium/32px); sticky at top-14 (56px, below nav) |
 
 ### Table Module (`src/components/table/`)
 
 | File | Description |
 |------|-------------|
 | `index.ts` | Barrel export — single public surface (`DataTable`) |
-| `DataTable.tsx` | Orchestrator — selection state, click-outside handler, composes TableHeader + TableRow |
-| `TableHeader.tsx` | Sticky `<thead>` with bookmark icon on primary field, 48px tall, 14px Noto Sans semibold #656B81 |
+| `DataTable.tsx` | Orchestrator — selection state, click-outside handler, composes TableHeader + TableRow; horizontal scroll only |
+| `TableHeader.tsx` | Sticky `<thead>` (top-[120px], below nav + tabs), bookmark icon on primary field, 56px tall, 14px Noto Sans semibold #656B81 |
 | `TableRow.tsx` | Single `<tr>` — row number, drag handle, comment button, context menu, cells |
 | `CellRenderer.tsx` | Field-type dispatcher — routes to the correct cell component |
 | `cells/TextCell.tsx` | Text cell (14px Noto Sans regular) |
@@ -86,21 +86,30 @@ Full-screen data table page, structured as two domains: **page** (the space shel
 - **Labels:** Noto Sans semibold (`font-body font-semibold`) — table header labels, avatar initials, buttons
 - Noto Sans loaded via Google Fonts (400 + 600); Roobert PRO self-hosted from `/fonts/`
 
+### Scroll & Sticky Behaviour
+
+- **Full-page scroll** — App.tsx is the scroll container (`overflow-y-auto`), scroll state managed in App
+- **Three sticky layers:** nav (top-0, z-30, 56px) → tabs toolbar (top-14, z-20, 64px) → table header (top-[120px], z-10, 56px)
+- **Scroll-linked fade** — App computes a single `scrollFade` value (0→1) from scroll position; title opacity = `1 - scrollFade`, nav border opacity = `scrollFade`; fade starts at 10px scroll, completes by 35px
+- Nav bottom border: 1px inset box-shadow `rgba(241, 242, 245, borderOpacity)` — matches table row divider colour (#F1F2F5)
+
 ### Features
 
-- Top nav bar with hamburger, breadcrumb (Roobert), 3 presence avatars (+4 overflow), notifications badge (3), AI sidekick gradient button
-- Nav left padding tuned (12px), equal 12px spacing around menu button, breadcrumb aligns with page content
-- Click-to-edit database title "Backlog" (32px Roobert), three-dot menu with Rename/Duplicate/Delete
-- MDS panel-style tabs (`variant="buttons"`), search + settings icon buttons, "New" dropdown (Text, Number, Status, Person, Date)
-- Data table: 18 rows from shared sample data, sticky header, 56px row height
-- 56px page padding on all sections (nav, title, tabs, table), horizontally scrollable edge-to-edge
-- Table header: 48px tall, 14px semibold text (#656B81), bookmark icon on primary field, 12px/20px cell padding
+- **Sticky nav** — TopNavBar stays at top (z-30) with fading 1px bottom border on scroll
+- Top nav: hamburger, breadcrumb (Roobert #222428), notification bell, 3 Unsplash photo avatars (28px, overlapping); 8px padding all sides
+- Click-to-edit database title "Backlog" (32px Roobert), 48px top spacing; fades out on scroll
+- **Sticky tabs** — ViewTabsToolbar locks below nav (top-14, z-20) with 16px top / 16px bottom padding
+- MDS panel-style tabs (`variant="buttons"`), search + AI sidekick + settings + plus + three-dot icon buttons (all medium/32px ghost)
+- **Sticky table header** — sticks below tabs (top-[120px], z-10), content scrolls underneath
+- Data table: 18 rows from shared sample data, 56px row height
+- 56px page padding on title/tabs/table, horizontally scrollable edge-to-edge
+- Table header: 56px tall, 14px semibold text (#656B81), bookmark icon on primary field, 12px/20px cell padding
 - Inset row dividers (56px from each edge), hidden on hover/selection
 - Row hover: rounded 8px background (#FAFBFC), row number replaced by drag handle + comment button (no layout shift — idle state reserves space for both controls)
 - Row selection: click drag handle to select (blue #F2F4FC background, blue icon), context menu with Duplicate/Delete
 - Click outside table or re-click drag handle to deselect
 - 4 cell formatters: text (14px), number (locale), currency ($NK/dash), avatar stack (3 visible + overflow)
-- Thin scrollbar styling, `border-separate` for per-cell border-radius support
+- Thin scrollbar styling (`.page-scroll` on App container), `border-separate` for per-cell border-radius support
 
 ---
 

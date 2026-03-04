@@ -25,7 +25,7 @@ export function DataTable() {
   }, [])
 
   return (
-    <div ref={tableRef} className="flex-1 overflow-auto table-scroll">
+    <div ref={tableRef} className="w-full shrink-0">
       <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
         <TableHeader fields={fields} />
         <tbody>
