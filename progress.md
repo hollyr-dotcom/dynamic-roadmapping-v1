@@ -55,20 +55,29 @@ A high-fidelity interactive prototype of the Miro roadmap settings sidebar. See 
 
 ## Spaces Table (`packages/spaces-table`)
 
-Full-screen data table page.
+Full-screen data table page, structured as two domains: **page** (the space shell) and **table** (self-contained data table module).
 
-### Components
+### Page Components (`src/components/page/`)
 
 | File | Description |
 |------|-------------|
-| `src/components/TopNavBar.tsx` | Hamburger menu, breadcrumb, presence avatars, notifications, AI sidekick |
-| `src/components/DatabaseTitle.tsx` | Editable "Backlog" title (32px Roobert) with three-dot context menu |
-| `src/components/ViewTabsToolbar.tsx` | Panel-style tabs (All items / Prioritization), search, settings, "New" dropdown |
-| `src/components/DataTable.tsx` | Interactive table with row selection, drag handle, comment button, context menu |
-| `src/components/cells/TextCell.tsx` | Text cell (14px Noto Sans regular for all rows) |
-| `src/components/cells/NumberCell.tsx` | Number cell with locale formatting (Noto Sans) |
-| `src/components/cells/CurrencyCell.tsx` | Currency cell, $NNK format (Noto Sans) |
-| `src/components/cells/AvatarStackCell.tsx` | Overlapping avatar initials with overflow count (Noto Sans semibold) |
+| `TopNavBar.tsx` | Hamburger menu (12px left padding), breadcrumb (Roobert), presence avatars, notifications, AI sidekick |
+| `DatabaseTitle.tsx` | Editable "Backlog" title (32px Roobert) with three-dot context menu |
+| `ViewTabsToolbar.tsx` | Panel-style tabs (All items / Prioritization), search, settings, "New" dropdown |
+
+### Table Module (`src/components/table/`)
+
+| File | Description |
+|------|-------------|
+| `index.ts` | Barrel export — single public surface (`DataTable`) |
+| `DataTable.tsx` | Orchestrator — selection state, click-outside handler, composes TableHeader + TableRow |
+| `TableHeader.tsx` | Sticky `<thead>` with bookmark icon on primary field, 48px tall, 14px Noto Sans semibold #656B81 |
+| `TableRow.tsx` | Single `<tr>` — row number, drag handle, comment button, context menu, cells |
+| `CellRenderer.tsx` | Field-type dispatcher — routes to the correct cell component |
+| `cells/TextCell.tsx` | Text cell (14px Noto Sans regular) |
+| `cells/NumberCell.tsx` | Number cell with locale formatting (Noto Sans) |
+| `cells/CurrencyCell.tsx` | Currency cell, $NNK format (Noto Sans) |
+| `cells/AvatarStackCell.tsx` | Overlapping avatar initials with overflow count (Noto Sans semibold) |
 
 ### Typography
 
@@ -80,12 +89,13 @@ Full-screen data table page.
 ### Features
 
 - Top nav bar with hamburger, breadcrumb (Roobert), 3 presence avatars (+4 overflow), notifications badge (3), AI sidekick gradient button
-- Nav left padding tuned (12px) so breadcrumb text aligns with database title below
+- Nav left padding tuned (12px), equal 12px spacing around menu button, breadcrumb aligns with page content
 - Click-to-edit database title "Backlog" (32px Roobert), three-dot menu with Rename/Duplicate/Delete
 - MDS panel-style tabs (`variant="buttons"`), search + settings icon buttons, "New" dropdown (Text, Number, Status, Person, Date)
 - Data table: 18 rows from shared sample data, sticky header, 56px row height
-- 48px page padding on all sections (nav, title, tabs, table), horizontally scrollable edge-to-edge
-- Inset row dividers (48px from each edge), hidden on hover/selection
+- 56px page padding on all sections (nav, title, tabs, table), horizontally scrollable edge-to-edge
+- Table header: 48px tall, 14px semibold text (#656B81), bookmark icon on primary field, 12px/20px cell padding
+- Inset row dividers (56px from each edge), hidden on hover/selection
 - Row hover: rounded 8px background (#FAFBFC), row number replaced by drag handle + comment button (no layout shift — idle state reserves space for both controls)
 - Row selection: click drag handle to select (blue #F2F4FC background, blue icon), context menu with Duplicate/Delete
 - Click outside table or re-click drag handle to deselect
@@ -112,8 +122,9 @@ packages/
     src/components/ (SidePanel, AiBar, FilterPage, SectionHeader, SettingCell, FieldRow)
     src/lib/filterParser.ts, filterParser.test.ts
   spaces-table/
-    src/components/ (TopNavBar, DatabaseTitle, ViewTabsToolbar, DataTable)
-    src/components/cells/ (TextCell, NumberCell, CurrencyCell, AvatarStackCell)
+    src/components/page/ (TopNavBar, DatabaseTitle, ViewTabsToolbar)
+    src/components/table/ (index, DataTable, TableHeader, TableRow, CellRenderer)
+    src/components/table/cells/ (TextCell, NumberCell, CurrencyCell, AvatarStackCell)
     src/App.tsx, main.tsx, index.css
 docs/plans/
   2026-03-03-spaces-table-design.md
