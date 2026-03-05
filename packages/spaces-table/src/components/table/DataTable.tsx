@@ -1,9 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { fields, sampleData } from '@spaces/shared'
+import type { SpaceRow, FieldDefinition } from '@spaces/shared'
 import { TableHeader } from './TableHeader'
 import { TableRow } from './TableRow'
 
-export function DataTable() {
+interface DataTableProps {
+  data: SpaceRow[]
+  fields: FieldDefinition[]
+}
+
+export function DataTable({ data, fields }: DataTableProps) {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const tableRef = useRef<HTMLDivElement>(null)
 
@@ -25,11 +30,11 @@ export function DataTable() {
   }, [])
 
   return (
-    <div ref={tableRef} className="w-full shrink-0">
-      <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
+    <div ref={tableRef} className="w-full shrink-0 item-enter" style={{ animationDelay: '80ms' }}>
+      <table className="border-separate" style={{ borderSpacing: 0, minWidth: '100%' }}>
         <TableHeader fields={fields} />
         <tbody>
-          {sampleData.map((row, idx) => (
+          {data.map((row, idx) => (
             <TableRow
               key={row.id}
               row={row}

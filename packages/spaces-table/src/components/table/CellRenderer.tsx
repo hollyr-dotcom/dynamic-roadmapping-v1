@@ -1,8 +1,9 @@
-import type { FieldDefinition, SpaceRow } from '@spaces/shared'
+import type { FieldDefinition, SpaceRow, Status } from '@spaces/shared'
 import { TextCell } from './cells/TextCell'
 import { NumberCell } from './cells/NumberCell'
 import { CurrencyCell } from './cells/CurrencyCell'
 import { AvatarStackCell } from './cells/AvatarStackCell'
+import { StatusCell } from './cells/StatusCell'
 
 interface CellRendererProps {
   field: FieldDefinition
@@ -21,6 +22,8 @@ export function CellRenderer({ field, row }: CellRendererProps) {
       return <CurrencyCell value={value as number} />
     case 'avatars':
       return <AvatarStackCell values={value as string[]} />
+    case 'status':
+      return <StatusCell value={value as Status | undefined} />
     default:
       return <span className="text-sm text-[#656B81]">{String(value)}</span>
   }

@@ -23,7 +23,7 @@ interface TopNavBarProps {
 export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen, onToggleMenu }: TopNavBarProps) {
   return (
     <div
-      className="sticky top-0 z-30 flex items-center justify-between bg-white shrink-0"
+      className="flex items-center justify-between bg-white shrink-0"
       style={{
         paddingLeft: '8px',
         paddingRight: '12px',
@@ -45,7 +45,7 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
 
         <div
           className="flex items-center transition-opacity duration-200"
-          style={{ gap: '2px', opacity: isMenuOpen ? 0 : 1 }}
+          style={{ gap: '2px', opacity: isMenuOpen ? scrollFade : 1 }}
         >
           <span
             className="font-heading font-semibold text-[#222428] leading-none select-none"

@@ -7,6 +7,10 @@ export interface FieldDefinition {
   isPrimary?: boolean
 }
 
+export type Priority = 'triage' | 'now' | 'next' | 'later' | 'icebox'
+
+export type Status = 'planning' | 'in-progress' | 'done'
+
 export type FilterField = 'Status' | 'Person' | 'Title' | 'Description'
 
 export interface FilterCondition {

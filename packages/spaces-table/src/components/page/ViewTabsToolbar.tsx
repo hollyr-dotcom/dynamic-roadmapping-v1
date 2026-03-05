@@ -11,19 +11,28 @@ import {
 
 export type SidebarId = 'space-menu' | 'ai-sidekick' | 'view-settings'
 
-interface ViewTabsToolbarProps {
-  activeSidebar: SidebarId | null
-  onToggleSidebar: (id: SidebarId) => void
+export interface TabConfig {
+  id: string
+  label: string
 }
 
-export function ViewTabsToolbar({ activeSidebar, onToggleSidebar }: ViewTabsToolbarProps) {
+interface ViewTabsToolbarProps {
+  tabs: TabConfig[]
+  activeSidebar: SidebarId | null
+  onToggleSidebar: (id: SidebarId) => void
+  activeTab: string
+  onTabChange: (tab: string) => void
+}
+
+export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange }: ViewTabsToolbarProps) {
   return (
-    <div className="sticky top-14 z-20 bg-white flex items-center justify-between pl-14 pr-12 pt-4 pb-4 shrink-0">
+    <div className="sticky top-0 left-0 z-20 bg-white flex items-center justify-between pl-14 pr-12 pt-4 pb-4 shrink-0">
       {/* Left: tabs */}
-      <Tabs defaultValue="all-items" variant="buttons" size="medium">
+      <Tabs value={activeTab} onChange={onTabChange} variant="buttons" size="medium">
         <Tabs.List>
-          <Tabs.Trigger value="all-items">All items</Tabs.Trigger>
-          <Tabs.Trigger value="prioritization">Prioritization</Tabs.Trigger>
+          {tabs.map(tab => (
+            <Tabs.Trigger key={tab.id} value={tab.id}>{tab.label}</Tabs.Trigger>
+          ))}
         </Tabs.List>
       </Tabs>
 

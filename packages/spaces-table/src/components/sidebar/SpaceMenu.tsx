@@ -11,15 +11,17 @@ import {
 } from '@mirohq/design-system'
 
 const pages = [
-  { label: 'Backlog', icon: IconLightbulb, active: true },
-  { label: 'Roadmap', icon: IconMap, active: false },
+  { id: 'backlog', label: 'Backlog', icon: IconLightbulb },
+  { id: 'roadmap', label: 'Roadmap', icon: IconMap },
 ]
 
 interface SpaceMenuProps {
   onClose: () => void
+  activePage: string
+  onPageChange: (id: string) => void
 }
 
-export function SpaceMenu({ onClose }: SpaceMenuProps) {
+export function SpaceMenu({ onClose, activePage, onPageChange }: SpaceMenuProps) {
   return (
     <div className="flex flex-col h-full pt-2 px-3">
       {/* Top bar: Home | Search + Close */}
@@ -68,11 +70,13 @@ export function SpaceMenu({ onClose }: SpaceMenuProps) {
       <div className="flex flex-col gap-1 mt-[18px]">
         {pages.map((page) => {
           const Icon = page.icon
+          const isActive = page.id === activePage
           return (
             <button
-              key={page.label}
+              key={page.id}
+              onClick={() => onPageChange(page.id)}
               className={`flex items-center gap-3 px-2 h-10 rounded-lg w-full text-left transition-colors duration-150 ${
-                page.active
+                isActive
                   ? 'bg-[#F3F4F6]'
                   : 'hover:bg-[#F1F2F5]'
               }`}
@@ -81,7 +85,7 @@ export function SpaceMenu({ onClose }: SpaceMenuProps) {
                 <Icon size="medium" />
               </span>
               <span
-                className={`font-body leading-[1.3] text-[#1A1B1E] ${page.active ? 'font-semibold' : ''}`}
+                className={`font-body leading-[1.3] text-[#1A1B1E] ${isActive ? 'font-semibold' : ''}`}
                 style={{ fontSize: '14px' }}
               >
                 {page.label}

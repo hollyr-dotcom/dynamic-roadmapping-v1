@@ -1,5 +1,5 @@
-export type { FieldType, FieldDefinition, FilterField, FilterCondition } from './types.ts'
-export { fields } from './fields.ts'
+export type { FieldType, FieldDefinition, FilterField, FilterCondition, Priority, Status } from './types.ts'
+export { fields, roadmapFields } from './fields.ts'
 export { FILTER_FIELDS, OPERATORS, STATUS_VALUES, NO_VALUE_OPS, defaultCondition } from './filterConfig.ts'
 export type { SpaceRow } from './sampleData.ts'
-export { sampleData } from './sampleData.ts'
+export { sampleData, roadmapData } from './sampleData.ts'
