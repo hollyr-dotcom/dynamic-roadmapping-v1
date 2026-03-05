@@ -69,7 +69,7 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
         </td>
       ))}
 
-      <td className="w-8 min-w-[32px] divider-last" aria-hidden="true" />
+      <td className="table-fill" aria-hidden="true" />
     </tr>
   )
 }

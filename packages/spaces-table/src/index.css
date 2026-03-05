@@ -86,6 +86,48 @@ tbody tr:has(+ tr:hover) .divider-last::after,
 tbody tr:has(+ tr.row-selected) .divider-first::after,
 tbody tr:has(+ tr.row-selected) .divider-last::after { background: transparent; }
 
+/* ── Fill column (extends divider + highlight to viewport edge) ── */
+td.table-fill {
+  position: relative;
+  isolation: isolate;
+  border: none !important;
+}
+tbody td.table-fill::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 56px;
+  height: 1px;
+  background: #F1F2F5;
+  pointer-events: none;
+}
+tbody tr:hover td.table-fill::after,
+tbody tr.row-selected td.table-fill::after,
+tbody tr:has(+ tr:hover) td.table-fill::after,
+tbody tr:has(+ tr.row-selected) td.table-fill::after { background: transparent; }
+
+/* Hover — rounded right edge matching divider-first's left edge */
+tbody tr:hover td.table-fill { background: transparent; }
+tbody tr:hover td.table-fill::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 0; right: 56px;
+  background: #FAFBFC;
+  border-radius: 0 8px 8px 0;
+  z-index: -1;
+}
+/* Selected — same shape, selection colour */
+tbody tr.row-selected td.table-fill { background: transparent; }
+tbody tr.row-selected td.table-fill::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 0; right: 56px;
+  background: #F2F4FC;
+  border-radius: 0 8px 8px 0;
+  z-index: -1;
+}
+
 /* ── Hover background ─────────────────────────────────── */
 tbody tr:hover td { background-color: #FAFBFC; }
 tbody tr:hover td.divider-first { background: transparent; }
@@ -219,3 +261,11 @@ tbody tr.row-selected td.divider-last::before {
 /* ── Hidden scrollbar for sidebar panels ─────────────── */
 .panel-scroll { scrollbar-width: none; }
 .panel-scroll::-webkit-scrollbar { display: none; }
+
+/* ── Hidden scrollbar for kanban columns ─────────────── */
+.kanban-scroll { scrollbar-width: none; }
+.kanban-scroll::-webkit-scrollbar { display: none; }
+
+/* ── Kanban icon buttons (tinted hover/active) ───────── */
+.kanban-icon-btn:hover { background-color: color-mix(in srgb, var(--btn-color) 12%, transparent); }
+.kanban-icon-btn:active { background-color: color-mix(in srgb, var(--btn-color) 20%, transparent); }
