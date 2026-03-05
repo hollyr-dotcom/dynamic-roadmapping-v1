@@ -16,9 +16,11 @@ interface TopNavBarProps {
   borderOpacity: number
   scrollFade: number
   databaseTitle: string
+  isMenuOpen: boolean
+  onToggleMenu: () => void
 }
 
-export function TopNavBar({ borderOpacity, scrollFade, databaseTitle }: TopNavBarProps) {
+export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen, onToggleMenu }: TopNavBarProps) {
   return (
     <div
       className="sticky top-0 z-30 flex items-center justify-between bg-white shrink-0"
@@ -32,11 +34,19 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle }: TopNavBa
     >
       {/* Left: menu + breadcrumb */}
       <div className="flex items-center gap-2">
-        <IconButton aria-label="Menu" variant="ghost" size="large">
-          <IconLinesThreeHorizontal />
-        </IconButton>
+        <div
+          className="transition-opacity duration-200"
+          style={{ opacity: isMenuOpen ? 0 : 1, pointerEvents: isMenuOpen ? 'none' : 'auto' }}
+        >
+          <IconButton aria-label="Menu" variant="ghost" size="large" onPress={onToggleMenu}>
+            <IconLinesThreeHorizontal />
+          </IconButton>
+        </div>
 
-        <div className="flex items-center" style={{ gap: '2px' }}>
+        <div
+          className="flex items-center transition-opacity duration-200"
+          style={{ gap: '2px', opacity: isMenuOpen ? 0 : 1 }}
+        >
           <span
             className="font-heading font-semibold text-[#222428] leading-none select-none"
             style={{ fontSize: '14px' }}

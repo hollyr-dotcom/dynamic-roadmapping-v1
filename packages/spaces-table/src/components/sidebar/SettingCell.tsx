@@ -1,0 +1,78 @@
+import React from 'react'
+import { IconChevronRight, IconChevronDown } from '@mirohq/design-system'
+
+interface SettingCellProps {
+  icon: React.ComponentType<{ size?: 'small' | 'medium' | 'large' }>
+  label: string
+  subtitle: string
+  iconBg: 'green' | 'blue' | 'gray'
+  activating?: boolean
+  deactivating?: boolean
+  onClick?: () => void
+}
+
+// Cell background on hover
+const hoverCellBg = {
+  green: 'hover:bg-[#E3F7EA]',
+  blue:  'hover:bg-[#E8ECFC]',
+  gray:  'hover:bg-[#F1F2F5]',
+} as const
+
+// Icon container: idle bg + text color
+const idleIconContainer = {
+  green: 'bg-[#0FA83C] text-white',
+  blue:  'bg-[#3859FF] text-white',
+  gray:  'bg-[#F1F2F5] text-[#222428]',
+} as const
+
+// Icon container bg change on hover (gray only darkens)
+const hoverIconContainer = {
+  green: '',
+  blue:  '',
+  gray:  'group-hover:bg-[#E0E2E8]',
+} as const
+
+// Chevron color matches accent
+const chevronColor = {
+  green: 'text-[#0FA83C]',
+  blue:  'text-[#3859FF]',
+  gray:  'text-[#222428]',
+} as const
+
+export function SettingCell({ icon: Icon, label, subtitle, iconBg, activating, deactivating, onClick }: SettingCellProps) {
+  const ChevronIcon = iconBg === 'green' ? IconChevronDown : IconChevronRight
+
+  return (
+    <div className={`group relative overflow-hidden flex items-center gap-4 p-4 bg-white rounded-xl w-full cursor-pointer transition-colors duration-150 ${hoverCellBg[iconBg]}`} onClick={onClick}>
+      {activating && (
+        <div
+          className="absolute inset-0 pointer-events-none filter-cell-wash"
+          style={{ background: 'rgba(66, 98, 255, 0.08)' }}
+        />
+      )}
+      <div
+        className={`flex items-center p-2 rounded-lg shrink-0 ${idleIconContainer[iconBg]} ${hoverIconContainer[iconBg]}`}
+        style={{ transition: `background-color ${(activating || deactivating) ? '500ms' : '150ms'} ease, color ${deactivating ? '500ms' : '150ms'} ease` }}
+      >
+        <Icon size="medium" />
+      </div>
+      <div className="flex flex-col items-start justify-center gap-[2px] pb-1 flex-1 min-w-0">
+        <span
+          className="font-heading font-semibold text-[#222428] leading-[1.5]"
+          style={{ fontSize: '16px' }}
+        >
+          {label}
+        </span>
+        <span
+          className="font-body text-[#656B81] leading-none"
+          style={{ fontSize: '12px', fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}
+        >
+          {subtitle}
+        </span>
+      </div>
+      <div className={`shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ${chevronColor[iconBg]}`}>
+        <ChevronIcon size="small" />
+      </div>
+    </div>
+  )
+}

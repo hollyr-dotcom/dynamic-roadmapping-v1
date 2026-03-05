@@ -23,6 +23,9 @@ body {
   font-family: 'Noto Sans', sans-serif;
 }
 
+/* ── Editable title placeholder ───────────────────────── */
+.title-input::placeholder { color: #7D8297; }
+
 /* ── Thin scrollbar for page scroll ──────────────────── */
 .page-scroll {
   scrollbar-width: thin;
@@ -163,3 +166,56 @@ tbody tr.row-selected td.divider-last::before {
 .row-context-menu button.danger:hover {
   background-color: #FEF2F2;
 }
+
+/* ── Sidebar content stagger ─────────────────────────── */
+@keyframes item-enter {
+  from { transform: translateY(6px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+.item-enter {
+  opacity: 0;
+  animation: item-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── AI icon gentle pulse ────────────────────────────── */
+@keyframes sparks-pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.1); }
+}
+.sparks-pulse { animation: sparks-pulse 2.4s ease-in-out infinite; }
+
+/* ── AI icon loading spin ────────────────────────────── */
+@keyframes ai-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.ai-spin { animation: ai-spin 1s linear infinite; }
+
+/* ── AI bar loading shimmer ──────────────────────────── */
+@keyframes bar-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+.text-shimmer {
+  background: linear-gradient(90deg, #9CA3AF 25%, #D1D5DB 50%, #9CA3AF 75%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: bar-shimmer 1.2s ease-in-out infinite;
+}
+
+/* ── Filter cell activation fill ─────────────────────── */
+@keyframes filter-cell-wash {
+  0%  { transform: scaleX(0); opacity: 1; animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+  65% { transform: scaleX(1); opacity: 1; animation-timing-function: ease-in; }
+  100%{ transform: scaleX(1); opacity: 0; }
+}
+.filter-cell-wash {
+  transform-origin: left center;
+  animation: filter-cell-wash 750ms linear forwards;
+}
+
+/* ── Hidden scrollbar for sidebar panels ─────────────── */
+.panel-scroll { scrollbar-width: none; }
+.panel-scroll::-webkit-scrollbar { display: none; }

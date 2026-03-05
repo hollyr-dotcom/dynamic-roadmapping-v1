@@ -9,9 +9,16 @@ import {
   IconDotsThree,
 } from '@mirohq/design-system'
 
-export function ViewTabsToolbar() {
+export type SidebarId = 'space-menu' | 'ai-sidekick' | 'view-settings'
+
+interface ViewTabsToolbarProps {
+  activeSidebar: SidebarId | null
+  onToggleSidebar: (id: SidebarId) => void
+}
+
+export function ViewTabsToolbar({ activeSidebar, onToggleSidebar }: ViewTabsToolbarProps) {
   return (
-    <div className="sticky top-14 z-20 bg-white flex items-center justify-between pl-14 pr-3 pt-4 pb-4 shrink-0">
+    <div className="sticky top-14 z-20 bg-white flex items-center justify-between pl-14 pr-12 pt-4 pb-4 shrink-0">
       {/* Left: tabs */}
       <Tabs defaultValue="all-items" variant="buttons" size="medium">
         <Tabs.List>
@@ -26,11 +33,23 @@ export function ViewTabsToolbar() {
           <IconMagnifyingGlass />
         </IconButton>
 
-        <IconButton aria-label="AI Sidekick" variant="ghost" size="medium">
+        <IconButton
+          aria-label="AI Sidekick"
+          variant="ghost"
+          size="medium"
+          onPress={() => onToggleSidebar('ai-sidekick')}
+          css={activeSidebar === 'ai-sidekick' ? { background: '#F1F2F5' } : undefined}
+        >
           <IconSparksFilled />
         </IconButton>
 
-        <IconButton aria-label="View settings" variant="ghost" size="medium">
+        <IconButton
+          aria-label="View settings"
+          variant="ghost"
+          size="medium"
+          onPress={() => onToggleSidebar('view-settings')}
+          css={activeSidebar === 'view-settings' ? { background: '#F1F2F5' } : undefined}
+        >
           <IconSlidersY />
         </IconButton>
 

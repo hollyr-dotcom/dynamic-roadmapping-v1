@@ -32,7 +32,7 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
           <div className="row-number w-8 h-8 items-center justify-center text-[#AEB2C0]">
             {idx + 1}
           </div>
-          <div className="row-number w-8 h-8 -mr-3" aria-hidden="true" />
+          <div className="row-number w-8 h-8" aria-hidden="true" />
 
           {/* Drag handle — hover & selected */}
           <button
@@ -47,7 +47,7 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
 
           {/* Comment button — hover only */}
           <button
-            className="row-comment w-8 h-8 -mr-3 items-center justify-center rounded-lg hover:bg-[#E9EAEF] transition-colors"
+            className="row-comment w-8 h-8 items-center justify-center rounded-lg hover:bg-[#E9EAEF] transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
             <IconChatPlus size="small" color="icon-neutrals-subtle" />
