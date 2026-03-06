@@ -18,7 +18,7 @@ function RowContextMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; on
       <DropdownMenu.Trigger asChild>
         <div onClick={(e) => e.stopPropagation()} />
       </DropdownMenu.Trigger>
-      <DropdownMenu.Content side="bottom" align="start" css={{ minWidth: MENU_WIDTH }}>
+      <DropdownMenu.Content side="bottom" align="start" alignOffset={-12} css={{ minWidth: MENU_WIDTH }}>
         <DropdownMenu.Item onSelect={onDuplicate}>
           <DropdownMenu.IconSlot><IconSquaresTwoOverlap /></DropdownMenu.IconSlot>
           Duplicate

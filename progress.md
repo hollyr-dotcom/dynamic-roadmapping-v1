@@ -192,11 +192,11 @@ The original layout used a single full-page scroll container with three sticky l
 
 - **Fixed nav** — TopNavBar fixed at top (shrink-0, outside scroll area) with fading 1px bottom border on scroll
 - Top nav: hamburger fades out when space menu is open; breadcrumb (Roobert #222428) with scroll-linked chevron + database title fades in on scroll (including when menu is open), notification bell, 3 Unsplash photo avatars (28px, overlapping), Share button (MDS primary medium); 8px left / 12px right padding
-- **Editable database title** (32px Roobert), 48px top spacing; sticky left-0 (pinned horizontally); always-input pattern (single `<input>`, no element swap); auto-sizing via hidden measuring span; fades out on scroll; title updates when switching pages; **three-dots menu** appears on title hover (baseline-aligned, hidden when editing); 3 CSS-driven states modelled on Figma `.Editable Title` component:
+- **Editable database title** (32px Roobert), 48px top spacing; sticky left-0 z-30 (pinned horizontally, above tabs toolbar); always-input pattern (single `<input>`, no element swap); auto-sizing via hidden measuring span; fades out on scroll; title updates when switching pages; **three-dots menu** always visible beside title (hidden when editing); menu items: Set as default view (IconStar), Copy link (IconLink), Version history (IconClockCounterClockwise), Info (IconInformationMarkCircle), Rename (IconPen), Duplicate (IconSquaresTwoOverlap), Delete (IconTrash) with separators; 3 CSS-driven states modelled on Figma `.Editable Title` component:
   - **Idle** — transparent background, 2px horizontal padding, `cursor: default`
   - **Hover** — `#F1F2F5` background, 4px border-radius, `cursor: pointer`, 150ms transition
   - **Focused** — white background, double-ring focus: `0 0 0 2px white, 0 0 0 4px #2B4DF8`, `cursor: text`, click selects all text, Enter saves + blurs, Escape reverts + blurs, placeholder "Enter a title ..." in `#7D8297`; three-dots button hidden
-- **Sticky tabs** — ViewTabsToolbar sticky top-0 left-0 z-20 within scroll area, 16px top / 16px bottom padding
+- **Sticky tabs** — ViewTabsToolbar sticky top-0 left-0 z-20 within scroll area, 16px top / 24px bottom padding
 - MDS panel-style tabs (`variant="buttons"`, controlled via `value`/`onChange`, 8px gap), dynamic tab labels from page config; **tab overflow** — when tabs exceed available width, overflow tabs move into a chevron-down dropdown (IconChevronDown) with layout-type icons (Table/Kanban/Timeline) and tab names; overflow detection via ResizeObserver + estimated/measured tab widths; chevron sits tight (8px) after last visible tab, before the + button; chevron highlighted when active tab is in overflow; 16px gap separates tab group from right actions; **"New View" dropdown** — ghost `IconPlus` button (`icon-neutrals-subtle`) after chevron, hidden by default, fades in with scale+slide on toolbar hover (`group` on outer div), stays visible while dropdown is open via `onOpen`/`onClose` state; dropdown offers Table, Kanban, Timeline with MDS icons; **inline tab rename** — double-click active tab overlays an input (absolute inset-0) matching tab styling, trigger content swaps to draft text (visibility hidden) so tab grows to fit; search + AI sidekick + settings + new column icon buttons (all medium/32px ghost)
 - **Tab overflow selected state** — when the active tab is in the overflow menu, the chevron button shows pale blue bg (`#F2F4FC`) + blue icon (`#2B4DF8`) matching the MDS selected tab style; the selected overflow menu item also shows blue text and blue icon; when the menu is just open (no active tab in overflow), chevron uses neutral grey (`#F1F2F5`)
 - **Tooltips on tab toolbar buttons** — MDS Tooltip on overflow chevron ("More views") and new view + button ("Add a view"); `side="top"` with `sideOffset={4}` for 4px gap; Tooltip wraps DropdownMenu with `Tooltip.Trigger asChild` around `DropdownMenu.Trigger asChild` for correct composition; MDS auto-hides tooltip when dropdown opens
@@ -205,7 +205,7 @@ The original layout used a single full-page scroll container with three sticky l
 - **Page switching** — Space Menu page list is interactive; clicking Backlog/Roadmap switches page, resets tabs and scroll
 - **Three push sidebars** — hamburger opens Space Menu (left, 280px), sparkle opens AI Sidekick (right, 400px), settings icon opens View Settings (right, 400px); smooth 300ms width animation; active toolbar buttons show #F1F2F5 background; Space Menu has its own close button in top bar, right sidebars use SidebarShell close button
 - **Sticky table header** — sticks below tabs (top-16, z-10) within scroll area, scrolls horizontally with table
-- **Staggered view transitions** — switching tabs triggers `item-enter` animation; table fades in as a unit (80ms delay); kanban columns stagger left-to-right (80ms–320ms, 60ms increments)
+- **Staggered view transitions** — switching tabs always replays `item-enter` animation (via `key={activeTab}` forcing remount), even when switching between tabs of the same view type; table fades in as a unit (80ms delay); kanban columns stagger left-to-right (80ms–320ms, 60ms increments)
 - Data table: 18 backlog rows / 3 done rows (filtered), 56px row height
 - **Kanban board** — 5 priority columns (backlog) or 3 columns (roadmap) with coloured backgrounds and card borders; cards show title + field tags; board scrolls horizontally
 - **Kanban sticky headers** — two-layer construction: outer `bg-white` sticky wrapper masks card area behind inner div's `rounded-t-lg` corners; cards area has own bg + `rounded-b-lg`; rounded corners preserved at every scroll depth
@@ -217,31 +217,9 @@ The original layout used a single full-page scroll container with three sticky l
 - Row selection: click drag handle to select (blue #F2F4FC background, blue icon), MDS DropdownMenu context menu with Duplicate (IconSquaresTwoOverlap) / Delete (IconTrash)
 - Click outside table or re-click drag handle to deselect
 - 5 cell formatters: text (14px), number (locale), currency ($NK/dash), avatar stack (3 visible + overflow), status (coloured pill)
-- **Shared dropdown menu width** — `MENU_WIDTH = 192` exported from ViewTabsToolbar, applied as `minWidth` on all MDS DropdownMenu.Content instances (tab context menu, new view, new column, row context menu) for consistent sizing
+- **Shared dropdown menu width** — `MENU_WIDTH = 220` exported from ViewTabsToolbar, applied as `minWidth` on all MDS DropdownMenu.Content instances (tab context menu, new view, new column, row context menu, title menu) for consistent sizing
+- **Dropdown icon alignment** — `alignOffset={-12}` on icon-button-triggered menus (title three-dots, overflow chevron, new view +, row context) aligns menu item icons with the center of the trigger icon button
 - Thin scrollbar styling (`.page-scroll` on scroll area), `border-separate` for per-cell border-radius support
-
-#### Tab drag-to-reorder (WIP — not yet working)
-
-Goal: click-hold and drag visible tabs to reposition them in the tab bar. Overflow tabs excluded from drag.
-
-**State added:**
-- `handleReorderTabs(reorderedTabs: TabConfig[])` in App.tsx — receives full reordered array, updates `pageTabs[activePage]`
-- `onReorderTabs` prop on ViewTabsToolbar
-- `draggedTabId`, `dropIndex` state + `dragRef` ref in ViewTabsToolbar
-- `computeDropIndex(clientX)` walks visible tab elements via `tabElMap` to find insertion point
-- `finishDrag()` maps visible drop index to full-array index, splices, calls `onReorderTabs`
-- `showIndicatorAt(visibleIndex)` — returns true when a 2px blue line should appear (suppressed at dragged tab's own position)
-- Drop indicator: `absolute -left-[5px]` / `-right-[5px]`, 2px wide, 20px tall, `#2B4DF8`, `rounded-full`
-
-**DOM structure:** outer draggable `<div>` wraps each tab's `<DropdownMenu>` (context menu). The `DropdownMenu.Trigger asChild` wraps an inner `<div>` containing `<Tabs.Trigger>`. The `tabElMap` ref is on the inner div for width measurement.
-
-**Approaches tried and failed:**
-1. **Native HTML5 `draggable` on outer div** — Radix `Tabs.Trigger` calls `preventDefault()` on `pointerdown` events, which blocks the browser from initiating native drag. Moving the `draggable` div outside `DropdownMenu.Trigger` didn't help because `Tabs.Trigger` (deeper in the tree) still intercepts pointer events before drag can start.
-2. **Custom mouse-based drag (current code)** — `onMouseDown` on outer wrapper records start position in `dragRef`; document-level `mousemove` listener checks 5px threshold then sets `draggedTabId`; `mouseup` calls `finishDrag`. The `useEffect` attaches/detaches document listeners when `dragRef.current` is set. **Problem:** the effect depends on `dragRef.current` (a ref, not state) so it doesn't re-run when `onMouseDown` sets the ref — the document listeners never get attached. The drag state never activates.
-
-**Next steps to try:**
-- Fix the effect trigger: use a piece of state (e.g. `isDragPending`) set alongside `dragRef.current` in `handleTabMouseDown` so the `useEffect` re-runs and attaches listeners. Or attach listeners in `handleTabMouseDown` directly (no effect needed) and clean up in the mouseup handler.
-- Alternative: use `onPointerDown` with `e.stopPropagation()` on the outer wrapper to prevent Radix from seeing the event, combined with native `draggable`. But this would also block tab-switching clicks — would need a threshold to distinguish click vs drag before deciding whether to stop propagation.
 
 ---
 
@@ -274,6 +252,7 @@ packages/
 docs/plans/
   2026-03-03-spaces-table-design.md
   2026-03-05-editable-title-design.md
+  2026-03-06-tab-drag-reorder-design.md
 ```
 
 ---
@@ -282,6 +261,9 @@ docs/plans/
 
 ### Immediate
 - Design and build the timeline view for the Roadmap page
+
+### Backlog — Tab Bar
+- **Tab reorder** — drag-to-reorder tabs; inline drag on the tab bar blocked by Radix `Tabs.Trigger` intercepting pointer events (tried native `draggable` and custom mouse-based drag — both failed); an "All views" popover approach was explored but felt too heavy; needs a simpler UX concept. `onReorderTabs` prop and `handleReorderTabs` in App.tsx are wired up and ready. See `docs/plans/2026-03-06-tab-drag-reorder-design.md` for decision log.
 
 ### Backlog — Table Interactions
 - **Row hover corner radius** — left and right corners of hover/selected highlight render at visually different radii despite identical CSS values (8px); likely a browser compositing issue with separate `::before` pseudo-elements on `divider-first` vs `table-fill` cells; tried unifying to `border-radius: 8px` on both and a single `<tr>::before` approach (didn't work — `<tr>` positioned box doesn't span full table width); needs a different strategy

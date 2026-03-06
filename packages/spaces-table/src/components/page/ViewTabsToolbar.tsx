@@ -17,7 +17,7 @@ import {
   Tooltip,
 } from '@mirohq/design-system'
 
-export const MENU_WIDTH = 192
+export const MENU_WIDTH = 220
 
 export type SidebarId = 'space-menu' | 'ai-sidekick' | 'view-settings'
 export type ViewType = 'table' | 'kanban' | 'timeline'
@@ -145,7 +145,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
   const activeInOverflow = overflowTabIds.has(activeTab)
 
   return (
-    <div className="group sticky top-0 left-0 z-20 bg-white flex items-center gap-4 pl-14 pr-12 pt-4 pb-4 shrink-0">
+    <div className="group sticky top-0 left-0 z-20 bg-white flex items-center gap-4 pl-14 pr-12 pt-4 pb-6 shrink-0">
       {/* Left: tabs + chevron + plus — tight group */}
       <div ref={tabsAreaRef} className="flex items-center gap-2 flex-1 min-w-0">
         <Tabs value={activeTab} onChange={onTabChange} variant="buttons" size="medium">
@@ -236,7 +236,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
                     </IconButton>
                   </DropdownMenu.Trigger>
                 </Tooltip.Trigger>
-                <DropdownMenu.Content side="bottom" align="start" css={{ minWidth: MENU_WIDTH }}>
+                <DropdownMenu.Content side="bottom" align="start" alignOffset={-12} css={{ minWidth: MENU_WIDTH }}>
                   {overflowTabs.map(tab => (
                     <DropdownMenu.Item
                       key={tab.id}
@@ -273,7 +273,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
                   </IconButton>
                 </DropdownMenu.Trigger>
               </Tooltip.Trigger>
-              <DropdownMenu.Content side="bottom" align="start" css={{ minWidth: MENU_WIDTH }}>
+              <DropdownMenu.Content side="bottom" align="start" alignOffset={-12} css={{ minWidth: MENU_WIDTH }}>
                 <DropdownMenu.Item onSelect={() => onAddView('table')}>
                   <DropdownMenu.IconSlot><IconTable /></DropdownMenu.IconSlot>
                   Table

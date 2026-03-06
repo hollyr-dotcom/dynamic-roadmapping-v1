@@ -182,13 +182,13 @@ export function App() {
 
           {/* Type-based view renderer */}
           {activeTabConfig?.type === 'table' && (
-            <DataTable data={viewData} fields={pageFields} />
+            <DataTable key={activeTab} data={viewData} fields={pageFields} />
           )}
           {activeTabConfig?.type === 'kanban' && (
-            <KanbanBoard data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} />
+            <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} />
           )}
           {activeTabConfig?.type === 'timeline' && (
-            <TimelinePlaceholder />
+            <TimelinePlaceholder key={activeTab} />
           )}
         </div>
       </div>
