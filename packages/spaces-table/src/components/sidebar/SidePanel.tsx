@@ -10,15 +10,18 @@ import {
   IconVerticalBlocks,
   IconHorizontalBlocks,
   IconTextT,
-  IconTextLinesThree,
+  IconNumber,
+  IconDollarSignCurrency,
+  IconOffice,
   IconTickCircle,
-  IconUser,
+  IconButton,
+  IconCross,
 } from '@mirohq/design-system'
 import { SectionHeader } from './SectionHeader'
 import { SettingCell } from './SettingCell'
 import { FieldRow } from './FieldRow'
 import { FilterPage } from './FilterPage'
-import type { FilterCondition } from '@spaces/shared'
+import type { FilterCondition, FieldDefinition, FieldType } from '@spaces/shared'
 import { defaultCondition } from '@spaces/shared'
 import { AiBar } from './AiBar'
 import { parseFilterCommand } from '../../lib/filterParser'
@@ -32,34 +35,60 @@ type ActivePage = {
 } | null
 
 const viewSettings: { label: string; subtitle: string; iconBg: 'green' | 'blue' | 'gray'; icon: MiroIcon; aiPrompt: string }[] = [
-  { label: 'Layout',    subtitle: 'Kanban',                 iconBg: 'green', icon: IconKanban,          aiPrompt: 'How can I adjust the layout?'   },
-  { label: 'Filter',    subtitle: 'Add a filter',           iconBg: 'blue',  icon: IconFunnel,           aiPrompt: 'How can I filter this view?'    },
-  { label: 'Sort',      subtitle: 'Sorted by Priority',     iconBg: 'blue',  icon: IconArrowsDownUp,     aiPrompt: 'How can I sort this view?'      },
-  { label: 'Columns',   subtitle: 'Grouped by Status',      iconBg: 'blue',  icon: IconVerticalBlocks,   aiPrompt: 'How can I group my columns?'    },
-  { label: 'Swimlanes', subtitle: 'Add a group',            iconBg: 'gray',  icon: IconHorizontalBlocks, aiPrompt: 'How can I add swimlanes?'       },
+  { label: 'Layout',    subtitle: 'Kanban',             iconBg: 'green', icon: IconKanban,          aiPrompt: 'How can I adjust the layout?'   },
+  { label: 'Filter',    subtitle: 'Filter',              iconBg: 'blue',  icon: IconFunnel,           aiPrompt: 'How can I filter this view?'    },
+  { label: 'Sort',      subtitle: 'Sort',               iconBg: 'gray',  icon: IconArrowsDownUp,     aiPrompt: 'How can I sort this view?'      },
+  { label: 'Columns',   subtitle: 'Group by',           iconBg: 'gray',  icon: IconVerticalBlocks,   aiPrompt: 'How can I group my columns?'    },
+  { label: 'Swimlanes', subtitle: 'Swimlanes',           iconBg: 'gray',  icon: IconHorizontalBlocks, aiPrompt: 'How can I add swimlanes?'       },
 ]
 
-const fields: { label: string; icon: MiroIcon; isPrimary: boolean; aiPrompt: string }[] = [
-  { label: 'Title',       icon: IconTextT,          isPrimary: true,  aiPrompt: 'How can I customize this field?' },
-  { label: 'Description', icon: IconTextLinesThree, isPrimary: false, aiPrompt: 'How can I customize this field?' },
-  { label: 'Status',      icon: IconTickCircle,     isPrimary: false, aiPrompt: 'How can I customize this field?' },
-  { label: 'Person',      icon: IconUser,           isPrimary: false, aiPrompt: 'How can I customize this field?' },
-]
+const LAYOUT_ICONS: Record<string, MiroIcon> = {
+  Table: IconTable,
+  Kanban: IconKanban,
+  Timeline: IconTimelineFormat,
+}
+
+const FIELD_TYPE_ICONS: Record<FieldType, MiroIcon> = {
+  text:     IconTextT,
+  number:   IconNumber,
+  currency: IconDollarSignCurrency,
+  avatars:  IconOffice,
+  status:   IconTickCircle,
+  person:   IconTextT,
+  date:     IconTextT,
+}
 
 
 const DROPDOWN_WIDTH = 176 // approximate width of the layout dropdown in px
 
 function filterSubtitle(conditions: FilterCondition[]): string {
-  if (conditions.length === 0) return 'Add a filter'
+  if (conditions.length === 0) return 'Filter'
   if (conditions.length === 1) return `Filtered by ${conditions[0].field}`
   return `${conditions.length} filters applied`
 }
 
-export function SidePanel() {
+interface SidePanelProps {
+  onClose: () => void
+  fields: FieldDefinition[]
+}
+
+export function SidePanel({ onClose, fields }: SidePanelProps) {
   const [activePage, setActivePage] = useState<ActivePage>(null)
   const [selectedLayout, setSelectedLayout] = useState('Kanban')
   const [layoutAlignOffset, setLayoutAlignOffset] = useState(0)
   const [layoutOpen, setLayoutOpen] = useState(false)
+
+  const [scrolled, setScrolled] = useState(false)
+  const [hiddenFields, setHiddenFields] = useState<Set<string>>(new Set())
+
+  const toggleFieldVisibility = (fieldId: string) => {
+    setHiddenFields(prev => {
+      const next = new Set(prev)
+      if (next.has(fieldId)) next.delete(fieldId)
+      else next.add(fieldId)
+      return next
+    })
+  }
 
   const [filterConditions, setFilterConditions] = useState<FilterCondition[]>([])
   const [filterActivating, setFilterActivating] = useState(false)
@@ -120,53 +149,54 @@ export function SidePanel() {
         />
       )}
 
-      {/* Back button (detail page only) */}
-      {activePage && (
-        <button
-          className="absolute top-2 left-2 flex items-center gap-1 h-8 px-2 rounded-md z-10 text-[#222428] hover:bg-[#F1F2F5] transition-colors duration-150"
-          onClick={() => setActivePage(null)}
-        >
-          <IconChevronLeft size="small" />
-          <span className="font-heading font-semibold leading-none" style={{ fontSize: '14px' }}>
-            {activePage.parent}
+      {/* Header bar */}
+      <div
+        className="flex items-center justify-between shrink-0 bg-white z-10"
+        style={{
+          padding: '8px 8px 8px 16px',
+          boxShadow: `inset 0 -1px 0 0 rgba(241, 242, 245, ${scrolled ? 1 : 0})`,
+          transition: 'box-shadow 200ms',
+        }}
+      >
+        {activePage ? (
+          <button
+            className="flex items-center gap-1 h-8 px-2 -ml-2 rounded-md text-[#222428] hover:bg-[#F1F2F5] transition-colors duration-150"
+            onClick={() => setActivePage(null)}
+          >
+            <IconChevronLeft size="small" />
+            <span className="font-heading font-semibold leading-none" style={{ fontSize: '14px' }}>
+              {activePage.parent}
+            </span>
+          </button>
+        ) : (
+          <span className="font-heading font-semibold leading-none text-[#222428]" style={{ fontSize: '14px' }}>
+            Settings
           </span>
-        </button>
-      )}
+        )}
+        <IconButton aria-label="Close panel" variant="ghost" size="large" onPress={onClose}>
+          <IconCross />
+        </IconButton>
+      </div>
 
       {/* Scrollable content */}
-      <div className="flex flex-col gap-8 overflow-y-auto px-4 pt-16 pb-28 panel-scroll">
-
-        {/* Header — always visible */}
-        <div className="flex flex-col gap-1 px-4 item-enter" style={{ animationDelay: '180ms' }}>
-          <span
-            className="font-heading font-semibold text-[#656B81] leading-[1.4]"
-            style={{ fontSize: '14px', fontFeatureSettings: "'ss01' 1" }}
-          >
-            FlexAI
-          </span>
-          <span
-            className="font-heading font-semibold text-[#222428] leading-[1.4]"
-            style={{ fontSize: '20px', fontFeatureSettings: "'ss01' 1" }}
-          >
-            Backlog
-          </span>
-        </div>
+      <div className="flex flex-col gap-8 overflow-y-auto px-4 pt-14 pb-28 panel-scroll" onScroll={e => setScrolled(e.currentTarget.scrollTop > 0)}>
 
         {!activePage && (
           <>
             {/* View settings */}
             <div className="flex flex-col w-full item-enter" style={{ animationDelay: '240ms' }}>
-              <SectionHeader label="View settings" />
+              <SectionHeader label="View" />
               {viewSettings.map((item) =>
                 item.label === 'Layout' ? (
                   <DropdownMenu key={item.label} open={layoutOpen} onOpen={() => setLayoutOpen(true)} onClose={() => setLayoutOpen(false)}>
                     <DropdownMenu.Trigger asChild>
                       <div onMouseDown={handleLayoutMouseDown}>
                         <SettingCell
-                          icon={item.icon}
+                          icon={LAYOUT_ICONS[selectedLayout] || IconKanban}
                           label={item.label}
                           subtitle={selectedLayout}
                           iconBg={item.iconBg}
+                          pressed={layoutOpen}
                         />
                       </div>
                     </DropdownMenu.Trigger>
@@ -211,13 +241,19 @@ export function SidePanel() {
             {/* Fields */}
             <div className="flex flex-col w-full item-enter" style={{ animationDelay: '320ms' }}>
               <SectionHeader label="Fields" showActions />
-              {fields.map((item) => (
+              {[...fields].sort((a, b) => {
+                const aHidden = hiddenFields.has(a.id) ? 1 : 0
+                const bHidden = hiddenFields.has(b.id) ? 1 : 0
+                return aHidden - bHidden
+              }).map((field) => (
                 <FieldRow
-                  key={item.label}
-                  icon={item.icon}
-                  label={item.label}
-                  isPrimary={item.isPrimary}
-                  onClick={() => setActivePage({ name: item.label, parent: 'Fields', aiPrompt: item.aiPrompt })}
+                  key={field.id}
+                  icon={FIELD_TYPE_ICONS[field.type]}
+                  label={field.label}
+                  isPrimary={field.isPrimary}
+                  visible={!hiddenFields.has(field.id)}
+                  onToggleVisibility={() => toggleFieldVisibility(field.id)}
+                  onEdit={() => setActivePage({ name: field.label, parent: 'Fields', aiPrompt: 'How can I customize this field?' })}
                 />
               ))}
             </div>

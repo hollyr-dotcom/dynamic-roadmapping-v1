@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { sampleData, fields, roadmapData, roadmapFields } from '@spaces/shared'
 import type { Priority } from '@spaces/shared'
 import { TopNavBar } from './components/page/TopNavBar'
@@ -26,14 +26,7 @@ const PAGE_CONFIGS: Record<PageId, PageConfig> = {
     tabs: [
       { id: 'all-items', label: 'All items', type: 'table' },
       { id: 'prioritization', label: 'Kanban', type: 'kanban' },
-      { id: 'by-status', label: 'By status', type: 'kanban' },
       { id: 'timeline-view', label: 'Timeline', type: 'timeline' },
-      { id: 'revenue', label: 'Revenue breakdown', type: 'table' },
-      { id: 'customer-impact', label: 'Customer impact', type: 'table' },
-      { id: 'team-capacity', label: 'Team capacity', type: 'kanban' },
-      { id: 'sprint-planning', label: 'Sprint planning', type: 'table' },
-      { id: 'quarterly-goals', label: 'Quarterly goals', type: 'timeline' },
-      { id: 'archive', label: 'Archive', type: 'table' },
     ],
     defaultTab: 'all-items',
   },
@@ -62,8 +55,34 @@ export function App() {
   })
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  const toggleSidebar = (id: SidebarId) =>
-    setActiveSidebar((prev) => (prev === id ? null : id))
+  const [newColumnMenuOpen, setNewColumnMenuOpen] = useState(false)
+
+  const toggleSidebar = useCallback((id: SidebarId) =>
+    setActiveSidebar((prev) => (prev === id ? null : id)), [])
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const meta = e.metaKey || e.ctrlKey
+      const target = e.target as HTMLElement
+      const isEditing = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
+
+      if (meta && e.key === 'k') {
+        e.preventDefault()
+        toggleSidebar('ai-sidekick')
+      }
+      if (meta && e.key === ',') {
+        e.preventDefault()
+        toggleSidebar('view-settings')
+      }
+      if (e.key === '+' && !meta && !isEditing) {
+        e.preventDefault()
+        setNewColumnMenuOpen(true)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [toggleSidebar])
 
   const closeSidebar = () => setActiveSidebar(null)
 
@@ -178,7 +197,7 @@ export function App() {
         {/* Scroll area — vertical + horizontal, table header sticks below toolbar */}
         <div ref={scrollRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-auto page-scroll flex flex-col">
           <DatabaseTitle opacity={1 - scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} />
-          <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} />
+          <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} />
 
           {/* Type-based view renderer */}
           {activeTabConfig?.type === 'table' && (
@@ -198,8 +217,8 @@ export function App() {
         className="shrink-0 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{ width: isRightOpen ? 400 : 0 }}
       >
-        <SidebarShell side="right" onClose={closeSidebar}>
-          {activeSidebar === 'view-settings' && <SidePanel />}
+        <SidebarShell side="right" onClose={closeSidebar} showClose={activeSidebar !== 'view-settings'}>
+          {activeSidebar === 'view-settings' && <SidePanel onClose={closeSidebar} fields={pageFields} />}
           {activeSidebar === 'ai-sidekick' && <AiSidekickPanel />}
         </SidebarShell>
       </div>

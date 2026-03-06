@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { IconChevronRight, IconChevronDown } from '@mirohq/design-system'
 
 interface SettingCellProps {
@@ -8,42 +8,54 @@ interface SettingCellProps {
   iconBg: 'green' | 'blue' | 'gray'
   activating?: boolean
   deactivating?: boolean
+  pressed?: boolean
   onClick?: () => void
 }
 
-// Cell background on hover
-const hoverCellBg = {
-  green: 'hover:bg-[#E3F7EA]',
-  blue:  'hover:bg-[#E8ECFC]',
-  gray:  'hover:bg-[#F1F2F5]',
-} as const
-
 // Icon container: idle bg + text color
 const idleIconContainer = {
-  green: 'bg-[#0FA83C] text-white',
-  blue:  'bg-[#3859FF] text-white',
-  gray:  'bg-[#F1F2F5] text-[#222428]',
-} as const
-
-// Icon container bg change on hover (gray only darkens)
-const hoverIconContainer = {
-  green: '',
-  blue:  '',
-  gray:  'group-hover:bg-[#E0E2E8]',
-} as const
-
-// Chevron color matches accent
-const chevronColor = {
-  green: 'text-[#0FA83C]',
-  blue:  'text-[#3859FF]',
+  green: 'text-[#2B4DF8]',
+  blue:  'text-[#2B4DF8]',
   gray:  'text-[#222428]',
 } as const
 
-export function SettingCell({ icon: Icon, label, subtitle, iconBg, activating, deactivating, onClick }: SettingCellProps) {
+const idleIconBg = {
+  green: '#F2F4FC',
+  blue:  '#F2F4FC',
+  gray:  '#F1F2F5',
+} as const
+
+const hoverIconBg = {
+  green: '#E8ECFC',
+  blue:  '#E8ECFC',
+  gray:  '#E6E6E6',
+} as const
+
+const pressedIconBg = {
+  green: '#D9DFFC',
+  blue:  '#D9DFFC',
+  gray:  '#E6E6E6',
+} as const
+
+export function SettingCell({ icon: Icon, label, subtitle, iconBg, activating, deactivating, pressed, onClick }: SettingCellProps) {
   const ChevronIcon = iconBg === 'green' ? IconChevronDown : IconChevronRight
+  const iconRef = useRef<HTMLDivElement>(null)
+
+  const setIconBg = (color: string) => {
+    if (iconRef.current) iconRef.current.style.backgroundColor = color
+  }
+
+  const bg = pressed ? pressedIconBg[iconBg] : idleIconBg[iconBg]
 
   return (
-    <div className={`group relative overflow-hidden flex items-center gap-4 p-4 bg-white rounded-xl w-full cursor-pointer transition-colors duration-150 ${hoverCellBg[iconBg]}`} onClick={onClick}>
+    <div
+      className="group relative overflow-hidden flex items-center gap-4 pl-4 pr-2 py-3 rounded-xl w-full cursor-pointer"
+      onClick={onClick}
+      onMouseEnter={() => { if (!pressed) setIconBg(hoverIconBg[iconBg]) }}
+      onMouseLeave={() => { if (!pressed) setIconBg(idleIconBg[iconBg]) }}
+      onMouseDown={() => { setIconBg(pressedIconBg[iconBg]) }}
+      onMouseUp={() => { setIconBg(hoverIconBg[iconBg]) }}
+    >
       {activating && (
         <div
           className="absolute inset-0 pointer-events-none filter-cell-wash"
@@ -51,26 +63,26 @@ export function SettingCell({ icon: Icon, label, subtitle, iconBg, activating, d
         />
       )}
       <div
-        className={`flex items-center p-2 rounded-lg shrink-0 ${idleIconContainer[iconBg]} ${hoverIconContainer[iconBg]}`}
-        style={{ transition: `background-color ${(activating || deactivating) ? '500ms' : '150ms'} ease, color ${deactivating ? '500ms' : '150ms'} ease` }}
+        ref={iconRef}
+        className={`flex items-center justify-center w-10 h-10 rounded-lg shrink-0 transition-colors duration-150 ${idleIconContainer[iconBg]}`}
+        style={{
+          backgroundColor: bg,
+          transition: `background-color ${(activating || deactivating) ? '500ms' : '150ms'} ease, color ${deactivating ? '500ms' : '150ms'} ease`,
+        }}
       >
-        <Icon size="medium" />
+        <div style={{ width: 20, height: 20 }} className="flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5">
+          <Icon size="medium" />
+        </div>
       </div>
-      <div className="flex flex-col items-start justify-center gap-[2px] pb-1 flex-1 min-w-0">
+      <div className="flex-1 min-w-0">
         <span
           className="font-heading font-semibold text-[#222428] leading-[1.5]"
-          style={{ fontSize: '16px' }}
-        >
-          {label}
-        </span>
-        <span
-          className="font-body text-[#656B81] leading-none"
-          style={{ fontSize: '12px', fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}
+          style={{ fontSize: '14px' }}
         >
           {subtitle}
         </span>
       </div>
-      <div className={`shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ${chevronColor[iconBg]}`}>
+      <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-[#7D8297] flex items-center justify-center w-8 h-8" style={{ marginTop: iconBg === 'green' ? '-1px' : '0px' }}>
         <ChevronIcon size="small" />
       </div>
     </div>

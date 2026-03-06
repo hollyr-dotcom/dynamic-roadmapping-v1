@@ -67,6 +67,7 @@ export function DatabaseTitle({ opacity, title, onTitleChange }: DatabaseTitlePr
   }
 
   const [isFocused, setIsFocused] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   return (
     <div
@@ -101,9 +102,11 @@ export function DatabaseTitle({ opacity, title, onTitleChange }: DatabaseTitlePr
       <div className={`self-end mb-1 transition-all duration-200 ease-out ${
         isFocused
           ? 'opacity-0 scale-[0.85] pointer-events-none'
-          : 'opacity-100 scale-100'
+          : menuOpen
+            ? 'opacity-100 scale-100'
+            : 'opacity-0 scale-[0.85] group-hover/title:opacity-100 group-hover/title:scale-100'
       }`}>
-        <DropdownMenu>
+        <DropdownMenu onOpen={() => setMenuOpen(true)} onClose={() => setMenuOpen(false)}>
           <DropdownMenu.Trigger asChild>
             <IconButton aria-label="More options" variant="ghost" size="medium">
               <IconDotsThree color="icon-neutrals-subtle" />

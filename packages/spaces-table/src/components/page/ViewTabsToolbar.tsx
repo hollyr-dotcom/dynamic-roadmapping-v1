@@ -52,9 +52,11 @@ interface ViewTabsToolbarProps {
   onDuplicateTab: (tabId: string) => void
   onDeleteTab: (tabId: string) => void
   onReorderTabs: (tabs: TabConfig[]) => void
+  newColumnMenuOpen: boolean
+  onNewColumnMenuOpenChange: (open: boolean) => void
 }
 
-export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs }: ViewTabsToolbarProps) {
+export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange }: ViewTabsToolbarProps) {
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
   const [editingTabId, setEditingTabId] = useState<string | null>(null)
   const [editDraft, setEditDraft] = useState('')
@@ -295,44 +297,76 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
 
       {/* Right: actions */}
       <div className="flex items-center gap-1 shrink-0">
-        <IconButton aria-label="Search" variant="ghost" size="medium">
-          <IconMagnifyingGlass />
-        </IconButton>
-
-        <IconButton
-          aria-label="AI Sidekick"
-          variant="ghost"
-          size="medium"
-          onPress={() => onToggleSidebar('ai-sidekick')}
-          css={activeSidebar === 'ai-sidekick' ? { background: '#F1F2F5' } : undefined}
-        >
-          <IconSparksFilled />
-        </IconButton>
-
-        <IconButton
-          aria-label="View settings"
-          variant="ghost"
-          size="medium"
-          onPress={() => onToggleSidebar('view-settings')}
-          css={activeSidebar === 'view-settings' ? { background: '#F1F2F5' } : undefined}
-        >
-          <IconSlidersY />
-        </IconButton>
-
-        <DropdownMenu>
-          <DropdownMenu.Trigger asChild>
-            <IconButton aria-label="New column" variant="ghost" size="medium">
-              <IconPlus />
+        <Tooltip>
+          <Tooltip.Trigger asChild>
+            <IconButton aria-label="Search" variant="ghost" size="medium">
+              <IconMagnifyingGlass />
             </IconButton>
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Content side="bottom" align="end" css={{ minWidth: MENU_WIDTH }}>
-            <DropdownMenu.Item>Text</DropdownMenu.Item>
-            <DropdownMenu.Item>Number</DropdownMenu.Item>
-            <DropdownMenu.Item>Status</DropdownMenu.Item>
-            <DropdownMenu.Item>Person</DropdownMenu.Item>
-            <DropdownMenu.Item>Date</DropdownMenu.Item>
-          </DropdownMenu.Content>
-        </DropdownMenu>
+          </Tooltip.Trigger>
+          <Tooltip.Content side="top" sideOffset={4}>
+            Search
+            <Tooltip.Hotkey>⌘ + F</Tooltip.Hotkey>
+          </Tooltip.Content>
+        </Tooltip>
+
+        <Tooltip>
+          <Tooltip.Trigger asChild>
+            <IconButton
+              aria-label="AI Sidekick"
+              variant="ghost"
+              size="medium"
+              onPress={() => onToggleSidebar('ai-sidekick')}
+              css={activeSidebar === 'ai-sidekick' ? { background: '#F1F2F5' } : undefined}
+            >
+              <IconSparksFilled />
+            </IconButton>
+          </Tooltip.Trigger>
+          <Tooltip.Content side="top" sideOffset={4}>
+            AI Sidekick
+            <Tooltip.Hotkey>⌘ + K</Tooltip.Hotkey>
+          </Tooltip.Content>
+        </Tooltip>
+
+        <Tooltip>
+          <Tooltip.Trigger asChild>
+            <IconButton
+              aria-label="View settings"
+              variant="ghost"
+              size="medium"
+              onPress={() => onToggleSidebar('view-settings')}
+              css={activeSidebar === 'view-settings' ? { background: '#F1F2F5' } : undefined}
+            >
+              <IconSlidersY />
+            </IconButton>
+          </Tooltip.Trigger>
+          <Tooltip.Content side="top" sideOffset={4}>
+            View settings
+            <Tooltip.Hotkey>⌘ + ,</Tooltip.Hotkey>
+          </Tooltip.Content>
+        </Tooltip>
+
+        <Tooltip>
+          <DropdownMenu open={newColumnMenuOpen} onOpen={() => onNewColumnMenuOpenChange(true)} onClose={() => onNewColumnMenuOpenChange(false)}>
+            <Tooltip.Trigger asChild>
+              <DropdownMenu.Trigger asChild>
+                <IconButton aria-label="New column" variant="ghost" size="medium">
+                  <IconPlus />
+                </IconButton>
+              </DropdownMenu.Trigger>
+            </Tooltip.Trigger>
+            <DropdownMenu.Content side="bottom" align="end" css={{ minWidth: MENU_WIDTH }}>
+              <DropdownMenu.Item>Text</DropdownMenu.Item>
+              <DropdownMenu.Item>Number</DropdownMenu.Item>
+              <DropdownMenu.Item>Status</DropdownMenu.Item>
+              <DropdownMenu.Item>Person</DropdownMenu.Item>
+              <DropdownMenu.Item>Date</DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu>
+          <Tooltip.Content side="top" sideOffset={4}>
+            New column
+            <Tooltip.Hotkey>+</Tooltip.Hotkey>
+          </Tooltip.Content>
+        </Tooltip>
 
       </div>
     </div>

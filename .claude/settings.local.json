@@ -144,7 +144,9 @@
       "Bash(node -e \"import\\(''@mirohq/design-system''\\).then\\(ds => { const icons = Object.keys\\(ds\\).filter\\(k => k.startsWith\\(''Icon''\\)\\); icons.filter\\(k => /pen|trash|duplicat|copy|square|edit|delete|dup|clone/i.test\\(k\\)\\).forEach\\(i => console.log\\(i\\)\\) }\\)\")",
       "Bash(npx tsc --noEmit --project packages/spaces-table/tsconfig.app.json)",
       "Bash(bunx tsc --noEmit --project packages/spaces-table/tsconfig.app.json)",
-      "Bash(lsof -i :5174 -P -n)"
+      "Bash(lsof -i :5174 -P -n)",
+      "Bash(node -e \"const ds = require\\(''@mirohq/design-system''\\); const icons = Object.keys\\(ds\\).filter\\(k => k.startsWith\\(''Icon''\\)\\).filter\\(k => /link|clock|info|star|check|history|time|copy|pin/i.test\\(k\\)\\); console.log\\(icons.join\\(''\\\\n''\\)\\)\")",
+      "Bash(bun -e \"import * as ds from ''@mirohq/design-system''; const icons = Object.keys\\(ds\\).filter\\(k => k.startsWith\\(''Icon''\\)\\).filter\\(k => /link|clock|info|star|check|history|time|copy|pin/i.test\\(k\\)\\); console.log\\(icons.join\\(''\\\\n''\\)\\)\")"
     ]
   }
 }

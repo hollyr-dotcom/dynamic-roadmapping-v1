@@ -10,7 +10,7 @@ export function SectionHeader({ label, showActions = false }: SectionHeaderProps
     <div className={`flex h-10 items-center justify-between w-full pl-4 ${showActions ? 'pr-2' : 'pr-4'}`}>
       <div className="flex flex-1 items-center h-full rounded-lg">
         <span
-          className="font-heading font-semibold text-[#222428] leading-[1.4]"
+          className="font-heading font-semibold text-[#7D8297] leading-[1.4]"
           style={{ fontSize: '14px' }}
         >
           {label}
