@@ -140,18 +140,9 @@ tbody tr:hover td.divider-first::before {
   border-radius: 8px 0 0 8px;
   z-index: -1;
 }
-tbody tr:hover td.divider-last { background: transparent; }
-tbody tr:hover td.divider-last::before {
-  content: '';
-  position: absolute;
-  top: 0; bottom: 0;
-  left: 0; right: 56px;
-  background: #FAFBFC;
-  border-radius: 0 8px 8px 0;
-  z-index: -1;
-}
 
 /* ── Selected background (overrides hover) ────────────── */
+tbody tr.row-selected { position: relative; z-index: 30; }
 tbody tr.row-selected td { background-color: #F2F4FC; }
 tbody tr.row-selected td.divider-first { background: transparent; }
 tbody tr.row-selected td.divider-first::before {
@@ -163,51 +154,7 @@ tbody tr.row-selected td.divider-first::before {
   border-radius: 8px 0 0 8px;
   z-index: -1;
 }
-tbody tr.row-selected td.divider-last { background: transparent; }
-tbody tr.row-selected td.divider-last::before {
-  content: '';
-  position: absolute;
-  top: 0; bottom: 0;
-  left: 0; right: 56px;
-  background: #F2F4FC;
-  border-radius: 0 8px 8px 0;
-  z-index: -1;
-}
 
-/* ── Context menu ─────────────────────────────────────── */
-.row-context-menu {
-  position: absolute;
-  left: 56px;
-  top: 100%;
-  margin-top: 4px;
-  z-index: 50;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04);
-  padding: 6px 0;
-  min-width: 180px;
-}
-.row-context-menu button {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 8px 16px;
-  font-size: 14px;
-  color: #222428;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.1s;
-}
-.row-context-menu button:hover {
-  background-color: #F1F2F5;
-}
-.row-context-menu button.danger {
-  color: #F24726;
-}
-.row-context-menu button.danger:hover {
-  background-color: #FEF2F2;
-}
 
 /* ── Sidebar content stagger ─────────────────────────── */
 @keyframes item-enter {

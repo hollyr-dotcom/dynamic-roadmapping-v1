@@ -1,6 +1,7 @@
 import type { FieldDefinition, SpaceRow } from '@spaces/shared'
-import { IconDotsSixVertical, IconChatPlus } from '@mirohq/design-system'
+import { IconDotsSixVertical, IconChatPlus, DropdownMenu, IconSquaresTwoOverlap, IconTrash } from '@mirohq/design-system'
 import { CellRenderer } from './CellRenderer'
+import { MENU_WIDTH } from '../page/ViewTabsToolbar'
 
 interface TableRowProps {
   row: SpaceRow
@@ -13,10 +14,21 @@ interface TableRowProps {
 
 function RowContextMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete: () => void }) {
   return (
-    <div className="row-context-menu" onClick={(e) => e.stopPropagation()}>
-      <button onClick={onDuplicate}>Duplicate</button>
-      <button className="danger" onClick={onDelete}>Delete</button>
-    </div>
+    <DropdownMenu defaultOpen>
+      <DropdownMenu.Trigger asChild>
+        <div onClick={(e) => e.stopPropagation()} />
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Content side="bottom" align="start" css={{ minWidth: MENU_WIDTH }}>
+        <DropdownMenu.Item onSelect={onDuplicate}>
+          <DropdownMenu.IconSlot><IconSquaresTwoOverlap /></DropdownMenu.IconSlot>
+          Duplicate
+        </DropdownMenu.Item>
+        <DropdownMenu.Item onSelect={onDelete}>
+          <DropdownMenu.IconSlot><IconTrash /></DropdownMenu.IconSlot>
+          Delete
+        </DropdownMenu.Item>
+      </DropdownMenu.Content>
+    </DropdownMenu>
   )
 }
 

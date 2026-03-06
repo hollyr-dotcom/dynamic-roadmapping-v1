@@ -1,4 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react'
+import { IconButton, IconDotsThree, DropdownMenu } from '@mirohq/design-system'
+import { MENU_WIDTH } from './ViewTabsToolbar'
 
 interface DatabaseTitleProps {
   opacity: number
@@ -53,9 +55,12 @@ export function DatabaseTitle({ opacity, title, onTitleChange }: DatabaseTitlePr
     }
   }
 
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isFocused, setIsFocused] = useState(false)
+
   return (
     <div
-      className="sticky left-0 flex items-center gap-2 px-14 pb-3 shrink-0"
+      className="group/title sticky left-0 flex items-center gap-1 px-14 pb-3 shrink-0"
       style={{ paddingTop: '48px', opacity }}
     >
       {/* Hidden span to measure text width */}
@@ -72,8 +77,8 @@ export function DatabaseTitle({ opacity, title, onTitleChange }: DatabaseTitlePr
         ref={inputRef}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
-        onFocus={handleFocus}
-        onBlur={save}
+        onFocus={() => { setIsFocused(true); handleFocus() }}
+        onBlur={() => { setIsFocused(false); save() }}
         onKeyDown={handleKeyDown}
         placeholder="Enter a title ..."
         style={{
@@ -82,6 +87,26 @@ export function DatabaseTitle({ opacity, title, onTitleChange }: DatabaseTitlePr
         }}
         className="title-input font-heading font-semibold text-[#222428] leading-[1.4] px-0.5 rounded bg-transparent border-none outline-none cursor-default transition-colors duration-150 hover:bg-[#F1F2F5] hover:cursor-pointer focus:bg-white focus:cursor-text focus:shadow-[0_0_0_2px_white,0_0_0_4px_#2B4DF8]"
       />
+
+      <div className={`self-end mb-1 transition-all duration-200 ease-out ${
+        isFocused
+          ? 'opacity-0 scale-[0.85] pointer-events-none'
+          : isMenuOpen
+            ? 'opacity-100 scale-100'
+            : 'opacity-0 scale-[0.85] pointer-events-none group-hover/title:opacity-100 group-hover/title:scale-100 group-hover/title:pointer-events-auto'
+      }`}>
+        <DropdownMenu onOpen={() => setIsMenuOpen(true)} onClose={() => setIsMenuOpen(false)}>
+          <DropdownMenu.Trigger asChild>
+            <IconButton aria-label="More options" variant="ghost" size="medium">
+              <IconDotsThree color="icon-neutrals-subtle" />
+            </IconButton>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content side="bottom" align="start" css={{ minWidth: MENU_WIDTH }}>
+            <DropdownMenu.Item>Option 1</DropdownMenu.Item>
+            <DropdownMenu.Item>Option 2</DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu>
+      </div>
     </div>
   )
 }

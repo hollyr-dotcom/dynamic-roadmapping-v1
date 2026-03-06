@@ -55,13 +55,15 @@ A high-fidelity interactive prototype of the Miro roadmap settings sidebar. See 
 
 ## Spaces Table (`packages/spaces-table`)
 
-Full-screen space with **two pages** (Backlog, Roadmap) and **five views** across them. Structured as five domains: **page** (the space shell), **table** (data table module), **kanban** (kanban board module), **timeline** (timeline module), and **sidebar** (push-panel sidebars).
+Full-screen space with **two pages** (Backlog, Roadmap) and **dynamic views** across them. Structured as five domains: **page** (the space shell), **table** (data table module), **kanban** (kanban board module), **timeline** (timeline module), and **sidebar** (push-panel sidebars).
 
 ### Page Architecture
 
 - **Two pages** — Backlog (default) and Roadmap, switchable via Space Menu
-- **Page config** — `PAGE_CONFIGS` in App.tsx maps each page to its title, tabs, and default tab
-- **Page state** — `activePage` + `activeTab` in App.tsx; `switchPage()` resets tab, title, and scroll position
+- **Page config** — `PAGE_CONFIGS` in App.tsx provides initial tabs per page (with `type: ViewType` on each tab); runtime tabs stored in `pageTabs` state
+- **Dynamic views** — users can add new views (Table, Kanban, Timeline) at runtime via the "New View" dropdown; each page manages its own tab list independently; new views share the same page data with different visualisation
+- **Page state** — `activePage` + `activeTab` + `pageTabs` in App.tsx; `switchPage()` resets tab, title, and scroll position; dynamically added tabs persist across page switches within a session
+- **Type-based rendering** — views render based on `activeTabConfig.type` (`'table'` | `'kanban'` | `'timeline'`), replacing hardcoded per-tab conditionals
 - **Data-driven components** — DataTable and KanbanBoard accept `data`, `fields`, and (kanban) `columns` as props
 
 ### Page Components (`src/components/page/`)
@@ -69,8 +71,8 @@ Full-screen space with **two pages** (Backlog, Roadmap) and **five views** acros
 | File | Description |
 |------|-------------|
 | `TopNavBar.tsx` | Fixed nav (shrink-0, outside scroll area) with hamburger (toggles space menu), breadcrumb + scroll-linked database title, notification bell, 3 Unsplash photo avatars, Share button; 8px left / 12px right padding; 1px bottom border (#F1F2F5) fades in on scroll; breadcrumb fades in on scroll even when menu is open |
-| `DatabaseTitle.tsx` | Always-input editable title (32px Roobert), 48px top spacing; sticky left-0 (pinned horizontally, scrolls vertically); 3 CSS-driven states (idle/hover/focused) matching Figma `.Editable Title`; auto-sizing via hidden measuring span; opacity fades out on scroll; updates per page |
-| `ViewTabsToolbar.tsx` | Dynamic tabs from `TabConfig[]` prop; search, AI sidekick (toggles sidebar), settings (toggles sidebar), plus, three-dot icon buttons (all medium/32px); sticky top-0 left-0 z-20 within scroll area; exports `SidebarId` and `TabConfig` types |
+| `DatabaseTitle.tsx` | Always-input editable title (32px Roobert), 48px top spacing; sticky left-0 (pinned horizontally, scrolls vertically); 3 CSS-driven states (idle/hover/focused) matching Figma `.Editable Title`; auto-sizing via hidden measuring span; opacity fades out on scroll; updates per page; **three-dots menu** beside title (medium ghost IconButton, `icon-neutrals-subtle`) — hover-to-reveal with fade+scale animation (`group/title`), stays visible while dropdown is open, hidden when title input is focused; baseline-aligned via `self-end mb-1` |
+| `ViewTabsToolbar.tsx` | Dynamic tabs from `TabConfig[]` prop with **tab overflow menu**, **right-click context menu** (Rename/Duplicate/Delete with MDS icons), **"New View" dropdown** (+ button with `icon-neutrals-subtle`, appears on toolbar hover with fade+scale animation, stays visible while menu is open), and **inline tab renaming** (double-click active tab to edit, blur/Enter saves, Escape cancels, tab grows to fit text); search, AI sidekick (toggles sidebar), settings (toggles sidebar), new column icon buttons (all medium/32px); sticky top-0 left-0 z-20 within scroll area; exports `SidebarId`, `TabConfig`, `ViewType`, and `MENU_WIDTH` |
 
 ### Sidebar Components (`src/components/sidebar/`)
 
@@ -93,7 +95,7 @@ Full-screen space with **two pages** (Backlog, Roadmap) and **five views** acros
 | `index.ts` | Barrel export — single public surface (`DataTable`) |
 | `DataTable.tsx` | Accepts `data: SpaceRow[]` and `fields: FieldDefinition[]` props; selection state, click-outside handler, composes TableHeader + TableRow; table has `min-width: 100%` so rows stretch to viewport; `item-enter` animation on mount |
 | `TableHeader.tsx` | Sticky `<thead>` (top-16, below tabs toolbar within scroll area), bookmark icon on primary field, 56px tall, 14px Noto Sans semibold #656B81; fixed column widths (480px primary, 160px data); first column `w-0` to prevent expansion; trailing `table-fill` column absorbs remaining space |
-| `TableRow.tsx` | Single `<tr>` — row number, drag handle, comment button (0px margin, no layout shift between idle/hover), context menu, cells (12px horizontal padding); trailing `table-fill` column with divider line + rounded hover/selection highlight via `::before`/`::after` |
+| `TableRow.tsx` | Single `<tr>` — row number, drag handle, comment button (0px margin, no layout shift between idle/hover), MDS DropdownMenu context menu (Duplicate/Delete with icons), cells (12px horizontal padding); trailing `table-fill` column with divider line + rounded hover/selection highlight via `::before`/`::after` |
 | `CellRenderer.tsx` | Field-type dispatcher — routes to the correct cell component (text, number, currency, avatars, status) |
 | `cells/TextCell.tsx` | Text cell (14px Noto Sans regular) |
 | `cells/NumberCell.tsx` | Number cell with locale formatting (Noto Sans) |
@@ -120,8 +122,9 @@ Full-screen space with **two pages** (Backlog, Roadmap) and **five views** acros
 ### Pages & Views
 
 #### Backlog Page (default)
+- **10 tabs** (temporary, for overflow testing) — All items, Kanban, By status, Timeline, Revenue breakdown, Customer impact, Team capacity, Sprint planning, Quarterly goals, Archive
 - **All items** tab — DataTable with 18 backlog rows, 5 columns (Title, Mentions, Customers, Est. revenue, Companies)
-- **Prioritization** tab — KanbanBoard with all 5 priority columns (Triage/Now/Next/Later/Icebox)
+- **Kanban** tab — KanbanBoard with all 5 priority columns (Triage/Now/Next/Later/Icebox)
 
 #### Roadmap Page
 - **Roadmap** tab — TimelinePlaceholder (coming soon)
@@ -189,12 +192,16 @@ The original layout used a single full-page scroll container with three sticky l
 
 - **Fixed nav** — TopNavBar fixed at top (shrink-0, outside scroll area) with fading 1px bottom border on scroll
 - Top nav: hamburger fades out when space menu is open; breadcrumb (Roobert #222428) with scroll-linked chevron + database title fades in on scroll (including when menu is open), notification bell, 3 Unsplash photo avatars (28px, overlapping), Share button (MDS primary medium); 8px left / 12px right padding
-- **Editable database title** (32px Roobert), 48px top spacing; sticky left-0 (pinned horizontally); always-input pattern (single `<input>`, no element swap); auto-sizing via hidden measuring span; fades out on scroll; title updates when switching pages; 3 CSS-driven states modelled on Figma `.Editable Title` component:
+- **Editable database title** (32px Roobert), 48px top spacing; sticky left-0 (pinned horizontally); always-input pattern (single `<input>`, no element swap); auto-sizing via hidden measuring span; fades out on scroll; title updates when switching pages; **three-dots menu** appears on title hover (baseline-aligned, hidden when editing); 3 CSS-driven states modelled on Figma `.Editable Title` component:
   - **Idle** — transparent background, 2px horizontal padding, `cursor: default`
   - **Hover** — `#F1F2F5` background, 4px border-radius, `cursor: pointer`, 150ms transition
-  - **Focused** — white background, double-ring focus: `0 0 0 2px white, 0 0 0 4px #2B4DF8`, `cursor: text`, click selects all text, Enter saves + blurs, Escape reverts + blurs, placeholder "Enter a title ..." in `#7D8297`
+  - **Focused** — white background, double-ring focus: `0 0 0 2px white, 0 0 0 4px #2B4DF8`, `cursor: text`, click selects all text, Enter saves + blurs, Escape reverts + blurs, placeholder "Enter a title ..." in `#7D8297`; three-dots button hidden
 - **Sticky tabs** — ViewTabsToolbar sticky top-0 left-0 z-20 within scroll area, 16px top / 16px bottom padding
-- MDS panel-style tabs (`variant="buttons"`, controlled via `value`/`onChange`), dynamic tab labels from page config; search + AI sidekick + settings + plus + three-dot icon buttons (all medium/32px ghost)
+- MDS panel-style tabs (`variant="buttons"`, controlled via `value`/`onChange`, 8px gap), dynamic tab labels from page config; **tab overflow** — when tabs exceed available width, overflow tabs move into a chevron-down dropdown (IconChevronDown) with layout-type icons (Table/Kanban/Timeline) and tab names; overflow detection via ResizeObserver + estimated/measured tab widths; chevron sits tight (8px) after last visible tab, before the + button; chevron highlighted when active tab is in overflow; 16px gap separates tab group from right actions; **"New View" dropdown** — ghost `IconPlus` button (`icon-neutrals-subtle`) after chevron, hidden by default, fades in with scale+slide on toolbar hover (`group` on outer div), stays visible while dropdown is open via `onOpen`/`onClose` state; dropdown offers Table, Kanban, Timeline with MDS icons; **inline tab rename** — double-click active tab overlays an input (absolute inset-0) matching tab styling, trigger content swaps to draft text (visibility hidden) so tab grows to fit; search + AI sidekick + settings + new column icon buttons (all medium/32px ghost)
+- **Tab overflow selected state** — when the active tab is in the overflow menu, the chevron button shows pale blue bg (`#F2F4FC`) + blue icon (`#2B4DF8`) matching the MDS selected tab style; the selected overflow menu item also shows blue text and blue icon; when the menu is just open (no active tab in overflow), chevron uses neutral grey (`#F1F2F5`)
+- **Tooltips on tab toolbar buttons** — MDS Tooltip on overflow chevron ("More views") and new view + button ("Add a view"); `side="top"` with `sideOffset={4}` for 4px gap; Tooltip wraps DropdownMenu with `Tooltip.Trigger asChild` around `DropdownMenu.Trigger asChild` for correct composition; MDS auto-hides tooltip when dropdown opens
+- **Tab context menu** — right-click any tab (active or inactive) opens MDS DropdownMenu with Rename (IconPen), Duplicate (IconSquaresTwoOverlap), Delete (IconTrash); Rename switches to the tab and triggers inline edit; Duplicate copies the tab with incremented label ("Kanban" → "Kanban 2") inserted after the source; Delete removes the tab and selects nearest right neighbour (or left if last); Delete is `aria-disabled` when only 1 tab remains; controlled via `open` prop + `contextTabId` state
+- **View management** — "New View" dropdown (Table/Kanban/Timeline with icons) creates a new tab and auto-switches to it; naming avoids collisions by checking existing labels (not types), so renamed tabs don't cause spurious numbering; double-click active tab to rename inline (blur saves, Enter saves, Escape cancels); tab input grows to fit text via invisible trigger-as-spacer pattern; duplicate and delete via right-click context menu
 - **Page switching** — Space Menu page list is interactive; clicking Backlog/Roadmap switches page, resets tabs and scroll
 - **Three push sidebars** — hamburger opens Space Menu (left, 280px), sparkle opens AI Sidekick (right, 400px), settings icon opens View Settings (right, 400px); smooth 300ms width animation; active toolbar buttons show #F1F2F5 background; Space Menu has its own close button in top bar, right sidebars use SidebarShell close button
 - **Sticky table header** — sticks below tabs (top-16, z-10) within scroll area, scrolls horizontally with table
@@ -207,10 +214,34 @@ The original layout used a single full-page scroll container with three sticky l
 - Table header: 56px tall, 14px semibold text (#656B81), bookmark icon on primary field, 12px/20px cell padding
 - Inset row dividers (56px from each edge), hidden on hover/selection
 - Row hover: rounded 8px background (#FAFBFC), row number replaced by drag handle + comment button (no layout shift — idle state reserves space for both controls with matching 0px margin)
-- Row selection: click drag handle to select (blue #F2F4FC background, blue icon), context menu with Duplicate/Delete
+- Row selection: click drag handle to select (blue #F2F4FC background, blue icon), MDS DropdownMenu context menu with Duplicate (IconSquaresTwoOverlap) / Delete (IconTrash)
 - Click outside table or re-click drag handle to deselect
 - 5 cell formatters: text (14px), number (locale), currency ($NK/dash), avatar stack (3 visible + overflow), status (coloured pill)
+- **Shared dropdown menu width** — `MENU_WIDTH = 192` exported from ViewTabsToolbar, applied as `minWidth` on all MDS DropdownMenu.Content instances (tab context menu, new view, new column, row context menu) for consistent sizing
 - Thin scrollbar styling (`.page-scroll` on scroll area), `border-separate` for per-cell border-radius support
+
+#### Tab drag-to-reorder (WIP — not yet working)
+
+Goal: click-hold and drag visible tabs to reposition them in the tab bar. Overflow tabs excluded from drag.
+
+**State added:**
+- `handleReorderTabs(reorderedTabs: TabConfig[])` in App.tsx — receives full reordered array, updates `pageTabs[activePage]`
+- `onReorderTabs` prop on ViewTabsToolbar
+- `draggedTabId`, `dropIndex` state + `dragRef` ref in ViewTabsToolbar
+- `computeDropIndex(clientX)` walks visible tab elements via `tabElMap` to find insertion point
+- `finishDrag()` maps visible drop index to full-array index, splices, calls `onReorderTabs`
+- `showIndicatorAt(visibleIndex)` — returns true when a 2px blue line should appear (suppressed at dragged tab's own position)
+- Drop indicator: `absolute -left-[5px]` / `-right-[5px]`, 2px wide, 20px tall, `#2B4DF8`, `rounded-full`
+
+**DOM structure:** outer draggable `<div>` wraps each tab's `<DropdownMenu>` (context menu). The `DropdownMenu.Trigger asChild` wraps an inner `<div>` containing `<Tabs.Trigger>`. The `tabElMap` ref is on the inner div for width measurement.
+
+**Approaches tried and failed:**
+1. **Native HTML5 `draggable` on outer div** — Radix `Tabs.Trigger` calls `preventDefault()` on `pointerdown` events, which blocks the browser from initiating native drag. Moving the `draggable` div outside `DropdownMenu.Trigger` didn't help because `Tabs.Trigger` (deeper in the tree) still intercepts pointer events before drag can start.
+2. **Custom mouse-based drag (current code)** — `onMouseDown` on outer wrapper records start position in `dragRef`; document-level `mousemove` listener checks 5px threshold then sets `draggedTabId`; `mouseup` calls `finishDrag`. The `useEffect` attaches/detaches document listeners when `dragRef.current` is set. **Problem:** the effect depends on `dragRef.current` (a ref, not state) so it doesn't re-run when `onMouseDown` sets the ref — the document listeners never get attached. The drag state never activates.
+
+**Next steps to try:**
+- Fix the effect trigger: use a piece of state (e.g. `isDragPending`) set alongside `dragRef.current` in `handleTabMouseDown` so the `useEffect` re-runs and attaches listeners. Or attach listeners in `handleTabMouseDown` directly (no effect needed) and clean up in the mouseup handler.
+- Alternative: use `onPointerDown` with `e.stopPropagation()` on the outer wrapper to prevent Radix from seeing the event, combined with native `draggable`. But this would also block tab-switching clicks — would need a threshold to distinguish click vs drag before deciding whether to stop propagation.
 
 ---
 
@@ -253,6 +284,7 @@ docs/plans/
 - Design and build the timeline view for the Roadmap page
 
 ### Backlog — Table Interactions
+- **Row hover corner radius** — left and right corners of hover/selected highlight render at visually different radii despite identical CSS values (8px); likely a browser compositing issue with separate `::before` pseudo-elements on `divider-first` vs `table-fill` cells; tried unifying to `border-radius: 8px` on both and a single `<tr>::before` approach (didn't work — `<tr>` positioned box doesn't span full table width); needs a different strategy
 - **Column resizing** — drag column edges to resize, persist widths
 - **Inline cell editing** — click to edit text/number/currency cells in place
 - **Sort interaction** — click column headers to sort ascending/descending with indicator arrow
