@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import {
   Tabs,
   IconButton,
   DropdownMenu,
+  Popover,
+  InputSearch,
   IconMagnifyingGlass,
   IconSparksFilled,
   IconSlidersY,
@@ -14,6 +16,7 @@ import {
   IconSquaresTwoOverlap,
   IconTrash,
   IconChevronDown,
+  IconDotsSixVertical,
   Tooltip,
 } from '@mirohq/design-system'
 
@@ -28,18 +31,13 @@ export interface TabConfig {
   type: ViewType
 }
 
-const VIEW_TYPE_ICONS: Record<ViewType, React.ReactNode> = {
-  table: <IconTable />,
-  kanban: <IconKanban />,
-  timeline: <IconTimelineFormat />,
-}
-
 // Estimate tab width from label text (MDS button tab: ~8px per char + 28px padding)
 const estimateTabWidth = (label: string) => Math.ceil(label.length * 8 + 28)
 
 const TAB_GAP = 8
 const BUTTON_SIZE = 32   // MDS medium icon button
 const BTN_SLOT = BUTTON_SIZE + TAB_GAP // 40px — one button + gap
+const ITEM_SLOT = 38     // 36px item height + 2px gap
 
 interface ViewTabsToolbarProps {
   tabs: TabConfig[]
@@ -66,9 +64,92 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
   // Overflow state
   const [overflowTabIds, setOverflowTabIds] = useState<Set<string>>(new Set())
   const [isOverflowMenuOpen, setIsOverflowMenuOpen] = useState(false)
+  const [overflowSearch, setOverflowSearch] = useState('')
   const tabsAreaRef = useRef<HTMLDivElement>(null)
   const tabElMap = useRef<Map<string, HTMLElement>>(new Map())
   const measuredWidths = useRef<Map<string, number>>(new Map())
+
+  // Drag-to-reorder state
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [dropIndex, setDropIndex] = useState<number | null>(null)
+  const [dragY, setDragY] = useState(0)
+  const listRef = useRef<HTMLDivElement>(null)
+  const dragIndexRef = useRef<number | null>(null)
+  const dropIndexRef = useRef<number | null>(null)
+  const tabsRef = useRef(tabs)
+  const didDragRef = useRef(false)
+  const dragOffsetY = useRef(0)
+  const dragLeftRef = useRef(0)
+  const dragWidthRef = useRef(0)
+
+  useEffect(() => { dragIndexRef.current = dragIndex }, [dragIndex])
+  useEffect(() => { dropIndexRef.current = dropIndex }, [dropIndex])
+  useEffect(() => { tabsRef.current = tabs }, [tabs])
+
+  const handleDragMove = useCallback((e: MouseEvent) => {
+    const idx = dragIndexRef.current
+    const list = listRef.current
+    if (idx === null || !list) return
+
+    setDragY(e.clientY)
+
+    // Find item elements (skip drop indicator divs by filtering to data-tab-item)
+    const items = Array.from(list.querySelectorAll('[data-tab-item]')) as HTMLElement[]
+    let target = items.length // default: after all items
+
+    for (let i = 0; i < items.length; i++) {
+      const rect = items[i].getBoundingClientRect()
+      const midY = rect.top + rect.height / 2
+      if (e.clientY < midY) { target = i; break }
+    }
+
+    // Hide indicator if drop would be a no-op (same position or adjacent)
+    if (target === idx || target === idx + 1) {
+      setDropIndex(null)
+    } else {
+      setDropIndex(target)
+    }
+  }, [])
+
+  const handleDragEnd = useCallback(() => {
+    document.removeEventListener('mousemove', handleDragMove)
+    document.removeEventListener('mouseup', handleDragEnd)
+    didDragRef.current = true
+    setTimeout(() => { didDragRef.current = false }, 0)
+    const from = dragIndexRef.current
+    const to = dropIndexRef.current
+    setDragIndex(null)
+    setDropIndex(null)
+    if (from !== null && to !== null) {
+      const newOrder = [...tabsRef.current]
+      const [moved] = newOrder.splice(from, 1)
+      const adjustedTo = to > from ? to - 1 : to
+      newOrder.splice(adjustedTo, 0, moved)
+      onReorderTabs(newOrder)
+    }
+  }, [handleDragMove, onReorderTabs])
+
+  const handleDragStart = useCallback((index: number, e: React.MouseEvent) => {
+    e.preventDefault()
+    const target = e.currentTarget as HTMLElement
+    const rect = target.getBoundingClientRect()
+    dragOffsetY.current = e.clientY - rect.top
+    dragLeftRef.current = rect.left
+    dragWidthRef.current = rect.width
+    setDragY(e.clientY)
+    setDragIndex(index)
+    setDropIndex(null)
+    document.addEventListener('mousemove', handleDragMove)
+    document.addEventListener('mouseup', handleDragEnd)
+  }, [handleDragMove, handleDragEnd])
+
+  // Clean up document listeners on unmount
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mousemove', handleDragMove)
+      document.removeEventListener('mouseup', handleDragEnd)
+    }
+  }, [handleDragMove, handleDragEnd])
 
   // Auto-focus and select all when entering edit mode
   useEffect(() => {
@@ -215,46 +296,145 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
           </Tabs.List>
         </Tabs>
 
-        {/* Overflow chevron — sits right after the last visible tab */}
-        {hasOverflow && (
-          <div className="shrink-0">
-            <Tooltip>
-              <DropdownMenu onOpen={() => setIsOverflowMenuOpen(true)} onClose={() => setIsOverflowMenuOpen(false)}>
-                <Tooltip.Trigger asChild>
-                  <DropdownMenu.Trigger asChild>
-                    <IconButton
-                      variant="ghost"
-                      size="medium"
-                      aria-label={`${overflowTabs.length} more views`}
-                      css={
-                        activeInOverflow
-                          ? { background: '#F2F4FC', '& svg': { color: '#2B4DF8' } }
-                          : isOverflowMenuOpen
-                            ? { background: '#F1F2F5' }
-                            : undefined
-                      }
-                    >
-                      <IconChevronDown color="icon-neutrals-subtle" />
-                    </IconButton>
-                  </DropdownMenu.Trigger>
-                </Tooltip.Trigger>
-                <DropdownMenu.Content side="bottom" align="start" alignOffset={-12} css={{ minWidth: MENU_WIDTH }}>
-                  {overflowTabs.map(tab => (
-                    <DropdownMenu.Item
-                      key={tab.id}
-                      onSelect={() => onTabChange(tab.id)}
-                      css={tab.id === activeTab ? { background: '#F2F4FC', color: '#2B4DF8', '& svg': { color: '#2B4DF8' } } : undefined}
-                    >
-                      <DropdownMenu.IconSlot>{VIEW_TYPE_ICONS[tab.type]}</DropdownMenu.IconSlot>
-                      {tab.label}
-                    </DropdownMenu.Item>
-                  ))}
-                </DropdownMenu.Content>
-              </DropdownMenu>
-              <Tooltip.Content side="top" sideOffset={4}>More views</Tooltip.Content>
-            </Tooltip>
-          </div>
-        )}
+        {/* Overflow chevron — shows all tabs for reordering */}
+        {hasOverflow && (() => {
+          const filteredTabs = overflowSearch
+            ? tabs.filter(t => t.label.toLowerCase().includes(overflowSearch.toLowerCase()))
+            : tabs
+          return (
+            <div className="shrink-0">
+              <Tooltip>
+                <Popover
+                  variant="light"
+                  open={isOverflowMenuOpen}
+                  onOpen={() => setIsOverflowMenuOpen(true)}
+                  onClose={() => {
+                    if (dragIndexRef.current !== null) return
+                    setIsOverflowMenuOpen(false)
+                    setOverflowSearch('')
+                  }}
+                >
+                  <Tooltip.Trigger asChild>
+                    <Popover.Trigger asChild>
+                      <IconButton
+                        variant="ghost"
+                        size="medium"
+                        aria-label="All views"
+                        css={
+                          activeInOverflow
+                            ? { background: '#F2F4FC', '& svg': { color: '#2B4DF8' } }
+                            : isOverflowMenuOpen
+                              ? { background: '#F1F2F5' }
+                              : undefined
+                        }
+                      >
+                        <IconChevronDown color="icon-neutrals-subtle" />
+                      </IconButton>
+                    </Popover.Trigger>
+                  </Tooltip.Trigger>
+                  <Popover.Content
+                    side="bottom"
+                    align="start"
+                    alignOffset={-12}
+                    anchor="none"
+                    sideOffset={4}
+                    css={{ width: MENU_WIDTH, padding: 0, overflow: 'hidden', borderRadius: 12 }}
+                    onOpenAutoFocus={e => {
+                      e.preventDefault()
+                      setTimeout(() => {
+                        const input = (e.target as HTMLElement)?.querySelector('input[type="search"], input')
+                        if (input) (input as HTMLElement).focus()
+                      }, 0)
+                    }}
+                  >
+                    <Popover.Close aria-label="Close" css={{ display: 'none' }} />
+                    <div style={{ padding: '12px 12px 0' }}>
+                      <InputSearch
+                        size="medium"
+                        placeholder="Find a view"
+                        clearable
+                        clearLabel="Clear search"
+                        value={overflowSearch}
+                        onChange={e => setOverflowSearch(e.target.value)}
+                        css={{ '&:focus-within': { boxShadow: 'none' } }}
+                      />
+                    </div>
+                    <div ref={listRef} className="overflow-y-auto panel-scroll flex flex-col" style={{ maxHeight: 320, padding: '8px 12px 12px' }}>
+                      {filteredTabs.length > 0 ? (
+                        filteredTabs.map((tab: TabConfig, index: number) => {
+                          const isActive = tab.id === activeTab
+                          const isDragging = dragIndex === index
+                          const IconComponent = { table: IconTable, kanban: IconKanban, timeline: IconTimelineFormat }[tab.type]
+
+                          // Compute vertical shift for live-reorder preview
+                          let shift = 0
+                          if (dragIndex !== null && dropIndex !== null && !isDragging) {
+                            if (dropIndex < dragIndex && index >= dropIndex && index < dragIndex) {
+                              shift = ITEM_SLOT // shift down
+                            } else if (dropIndex > dragIndex && index > dragIndex && index < dropIndex) {
+                              shift = -ITEM_SLOT // shift up
+                            }
+                          }
+
+                          return (
+                            <div
+                              key={tab.id}
+                              data-tab-item
+                              className="relative"
+                              style={{
+                                ...(isDragging ? { height: ITEM_SLOT } : {}),
+                                transform: shift !== 0 ? `translateY(${shift}px)` : undefined,
+                                transition: dragIndex !== null ? 'transform 150ms ease' : undefined,
+                              }}
+                            >
+                              <div
+                                className={`group/item flex items-center gap-2 rounded-md font-body text-sm text-left select-none ${
+                                  isDragging
+                                    ? 'opacity-0'
+                                    : isActive
+                                      ? 'bg-[#F2F4FC] text-[#2B4DF8]'
+                                      : 'text-[#222428] hover:bg-[#F1F2F5]'
+                                }`}
+                                style={{
+                                  height: 36,
+                                  padding: '0 8px',
+                                  cursor: dragIndex !== null ? 'grabbing' : 'pointer',
+                                  marginTop: index === 0 ? 0 : 2,
+                                }}
+                                onMouseDown={(e) => { if (!overflowSearch) handleDragStart(index, e) }}
+                                onClick={() => {
+                                  if (dragIndex !== null || didDragRef.current) return
+                                  onTabChange(tab.id)
+                                  setIsOverflowMenuOpen(false)
+                                  setOverflowSearch('')
+                                }}
+                              >
+                                <span className={`shrink-0 flex items-center justify-center ${isActive && dragIndex === null ? 'text-[#2B4DF8]' : 'text-[#222428]'}`}>
+                                  <span className={`flex items-center justify-center ${isDragging ? 'hidden' : 'group-hover/item:hidden'}`}>
+                                    <IconComponent size="small" />
+                                  </span>
+                                  <span className={`flex items-center justify-center ${isDragging ? '' : 'hidden group-hover/item:flex'} text-[#AEB2C0]`} style={{ cursor: 'grab' }}>
+                                    <IconDotsSixVertical size="small" />
+                                  </span>
+                                </span>
+                                <span className="truncate">{tab.label}</span>
+                              </div>
+                            </div>
+                          )
+                        })
+                      ) : (
+                        <div className="flex items-center justify-center font-body text-sm text-[#7D8297]" style={{ padding: '32px 8px' }}>
+                          No views found
+                        </div>
+                      )}
+                    </div>
+                  </Popover.Content>
+                </Popover>
+                <Tooltip.Content side="top" sideOffset={4}>All views</Tooltip.Content>
+              </Tooltip>
+            </div>
+          )
+        })()}
 
         {/* New View + button — hover-reveal, stays visible while menu is open */}
         <div className={`shrink-0 transition-all duration-200 ease-out ${
@@ -369,6 +549,34 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
         </Tooltip>
 
       </div>
+
+      {/* Floating ghost row — rendered outside popover to escape overflow/transform clipping */}
+      {dragIndex !== null && tabs[dragIndex] && (() => {
+        const ghostTab = tabs[dragIndex]
+        return (
+          <div
+            className="flex items-center gap-2 rounded-md font-body text-sm text-left select-none bg-white text-[#222428]"
+            style={{
+              position: 'fixed',
+              top: dragY - dragOffsetY.current,
+              left: dragLeftRef.current,
+              width: dragWidthRef.current,
+              height: 36,
+              padding: '0 8px',
+              zIndex: 9999,
+              boxShadow: '0 4px 16px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.08)',
+              pointerEvents: 'none',
+              cursor: 'grabbing',
+              opacity: 0.75,
+            }}
+          >
+            <span className="shrink-0 flex items-center justify-center text-[#AEB2C0]">
+              <IconDotsSixVertical size="small" />
+            </span>
+            <span className="truncate">{ghostTab.label}</span>
+          </div>
+        )
+      })()}
     </div>
   )
 }
