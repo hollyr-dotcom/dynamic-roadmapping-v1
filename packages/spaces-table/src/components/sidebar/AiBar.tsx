@@ -57,7 +57,7 @@ export function AiBar({ placeholder, onSubmit }: AiBarProps) {
 
   return (
     <div
-      className="item-enter relative flex items-center justify-between pl-6 pr-3 bg-[#F7F7F7] rounded-full border-4 border-white h-16 w-full shadow-[0px_12px_32px_0px_rgba(34,36,40,0.2),0px_0px_8px_0px_rgba(34,36,40,0.06)]"
+      className="item-enter relative flex items-center justify-between pl-4 pr-2 bg-[#F7F7F7] rounded-full border-4 border-white h-14 w-full shadow-[0px_12px_32px_0px_rgba(34,36,40,0.2),0px_0px_8px_0px_rgba(34,36,40,0.06)]"
       style={{ animationDelay: '400ms' }}
       onClick={() => {
         if (isInteractive) inputRef.current?.focus()
@@ -68,7 +68,7 @@ export function AiBar({ placeholder, onSubmit }: AiBarProps) {
         {/* Loading shimmer text */}
         <span
           className={`absolute left-0 font-body whitespace-nowrap transition-opacity duration-200 pointer-events-none select-none text-shimmer ${isLoading ? 'opacity-100' : 'opacity-0'}`}
-          style={{ fontSize: '16px', fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}
+          style={{ fontSize: '14px', fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}
         >
           Working on it&hellip;
         </span>
@@ -76,7 +76,7 @@ export function AiBar({ placeholder, onSubmit }: AiBarProps) {
         {/* Success text */}
         <span
           className={`absolute left-0 font-body text-[#222428] whitespace-nowrap transition-opacity duration-200 pointer-events-none select-none ${isSuccess ? 'opacity-100' : 'opacity-0'}`}
-          style={{ fontSize: '16px', fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}
+          style={{ fontSize: '14px', fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}
         >
           Done. I&apos;ve made those changes.
         </span>
@@ -91,7 +91,7 @@ export function AiBar({ placeholder, onSubmit }: AiBarProps) {
           readOnly={!isInteractive}
           placeholder={placeholder}
           className={`w-full bg-transparent outline-none font-body text-[#222428] placeholder:text-[#6F7489] transition-opacity duration-200 ${(isLoading || isSuccess) ? 'opacity-0' : 'opacity-100'}`}
-          style={{ fontSize: '16px', fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}
+          style={{ fontSize: '14px', fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}
         />
       </div>
 

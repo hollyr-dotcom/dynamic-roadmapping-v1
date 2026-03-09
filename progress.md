@@ -78,11 +78,11 @@ Full-screen space with **two pages** (Backlog, Roadmap) and **dynamic views** ac
 
 | File | Description |
 |------|-------------|
-| `SidebarShell.tsx` | Shared wrapper — configurable width (default 400px), white bg, border on content-facing edge (#F1F2F5), optional close button (`showClose` prop) |
-| `SpaceMenu.tsx` | Left nav sidebar (280px) — top bar (Home, Search, Close), "Project Galaxy" header with chevron-up-down + three-dot actions, "1 member" link, interactive page list (Backlog/Roadmap) with active state + `onPageChange` callback, divider, "Add content" + "Pinned content" empty state |
+| `SidebarShell.tsx` | Shared wrapper — configurable width (default 320px), white bg, border on content-facing edge (#F1F2F5), optional close button (`showClose` prop) |
+| `SpaceMenu.tsx` | Left nav sidebar (320px) — top bar (Home, Search, Close), "Project Galaxy" header with chevron-up-down + three-dot actions, "1 member" link, interactive page list (Backlog/Roadmap) with active state + `onPageChange` callback, divider, "Add content" + "Pinned content" empty state |
 | `AiSidekickPanel.tsx` | Right placeholder — sparkle icon, "AI Sidekick" heading, empty state message |
 | `SidePanel.tsx` | View settings sidebar — accepts `onClose` and `fields` props; **header bar** with "Settings" title on main view (14px Roobert semibold), back button on detail pages, close button (IconCross); scroll-linked bottom border (200ms transition); "View" and "Fields" section headers inside scrollable content; **dynamic layout icon** — Layout setting cell icon updates to match selected layout (Table→IconTable, Kanban→IconKanban, Timeline→IconTimelineFormat) via `LAYOUT_ICONS` map; **dynamic fields** — Fields list driven by `pageFields` from App.tsx (backlog fields or roadmap fields), icons mapped via `FIELD_TYPE_ICONS` (text→IconTextT, number→IconNumber, currency→IconDollarSignCurrency, avatars→IconOffice, status→IconTickCircle); full filter/layout/fields functionality with AI bar |
-| `AiBar.tsx` | AI prompt bar (copied from sidebar package) — 4-state machine |
+| `AiBar.tsx` | AI prompt bar — 4-state machine, 14px text, fluid width (fills container via `left-4 right-4` positioning) |
 | `FilterPage.tsx` | Filter condition builder (copied from sidebar package) |
 | `SectionHeader.tsx` | Section label rows — 14px Roobert semibold in neutrals-subtle (`#7D8297`), optional + / ··· action buttons |
 | `SettingCell.tsx` | Setting row — 14px Roobert semibold label, 40px rounded-lg icon container with 20px icons; **3-state icon bg** — on (blue): idle `#F2F4FC` → hover `#E8ECFC` → pressed `#D9DFFC`; off (gray): idle `#F1F2F5` → hover `#E6E6E6`; icon hover driven by whole-cell hover via ref; `pressed` prop locks pressed bg (used for layout dropdown); chevron at far right (subtle gray `#7D8297`, show on hover); down chevron for layout, right chevron for others; no cell background hover |
@@ -162,7 +162,7 @@ Full-screen space with **two pages** (Backlog, Roadmap) and **dynamic views** ac
 
 - **Horizontal flex layout** — App.tsx is `flex` (row): `[left sidebar slot] | [main content] | [right sidebar slot]`
 - **Main content column** — `flex-1 min-w-0 overflow-hidden`, split into fixed nav + scroll area
-- **Sidebar slots** — `shrink-0 overflow-hidden` wrappers with `transition-[width]` (300ms, `cubic-bezier(0.16, 1, 0.3, 1)`); left sidebar animates 0 → 280px, right sidebars 0 → 400px
+- **Sidebar slots** — `shrink-0 overflow-hidden` wrappers with `transition-[width]` (300ms, `cubic-bezier(0.16, 1, 0.3, 1)`); all sidebars animate 0 → 320px
 - **Single `activeSidebar` state** — `'space-menu' | 'ai-sidekick' | 'view-settings' | null`; only one sidebar open at a time
 - **Toggle behaviour** — clicking a trigger while its sidebar is open closes it; clicking a different trigger swaps sidebars
 - **Push, not overlay** — sidebars are flex siblings, main content compresses when a sidebar opens
@@ -204,7 +204,7 @@ The original layout used a single full-page scroll container with three sticky l
 - **Tab context menu** — right-click any tab (active or inactive) opens MDS DropdownMenu with Rename (IconPen), Duplicate (IconSquaresTwoOverlap), Delete (IconTrash); Rename switches to the tab and triggers inline edit; Duplicate copies the tab with incremented label ("Kanban" → "Kanban 2") inserted after the source; Delete removes the tab and selects nearest right neighbour (or left if last); Delete is `aria-disabled` when only 1 tab remains; controlled via `open` prop + `contextTabId` state
 - **View management** — "New View" dropdown (Table/Kanban/Timeline with icons) creates a new tab and auto-switches to it; naming avoids collisions by checking existing labels (not types), so renamed tabs don't cause spurious numbering; double-click active tab to rename inline (blur saves, Enter saves, Escape cancels); tab input grows to fit text via invisible trigger-as-spacer pattern; duplicate and delete via right-click context menu
 - **Page switching** — Space Menu page list is interactive; clicking Backlog/Roadmap switches page, resets tabs and scroll
-- **Three push sidebars** — hamburger opens Space Menu (left, 280px), sparkle opens AI Sidekick (right, 400px), settings icon opens View Settings (right, 400px); smooth 300ms width animation; active toolbar buttons show #F1F2F5 background; Space Menu has its own close button in top bar; AI Sidekick uses SidebarShell close button; View Settings has its own header bar with integrated close button (SidebarShell close hidden via `showClose={activeSidebar !== 'view-settings'}`)
+- **Three push sidebars** — hamburger opens Space Menu (left, 320px), sparkle opens AI Sidekick (right, 320px), settings icon opens View Settings (right, 320px); smooth 300ms width animation; active toolbar buttons show #F1F2F5 background; Space Menu has its own close button in top bar; AI Sidekick uses SidebarShell close button; View Settings has its own header bar with integrated close button (SidebarShell close hidden via `showClose={activeSidebar !== 'view-settings'}`)
 - **Sticky table header** — sticks below tabs (top-16, z-10) within scroll area, scrolls horizontally with table
 - **Staggered view transitions** — switching tabs always replays `item-enter` animation (via `key={activeTab}` forcing remount), even when switching between tabs of the same view type; table fades in as a unit (80ms delay); kanban columns stagger left-to-right (80ms–320ms, 60ms increments)
 - Data table: 18 backlog rows / 3 done rows (filtered), 56px row height
@@ -290,5 +290,5 @@ docs/plans/
 
 ## GitHub
 
-- **Repo:** [mikefrommiro/table-views](https://github.com/mikefrommiro/table-views)
+- **Repo:** [mike-walk/table-views](https://github.com/mike-walk/table-views)
 - **Branch:** `master`

@@ -178,9 +178,9 @@ export function App() {
       {/* Left sidebar slot */}
       <div
         className="shrink-0 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-        style={{ width: isLeftOpen ? 280 : 0 }}
+        style={{ width: isLeftOpen ? 320 : 0 }}
       >
-        <SidebarShell side="left" onClose={closeSidebar} showClose={false} width={280}>
+        <SidebarShell side="left" onClose={closeSidebar} showClose={false} width={320}>
           <SpaceMenu onClose={closeSidebar} activePage={activePage} onPageChange={switchPage} />
         </SidebarShell>
       </div>
@@ -215,7 +215,7 @@ export function App() {
       {/* Right sidebar slot */}
       <div
         className="shrink-0 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-        style={{ width: isRightOpen ? 400 : 0 }}
+        style={{ width: isRightOpen ? 320 : 0 }}
       >
         <SidebarShell side="right" onClose={closeSidebar} showClose={activeSidebar !== 'view-settings'}>
           {activeSidebar === 'view-settings' && <SidePanel onClose={closeSidebar} fields={pageFields} />}

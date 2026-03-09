@@ -8,7 +8,7 @@ interface SidebarShellProps {
   children: React.ReactNode
 }
 
-export function SidebarShell({ side, onClose, showClose = true, width = 400, children }: SidebarShellProps) {
+export function SidebarShell({ side, onClose, showClose = true, width = 320, children }: SidebarShellProps) {
   return (
     <div
       className={`relative flex flex-col shrink-0 h-full bg-white overflow-hidden ${

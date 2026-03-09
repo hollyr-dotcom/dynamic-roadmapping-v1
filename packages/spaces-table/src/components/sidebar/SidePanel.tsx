@@ -275,7 +275,7 @@ export function SidePanel({ onClose, fields }: SidePanelProps) {
       </div>
 
       {/* AI bar */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-[352px]">
+      <div className="absolute bottom-8 left-4 right-4">
         <AiBar placeholder={aiPrompt} onSubmit={handleAiSubmit} />
       </div>
 
