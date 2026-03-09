@@ -52,9 +52,10 @@ interface ViewTabsToolbarProps {
   onReorderTabs: (tabs: TabConfig[]) => void
   newColumnMenuOpen: boolean
   onNewColumnMenuOpenChange: (open: boolean) => void
+  variant?: 'page' | 'widget'
 }
 
-export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange }: ViewTabsToolbarProps) {
+export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange, variant = 'page' }: ViewTabsToolbarProps) {
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
   const [editingTabId, setEditingTabId] = useState<string | null>(null)
   const [editDraft, setEditDraft] = useState('')
@@ -228,7 +229,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
   const activeInOverflow = overflowTabIds.has(activeTab)
 
   return (
-    <div className="group sticky top-0 left-0 z-20 bg-white flex items-center gap-4 pl-14 pr-12 pt-4 pb-6 shrink-0">
+    <div className={`group sticky top-0 left-0 z-20 bg-white flex items-center gap-4 shrink-0 ${variant === 'widget' ? 'pl-0 pr-0 pt-2 pb-4' : 'pl-14 pr-12 pt-4 pb-6'}`}>
       {/* Left: tabs + chevron + plus — tight group */}
       <div ref={tabsAreaRef} className="flex items-center gap-2 flex-1 min-w-0">
         <Tabs value={activeTab} onChange={onTabChange} variant="buttons" size="medium">

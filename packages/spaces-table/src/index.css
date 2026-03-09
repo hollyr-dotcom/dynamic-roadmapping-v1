@@ -213,6 +213,29 @@ tbody tr.row-selected td.divider-first::before {
 .kanban-scroll { scrollbar-width: none; }
 .kanban-scroll::-webkit-scrollbar { display: none; }
 
+/* ── Miro canvas dot grid ────────────────────────────── */
+.canvas-dot-grid {
+  background-color: #F2F2F2;
+  background-image: radial-gradient(circle, #D5D8DE 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ── Canvas table widget — zero out built-in page gutters ── */
+.canvas-widget-view .pl-14 {
+  padding-left: 0 !important;
+}
+.canvas-widget-view .divider-first::after {
+  left: 0 !important;
+}
+.canvas-widget-view td.table-fill::after,
+.canvas-widget-view td.table-fill::before {
+  right: 0 !important;
+}
+.canvas-widget-view tbody tr:hover td.table-fill::before,
+.canvas-widget-view tbody tr.row-selected td.table-fill::before {
+  right: 0 !important;
+}
+
 /* ── Kanban icon buttons (tinted hover/active) ───────── */
 .kanban-icon-btn:hover { background-color: color-mix(in srgb, var(--btn-color) 12%, transparent); }
 .kanban-icon-btn:active { background-color: color-mix(in srgb, var(--btn-color) 20%, transparent); }

@@ -17,9 +17,10 @@ interface DatabaseTitleProps {
   opacity: number
   title: string
   onTitleChange: (title: string) => void
+  variant?: 'page' | 'widget'
 }
 
-export function DatabaseTitle({ opacity, title, onTitleChange }: DatabaseTitleProps) {
+export function DatabaseTitle({ opacity, title, onTitleChange, variant = 'page' }: DatabaseTitleProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const measureRef = useRef<HTMLSpanElement>(null)
   const [draft, setDraft] = useState(title)
@@ -71,8 +72,8 @@ export function DatabaseTitle({ opacity, title, onTitleChange }: DatabaseTitlePr
 
   return (
     <div
-      className="group/title sticky left-0 z-30 flex items-center gap-1 px-14 pb-1 shrink-0"
-      style={{ paddingTop: '48px', opacity }}
+      className={`group/title sticky left-0 z-30 flex items-center gap-1 pb-1 shrink-0 ${variant === 'widget' ? 'px-0' : 'px-14'}`}
+      style={{ paddingTop: variant === 'widget' ? 0 : '48px', opacity }}
     >
       {/* Hidden span to measure text width */}
       <span

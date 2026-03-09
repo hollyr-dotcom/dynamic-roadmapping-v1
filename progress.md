@@ -55,7 +55,7 @@ A high-fidelity interactive prototype of the Miro roadmap settings sidebar. See 
 
 ## Spaces Table (`packages/spaces-table`)
 
-Full-screen space with **two pages** (Backlog, Roadmap) and **dynamic views** across them. Structured as five domains: **page** (the space shell), **table** (data table module), **kanban** (kanban board module), **timeline** (timeline module), and **sidebar** (push-panel sidebars).
+Full-screen space with **two pages** (Backlog, Roadmap) and **dynamic views** across them. Structured as six domains: **page** (the space shell), **table** (data table module), **kanban** (kanban board module), **timeline** (timeline module), **sidebar** (push-panel sidebars), and **canvas** (infinite canvas mode).
 
 ### Page Architecture
 
@@ -111,6 +111,15 @@ Full-screen space with **two pages** (Backlog, Roadmap) and **dynamic views** ac
 | `KanbanBoard.tsx` | Accepts `data`, `fields`, and optional `columns` (Priority subset) props; groups data by priority, renders columns in horizontal `flex items-start` layout with 56px left padding, 40px trailing spacer; colour config per priority; staggered `item-enter` animation on mount (60ms increments per column) |
 | `KanbanColumn.tsx` | 340px-wide column; two-layer sticky header (`top-16`, z-10) — outer `bg-white` wrapper masks cards area behind rounded corners, inner div has `rounded-t-lg` + column bg colour; cards area has own bg + `rounded-b-lg`; custom Canvas Tag header (28px, 6px radius) with item count + add/options icon buttons on `group` hover; custom `ColumnIconButton` uses `color-mix` for tinted hover/active states |
 | `KanbanCard.tsx` | White card with coloured border (1.5px), 8px radius, subtle shadow; title text (14px Noto Sans) + field tags (flex-wrap, 8px gap); inline `FieldTag` sub-component formats values per field type |
+
+### Canvas Module (`src/components/canvas/`)
+
+| File | Description |
+|------|-------------|
+| `CanvasOverlay.tsx` | Full-viewport overlay with Miro dot grid background (`#F2F2F2` base, `#D5D8DE` 1px dots at 24px spacing via CSS `radial-gradient`); always in DOM, visibility controlled via opacity + pointer-events for smooth CSS transitions; `position: fixed; inset: 0; z-index: 60` |
+| `CanvasPillButton.tsx` | Floating pill button (MDS `Button` with `rounded` + `ghost` variant) — centered within the toolbar area via `fixed` positioning with dynamic `left`/`right` values matching sidebar widths; two visual states: **table mode** (`#F1F2F5` bg, `IconArrowsInSimple`, "Go to canvas") and **canvas mode** (white bg + shadow, `IconArrowsOutSimple`, "Go to {pageTitle}"); hover-to-reveal in table mode (visible when hovering nav/title/tabs area or the pill itself), always visible on canvas; `onHoverChange` callback prevents flicker when cursor moves between nav and pill; `z-index: 110` above all other layers |
+| `CanvasNavPanels.tsx` | Two floating white panels on canvas — **left** (menu + breadcrumb, `pl-2 pr-4`) and **right** (bell + avatars + Share, `px-2`); 40px tall (navbar 56px − 16px), positioned 8px from top and left/right edges (`rounded-lg`, subtle shadow `0 2px 8px rgba(0,0,0,0.08)`); content vertically aligns with navbar elements so no visual movement during transition; fade in/out with canvas overlay |
+| `CanvasTableWidget.tsx` | Floating table widget on canvas — renders DatabaseTitle + ViewTabsToolbar + active view (table/kanban/timeline) as a second copy sharing App.tsx state; white bg, 12px rounded corners, `0 2px 4px 0 rgba(34,36,40,0.08)` shadow, `32px 40px 40px` padding; `position: fixed`, horizontally centered via `translateX(-50%)`, `top: 128px`, `z-index: 70` (between dot grid z-60 and nav panels z-100); fades in from `scale(0.96)` with 500ms expo-out easing; `overflow: hidden` clips content to rounded corners; `.canvas-widget-view` CSS class zeroes out built-in `pl-14` page gutters and realigns row divider pseudo-elements; `variant="widget"` prop on DatabaseTitle (removes top/side padding) and ViewTabsToolbar (tighter padding) |
 
 ### Timeline Module (`src/components/timeline/`)
 
@@ -221,6 +230,7 @@ The original layout used a single full-page scroll container with three sticky l
 - **Shared dropdown menu width** — `MENU_WIDTH = 220` exported from ViewTabsToolbar, applied as `minWidth` on all MDS DropdownMenu.Content instances (tab context menu, new view, new column, row context menu, title menu) for consistent sizing
 - **Dropdown icon alignment** — `alignOffset={-12}` on icon-button-triggered menus (title three-dots, overflow chevron, new view +, row context) aligns menu item icons with the center of the trigger icon button
 - **View Settings sidebar** — header bar with "Settings" title (14px Roobert semibold) + close button on main view, back button on detail pages; scroll-linked 1px bottom border (200ms transition); `pt-14` (56px) scroll padding aligns first setting icon with tab bar action icons; "View" and "Fields" as section headers (14px Roobert, neutrals-subtle `#7D8297`) inside scrollable content; **dynamic layout icon** — Layout setting cell icon updates to match selected layout via `LAYOUT_ICONS` map; **dynamic fields** driven by active page's field definitions; **setting cells** — 14px labels, 20px icons in 40px rounded-lg containers; no cell bg hover — icon square changes colour on cell hover instead; 3-state icon bg (idle/hover/pressed) with `pressed` prop for dropdown-open state; chevron at far right in subtle gray, show on hover; **default states** — Layout (Kanban, on/green), Filter (off/gray by default, blue when active), Sort (off), Group by (off), Swimlanes (off); **field rows** — visible/hidden toggle via eye icon button (IconEyeOpen/IconEyeClosed); hidden fields use off-state styling (gray icon `#F1F2F5`, muted label+icon `#7D8297`) and auto-sort to bottom; edit icon button opens field detail page; drag handle + edit show on hover, eye-closed stays visible; `hiddenFields` Set state in SidePanel; `onClose` + `fields` props from App.tsx
+- **Canvas mode** — full-screen infinite canvas with Miro dot grid background; toggled via "Go to canvas" pill button; **full-viewport takeover** hides nav, sidebars, and all table content; smooth 500ms transition (app layout scales to 0.92 + fades out, canvas fades in) using `cubic-bezier(0.16, 1, 0.3, 1)` expo-out easing; sidebars force-closed on canvas open; Escape key closes canvas; **floating nav panels** on canvas replicate left (menu + breadcrumb) and right (bell + avatars + Share) nav sections as white rounded panels at 8px from edges; **hover-to-reveal pill** in table mode — button appears when hovering anywhere above the table (nav bar, database title, or tabs toolbar); `canvasOpen` boolean state in App.tsx; **table widget on canvas** — full table (title, tabs, active view) rendered as a floating widget with white bg, 12px rounded corners, subtle shadow, 32/40px padding; horizontally centered at `top: 128px`; shares state with App.tsx so tab switching and title editing work on canvas; `.canvas-widget-view` CSS zeroes out page gutters for even side padding; `variant="widget"` prop on DatabaseTitle and ViewTabsToolbar for compact layout
 - Thin scrollbar styling (`.page-scroll` on scroll area), `border-separate` for per-cell border-radius support
 
 ---
@@ -248,6 +258,7 @@ packages/
     src/components/table/ (index, DataTable, TableHeader, TableRow, CellRenderer)
     src/components/table/cells/ (TextCell, NumberCell, CurrencyCell, AvatarStackCell, StatusCell)
     src/components/kanban/ (index, KanbanBoard, KanbanColumn, KanbanCard)
+    src/components/canvas/ (CanvasOverlay, CanvasPillButton, CanvasNavPanels)
     src/components/timeline/ (index, TimelinePlaceholder)
     src/lib/filterParser.ts
     src/App.tsx, main.tsx, index.css
@@ -262,7 +273,7 @@ docs/plans/
 ## Next Steps
 
 ### Immediate
-- Design and build the timeline view for the Roadmap page
+- Canvas widget polish — drag/pan on canvas, resize widget, zoom transitions
 
 ### Backlog — Tab Bar
 - **Tab reorder on tab bar** — inline drag on the tab bar itself still blocked by Radix `Tabs.Trigger` intercepting pointer events; reordering is now available via the overflow menu's drag-to-reorder; visual reorder on the bar itself is a future enhancement. See `docs/plans/2026-03-06-tab-drag-reorder-design.md` for decision log.
@@ -291,4 +302,5 @@ docs/plans/
 ## GitHub
 
 - **Repo:** [mike-walk/table-views](https://github.com/mike-walk/table-views)
-- **Branch:** `master`
+- **Main branch:** `master`
+- **Canvas exploration:** `canvas-interactions`
