@@ -19,7 +19,7 @@ export function TableHeader({ fields }: TableHeaderProps) {
             className="text-left font-body font-semibold text-[#656B81] h-14"
             style={{
               fontSize: '14px',
-              width: field.isPrimary ? '480px' : '160px',
+              width: field.isPrimary ? '480px' : '208px',
               paddingLeft: '12px',
               paddingRight: '20px',
             }}

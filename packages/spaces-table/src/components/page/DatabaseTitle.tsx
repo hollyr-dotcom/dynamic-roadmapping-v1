@@ -2,6 +2,8 @@ import React, { useRef, useEffect, useState } from 'react'
 import {
   IconButton,
   IconDotsThree,
+  IconArrowsOutSimple,
+  IconArrowUpRight,
   DropdownMenu,
   IconStar,
   IconLink,
@@ -10,6 +12,7 @@ import {
   IconPen,
   IconSquaresTwoOverlap,
   IconTrash,
+  Tooltip,
 } from '@mirohq/design-system'
 import { MENU_WIDTH } from './ViewTabsToolbar'
 
@@ -18,9 +21,11 @@ interface DatabaseTitleProps {
   title: string
   onTitleChange: (title: string) => void
   variant?: 'page' | 'widget'
+  onExitCanvas?: () => void
+  syncCount?: number
 }
 
-export function DatabaseTitle({ opacity, title, onTitleChange, variant = 'page' }: DatabaseTitleProps) {
+export function DatabaseTitle({ opacity, title, onTitleChange, variant = 'page', onExitCanvas, syncCount = 0 }: DatabaseTitleProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const measureRef = useRef<HTMLSpanElement>(null)
   const [draft, setDraft] = useState(title)
@@ -100,7 +105,44 @@ export function DatabaseTitle({ opacity, title, onTitleChange, variant = 'page' 
         className="title-input font-heading font-semibold text-[#222428] leading-[1.4] px-0.5 rounded bg-transparent border-none outline-none cursor-default transition-colors duration-150 hover:bg-[#F1F2F5] hover:cursor-pointer focus:bg-white focus:cursor-text focus:shadow-[0_0_0_2px_white,0_0_0_4px_#2B4DF8]"
       />
 
-      <div className={`self-end mb-1 transition-all duration-200 ease-out ${
+      {/* Sync indicator — visible when multiple widgets share data */}
+      {variant === 'widget' && syncCount > 1 && (
+        <div
+          className="-ml-0.5 animate-[sync-in_300ms_ease-out_both]"
+        >
+          <Tooltip>
+            <Tooltip.Trigger asChild>
+              <IconButton
+                aria-label={`Synced with ${syncCount - 1} other view${syncCount > 2 ? 's' : ''}`}
+                variant="ghost"
+                size="medium"
+                css={{ borderRadius: 8 }}
+              >
+                <IconArrowUpRight color="icon-neutrals-subtle" />
+              </IconButton>
+            </Tooltip.Trigger>
+            <Tooltip.Content side="top" sideOffset={4}>
+              Synced with {syncCount - 1} other view{syncCount > 2 ? 's' : ''}
+            </Tooltip.Content>
+          </Tooltip>
+        </div>
+      )}
+
+      {variant === 'widget' && onExitCanvas && (
+        <div className={`translate-y-1 transition-all duration-200 ease-out ${
+          isFocused
+            ? 'opacity-0 scale-[0.85] pointer-events-none'
+            : menuOpen
+              ? 'opacity-100 scale-100'
+              : 'opacity-0 scale-[0.85] group-hover/title:opacity-100 group-hover/title:scale-100'
+        }`}>
+          <IconButton aria-label="Expand to full view" variant="ghost" size="medium" onPress={onExitCanvas} css={{ borderRadius: 8 }}>
+            <IconArrowsOutSimple color="icon-neutrals-subtle" />
+          </IconButton>
+        </div>
+      )}
+
+      <div className={`translate-y-1 transition-all duration-200 ease-out ${
         isFocused
           ? 'opacity-0 scale-[0.85] pointer-events-none'
           : menuOpen
@@ -109,7 +151,7 @@ export function DatabaseTitle({ opacity, title, onTitleChange, variant = 'page' 
       }`}>
         <DropdownMenu onOpen={() => setMenuOpen(true)} onClose={() => setMenuOpen(false)}>
           <DropdownMenu.Trigger asChild>
-            <IconButton aria-label="More options" variant="ghost" size="medium">
+            <IconButton aria-label="More options" variant="ghost" size="medium" css={{ borderRadius: 8 }}>
               <IconDotsThree color="icon-neutrals-subtle" />
             </IconButton>
           </DropdownMenu.Trigger>

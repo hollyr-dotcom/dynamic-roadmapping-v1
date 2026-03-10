@@ -17,6 +17,8 @@ import {
   IconTrash,
   IconChevronDown,
   IconDotsSixVertical,
+  IconUsers,
+  IconArrowUpRight,
   Tooltip,
 } from '@mirohq/design-system'
 
@@ -52,11 +54,13 @@ interface ViewTabsToolbarProps {
   onReorderTabs: (tabs: TabConfig[]) => void
   newColumnMenuOpen: boolean
   onNewColumnMenuOpenChange: (open: boolean) => void
+  onDuplicateWidget?: (newTabId: string) => void
   variant?: 'page' | 'widget'
 }
 
-export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange, variant = 'page' }: ViewTabsToolbarProps) {
+export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange, onDuplicateWidget, variant = 'page' }: ViewTabsToolbarProps) {
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
+  const [pendingTabId, setPendingTabId] = useState<string | null>(null)
   const [editingTabId, setEditingTabId] = useState<string | null>(null)
   const [editDraft, setEditDraft] = useState('')
   const editInputRef = useRef<HTMLInputElement>(null)
@@ -232,8 +236,14 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
     <div className={`group sticky top-0 left-0 z-20 bg-white flex items-center gap-4 shrink-0 ${variant === 'widget' ? 'pl-0 pr-0 pt-2 pb-4' : 'pl-14 pr-12 pt-4 pb-6'}`}>
       {/* Left: tabs + chevron + plus — tight group */}
       <div ref={tabsAreaRef} className="flex items-center gap-2 flex-1 min-w-0">
-        <Tabs value={activeTab} onChange={onTabChange} variant="buttons" size="medium">
-          <Tabs.List css={{ gap: '8px', flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
+        <Tabs value={activeTab} onChange={(tabId: string) => {
+          if (variant === 'widget' && tabId !== activeTab) {
+            setPendingTabId(tabId)
+          } else {
+            onTabChange(tabId)
+          }
+        }} variant="buttons" size="medium">
+          <Tabs.List css={{ gap: '8px', flexWrap: 'nowrap', whiteSpace: 'nowrap', '& button': { borderRadius: 8 } }}>
             {visibleTabs.map((tab) => (
               <div key={tab.id} className="relative shrink-0">
                 <DropdownMenu
@@ -252,7 +262,13 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
                       <Tabs.Trigger
                         value={tab.id}
                         onDoubleClick={() => { if (tab.id === activeTab) startEditing(tab) }}
-                        css={editingTabId === tab.id ? { visibility: 'hidden' } : undefined}
+                        css={
+                          editingTabId === tab.id
+                            ? { visibility: 'hidden' }
+                            : pendingTabId === tab.id
+                              ? { background: '#F1F2F5', borderRadius: 8 }
+                              : undefined
+                        }
                       >
                         {editingTabId === tab.id ? editDraft || '\u00A0' : tab.label}
                       </Tabs.Trigger>
@@ -271,7 +287,24 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
                       )}
                     </div>
                   </DropdownMenu.Trigger>
-                  <DropdownMenu.Content side="bottom" align="start" css={{ minWidth: MENU_WIDTH }}>
+                  <DropdownMenu.Content side="bottom" align="start" alignOffset={-8} css={{ minWidth: MENU_WIDTH }}>
+                    {variant === 'widget' && tab.id !== activeTab && (
+                      <>
+                        <DropdownMenu.Item onSelect={() => {
+                          onTabChange(tab.id)
+                        }}>
+                          <DropdownMenu.IconSlot><IconUsers /></DropdownMenu.IconSlot>
+                          Change view for everyone
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Item onSelect={() => {
+                          onDuplicateWidget?.(tab.id)
+                        }}>
+                          <DropdownMenu.IconSlot><IconArrowUpRight /></DropdownMenu.IconSlot>
+                          Copy and sync
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Separator />
+                      </>
+                    )}
                     <DropdownMenu.Item onSelect={() => {
                       if (tab.id !== activeTab) onTabChange(tab.id)
                       startEditing(tab)
@@ -292,6 +325,34 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
                     </DropdownMenu.Item>
                   </DropdownMenu.Content>
                 </DropdownMenu>
+
+                {/* Tab-switch confirmation dropdown (widget variant only) */}
+                {variant === 'widget' && (
+                  <DropdownMenu
+                    open={pendingTabId === tab.id}
+                    onClose={() => setPendingTabId(null)}
+                  >
+                    <DropdownMenu.Trigger asChild>
+                      <div className="absolute inset-0 pointer-events-none" />
+                    </DropdownMenu.Trigger>
+                    <DropdownMenu.Content side="bottom" align="start" alignOffset={-8} css={{ minWidth: MENU_WIDTH }}>
+                      <DropdownMenu.Item onSelect={() => {
+                        onTabChange(tab.id)
+                        setPendingTabId(null)
+                      }}>
+                        <DropdownMenu.IconSlot><IconUsers /></DropdownMenu.IconSlot>
+                        Change view for everyone
+                      </DropdownMenu.Item>
+                      <DropdownMenu.Item onSelect={() => {
+                        onDuplicateWidget?.(tab.id)
+                        setPendingTabId(null)
+                      }}>
+                        <DropdownMenu.IconSlot><IconArrowUpRight /></DropdownMenu.IconSlot>
+                        Copy and sync
+                      </DropdownMenu.Item>
+                    </DropdownMenu.Content>
+                  </DropdownMenu>
+                )}
               </div>
             ))}
           </Tabs.List>
@@ -323,10 +384,10 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
                         aria-label="All views"
                         css={
                           activeInOverflow
-                            ? { background: '#F2F4FC', '& svg': { color: '#2B4DF8' } }
+                            ? { borderRadius: 8, background: '#F2F4FC', '& svg': { color: '#2B4DF8' } }
                             : isOverflowMenuOpen
-                              ? { background: '#F1F2F5' }
-                              : undefined
+                              ? { borderRadius: 8, background: '#F1F2F5' }
+                              : { borderRadius: 8 }
                         }
                       >
                         <IconChevronDown color="icon-neutrals-subtle" />
@@ -451,6 +512,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
                     aria-label="Add a view"
                     variant="ghost"
                     size="medium"
+                    css={{ borderRadius: 8 }}
                   >
                     <IconPlus color="icon-neutrals-subtle" />
                   </IconButton>
@@ -476,11 +538,11 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
         </div>
       </div>
 
-      {/* Right: actions */}
+      {/* Right: actions — disabled (no handlers) on canvas widget */}
       <div className="flex items-center gap-1 shrink-0">
         <Tooltip>
           <Tooltip.Trigger asChild>
-            <IconButton aria-label="Search" variant="ghost" size="medium">
+            <IconButton aria-label="Search" variant="ghost" size="medium" css={{ borderRadius: 8 }}>
               <IconMagnifyingGlass />
             </IconButton>
           </Tooltip.Trigger>
@@ -496,8 +558,8 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
               aria-label="AI Sidekick"
               variant="ghost"
               size="medium"
-              onPress={() => onToggleSidebar('ai-sidekick')}
-              css={activeSidebar === 'ai-sidekick' ? { background: '#F1F2F5' } : undefined}
+              onPress={variant !== 'widget' ? () => onToggleSidebar('ai-sidekick') : undefined}
+              css={activeSidebar === 'ai-sidekick' && variant !== 'widget' ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}
             >
               <IconSparksFilled />
             </IconButton>
@@ -514,8 +576,8 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
               aria-label="View settings"
               variant="ghost"
               size="medium"
-              onPress={() => onToggleSidebar('view-settings')}
-              css={activeSidebar === 'view-settings' ? { background: '#F1F2F5' } : undefined}
+              onPress={variant !== 'widget' ? () => onToggleSidebar('view-settings') : undefined}
+              css={activeSidebar === 'view-settings' && variant !== 'widget' ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}
             >
               <IconSlidersY />
             </IconButton>
@@ -526,28 +588,42 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
           </Tooltip.Content>
         </Tooltip>
 
-        <Tooltip>
-          <DropdownMenu open={newColumnMenuOpen} onOpen={() => onNewColumnMenuOpenChange(true)} onClose={() => onNewColumnMenuOpenChange(false)}>
+        {variant !== 'widget' ? (
+          <Tooltip>
+            <DropdownMenu open={newColumnMenuOpen} onOpen={() => onNewColumnMenuOpenChange(true)} onClose={() => onNewColumnMenuOpenChange(false)}>
+              <Tooltip.Trigger asChild>
+                <DropdownMenu.Trigger asChild>
+                  <IconButton aria-label="New column" variant="ghost" size="medium" css={{ borderRadius: 8 }}>
+                    <IconPlus />
+                  </IconButton>
+                </DropdownMenu.Trigger>
+              </Tooltip.Trigger>
+              <DropdownMenu.Content side="bottom" align="end" css={{ minWidth: MENU_WIDTH }}>
+                <DropdownMenu.Item>Text</DropdownMenu.Item>
+                <DropdownMenu.Item>Number</DropdownMenu.Item>
+                <DropdownMenu.Item>Status</DropdownMenu.Item>
+                <DropdownMenu.Item>Person</DropdownMenu.Item>
+                <DropdownMenu.Item>Date</DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu>
+            <Tooltip.Content side="top" sideOffset={4}>
+              New column
+              <Tooltip.Hotkey>+</Tooltip.Hotkey>
+            </Tooltip.Content>
+          </Tooltip>
+        ) : (
+          <Tooltip>
             <Tooltip.Trigger asChild>
-              <DropdownMenu.Trigger asChild>
-                <IconButton aria-label="New column" variant="ghost" size="medium">
-                  <IconPlus />
-                </IconButton>
-              </DropdownMenu.Trigger>
+              <IconButton aria-label="New column" variant="ghost" size="medium" css={{ borderRadius: 8 }}>
+                <IconPlus />
+              </IconButton>
             </Tooltip.Trigger>
-            <DropdownMenu.Content side="bottom" align="end" css={{ minWidth: MENU_WIDTH }}>
-              <DropdownMenu.Item>Text</DropdownMenu.Item>
-              <DropdownMenu.Item>Number</DropdownMenu.Item>
-              <DropdownMenu.Item>Status</DropdownMenu.Item>
-              <DropdownMenu.Item>Person</DropdownMenu.Item>
-              <DropdownMenu.Item>Date</DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu>
-          <Tooltip.Content side="top" sideOffset={4}>
-            New column
-            <Tooltip.Hotkey>+</Tooltip.Hotkey>
-          </Tooltip.Content>
-        </Tooltip>
+            <Tooltip.Content side="top" sideOffset={4}>
+              New column
+              <Tooltip.Hotkey>+</Tooltip.Hotkey>
+            </Tooltip.Content>
+          </Tooltip>
+        )}
 
       </div>
 

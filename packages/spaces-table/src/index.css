@@ -54,6 +54,11 @@ body {
 tbody .divider-first::after,
 tbody .divider-last::after { background: #F1F2F5; }
 
+/* ── Last row — no bottom border ──────────────────────── */
+tbody tr:last-child .divider-first::after,
+tbody tr:last-child .divider-last::after { background: transparent; }
+tbody tr:last-child td { border-bottom-color: transparent; }
+
 /* ── Row controls visibility ──────────────────────────── */
 .row-number  { display: flex; }
 .row-dots,
@@ -205,6 +210,12 @@ tbody tr.row-selected td.divider-first::before {
   animation: filter-cell-wash 750ms linear forwards;
 }
 
+/* ── Sync indicator entrance ─────────────────────────── */
+@keyframes sync-in {
+  from { transform: translateY(4px) scale(0.7); opacity: 0; }
+  to   { transform: translateY(4px) scale(1);   opacity: 1; }
+}
+
 /* ── Hidden scrollbar for sidebar panels ─────────────── */
 .panel-scroll { scrollbar-width: none; }
 .panel-scroll::-webkit-scrollbar { display: none; }
@@ -227,13 +238,20 @@ tbody tr.row-selected td.divider-first::before {
 .canvas-widget-view .divider-first::after {
   left: 0 !important;
 }
-.canvas-widget-view td.table-fill::after,
-.canvas-widget-view td.table-fill::before {
-  right: 0 !important;
+.canvas-widget-view .table-fill {
+  display: none !important;
 }
-.canvas-widget-view tbody tr:hover td.table-fill::before,
-.canvas-widget-view tbody tr.row-selected td.table-fill::before {
-  right: 0 !important;
+.canvas-widget-view tbody tr:hover td.divider-first::before,
+.canvas-widget-view tbody tr.row-selected td.divider-first::before {
+  left: 0 !important;
+  border-radius: 8px 0 0 8px !important;
+}
+/* Right radius on the last data cell (before hidden table-fill) */
+.canvas-widget-view tbody tr:hover td:nth-last-child(2) {
+  border-radius: 0 8px 8px 0;
+}
+.canvas-widget-view tbody tr.row-selected td:nth-last-child(2) {
+  border-radius: 0 8px 8px 0;
 }
 
 /* ── Kanban icon buttons (tinted hover/active) ───────── */

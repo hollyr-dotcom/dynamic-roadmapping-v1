@@ -18,6 +18,13 @@ import { CanvasNavPanels } from './components/canvas/CanvasNavPanels'
 
 type PageId = 'backlog' | 'roadmap'
 
+interface CanvasWidget {
+  id: string
+  activeTab: string
+  x: number
+  y: number
+}
+
 interface PageConfig {
   title: string
   tabs: TabConfig[]
@@ -63,13 +70,40 @@ export function App() {
   const [canvasOpen, setCanvasOpen] = useState(false)
   const [navHovered, setNavHovered] = useState(false)
 
+  // Canvas pan/zoom/selection state
+  const [panX, setPanX] = useState(0)
+  const [panY, setPanY] = useState(0)
+  const [zoom, setZoom] = useState(1)
+  const [widgets, setWidgets] = useState<CanvasWidget[]>([])
+  const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null)
+
   const toggleSidebar = useCallback((id: SidebarId) =>
     setActiveSidebar((prev) => (prev === id ? null : id)), [])
 
   const toggleCanvas = useCallback(() => {
     setCanvasOpen(prev => {
-      if (!prev) setActiveSidebar(null)
+      if (!prev) {
+        setActiveSidebar(null)
+        setWidgets([{ id: `widget-${Date.now()}`, activeTab, x: 0, y: 128 }])
+      } else {
+        setWidgets([])
+      }
+      setPanX(0)
+      setPanY(0)
+      setZoom(1)
+      setSelectedWidgetId(null)
       return !prev
+    })
+  }, [activeTab])
+
+  // Focal-point zoom helper
+  const zoomTo = useCallback((newZoom: number, focalX: number, focalY: number) => {
+    const clamped = Math.min(3, Math.max(0.1, newZoom))
+    setZoom(prev => {
+      const ratio = clamped / prev
+      setPanX(p => focalX - ratio * (focalX - p))
+      setPanY(p => focalY - ratio * (focalY - p))
+      return clamped
     })
   }, [])
 
@@ -83,7 +117,40 @@ export function App() {
       if (e.key === 'Escape' && canvasOpen) {
         e.preventDefault()
         setCanvasOpen(false)
+        setPanX(0)
+        setPanY(0)
+        setZoom(1)
+        setSelectedWidgetId(null)
+        setWidgets([])
         return
+      }
+
+      // Delete selected widget (only duplicates — keep at least one)
+      if (canvasOpen && !isEditing && (e.key === 'Backspace' || e.key === 'Delete') && selectedWidgetId) {
+        if (widgets.length > 1) {
+          e.preventDefault()
+          setWidgets(prev => prev.filter(w => w.id !== selectedWidgetId))
+          setSelectedWidgetId(null)
+        }
+        return
+      }
+
+      // Canvas zoom: +/- toward viewport center
+      if (canvasOpen && !isEditing) {
+        if (e.key === '=' || e.key === '+') {
+          e.preventDefault()
+          const cx = window.innerWidth / 2
+          const cy = window.innerHeight / 2
+          zoomTo(zoom + 0.1, cx, cy)
+          return
+        }
+        if (e.key === '-') {
+          e.preventDefault()
+          const cx = window.innerWidth / 2
+          const cy = window.innerHeight / 2
+          zoomTo(zoom - 0.1, cx, cy)
+          return
+        }
       }
 
       if (meta && e.key === 'k') {
@@ -94,14 +161,14 @@ export function App() {
         e.preventDefault()
         toggleSidebar('view-settings')
       }
-      if (e.key === '+' && !meta && !isEditing) {
+      if (e.key === '+' && !meta && !isEditing && !canvasOpen) {
         e.preventDefault()
         setNewColumnMenuOpen(true)
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [toggleSidebar, canvasOpen])
+  }, [toggleSidebar, canvasOpen, zoom, zoomTo, widgets, selectedWidgetId])
 
   const closeSidebar = () => setActiveSidebar(null)
 
@@ -176,6 +243,34 @@ export function App() {
     setPageTabs(prev => ({ ...prev, [activePage]: reorderedTabs }))
   }, [activePage])
 
+  // Canvas widget handlers
+  const handleWidgetTabChange = useCallback((widgetId: string, tabId: string) => {
+    setWidgets(prev => prev.map(w => w.id === widgetId ? { ...w, activeTab: tabId } : w))
+  }, [])
+
+  const handleDuplicateWidget = useCallback((sourceWidgetId: string, newTabId: string) => {
+    // Measure source widget's actual width from the DOM
+    const sourceCard = document.querySelector(`[data-widget-id="${sourceWidgetId}"] [data-widget-card]`) as HTMLElement | null
+    const cardWidth = sourceCard?.offsetWidth ?? 800
+    const gap = 60 // space between widgets
+
+    setWidgets(prev => {
+      const source = prev.find(w => w.id === sourceWidgetId)
+      if (!source) return prev
+      const newWidget: CanvasWidget = {
+        id: `widget-${Date.now()}`,
+        activeTab: newTabId,
+        x: source.x + cardWidth + gap,
+        y: source.y,
+      }
+      return [...prev, newWidget]
+    })
+  }, [])
+
+  const handleWidgetMove = useCallback((widgetId: string, x: number, y: number) => {
+    setWidgets(prev => prev.map(w => w.id === widgetId ? { ...w, x, y } : w))
+  }, [])
+
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const fadeStart = 10
     const fadeZone = 25
@@ -228,6 +323,8 @@ export function App() {
         <div ref={scrollRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-auto page-scroll flex flex-col">
           <div onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
             <DatabaseTitle opacity={1 - scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} />
+          </div>
+          <div className="sticky top-0 z-20" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
             <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} />
           </div>
 
@@ -257,36 +354,67 @@ export function App() {
       </div>
 
       {/* Canvas overlay */}
-      <CanvasOverlay isOpen={canvasOpen} />
-
-      {/* Canvas table widget */}
-      <CanvasTableWidget
+      <CanvasOverlay
         isOpen={canvasOpen}
-        databaseTitle={databaseTitle}
-        onTitleChange={setDatabaseTitle}
-        tabs={currentTabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        activeSidebar={activeSidebar}
-        onToggleSidebar={toggleSidebar}
-        onAddView={handleAddView}
-        onRenameTab={handleRenameTab}
-        onDuplicateTab={handleDuplicateTab}
-        onDeleteTab={handleDeleteTab}
-        onReorderTabs={handleReorderTabs}
-        newColumnMenuOpen={newColumnMenuOpen}
-        onNewColumnMenuOpenChange={setNewColumnMenuOpen}
-        activeViewType={activeTabConfig?.type}
-        viewData={viewData}
-        fields={pageFields}
-        kanbanColumns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined}
+        panX={panX}
+        panY={panY}
+        zoom={zoom}
+        onPan={(dx: number, dy: number) => { setPanX(p => p + dx); setPanY(p => p + dy) }}
+        onZoom={zoomTo}
+        onDeselect={() => setSelectedWidgetId(null)}
       />
+
+      {/* Canvas table widgets */}
+      {widgets.map(widget => {
+        const widgetTabConfig = currentTabs.find(t => t.id === widget.activeTab)
+        const widgetViewData = widget.activeTab === 'done' ? pageData.filter(r => r.status === 'done') : pageData
+        return (
+          <CanvasTableWidget
+            key={widget.id}
+            widgetId={widget.id}
+            isOpen={canvasOpen}
+            panX={panX}
+            panY={panY}
+            zoom={zoom}
+            initialX={widget.x}
+            initialY={widget.y}
+            selected={selectedWidgetId === widget.id}
+            onSelect={() => setSelectedWidgetId(widget.id)}
+            onMove={(x: number, y: number) => handleWidgetMove(widget.id, x, y)}
+            onExitCanvas={toggleCanvas}
+            onPan={(dx: number, dy: number) => { setPanX(p => p + dx); setPanY(p => p + dy) }}
+            onZoom={zoomTo}
+            databaseTitle={databaseTitle}
+            onTitleChange={setDatabaseTitle}
+            tabs={currentTabs}
+            activeTab={widget.activeTab}
+            onTabChange={(tabId) => handleWidgetTabChange(widget.id, tabId)}
+            activeSidebar={activeSidebar}
+            onToggleSidebar={toggleSidebar}
+            onAddView={handleAddView}
+            onRenameTab={handleRenameTab}
+            onDuplicateTab={handleDuplicateTab}
+            onDeleteTab={handleDeleteTab}
+            onReorderTabs={handleReorderTabs}
+            newColumnMenuOpen={newColumnMenuOpen}
+            onNewColumnMenuOpenChange={setNewColumnMenuOpen}
+            onDuplicateWidget={(newTabId: string) => handleDuplicateWidget(widget.id, newTabId)}
+            syncCount={widgets.length}
+            activeViewType={widgetTabConfig?.type}
+            viewData={widgetViewData}
+            fields={pageFields}
+            kanbanColumns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined}
+          />
+        )
+      })}
 
       {/* Canvas floating nav panels */}
       <CanvasNavPanels isOpen={canvasOpen} databaseTitle={databaseTitle} />
 
-      {/* Pill button — always on top, centered within toolbar area */}
-      <CanvasPillButton canvasOpen={canvasOpen} onToggle={toggleCanvas} leftWidth={isLeftOpen ? 320 : 0} rightWidth={isRightOpen ? 320 : 0} visible={canvasOpen || navHovered} onHoverChange={setNavHovered} pageTitle={databaseTitle} />
+      {/* Pill button — only shown in table mode (hover-to-reveal); canvas-mode "Go to Backlog" disabled for now — using expand button on widget instead */}
+      {/* {canvasOpen ? null : ( */}
+      <CanvasPillButton canvasOpen={false} onToggle={toggleCanvas} leftWidth={isLeftOpen ? 320 : 0} rightWidth={isRightOpen ? 320 : 0} visible={navHovered && !canvasOpen} onHoverChange={setNavHovered} pageTitle={databaseTitle} />
+      {/* )} */}
     </div>
   )
 }
