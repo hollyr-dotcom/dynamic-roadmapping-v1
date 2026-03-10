@@ -37,6 +37,8 @@ interface CanvasTableWidgetProps {
   onNewColumnMenuOpenChange: (open: boolean) => void
   onDuplicateWidget: (newTabId: string) => void
   syncCount: number
+  syncing: boolean
+  smoothPanning: boolean
   activeViewType: ViewType | undefined
   viewData: SpaceRow[]
   fields: FieldDefinition[]
@@ -118,6 +120,8 @@ export function CanvasTableWidget({
   onNewColumnMenuOpenChange,
   onDuplicateWidget,
   syncCount,
+  syncing,
+  smoothPanning,
   activeViewType,
   viewData,
   fields,
@@ -235,6 +239,9 @@ export function CanvasTableWidget({
         transformOrigin: '0 0',
         opacity: isOpen ? 1 : 0,
         pointerEvents: 'none',
+        transition: smoothPanning
+          ? 'opacity 500ms cubic-bezier(0.16,1,0.3,1), transform 600ms cubic-bezier(0.16,1,0.3,1)'
+          : undefined,
       }}
     >
       {/* Inner: widget positioned in world-space, top-left anchored */}
@@ -277,6 +284,7 @@ export function CanvasTableWidget({
             onTitleChange={onTitleChange}
             onExitCanvas={onExitCanvas}
             syncCount={syncCount}
+            syncing={syncing}
           />
 
           <ViewTabsToolbar

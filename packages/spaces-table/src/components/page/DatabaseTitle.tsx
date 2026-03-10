@@ -23,9 +23,10 @@ interface DatabaseTitleProps {
   variant?: 'page' | 'widget'
   onExitCanvas?: () => void
   syncCount?: number
+  syncing?: boolean
 }
 
-export function DatabaseTitle({ opacity, title, onTitleChange, variant = 'page', onExitCanvas, syncCount = 0 }: DatabaseTitleProps) {
+export function DatabaseTitle({ opacity, title, onTitleChange, variant = 'page', onExitCanvas, syncCount = 0, syncing = false }: DatabaseTitleProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const measureRef = useRef<HTMLSpanElement>(null)
   const [draft, setDraft] = useState(title)
@@ -108,10 +109,11 @@ export function DatabaseTitle({ opacity, title, onTitleChange, variant = 'page',
       {/* Sync indicator — visible when multiple widgets share data */}
       {variant === 'widget' && syncCount > 1 && (
         <div
-          className="-ml-0.5 animate-[sync-in_300ms_ease-out_both]"
+          className="-ml-0.5 mt-[6px] animate-[sync-in_300ms_ease-out_both]"
         >
           <Tooltip>
             <Tooltip.Trigger asChild>
+              <span className={syncing ? 'sync-pulse' : ''}>
               <IconButton
                 aria-label={`Synced with ${syncCount - 1} other view${syncCount > 2 ? 's' : ''}`}
                 variant="ghost"
@@ -120,6 +122,7 @@ export function DatabaseTitle({ opacity, title, onTitleChange, variant = 'page',
               >
                 <IconArrowUpRight color="icon-neutrals-subtle" />
               </IconButton>
+              </span>
             </Tooltip.Trigger>
             <Tooltip.Content side="top" sideOffset={4}>
               Synced with {syncCount - 1} other view{syncCount > 2 ? 's' : ''}

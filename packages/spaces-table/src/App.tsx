@@ -76,6 +76,8 @@ export function App() {
   const [zoom, setZoom] = useState(1)
   const [widgets, setWidgets] = useState<CanvasWidget[]>([])
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null)
+  const [smoothPanning, setSmoothPanning] = useState(false)
+  const [syncShimmering, setSyncShimmering] = useState(false)
 
   const toggleSidebar = useCallback((id: SidebarId) =>
     setActiveSidebar((prev) => (prev === id ? null : id)), [])
@@ -254,18 +256,41 @@ export function App() {
     const cardWidth = sourceCard?.offsetWidth ?? 800
     const gap = 60 // space between widgets
 
+    let newX = 0
+    let newY = 0
+
     setWidgets(prev => {
       const source = prev.find(w => w.id === sourceWidgetId)
       if (!source) return prev
+      newX = source.x + cardWidth + gap
+      newY = source.y
       const newWidget: CanvasWidget = {
         id: `widget-${Date.now()}`,
         activeTab: newTabId,
-        x: source.x + cardWidth + gap,
-        y: source.y,
+        x: newX,
+        y: newY,
       }
       return [...prev, newWidget]
     })
-  }, [])
+
+    // Auto-pan: place new widget's top-left at top-left of visible canvas,
+    // clearing the floating nav panels
+    const padX = 80
+    const padY = 100
+    const targetPanX = padX - newX * zoom
+    const targetPanY = padY - newY * zoom
+
+    setSmoothPanning(true)
+    requestAnimationFrame(() => {
+      setPanX(targetPanX)
+      setPanY(targetPanY)
+    })
+    setTimeout(() => setSmoothPanning(false), 700)
+
+    // Trigger shimmer on sync indicators after pan settles
+    setSyncShimmering(true)
+    setTimeout(() => setSyncShimmering(false), 4800)
+  }, [panX, zoom])
 
   const handleWidgetMove = useCallback((widgetId: string, x: number, y: number) => {
     setWidgets(prev => prev.map(w => w.id === widgetId ? { ...w, x, y } : w))
@@ -359,6 +384,7 @@ export function App() {
         panX={panX}
         panY={panY}
         zoom={zoom}
+        smoothPanning={smoothPanning}
         onPan={(dx: number, dy: number) => { setPanX(p => p + dx); setPanY(p => p + dy) }}
         onZoom={zoomTo}
         onDeselect={() => setSelectedWidgetId(null)}
@@ -400,6 +426,8 @@ export function App() {
             onNewColumnMenuOpenChange={setNewColumnMenuOpen}
             onDuplicateWidget={(newTabId: string) => handleDuplicateWidget(widget.id, newTabId)}
             syncCount={widgets.length}
+            syncing={syncShimmering}
+            smoothPanning={smoothPanning}
             activeViewType={widgetTabConfig?.type}
             viewData={widgetViewData}
             fields={pageFields}

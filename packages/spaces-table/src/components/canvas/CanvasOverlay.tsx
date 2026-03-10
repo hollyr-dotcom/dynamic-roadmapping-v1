@@ -5,6 +5,7 @@ interface CanvasOverlayProps {
   panX: number
   panY: number
   zoom: number
+  smoothPanning: boolean
   onPan: (dx: number, dy: number) => void
   onZoom: (newZoom: number, focalX: number, focalY: number) => void
   onDeselect: () => void
@@ -23,7 +24,7 @@ function getGridSpacing(zoom: number) {
   return spacing
 }
 
-export function CanvasOverlay({ isOpen, panX, panY, zoom, onPan, onZoom, onDeselect }: CanvasOverlayProps) {
+export function CanvasOverlay({ isOpen, panX, panY, zoom, smoothPanning, onPan, onZoom, onDeselect }: CanvasOverlayProps) {
   const ref = useRef<HTMLDivElement>(null)
   const gridSpacing = getGridSpacing(zoom)
   const screenSpacing = gridSpacing * zoom
@@ -63,6 +64,9 @@ export function CanvasOverlay({ isOpen, panX, panY, zoom, onPan, onZoom, onDesel
         backgroundImage: 'radial-gradient(circle, #D5D8DE 1px, transparent 1px)',
         backgroundSize: `${screenSpacing}px ${screenSpacing}px`,
         backgroundPosition: `${panX % screenSpacing}px ${panY % screenSpacing}px`,
+        transition: smoothPanning
+          ? 'opacity 500ms cubic-bezier(0.16,1,0.3,1), background-position 600ms cubic-bezier(0.16,1,0.3,1)'
+          : undefined,
       }}
       onClick={onDeselect}
     />
