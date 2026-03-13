@@ -14,11 +14,17 @@ import {
 } from '@mirohq/design-system'
 
 // Figma asset URLs (valid for 7 days)
+const imgLogotype = 'https://www.figma.com/api/mcp/asset/57392f00-4031-499f-ad53-d04ee453643d'
 const imgFlowchart = 'https://www.figma.com/api/mcp/asset/6ba42a08-630f-4ccc-9f62-54f93def85ef'
 const imgMindMap = 'https://www.figma.com/api/mcp/asset/201f5647-1b17-4e83-8646-bc7e0544bd32'
-const imgAvatar = 'https://www.figma.com/api/mcp/asset/21f01b96-dd1f-4d43-988d-090c66c82fb0'
-const imgAvatar1 = 'https://www.figma.com/api/mcp/asset/c232da90-4266-4675-bebd-8056348a6e65'
+const imgAvatar = 'https://www.figma.com/api/mcp/asset/b370e17e-6122-4788-961b-d00586142da4'
+const imgAvatar1 = 'https://www.figma.com/api/mcp/asset/4c1913ee-d711-45dc-b293-e715ee8b3508'
 const imgTeamLogo = 'https://www.figma.com/api/mcp/asset/c3fad6a0-37fd-4eac-8e4d-2698a45aefd3'
+const imgIconPlant = 'https://www.figma.com/api/mcp/asset/1cd116ab-e909-4070-b937-7a070fcb1ea3'
+const imgIconPaper = 'https://www.figma.com/api/mcp/asset/1467b22c-49ed-46cf-b117-776d83ab0082'
+const imgIconCursor = 'https://www.figma.com/api/mcp/asset/c3051db5-997e-4176-857f-f4065c8db8c3'
+const imgIconPeople = 'https://www.figma.com/api/mcp/asset/961b4609-835a-47d3-9ddf-d8b100f0d272'
+const imgIconOrgChart = 'https://www.figma.com/api/mcp/asset/5aaa8449-64b2-43d8-985c-55d185b34e98'
 
 interface HomePageProps {
   onOpenApp: () => void
@@ -78,12 +84,12 @@ const templates = [
 ]
 
 const boards = [
-  { color: '#4262FF', icon: '▣', name: 'Space Overview - Annotations...', modifier: 'Alberta', date: 'Today', space: '', classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 3 },
-  { color: '#1A9DE1', icon: '⬜', name: 'Design Reviews - FY25 Q4', modifier: 'Alberta', date: 'Today', space: 'Product Design', classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
-  { color: '#F76707', icon: '▷', name: 'User Testing Prep', modifier: 'Alberta', date: 'Today', space: "Alberta's Space", classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 1 },
-  { color: '#7048E8', icon: '👤', name: 'Space Overview - Reviews', modifier: 'Alberta', date: 'Today', space: 'Spaces', classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
-  { color: '#E03131', icon: '👥', name: 'Design Review Team Picker', modifier: 'Alberta', date: 'Today', space: 'Spaces', classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
-  { color: '#E03131', icon: '👥', name: 'Design Review Team Picker', modifier: 'Alberta', date: 'Today', space: 'Spaces', classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
+  { iconImg: imgIconPlant,    name: 'FY25 Product Illustrations...',  modifier: 'Alberta', date: 'Today', space: '',                classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 3 },
+  { iconImg: imgIconPaper,    name: 'Design Reviews - FY25 Q4',       modifier: 'Alberta', date: 'Today', space: 'Product Design',   classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
+  { iconImg: imgIconCursor,   name: 'User Testing Prep',               modifier: 'Alberta', date: 'Today', space: "Alberta's Space",  classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 1 },
+  { iconImg: imgIconOrgChart, name: 'Space Overview - Reviews',        modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
+  { iconImg: imgIconPeople,   name: 'Design Review Team Picker',       modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
+  { iconImg: imgIconPeople,   name: 'Design Review Team Picker',       modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
 ]
 
 export function HomePage({ onOpenApp }: HomePageProps) {
@@ -254,19 +260,19 @@ export function HomePage({ onOpenApp }: HomePageProps) {
       <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden">
 
         {/* Top bar */}
-        <div className="flex items-center justify-between px-8 py-3 bg-white shrink-0">
-          <span className="text-[24px] font-bold italic text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif' }}>miro</span>
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between px-7 py-3 bg-white border-b border-[#ebecf0] shrink-0">
+          <img src={imgLogotype} alt="miro" style={{ width: '74px', height: '26px' }} />
+          <div className="flex items-center gap-2">
             <div className="relative">
-              <button className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[#f3f4f6]">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M10 2a6 6 0 00-6 6v3l-1.5 2.5A1 1 0 003.5 15h13a1 1 0 00.866-1.5L16 11V8a6 6 0 00-6-6z" stroke="#1a1b1e" strokeWidth="1.5" strokeLinejoin="round"/>
-                  <path d="M8 15a2 2 0 004 0" stroke="#1a1b1e" strokeWidth="1.5"/>
+              <button className="w-[46px] h-[46px] flex items-center justify-center rounded-lg hover:bg-[#f3f4f6]">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                  <path d="M11 2a6.5 6.5 0 00-6.5 6.5v3.5L3 14.5A1 1 0 004 16h14a1 1 0 001-1.5L17.5 12V8.5A6.5 6.5 0 0011 2z" stroke="#1a1b1e" strokeWidth="1.5" strokeLinejoin="round"/>
+                  <path d="M9 16a2 2 0 004 0" stroke="#1a1b1e" strokeWidth="1.5"/>
                 </svg>
               </button>
-              <span className="absolute -top-0.5 -right-0.5 bg-[#4262FF] text-white text-[9px] font-bold rounded-full w-[18px] h-[18px] flex items-center justify-center leading-none">8</span>
+              <span className="absolute top-1 right-1 bg-[#1a1b1e] text-white text-[9px] font-bold rounded-full w-[16px] h-[16px] flex items-center justify-center leading-none">9</span>
             </div>
-            <div className="w-8 h-8 rounded-full bg-[#0CA678] flex items-center justify-center text-white text-[12px] font-bold">TL</div>
+            <div className="w-[37px] h-[37px] rounded-full bg-[#8d0101] flex items-center justify-center text-[12px] font-semibold" style={{ color: '#e3f7ea', fontFamily: 'Open Sans, sans-serif' }}>TL</div>
           </div>
         </div>
 
@@ -314,14 +320,15 @@ export function HomePage({ onOpenApp }: HomePageProps) {
 
             {/* Filters */}
             <div className="flex items-center gap-2 mb-4">
-              {['Owned by anyone', 'Any classification'].map(label => (
-                <button key={label} className="flex items-center gap-1.5 border border-[#d1d4db] rounded-lg px-3 py-1.5 text-[13px] text-[#1a1b1e] hover:bg-[#f3f4f6] bg-white transition-colors">
+              <span className="text-[14px] text-[#656b81]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Filter by:</span>
+              {['All boards', 'Owned by anyone', 'Any classification'].map(label => (
+                <button key={label} className="flex items-center gap-1.5 border border-[#d1d4db] rounded-lg px-3 py-1.5 text-[14px] text-[#1a1b1e] hover:bg-[#f3f4f6] bg-white transition-colors" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                   {label}
                   <IconChevronDown size="small" />
                 </button>
               ))}
-              <span className="text-[13px] text-[#656b81] ml-2">Sort by:</span>
-              <button className="flex items-center gap-1.5 border border-[#d1d4db] rounded-lg px-3 py-1.5 text-[13px] text-[#1a1b1e] hover:bg-[#f3f4f6] bg-white transition-colors">
+              <span className="text-[14px] text-[#656b81] ml-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>Sort by:</span>
+              <button className="flex items-center gap-1.5 border border-[#d1d4db] rounded-lg px-3 py-1.5 text-[14px] text-[#1a1b1e] hover:bg-[#f3f4f6] bg-white transition-colors" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                 Last opened
                 <IconChevronDown size="small" />
               </button>
@@ -330,9 +337,9 @@ export function HomePage({ onOpenApp }: HomePageProps) {
             {/* Board table */}
             <div className="border border-[#e9eaef] rounded-xl overflow-hidden">
               {/* Header */}
-              <div className="grid gap-4 px-4 py-3 bg-white border-b border-[#e9eaef]" style={{ gridTemplateColumns: '3fr 1fr 1.5fr 1fr 1fr 1.5fr' }}>
-                {['', 'Online users', 'Space', 'Last opened', 'Classification', 'Owner'].map((h, i) => (
-                  <span key={i} className="text-[12px] font-semibold text-[#656b81] uppercase tracking-wide">{h}</span>
+              <div className="grid gap-4 px-4 py-2 bg-white border-b border-[#e9eaef]" style={{ gridTemplateColumns: '3fr 1fr 1.5fr 1fr 1fr 1.5fr' }}>
+                {['Name', 'Online users', 'Space', 'Last opened', 'Classification', 'Owner'].map((h, i) => (
+                  <span key={i} className="text-[16px] text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{h}</span>
                 ))}
               </div>
 
@@ -345,15 +352,11 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                   style={{ gridTemplateColumns: '3fr 1fr 1.5fr 1fr 1fr 1.5fr' }}
                 >
                   {/* Name + icon */}
-                  <div className="flex items-start gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-lg shrink-0 mt-0.5 overflow-hidden" style={{ backgroundColor: board.color + '22', border: `1.5px solid ${board.color}44` }}>
-                      <div className="w-full h-full flex items-center justify-center" style={{ color: board.color, fontSize: '16px' }}>
-                        {board.icon}
-                      </div>
-                    </div>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <img src={board.iconImg} alt="" className="w-6 h-6 shrink-0 object-contain" />
                     <div className="min-w-0">
-                      <div className="text-[14px] font-medium text-[#1a1b1e] truncate">{board.name}</div>
-                      <div className="text-[12px] text-[#656b81]">Modified by {board.modifier}, {board.date}</div>
+                      <div className="text-[14px] font-semibold text-[#1a1b1e] truncate" style={{ fontFamily: 'Open Sans, sans-serif' }}>{board.name}</div>
+                      <div className="text-[12px] text-[#656b81]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Modified by {board.modifier}, {board.date}</div>
                     </div>
                   </div>
 
