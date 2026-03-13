@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react'
 import {
   IconHouse,
   IconClock,
@@ -11,6 +12,8 @@ import {
   IconCog,
   IconMagnifyingGlass,
   IconChevronDown,
+  IconLayout,
+  IconMap,
 } from '@mirohq/design-system'
 
 interface HomePageProps {
@@ -39,6 +42,22 @@ const templates = [
 const avatarUrl = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=56&h=56&fit=crop&crop=face'
 
 export function HomePage({ onOpenApp }: HomePageProps) {
+  const [spacesMenuOpen, setSpacesMenuOpen] = useState(false)
+  const [createSubmenuOpen, setCreateSubmenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!spacesMenuOpen) return
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setSpacesMenuOpen(false)
+        setCreateSubmenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [spacesMenuOpen])
+
   return (
     <div className="flex w-screen h-screen bg-white overflow-hidden">
       {/* Left sidebar */}
@@ -93,10 +112,13 @@ export function HomePage({ onOpenApp }: HomePageProps) {
         <div className="mx-2 my-3 h-px bg-[#e9eaef]" />
 
         {/* Spaces section */}
-        <div className="px-2">
+        <div className="px-2 relative" ref={menuRef}>
           <div className="flex items-center justify-between pl-2 pr-1 mb-1">
             <span className="text-[13px] text-[#656b81]" style={{ fontFamily: 'Noto Sans, sans-serif' }}>Spaces</span>
-            <button className="w-6 h-6 flex items-center justify-center rounded hover:bg-[#f1f2f5]">
+            <button
+              onClick={() => { setSpacesMenuOpen(v => !v); setCreateSubmenuOpen(false) }}
+              className="w-6 h-6 flex items-center justify-center rounded hover:bg-[#f1f2f5]"
+            >
               <IconPlus size="small" />
             </button>
           </div>
@@ -107,6 +129,76 @@ export function HomePage({ onOpenApp }: HomePageProps) {
             <IconChevronRight size="small" />
             <span className="text-[13px] font-semibold text-[#1a1b1e]" style={{ fontFamily: 'Noto Sans, sans-serif' }}>Your Spaces</span>
           </button>
+
+          {/* Spaces dropdown */}
+          {spacesMenuOpen && (
+            <div className="absolute left-full top-0 ml-1 w-[220px] bg-white border border-[#e9eaef] rounded-lg shadow-[0px_2px_8px_rgba(34,36,40,0.12),0px_0px_12px_rgba(34,36,40,0.04)] z-50 py-2">
+              {/* EPD WoW Blueprint */}
+              <button
+                onClick={() => { setSpacesMenuOpen(false); onOpenApp() }}
+                className="flex items-center gap-2 w-full px-3 py-2 hover:bg-[#f1f2f5] text-left"
+              >
+                <div className="w-4 h-4 shrink-0 flex items-center justify-center">
+                  <div className="w-3 h-3 bg-[#FFD02F] rounded-sm" />
+                </div>
+                <span className="text-[14px] text-[#222428] truncate" style={{ fontFamily: 'Noto Sans, sans-serif' }}>EPD WoW Blueprint v2.1</span>
+              </button>
+
+              {/* Start with Blueprints */}
+              <button
+                onClick={() => { setSpacesMenuOpen(false); onOpenApp() }}
+                className="flex items-center gap-2 w-full px-3 py-2 hover:bg-[#f1f2f5] text-left"
+              >
+                <IconLayout size="small" />
+                <span className="text-[14px] text-[#222428]" style={{ fontFamily: 'Noto Sans, sans-serif' }}>Start with Blueprints</span>
+              </button>
+
+              {/* Create new Space */}
+              <div className="relative">
+                <button
+                  onMouseEnter={() => setCreateSubmenuOpen(true)}
+                  onMouseLeave={() => setCreateSubmenuOpen(false)}
+                  onClick={() => { setSpacesMenuOpen(false); onOpenApp() }}
+                  className="flex items-center justify-between w-full px-3 py-2 hover:bg-[#f1f2f5] text-left"
+                >
+                  <span className="text-[14px] text-[#222428]" style={{ fontFamily: 'Noto Sans, sans-serif' }}>Create new Space</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-[#656b81] font-mono">⌘ S</span>
+                    <IconChevronRight size="small" />
+                  </div>
+                </button>
+
+                {/* Submenu */}
+                {createSubmenuOpen && (
+                  <div
+                    className="absolute left-full top-0 ml-1 w-[200px] bg-white border border-[#e9eaef] rounded-lg shadow-[0px_2px_8px_rgba(34,36,40,0.12)] z-50 py-2"
+                    onMouseEnter={() => setCreateSubmenuOpen(true)}
+                    onMouseLeave={() => setCreateSubmenuOpen(false)}
+                  >
+                    <button
+                      onClick={() => { setSpacesMenuOpen(false); setCreateSubmenuOpen(false); onOpenApp() }}
+                      className="flex items-center justify-between w-full px-3 py-2 hover:bg-[#f1f2f5] text-left"
+                    >
+                      <div className="flex items-center gap-2">
+                        <IconMap size="small" />
+                        <span className="text-[14px] text-[#222428]" style={{ fontFamily: 'Noto Sans, sans-serif' }}>Roadmap</span>
+                      </div>
+                      <span className="text-[10px] font-semibold text-white bg-[#4262FF] px-1.5 py-0.5 rounded">New</span>
+                    </button>
+                    <button
+                      onClick={() => { setSpacesMenuOpen(false); setCreateSubmenuOpen(false); onOpenApp() }}
+                      className="flex items-center gap-2 w-full px-3 py-2 hover:bg-[#f1f2f5] text-left"
+                    >
+                      <div className="w-4 h-4 shrink-0 flex items-center justify-center">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="0.5" y="0.5" width="4" height="7" rx="0.5" stroke="#1a1b1e"/><rect x="6.5" y="0.5" width="5" height="4" rx="0.5" stroke="#1a1b1e"/><rect x="6.5" y="6.5" width="5" height="5" rx="0.5" stroke="#1a1b1e"/></svg>
+                      </div>
+                      <span className="text-[14px] text-[#222428]" style={{ fontFamily: 'Noto Sans, sans-serif' }}>Blank</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Bottom icons */}
