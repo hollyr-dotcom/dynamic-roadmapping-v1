@@ -1,15 +1,39 @@
-modules = ["bun"]
+modules = ["nodejs-20", "web"]
+[agent]
+expertMode = true
 
 [nix]
-channel = "stable-24_05"
+channel = "stable-25_05"
 
 [workflows]
-runButton = "Run"
+runButton = "Project"
 
 [[workflows.workflow]]
-name = "Run"
-mode = "sequential"
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "bun install && bun run dev"
+args = "bun run dev:table"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[deployment]
+deploymentTarget = "static"
+build = ["bun", "run", "--filter", "@spaces/spaces-table", "build"]
+publicDir = "packages/spaces-table/dist"
