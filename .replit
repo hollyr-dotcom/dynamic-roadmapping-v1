@@ -35,5 +35,5 @@ externalPort = 80
 
 [deployment]
 deploymentTarget = "static"
-build = ["bun", "run", "--filter", "@spaces/spaces-table", "build"]
+build = ["bash", "-c", "bun install && bun run --filter @spaces/spaces-table build"]
 publicDir = "packages/spaces-table/dist"
