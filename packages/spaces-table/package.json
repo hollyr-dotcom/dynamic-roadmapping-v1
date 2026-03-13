@@ -9,6 +9,6 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@spaces/shared": "workspace:*"
+    "@spaces/shared": "file:../shared"
   }
 }
