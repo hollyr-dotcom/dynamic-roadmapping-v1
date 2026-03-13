@@ -3,6 +3,7 @@
   "private": true,
   "workspaces": ["packages/*"],
   "scripts": {
+    "dev": "bun run --filter @spaces/spaces-table dev",
     "dev:sidebar": "bun run --filter @spaces/sidebar dev",
     "dev:table": "bun run --filter @spaces/spaces-table dev",
     "test": "bun run --filter '*' test"
