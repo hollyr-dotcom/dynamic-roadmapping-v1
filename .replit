@@ -21,13 +21,13 @@ args = "Start application"
 name = "Start application"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "bun run dev:sidebar"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bun run dev:table"
+waitForPort = 5000
 
 [[ports]]
 localPort = 5000
@@ -35,5 +35,5 @@ externalPort = 80
 
 [deployment]
 deploymentTarget = "static"
-build = ["bun", "run", "--filter", "@spaces/sidebar", "build"]
-publicDir = "packages/sidebar/dist"
+build = ["bun", "run", "--filter", "@spaces/spaces-table", "build"]
+publicDir = "packages/spaces-table/dist"
