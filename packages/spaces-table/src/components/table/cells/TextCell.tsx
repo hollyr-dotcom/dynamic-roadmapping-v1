@@ -3,7 +3,7 @@ interface TextCellProps {
   isPrimary?: boolean
 }
 
-export function TextCell({ value, isPrimary }: TextCellProps) {
+export function TextCell({ value }: TextCellProps) {
   return (
     <span
       className="truncate block font-body text-[#222428]"

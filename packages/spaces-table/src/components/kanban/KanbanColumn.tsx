@@ -27,7 +27,7 @@ function ColumnIconButton({ label, color, children }: { label: string; color: st
   )
 }
 
-export function KanbanColumn({ priority, config, rows, fields }: KanbanColumnProps) {
+export function KanbanColumn({ config, rows, fields }: KanbanColumnProps) {
   return (
     <div
       className="group flex flex-col"
