@@ -8,6 +8,7 @@ import { DataTable } from './components/table'
 import { KanbanBoard } from './components/kanban'
 import { TimelinePlaceholder } from './components/timeline'
 import { SidebarShell } from './components/sidebar/SidebarShell'
+import { HomePage } from './components/page/HomePage'
 import { SpaceMenu } from './components/sidebar/SpaceMenu'
 import { AiSidekickPanel } from './components/sidebar/AiSidekickPanel'
 import { SidePanel } from './components/sidebar/SidePanel'
@@ -56,6 +57,7 @@ const ROADMAP_KANBAN_COLUMNS: Priority[] = ['now', 'next', 'later']
 
 export function App() {
   const [scrollFade, setScrollFade] = useState(0)
+  const [view, setView] = useState<'home' | 'app'>('home')
   const [activePage, setActivePage] = useState<PageId>('backlog')
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
   const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
@@ -312,6 +314,10 @@ export function App() {
   const pageFields = activePage === 'backlog' ? fields : roadmapFields
   const viewData = activeTab === 'done' ? pageData.filter(r => r.status === 'done') : pageData
 
+  if (view === 'home') {
+    return <HomePage onOpenApp={() => setView('app')} />
+  }
+
   return (
     <div className="relative w-screen h-screen bg-white overflow-hidden">
       {/* Main app layout — scales down when canvas opens */}
@@ -329,7 +335,7 @@ export function App() {
         style={{ width: isLeftOpen ? 320 : 0 }}
       >
         <SidebarShell side="left" onClose={closeSidebar} showClose={false} width={320}>
-          <SpaceMenu onClose={closeSidebar} activePage={activePage} onPageChange={switchPage} />
+          <SpaceMenu onClose={closeSidebar} activePage={activePage} onPageChange={switchPage} onGoHome={() => { closeSidebar(); setView('home') }} />
         </SidebarShell>
       </div>
 
