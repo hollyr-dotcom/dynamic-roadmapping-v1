@@ -98,14 +98,14 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
             {/* Title */}
             <FieldRow label="Title">
               <div className="bg-white rounded px-2 py-1 w-full">
-                <p className="text-[14px] text-[#222428] leading-[1.4]" style={{ fontWeight: 600 }}>{row.title}</p>
+                <p className="text-[14px] font-bold text-[#222428] leading-[1.4]">{row.title}</p>
               </div>
             </FieldRow>
 
             {/* Description */}
             <FieldRow label="Description" alignStart>
               <div className="bg-white rounded px-2 py-1 w-full" style={{ minHeight: 88 }}>
-                <p className="text-[14px] font-semibold text-[#222428] leading-[1.4]">
+                <p className="text-[14px] text-[#222428] leading-[1.4]">
                   {row.description ?? '—'}
                 </p>
               </div>
