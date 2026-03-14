@@ -7,9 +7,10 @@ interface DataTableProps {
   data: SpaceRow[]
   fields: FieldDefinition[]
   onRowClick?: (row: SpaceRow) => void
+  onCompanyClick?: (row: SpaceRow, name: string) => void
 }
 
-export function DataTable({ data, fields, onRowClick }: DataTableProps) {
+export function DataTable({ data, fields, onRowClick, onCompanyClick }: DataTableProps) {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const tableRef = useRef<HTMLDivElement>(null)
 
@@ -45,6 +46,7 @@ export function DataTable({ data, fields, onRowClick }: DataTableProps) {
               onToggleSelect={handleDotsClick}
               onDeselect={() => setSelectedRowId(null)}
               onRowClick={onRowClick}
+              onCompanyClick={onCompanyClick}
             />
           ))}
         </tbody>
