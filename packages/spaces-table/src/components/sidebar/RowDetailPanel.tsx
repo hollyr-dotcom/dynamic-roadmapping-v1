@@ -504,7 +504,7 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
             backgroundColor: '#2B2D33',
             boxShadow: '0px 6px 16px rgba(34,36,40,0.12), 0px 0px 8px rgba(34,36,40,0.06)',
             width: 280,
-            padding: '16px 40px 16px 16px',
+            padding: '16px',
             animation: feedbackToastExiting ? 'toastSlideDown 0.3s ease forwards' : 'toastSlideUp 0.25s ease',
           }}
         >
@@ -512,12 +512,6 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
             <p className="text-[14px] font-semibold text-[#FAFAFC] leading-[1.4]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>Feedback received!</p>
             <p className="text-[12px] text-[#C7CAD5] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>We really appreciate your feedback.</p>
           </div>
-          <button
-            onClick={() => dismissFeedbackToast()}
-            className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded text-[#FAFAFC] hover:bg-white/10 transition-colors"
-          >
-            <IconCross css={{ width: 14, height: 14 }} />
-          </button>
         </div>,
         document.body
       )}
