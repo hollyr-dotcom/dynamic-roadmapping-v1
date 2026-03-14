@@ -95,6 +95,11 @@ tbody tr:has(+ tr.row-selected) .divider-first::after,
 tbody tr:has(+ tr.row-selected) .divider-last::after { background: transparent; }
 
 /* ── Fill column (extends divider + highlight to viewport edge) ── */
+td.table-fill,
+th.table-fill {
+  width: 56px;
+  min-width: 56px;
+}
 td.table-fill {
   position: relative;
   isolation: isolate;

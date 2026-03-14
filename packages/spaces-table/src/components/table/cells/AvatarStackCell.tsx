@@ -1,3 +1,5 @@
+import { Chip } from '@mirohq/design-system'
+
 interface AvatarStackCellProps {
   values: string[]
 }
@@ -9,24 +11,12 @@ export function AvatarStackCell({ values }: AvatarStackCellProps) {
   return (
     <div className="flex items-center gap-1 flex-nowrap">
       {visible.map((name) => (
-        <span
-          key={name}
-          className="inline-flex items-center px-[10px] py-[4px] rounded text-xs font-body font-medium"
-          style={{
-            backgroundColor: '#F0F0EE',
-            color: '#1a1b1e',
-            fontSize: '12px',
-            lineHeight: '18px',
-          }}
-        >
+        <Chip key={name} removable={false} css={{ fontSize: 14 }}>
           {name}
-        </span>
+        </Chip>
       ))}
       {overflow > 0 && (
-        <span
-          className="text-[#656B81] font-body font-medium"
-          style={{ fontSize: '12px' }}
-        >
+        <span className="text-[#656B81] font-body font-medium" style={{ fontSize: '14px' }}>
           +{overflow}
         </span>
       )}

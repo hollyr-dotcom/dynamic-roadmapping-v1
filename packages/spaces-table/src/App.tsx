@@ -392,7 +392,7 @@ export function App() {
         }}
       >
         {activeSidebar === 'row-detail' ? (
-          <div className="h-full pr-6 py-6 flex">
+          <div className="h-full pl-3 pr-6 py-6 flex">
             <div
               className="flex-1 overflow-hidden rounded-xl"
               style={{ boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)' }}
