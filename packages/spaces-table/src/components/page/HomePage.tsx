@@ -272,7 +272,11 @@ export function HomePage({ onOpenApp }: HomePageProps) {
               </button>
               <span className="absolute top-1 right-1 bg-[#1a1b1e] text-white text-[9px] font-bold rounded-full w-[16px] h-[16px] flex items-center justify-center leading-none">9</span>
             </div>
-            <div className="w-[37px] h-[37px] rounded-full bg-[#8d0101] flex items-center justify-center text-[12px] font-semibold" style={{ color: '#e3f7ea', fontFamily: 'Open Sans, sans-serif' }}>TL</div>
+            <img
+              src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=74&h=74&fit=crop&crop=face"
+              alt="TL"
+              className="w-[37px] h-[37px] rounded-full object-cover border-2 border-white"
+            />
           </div>
         </div>
 
