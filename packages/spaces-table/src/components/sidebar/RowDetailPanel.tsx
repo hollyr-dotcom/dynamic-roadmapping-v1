@@ -220,6 +220,12 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: R
   const [showFeedbackToast, setShowFeedbackToast] = useState(false)
   const [feedbackToastExiting, setFeedbackToastExiting] = useState(false)
   const [showFeedbackConfetti, setShowFeedbackConfetti] = useState(false)
+  const [editingField, setEditingField] = useState<'title' | 'description' | null>(null)
+  const [editValue, setEditValue] = useState('')
+  const [savePhase, setSavePhase] = useState<'refreshing' | 'success' | null>(null)
+  const [saveProgress, setSaveProgress] = useState(0)
+  const [saveToastExiting, setSaveToastExiting] = useState(false)
+  const [saveConfetti, setSaveConfetti] = useState(false)
 
   const [feedbackFilterOpen, setFeedbackFilterOpen] = useState(false)
   const [feedbackFilterPos, setFeedbackFilterPos] = useState({ top: 0, left: 0 })
@@ -262,6 +268,27 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: R
   const dismissFeedbackToast = () => {
     setFeedbackToastExiting(true)
     setTimeout(() => { setShowFeedbackToast(false); setFeedbackToastExiting(false) }, 300)
+  }
+
+  const dismissSaveToast = () => {
+    setSaveToastExiting(true)
+    setTimeout(() => { setSavePhase(null); setSaveToastExiting(false); setSaveConfetti(false); setInsightDismissed(true) }, 300)
+  }
+
+  const triggerSaveToast = () => {
+    setSaveToastExiting(false)
+    setSaveProgress(0)
+    setSavePhase('refreshing')
+    // Kick off progress bar animation on next frame
+    requestAnimationFrame(() => requestAnimationFrame(() => setSaveProgress(100)))
+    // After 5s switch to success + confetti
+    setTimeout(() => {
+      setSavePhase('success')
+      setSaveConfetti(true)
+      setTimeout(() => setSaveConfetti(false), 2200)
+    }, 5000)
+    // Auto-dismiss after 8s total
+    setTimeout(() => dismissSaveToast(), 8000)
   }
 
   const handleDismissCard = (index: number) => {
@@ -380,18 +407,47 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: R
           <>
             {/* Title */}
             <FieldRow label="Title" alignStart>
-              <div className="bg-white rounded px-2 py-1 w-full">
-                <p className="text-[14px] font-bold text-[#222428] leading-[1.4]">{row.title}</p>
-              </div>
+              {editingField === 'title' ? (
+                <input
+                  autoFocus
+                  value={editValue}
+                  onChange={e => setEditValue(e.target.value)}
+                  onBlur={() => { setEditingField(null); triggerSaveToast() }}
+                  onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); if (e.key === 'Escape') setEditingField(null) }}
+                  className="text-[14px] font-bold text-[#222428] leading-[1.4] w-full px-2 py-1 rounded-md outline-none bg-white"
+                  style={{ border: '1.5px solid #4262FF', boxShadow: '0 0 0 3px rgba(66,98,255,0.12)' }}
+                />
+              ) : (
+                <div
+                  className="rounded px-2 py-1 w-full cursor-text hover:bg-[#F1F2F5] transition-colors"
+                  onClick={() => { setEditingField('title'); setEditValue(row.title) }}
+                >
+                  <p className="text-[14px] font-bold text-[#222428] leading-[1.4]">{row.title}</p>
+                </div>
+              )}
             </FieldRow>
 
             {/* Description */}
             <FieldRow label="Description" alignStart>
-              <div className="bg-white rounded px-2 py-1 w-full" style={{ minHeight: 88 }}>
-                <p className="text-[14px] text-[#222428] leading-[1.4]">
-                  {row.description ?? '—'}
-                </p>
-              </div>
+              {editingField === 'description' ? (
+                <textarea
+                  autoFocus
+                  value={editValue}
+                  onChange={e => setEditValue(e.target.value)}
+                  onBlur={() => { setEditingField(null); triggerSaveToast() }}
+                  onKeyDown={e => { if (e.key === 'Escape') setEditingField(null) }}
+                  className="text-[14px] text-[#222428] leading-[1.4] w-full px-2 py-1 rounded-md outline-none bg-white resize-none"
+                  style={{ minHeight: 56, border: '1.5px solid #4262FF', boxShadow: '0 0 0 3px rgba(66,98,255,0.12)' }}
+                />
+              ) : (
+                <div
+                  className="rounded px-2 py-1 w-full cursor-text hover:bg-[#F1F2F5] transition-colors"
+                  style={{ minHeight: 56 }}
+                  onClick={() => { setEditingField('description'); setEditValue(row.description ?? '') }}
+                >
+                  <p className="text-[14px] text-[#222428] leading-[1.4]">{row.description ?? '—'}</p>
+                </div>
+              )}
             </FieldRow>
 
             {/* Status */}
@@ -599,6 +655,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: R
             card={selectedFeedbackCard}
             onBack={() => setSelectedFeedbackCard(null)}
             onClose={onClose}
+            onAddToBoard={onAddToBoard}
           />
         </div>
       )}
@@ -674,6 +731,65 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: R
         </>,
         document.body
       )}
+      {/* Save toast — phase 1: refreshing, phase 2: success */}
+      {savePhase && createPortal(
+        <>
+          {saveConfetti && (
+            <div
+              className="fixed pointer-events-none"
+              style={{ bottom: 0, left: 0, width: 520, height: 520, zIndex: 9998,
+                animation: saveToastExiting ? 'toastSlideDown 0.3s ease forwards' : undefined }}
+            >
+              <DotLottieReact src="/confetti.json" autoplay loop={false} style={{ width: '100%', height: '100%' }} />
+            </div>
+          )}
+          <div
+            className="fixed bottom-6 left-6 z-[9999] flex items-start overflow-visible rounded-[8px]"
+            style={{
+              backgroundColor: '#2B2D33',
+              boxShadow: '0px 6px 16px rgba(34,36,40,0.12), 0px 0px 8px rgba(34,36,40,0.06)',
+              width: 280,
+              padding: '16px 40px 16px 16px',
+              animation: saveToastExiting ? 'toastSlideDown 0.3s ease forwards' : 'toastSlideUp 0.25s ease',
+            }}
+          >
+            {savePhase === 'success' && (
+              <div className="reaction-pop absolute pointer-events-none" style={{ top: -84, right: -24, zIndex: 1 }}>
+                <img src="/amazing-reaction.png" alt="" style={{ width: 160, height: 160, pointerEvents: 'none' }} />
+              </div>
+            )}
+            <div className="flex flex-col gap-2 flex-1 min-w-0">
+              <p className="text-[14px] font-semibold text-[#FAFAFC] leading-[1.4] truncate" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
+                {savePhase === 'refreshing' ? 'Refreshing...' : 'Changes saved'}
+              </p>
+              {savePhase === 'refreshing' ? (
+                <div className="w-full rounded-full overflow-hidden" style={{ height: 4, backgroundColor: 'rgba(255,255,255,0.15)' }}>
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${saveProgress}%`,
+                      backgroundColor: '#4262FF',
+                      transition: 'width 5s linear',
+                    }}
+                  />
+                </div>
+              ) : (
+                <p className="text-[12px] text-[#C7CAD5] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
+                  Your edits have been saved successfully.
+                </p>
+              )}
+            </div>
+            <button
+              onClick={() => dismissSaveToast()}
+              className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded text-[#FAFAFC] hover:bg-white/10 transition-colors"
+            >
+              <IconCross css={{ width: 14, height: 14 }} />
+            </button>
+          </div>
+        </>,
+        document.body
+      )}
+
       {feedbackFilterOpen && createPortal(
         <div
           ref={feedbackFilterDropdownRef}
@@ -1304,19 +1420,59 @@ function generateTranscript(card: { title: string; text: string; author: string 
   ]
 }
 
+function classifyEntry(text: string, borderColor: string): 'praise' | 'request' | 'problem' {
+  const t = text.toLowerCase()
+  const count = (pattern: RegExp) => (t.match(pattern) || []).length
+
+  const praiseScore = count(/(love|great|excellent|amazing|fantastic|saves|saved|cut.*time|really helps|works well|positive|exceeds|exceeded|enthusiastic|adoption|appreciate|brilliant|impressed|game.?changer)/g)
+  const requestScore = count(/(request(ing|ed|s)?|would like|wish|needs?|wants?|should|could you|if only|it would|please add|feature(s)?|improve(ment)?|enhancement|add support|looking for|hoping|asking for|quarters?)/g)
+  const problemScore = count(/(hard|difficult|can't|cannot|broken|issue|problem|frustrated|frustrating|slow|blocking|workaround|complicated|confusing|annoying|painful|cumbersome|impossible|error|fail(ing|ed)?|bug|crash|missing)/g)
+
+  if (praiseScore > requestScore && praiseScore > problemScore) return 'praise'
+  if (requestScore >= problemScore && requestScore > praiseScore) return 'request'
+  if (problemScore > praiseScore) return 'problem'
+
+  // Fallback to card's border color
+  if (borderColor === '#d4bbff') return 'request'
+  if (borderColor === '#ffd4b2') return 'problem'
+  return 'praise'
+}
+
 function FeedbackCardDetailView({
   card,
   onBack,
   onClose,
+  onAddToBoard,
 }: {
   card: { title: string; text: string; author: string; date: string; companies: string[] }
   onBack: () => void
   onClose: () => void
+  onAddToBoard?: (data: import('../canvas/CanvasFeedbackCard').FeedbackCardData) => void
 }) {
   const [activeTab, setActiveTab] = useState('Conversation')
   const [search, setSearch] = useState('')
   const [showCopyToast, setShowCopyToast] = useState(false)
   const copyToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [convMenuIndex, setConvMenuIndex] = useState<number | null>(null)
+  const [convMenuPos, setConvMenuPos] = useState({ top: 0, right: 0 })
+  const convMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (convMenuIndex === null) return
+    const handler = (e: MouseEvent) => {
+      if (convMenuRef.current?.contains(e.target as Node)) return
+      setConvMenuIndex(null)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [convMenuIndex])
+
+  const openConvMenu = (index: number, btn: HTMLButtonElement) => {
+    if (convMenuIndex === index) { setConvMenuIndex(null); return }
+    const rect = btn.getBoundingClientRect()
+    setConvMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
+    setConvMenuIndex(index)
+  }
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -1414,10 +1570,10 @@ function FeedbackCardDetailView({
                 {transcript[0].bold && <strong>{transcript[0].bold}</strong>}
               </p>
               <button
-                onClick={() => handleCopy(transcript[0].text + (transcript[0].bold ?? ''))}
+                onClick={e => openConvMenu(0, e.currentTarget)}
                 className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:text-[#222428] hover:bg-white/60 opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                <IconSquaresTwoOverlap css={{ width: 16, height: 16 }} />
+                <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
               </button>
             </div>
             {transcript.slice(1).map((msg, i) => (
@@ -1428,10 +1584,10 @@ function FeedbackCardDetailView({
                 </div>
                 <p className="text-[14px] text-[#656B81] leading-[1.5]">{msg.text}</p>
                 <button
-                  onClick={() => handleCopy(msg.text)}
+                  onClick={e => openConvMenu(i + 1, e.currentTarget)}
                   className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:text-[#222428] hover:bg-[#E9EAEF] opacity-0 group-hover:opacity-100 transition-opacity"
                 >
-                  <IconSquaresTwoOverlap css={{ width: 16, height: 16 }} />
+                  <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
                 </button>
               </div>
             ))}
@@ -1476,7 +1632,57 @@ function FeedbackCardDetailView({
         )}
       </div>
 
-      {/* Copy toast */}
+      {/* Conversation entry menu */}
+      {convMenuIndex !== null && createPortal(
+        <div
+          ref={convMenuRef}
+          className="fixed z-[9999] bg-white flex flex-col gap-[4px] py-3 px-3 rounded-lg"
+          style={{
+            top: convMenuPos.top,
+            right: convMenuPos.right,
+            width: 224,
+            boxShadow: '0px 2px 8px rgba(34,36,40,0.12), 0px 0px 12px rgba(34,36,40,0.04)',
+            fontFamily: 'Open Sans, sans-serif',
+          }}
+        >
+          {[
+            { icon: <IconBoard size="small" />, label: 'Add to board', onClick: () => {
+              const entry = convMenuIndex === 0 ? transcript[0] : transcript[convMenuIndex ?? 0]
+              const text = entry ? (entry.text + (entry.bold ?? '')) : ''
+              const cardType = classifyEntry(text, card.borderColor ?? '')
+              const borderColor = cardType === 'request' ? '#d4bbff' : cardType === 'problem' ? '#ffd4b2' : '#ffc6c6'
+              onAddToBoard?.({
+                title: card.title,
+                text,
+                author: `${entry?.speaker ?? ''} • ${entry?.time ?? ''}`,
+                date: card.date,
+                companies: card.companies,
+                borderColor,
+              })
+              setConvMenuIndex(null)
+            }},
+            { icon: <IconSquaresTwoOverlap size="small" />, label: 'Copy', onClick: () => {
+              const t = convMenuIndex === 0
+                ? transcript[0].text + (transcript[0].bold ?? '')
+                : transcript[convMenuIndex]?.text ?? ''
+              handleCopy(t)
+              setConvMenuIndex(null)
+            }},
+          ].map(({ icon, label, onClick }) => (
+            <button
+              key={label}
+              className="flex items-center gap-3 w-full px-2 py-2.5 rounded text-[14px] text-[#222428] hover:bg-[#F1F2F5] transition-colors text-left"
+              onClick={onClick}
+            >
+              <span className="text-[#656B81] flex items-center shrink-0">{icon}</span>
+              {label}
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
+
+            {/* Copy toast */}
       {showCopyToast && createPortal(
         <div
           className="fixed bottom-6 left-6 z-[9999] flex items-center gap-3 rounded-lg"

@@ -4,6 +4,8 @@ import {
   IconFlag,
   IconExclamationPointCircle,
   IconStarFilled,
+  IconHeadphones,
+  IconCalendarBlank,
   Chip,
 } from '@mirohq/design-system'
 
@@ -15,6 +17,8 @@ export interface FeedbackCardData {
   companies: string[]
   borderColor: string
   stars?: number
+  cardStyle?: 'figma'
+  cardType?: 'praise' | 'request' | 'problem'
 }
 
 interface CanvasFeedbackCardProps {
@@ -142,51 +146,91 @@ export function CanvasFeedbackCard({
       >
         {selected && <SelectionBorder />}
 
-        <div
-          className="bg-white rounded-xl flex flex-col gap-2 p-5"
-          style={{ border: `2px solid ${data.borderColor}`, borderBottomWidth: 6, fontFamily: 'Open Sans, sans-serif' }}
-        >
-          {/* Header */}
-          <div className="flex items-center gap-2">
-            <CardIcon borderColor={data.borderColor} />
-            <span className="text-[12px] text-[#959AAC] leading-[1.5]">{data.date}</span>
+        {data.cardStyle === 'figma' ? (
+          /* Figma sticky-note style */
+          <div
+            className="flex flex-col rounded-[16px] overflow-clip"
+            style={{ backgroundColor: '#ffdc4a', paddingBottom: 6, paddingTop: 2, paddingLeft: 2, paddingRight: 2, fontFamily: 'Open Sans, sans-serif' }}
+          >
+            <div className="bg-white rounded-[16px] flex flex-col" style={{ gap: 0 }}>
+              <div className="flex flex-col gap-2" style={{ paddingLeft: 16, paddingRight: 20, paddingTop: 16, paddingBottom: 8 }}>
+                <span style={{ color: data.cardType === 'request' ? '#5E4DB2' : data.cardType === 'problem' ? '#FF8F00' : '#de350b', display: 'flex' }}>
+                  {data.cardType === 'request' ? <IconFlag css={{ width: 20, height: 20 }} />
+                    : data.cardType === 'problem' ? <IconExclamationPointCircle css={{ width: 20, height: 20 }} />
+                    : <IconHeart css={{ width: 20, height: 20 }} />}
+                </span>
+                <p
+                  className="text-[14px] text-[#222428] leading-[1.4]"
+                  style={{
+                    fontVariationSettings: "'CTGR' 0, 'wdth' 100",
+                    display: '-webkit-box',
+                    WebkitLineClamp: 4,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
+                >
+                  "{data.text}"
+                </p>
+                <p className="text-[12px] text-[#656B81] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
+                  {data.author}
+                </p>
+              </div>
+              <div style={{ height: 1, backgroundColor: '#E9EAEF', margin: '0 12px' }} />
+              <div className="flex items-center gap-2 flex-wrap" style={{ paddingLeft: 16, paddingRight: 12, paddingTop: 8, paddingBottom: 12 }}>
+                <div className="flex items-center justify-center rounded" style={{ backgroundColor: '#F1F2F5', width: 28, height: 28 }}>
+                  <IconHeadphones css={{ width: 16, height: 16, color: '#656B81' }} />
+                </div>
+                <div className="flex items-center gap-1 rounded" style={{ backgroundColor: '#F1F2F5', height: 28, paddingLeft: 6, paddingRight: 8 }}>
+                  <IconCalendarBlank css={{ width: 14, height: 14, color: '#656B81' }} />
+                  <span className="text-[13px] text-[#333]">{data.date}</span>
+                </div>
+                {data.companies.slice(0, 2).map(name => (
+                  <div key={name} className="flex items-center rounded" style={{ backgroundColor: '#F1F2F5', height: 28, paddingLeft: 8, paddingRight: 8 }}>
+                    <span className="text-[13px] text-[#333]">{name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-
-          {/* Stars */}
-          {data.stars && (
-            <div className="flex gap-0.5">
-              {Array.from({ length: data.stars }).map((_, i) => (
-                <IconStarFilled key={i} css={{ width: 12, height: 12 }} />
+        ) : (
+          /* Classic feedback card style */
+          <div
+            className="bg-white rounded-xl flex flex-col gap-2 p-5"
+            style={{ border: `2px solid ${data.borderColor}`, borderBottomWidth: 6, fontFamily: 'Open Sans, sans-serif' }}
+          >
+            <div className="flex items-center gap-2">
+              <CardIcon borderColor={data.borderColor} />
+              <span className="text-[12px] text-[#959AAC] leading-[1.5]">{data.date}</span>
+            </div>
+            {data.stars && (
+              <div className="flex gap-0.5">
+                {Array.from({ length: data.stars }).map((_, i) => (
+                  <IconStarFilled key={i} css={{ width: 12, height: 12 }} />
+                ))}
+              </div>
+            )}
+            <p
+              className="text-[12px] text-[#222428] leading-[1.5]"
+              style={{
+                fontVariationSettings: "'CTGR' 0, 'wdth' 100",
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
+            >
+              {data.text}
+            </p>
+            <p className="text-[12px] text-[#656B81] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
+              {data.author}
+            </p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {data.companies.map(name => (
+                <Chip key={name} removable={false} css={{ fontSize: 14 }}>{name}</Chip>
               ))}
             </div>
-          )}
-
-          {/* Text */}
-          <p
-            className="text-[12px] text-[#222428] leading-[1.5]"
-            style={{
-              fontVariationSettings: "'CTGR' 0, 'wdth' 100",
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}
-          >
-            {data.text}
-          </p>
-
-          {/* Author */}
-          <p className="text-[12px] text-[#656B81] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
-            {data.author}
-          </p>
-
-          {/* Companies */}
-          <div className="flex flex-wrap gap-2 pt-1">
-            {data.companies.map(name => (
-              <Chip key={name} removable={false} css={{ fontSize: 14 }}>{name}</Chip>
-            ))}
           </div>
-        </div>
+        )}
       </div>
     </div>
   )
