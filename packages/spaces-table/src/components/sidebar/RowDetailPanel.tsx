@@ -137,8 +137,8 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
               <span className="text-[14px] text-[#222428] leading-[1.4] px-2">—</span>
             </FieldRow>
 
-            {/* Company */}
-            <FieldRow label="Company" alignStart>
+            {/* Companies */}
+            <FieldRow label="Companies" alignStart>
               <div className="flex flex-wrap gap-2 py-1">
                 {row.companies.map((name) => (
                   <Chip key={name} removable={false} css={{ fontSize: 14 }}>{name}</Chip>
@@ -159,7 +159,7 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
                 >
                   <IconCross css={{ width: 14, height: 14 }} />
                 </button>
-                <IconWarning size="medium" color="icon-primary" />
+                <IconWarning size="medium" color="icon-neutrals-dark" />
                 <p className="text-[16px] text-[#3C3F4A] leading-[1.4] pr-6" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
                   Low-confidence Insights
                 </p>
