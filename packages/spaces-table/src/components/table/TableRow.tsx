@@ -10,6 +10,7 @@ interface TableRowProps {
   isSelected: boolean
   onToggleSelect: (id: string, e: React.MouseEvent) => void
   onDeselect: () => void
+  onRowClick?: (row: SpaceRow) => void
 }
 
 function RowContextMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete: () => void }) {
@@ -32,16 +33,17 @@ function RowContextMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; on
   )
 }
 
-export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDeselect }: TableRowProps) {
+export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDeselect, onRowClick }: TableRowProps) {
   return (
     <tr
       className={isSelected ? 'row-selected' : ''}
-      style={{ height: '56px' }}
+      style={{ height: '56px', cursor: onRowClick ? 'pointer' : undefined }}
+      onClick={() => onRowClick?.(row)}
     >
       <td className="pl-14 divider-first" style={{ fontSize: '12px' }}>
         <div className="flex items-center">
           {/* Row number + spacer — idle */}
-          <div className="row-number w-8 h-8 items-center justify-center text-[#AEB2C0]">
+          <div className="row-number w-8 h-8 items-center text-[#AEB2C0]">
             {idx + 1}
           </div>
           <div className="row-number w-8 h-8" aria-hidden="true" />

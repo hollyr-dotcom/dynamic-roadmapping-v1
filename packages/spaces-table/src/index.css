@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -20,7 +20,7 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Noto Sans', sans-serif;
+  font-family: 'Open Sans', sans-serif;
 }
 
 /* ── Editable title placeholder ───────────────────────── */
@@ -73,7 +73,10 @@ tbody tr.row-selected .row-dots         { display: flex; }
 tbody tr.row-selected .row-comment      { display: none; }
 
 /* ── Active row shared (hover + selected) ─────────────── */
-tbody tr:hover td,
+tbody tr:hover td {
+  background-color: #F2F4FC;
+  border-color: transparent;
+}
 tbody tr.row-selected td {
   border-color: transparent;
 }
@@ -92,6 +95,11 @@ tbody tr:has(+ tr.row-selected) .divider-first::after,
 tbody tr:has(+ tr.row-selected) .divider-last::after { background: transparent; }
 
 /* ── Fill column (extends divider + highlight to viewport edge) ── */
+td.table-fill,
+th.table-fill {
+  width: 56px;
+  min-width: 56px;
+}
 td.table-fill {
   position: relative;
   isolation: isolate;
@@ -134,14 +142,14 @@ tbody tr.row-selected td.table-fill::before {
 }
 
 /* ── Hover background ─────────────────────────────────── */
-tbody tr:hover td { background-color: #FAFBFC; }
+tbody tr:hover td { background-color: #F2F4FC; }
 tbody tr:hover td.divider-first { background: transparent; }
 tbody tr:hover td.divider-first::before {
   content: '';
   position: absolute;
   top: 0; bottom: 0;
   left: 56px; right: 0;
-  background: #FAFBFC;
+  background: #F2F4FC;
   border-radius: 8px 0 0 8px;
   z-index: -1;
 }

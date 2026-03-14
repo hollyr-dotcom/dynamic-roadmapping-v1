@@ -19,14 +19,15 @@ interface SpaceMenuProps {
   onClose: () => void
   activePage: string
   onPageChange: (id: string) => void
+  onGoHome?: () => void
 }
 
-export function SpaceMenu({ onClose, activePage, onPageChange }: SpaceMenuProps) {
+export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome }: SpaceMenuProps) {
   return (
     <div className="flex flex-col h-full pt-2 px-3">
       {/* Top bar: Home | Search + Close */}
       <div className="flex items-center justify-between">
-        <IconButton aria-label="Home" variant="ghost" size="large">
+        <IconButton aria-label="Home" variant="ghost" size="large" onPress={onGoHome}>
           <IconHouse />
         </IconButton>
         <div className="flex items-center">

@@ -6,7 +6,7 @@ interface TextCellProps {
 export function TextCell({ value }: TextCellProps) {
   return (
     <span
-      className="truncate block font-body text-[#222428]"
+      className={`truncate block font-body text-[#222428] ${isPrimary ? 'font-bold' : 'font-normal'}`}
       style={{ fontSize: '14px' }}
     >
       {value}
