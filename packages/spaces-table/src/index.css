@@ -275,3 +275,9 @@ tbody tr.row-selected td.divider-first::before {
 /* ── Kanban icon buttons (tinted hover/active) ───────── */
 .kanban-icon-btn:hover { background-color: color-mix(in srgb, var(--btn-color) 12%, transparent); }
 .kanban-icon-btn:active { background-color: color-mix(in srgb, var(--btn-color) 20%, transparent); }
+
+/* ── Toast slide-up animation ─────────────────────────── */
+@keyframes toastSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
