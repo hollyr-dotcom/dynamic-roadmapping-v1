@@ -12,7 +12,7 @@ import { HomePage } from './components/page/HomePage'
 import { InsightsModal } from './components/page/InsightsModal'
 import { InsightsToast } from './components/page/InsightsToast'
 import { SpaceMenu } from './components/sidebar/SpaceMenu'
-import { AiSidekickPanel } from './components/sidebar/AiSidekickPanel'
+import { InsightsChatPanel } from './components/sidebar/InsightsChatPanel'
 import { SidePanel } from './components/sidebar/SidePanel'
 import { RowDetailPanel } from './components/sidebar/RowDetailPanel'
 import { CanvasOverlay } from './components/canvas/CanvasOverlay'
@@ -403,7 +403,7 @@ export function App() {
         ) : (
           <SidebarShell side="right" onClose={closeSidebar} showClose={activeSidebar !== 'view-settings'} width={320}>
             {activeSidebar === 'view-settings' && <SidePanel onClose={closeSidebar} fields={pageFields} />}
-            {activeSidebar === 'ai-sidekick' && <AiSidekickPanel />}
+            {activeSidebar === 'ai-sidekick' && <InsightsChatPanel onClose={closeSidebar} />}
           </SidebarShell>
         )}
       </div>
