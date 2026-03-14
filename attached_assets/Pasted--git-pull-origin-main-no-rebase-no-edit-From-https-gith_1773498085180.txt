@@ -1,0 +1,38 @@
+ git pull origin main --no-rebase --no-edit
+From https://github.com/hollyr-dotcom/dynamic-roadmapping-v1
+ * branch            main       -> FETCH_HEAD
+Auto-merging bun.lock
+Auto-merging packages/spaces-table/src/components/page/ViewTabsToolbar.tsx
+Merge made by the 'ort' strategy.
+ bun.lock                                       |   5 +
+ package.json                                   |   1 +
+ .../spaces-table/public/amazing-reaction.png   | Bin 0 -> 1059499 bytes
+ packages/spaces-table/public/confetti.json     |   1 +
+ .../spaces-table/public/miro-insights-icon.svg |  11 +
+ packages/spaces-table/public/reaction-blob.png | Bin 0 -> 2054097 bytes
+ packages/spaces-table/public/reaction-body.svg |  59 ++
+ .../spaces-table/public/reaction-bubbles.svg   |  14 +
+ .../spaces-table/public/reaction-bubbles2.svg  |  14 +
+ .../spaces-table/public/reaction-character.svg |  59 ++
+ .../spaces-table/public/reaction-spark-l.svg   |   3 +
+ .../spaces-table/public/reaction-spark-r.svg   |   3 +
+ packages/spaces-table/src/App.tsx              |  16 +-
+ .../src/components/page/HomePage.tsx           |   6 +-
+ .../src/components/page/InsightsToast.tsx      | 137 +--
+ .../src/components/page/ViewTabsToolbar.tsx    |   8 +-
+ .../components/sidebar/InsightsChatPanel.tsx   | 168 ++++
+ .../src/components/sidebar/RowDetailPanel.tsx  | 800 +++++++++++++++++-
+ packages/spaces-table/src/index.css            |  27 +
+ 19 files changed, 1265 insertions(+), 67 deletions(-)
+ create mode 100644 packages/spaces-table/public/amazing-reaction.png
+ create mode 100644 packages/spaces-table/public/confetti.json
+ create mode 100644 packages/spaces-table/public/miro-insights-icon.svg
+ create mode 100644 packages/spaces-table/public/reaction-blob.png
+ create mode 100644 packages/spaces-table/public/reaction-body.svg
+ create mode 100644 packages/spaces-table/public/reaction-bubbles.svg
+ create mode 100644 packages/spaces-table/public/reaction-bubbles2.svg
+ create mode 100644 packages/spaces-table/public/reaction-character.svg
+ create mode 100644 packages/spaces-table/public/reaction-spark-l.svg
+ create mode 100644 packages/spaces-table/public/reaction-spark-r.svg
+ create mode 100644 packages/spaces-table/src/components/sidebar/InsightsChatPanel.tsx
+~/workspace$ 
