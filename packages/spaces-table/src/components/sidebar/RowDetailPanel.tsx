@@ -30,10 +30,6 @@ import {
   IconChevronLeft,
   IconMagnifyingGlass,
   Checkbox,
-  IconStackedCircles,
-  IconCalendarBlank,
-  IconPlusBox,
-  IconUser,
 } from '@mirohq/design-system'
 
 interface FeedbackCardData {
@@ -211,7 +207,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: R
     if (initialCompany) setSelectedCompany(initialCompany)
   }, [initialCompany])
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null)
-  const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[] } | null>(null)
+  const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string } | null>(null)
   const [dismissedCards, setDismissedCards] = useState<Set<number>>(new Set())
   const [promptCards, setPromptCards] = useState<Set<number>>(new Set())
   const [showToast, setShowToast] = useState(false)
@@ -586,7 +582,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: R
                   >
                     {promptCards.has(i)
                       ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
-                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies })} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} />
+                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor })} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} />
                     }
                   </div>
                 ))}
@@ -1444,7 +1440,7 @@ function FeedbackCardDetailView({
   onClose,
   onAddToBoard,
 }: {
-  card: { title: string; text: string; author: string; date: string; companies: string[] }
+  card: { title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string }
   onBack: () => void
   onClose: () => void
   onAddToBoard?: (data: import('../canvas/CanvasFeedbackCard').FeedbackCardData) => void

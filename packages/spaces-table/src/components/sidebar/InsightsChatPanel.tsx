@@ -5,7 +5,6 @@ import {
   IconSlidersX,
   IconStickyNote,
   IconArrowUp,
-  IconInsights,
   IconChevronRight,
   IconChevronLeft,
   Checkbox,
