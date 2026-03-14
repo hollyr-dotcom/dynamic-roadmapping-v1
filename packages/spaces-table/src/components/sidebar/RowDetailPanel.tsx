@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import type { SpaceRow } from '@spaces/shared'
 import {
   IconCross,
@@ -164,6 +165,7 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
   const [toastTimer, setToastTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
   const [showFeedbackToast, setShowFeedbackToast] = useState(false)
   const [feedbackToastExiting, setFeedbackToastExiting] = useState(false)
+  const [showFeedbackConfetti, setShowFeedbackConfetti] = useState(false)
 
   const dismissToast = () => {
     setToastExiting(true)
@@ -192,6 +194,8 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
   const handlePromptSubmit = (index: number) => {
     handlePromptClose(index)
     setShowFeedbackToast(true)
+    setShowFeedbackConfetti(true)
+    setTimeout(() => setShowFeedbackConfetti(false), 2200)
     setTimeout(() => dismissFeedbackToast(), 2000)
   }
 
@@ -252,7 +256,7 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
         {TABS.map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => { setActiveTab(tab); if (selectedCompany) setSelectedCompany(null) }}
             className="mr-1 px-2 py-1 rounded-lg text-[14px] font-semibold transition-colors"
             style={{
               fontFamily: 'Open Sans, sans-serif',
@@ -499,27 +503,46 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
       )}
       {/* Feedback received toast */}
       {showFeedbackToast && createPortal(
-        <div
-          className="fixed bottom-6 left-6 z-[9999] flex items-center gap-3 rounded-lg"
-          style={{
-            backgroundColor: '#2B2D33',
-            boxShadow: '0px 6px 16px rgba(34,36,40,0.12), 0px 0px 8px rgba(34,36,40,0.06)',
-            width: 280,
-            padding: '16px 40px 16px 16px',
-            animation: feedbackToastExiting ? 'toastSlideDown 0.3s ease forwards' : 'toastSlideUp 0.25s ease',
-          }}
-        >
-          <div className="flex flex-col gap-0 flex-1 min-w-0">
-            <p className="text-[14px] font-semibold text-[#FAFAFC] leading-[1.4]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>Feedback received!</p>
-            <p className="text-[12px] text-[#C7CAD5] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>We really appreciate your feedback.</p>
-          </div>
-          <button
-            onClick={() => dismissFeedbackToast()}
-            className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded text-[#FAFAFC] hover:bg-white/10 transition-colors"
+        <>
+          {showFeedbackConfetti && (
+            <div
+              className="fixed pointer-events-none"
+              style={{
+                bottom: 0, left: 0,
+                width: 520, height: 520,
+                zIndex: 9998,
+                animation: feedbackToastExiting ? 'toastSlideDown 0.3s ease forwards' : undefined,
+              }}
+            >
+              <DotLottieReact src="/confetti.json" autoplay loop={false} style={{ width: '100%', height: '100%' }} />
+            </div>
+          )}
+          <div
+            className="fixed bottom-6 left-6 z-[9999] flex items-center gap-3 rounded-lg"
+            style={{
+              backgroundColor: '#2B2D33',
+              boxShadow: '0px 6px 16px rgba(34,36,40,0.12), 0px 0px 8px rgba(34,36,40,0.06)',
+              width: 280,
+              padding: '16px 40px 16px 16px',
+              overflow: 'visible',
+              animation: feedbackToastExiting ? 'toastSlideDown 0.3s ease forwards' : 'toastSlideUp 0.25s ease',
+            }}
           >
-            <IconCross css={{ width: 14, height: 14 }} />
-          </button>
-        </div>,
+            <div className="reaction-pop absolute pointer-events-none" style={{ top: -84, right: -24, zIndex: 1 }}>
+              <img src="/amazing-reaction.png" alt="" style={{ width: 160, height: 160, pointerEvents: 'none' }} />
+            </div>
+            <div className="flex flex-col gap-0 flex-1 min-w-0">
+              <p className="text-[14px] font-semibold text-[#FAFAFC] leading-[1.4]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>Feedback received!</p>
+              <p className="text-[12px] text-[#C7CAD5] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>We really appreciate your feedback.</p>
+            </div>
+            <button
+              onClick={() => dismissFeedbackToast()}
+              className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded text-[#FAFAFC] hover:bg-white/10 transition-colors"
+            >
+              <IconCross css={{ width: 14, height: 14 }} />
+            </button>
+          </div>
+        </>,
         document.body
       )}
     </div>
