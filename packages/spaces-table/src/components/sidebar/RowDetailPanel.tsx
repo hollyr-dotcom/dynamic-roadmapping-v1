@@ -706,7 +706,7 @@ function PromptChatView({ prompt, company, onBack, onClose }: { prompt: string; 
   )
 }
 
-function CompanyDetailView({ company, onBack, onPromptSelect }: { company: string; onBack: () => void; onPromptSelect: (prompt: string) => void }) {
+function CompanyDetailView({ company, rowTitle: _rowTitle, onBack, onPromptSelect }: { company: string; rowTitle: string; onBack: () => void; onPromptSelect: (prompt: string) => void }) {
   const info = COMPANY_INFO[company] ?? { domain: `${company.toLowerCase()}.com`, stage: 'N/A', dealValue: 'N/A', source: 'N/A' }
   return (
     <div className="flex flex-col pb-6">
