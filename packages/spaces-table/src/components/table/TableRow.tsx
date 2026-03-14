@@ -11,6 +11,7 @@ interface TableRowProps {
   onToggleSelect: (id: string, e: React.MouseEvent) => void
   onDeselect: () => void
   onRowClick?: (row: SpaceRow) => void
+  onCompanyClick?: (row: SpaceRow, name: string) => void
 }
 
 function RowContextMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete: () => void }) {
@@ -33,7 +34,7 @@ function RowContextMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; on
   )
 }
 
-export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDeselect, onRowClick }: TableRowProps) {
+export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDeselect, onRowClick, onCompanyClick }: TableRowProps) {
   return (
     <tr
       className={isSelected ? 'row-selected' : ''}
@@ -79,7 +80,7 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
 
       {fields.map((field) => (
         <td key={field.id} className="px-3 border-b border-[#F1F2F5]">
-          <CellRenderer field={field} row={row} />
+          <CellRenderer field={field} row={row} onAvatarChipClick={onCompanyClick ? (name) => onCompanyClick(row, name) : undefined} />
         </td>
       ))}
 

@@ -19,14 +19,17 @@ import { CanvasOverlay } from './components/canvas/CanvasOverlay'
 import { CanvasTableWidget } from './components/canvas/CanvasTableWidget'
 import { CanvasPillButton } from './components/canvas/CanvasPillButton'
 import { CanvasNavPanels } from './components/canvas/CanvasNavPanels'
+import { CanvasFeedbackCard, type FeedbackCardData } from './components/canvas/CanvasFeedbackCard'
 
 type PageId = 'backlog' | 'roadmap'
 
 interface CanvasWidget {
   id: string
+  type?: 'table' | 'feedback-card'
   activeTab: string
   x: number
   y: number
+  feedbackCard?: FeedbackCardData
 }
 
 interface PageConfig {
@@ -73,6 +76,7 @@ export function App() {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const [selectedRow, setSelectedRow] = useState<SpaceRow | null>(null)
+  const [initialCompany, setInitialCompany] = useState<string | undefined>(undefined)
   const [newColumnMenuOpen, setNewColumnMenuOpen] = useState(false)
   const [canvasOpen, setCanvasOpen] = useState(false)
   const [navHovered, setNavHovered] = useState(false)
@@ -303,6 +307,28 @@ export function App() {
     setWidgets(prev => prev.map(w => w.id === widgetId ? { ...w, x, y } : w))
   }, [])
 
+  const handleAddToBoard = useCallback((cardData: FeedbackCardData) => {
+    const cardWidget: CanvasWidget = {
+      id: `feedback-${Date.now()}`,
+      type: 'feedback-card',
+      activeTab: '',
+      x: window.innerWidth - 380,
+      y: 128,
+      feedbackCard: cardData,
+    }
+    if (!canvasOpen) {
+      setWidgets([{ id: `widget-${Date.now()}`, type: 'table', activeTab, x: 0, y: 128 }, cardWidget])
+      setCanvasOpen(true)
+      setPanX(0)
+      setPanY(0)
+      setZoom(1)
+      setSelectedWidgetId(null)
+    } else {
+      setWidgets(prev => [...prev, cardWidget])
+    }
+    setActiveSidebar(null)
+  }, [canvasOpen, activeTab])
+
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const fadeStart = 10
     const fadeZone = 25
@@ -357,7 +383,7 @@ export function App() {
           {/* Type-based view renderer */}
           {activeTabConfig?.type === 'table' && (
             <div className="overflow-x-auto page-scroll">
-              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setActiveSidebar('row-detail') }} />
+              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setInitialCompany(name); setActiveSidebar('row-detail') }} />
             </div>
           )}
           {activeTabConfig?.type === 'kanban' && (
@@ -397,13 +423,13 @@ export function App() {
               className="flex-1 overflow-hidden rounded-xl"
               style={{ boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)' }}
             >
-              {selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} />}
+              {selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} initialCompany={initialCompany} onAddToBoard={handleAddToBoard} />}
             </div>
           </div>
         ) : activeSidebar === 'ai-sidekick' ? (
           <div className="h-full pl-3 pr-6 py-6 flex">
             <div
-              className="flex-1 overflow-hidden rounded-xl"
+              className="flex-1 overflow-visible rounded-xl"
               style={{ boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)' }}
             >
               <InsightsChatPanel onClose={closeSidebar} />
@@ -429,7 +455,7 @@ export function App() {
       />
 
       {/* Canvas table widgets */}
-      {widgets.map(widget => {
+      {widgets.filter(w => w.type !== 'feedback-card').map(widget => {
         const widgetTabConfig = currentTabs.find(t => t.id === widget.activeTab)
         const widgetViewData = widget.activeTab === 'done' ? pageData.filter(r => r.status === 'done') : pageData
         return (
@@ -473,6 +499,24 @@ export function App() {
           />
         )
       })}
+
+      {/* Canvas feedback card widgets */}
+      {widgets.filter(w => w.type === 'feedback-card' && w.feedbackCard).map(widget => (
+        <CanvasFeedbackCard
+          key={widget.id}
+          data={widget.feedbackCard!}
+          panX={panX}
+          panY={panY}
+          zoom={zoom}
+          x={widget.x}
+          y={widget.y}
+          isOpen={canvasOpen}
+          selected={selectedWidgetId === widget.id}
+          onSelect={() => setSelectedWidgetId(widget.id)}
+          onMove={(x, y) => handleWidgetMove(widget.id, x, y)}
+          smoothPanning={smoothPanning}
+        />
+      ))}
 
       {/* Canvas floating nav panels */}
       <CanvasNavPanels isOpen={canvasOpen} databaseTitle={databaseTitle} />

@@ -1,10 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import {
   IconCross,
   IconSlidersX,
   IconStickyNote,
   IconArrowUp,
   IconInsights,
+  IconChevronRight,
+  IconChevronLeft,
+  Checkbox,
 } from '@mirohq/design-system'
 
 interface InsightsChatPanelProps {
@@ -14,6 +18,15 @@ interface InsightsChatPanelProps {
 interface Message {
   role: 'user' | 'ai'
   text: string
+}
+
+const FILTER_OPTIONS = ['Company', 'Source', 'Type', 'User role']
+
+const FILTER_SUB_OPTIONS: Record<string, string[]> = {
+  'Company':   ['Spotify', 'Stripe', 'Linear', 'Atlassian', 'Notion', 'Shopify', 'Dropbox', 'Google', 'Apple'],
+  'Source':    ['Survey', 'Interview', 'Support Ticket', 'NPS', 'Forum'],
+  'Type':      ['Call', 'Ticket', 'Message', 'Other'],
+  'User role': ['Admin', 'End User', 'Manager', 'Developer', 'Designer'],
 }
 
 const AI_RESPONSES: string[] = [
@@ -26,12 +39,42 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [typing, setTyping] = useState(false)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 })
+  const [filterView, setFilterView] = useState<string | null>(null)
+  const [filterSearch, setFilterSearch] = useState('')
+  const [filterChecked, setFilterChecked] = useState<Set<string>>(new Set())
   const responseIndex = useRef(0)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const sliderBtnRef = useRef<HTMLButtonElement>(null)
+  const filterDropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, typing])
+
+  useEffect(() => {
+    if (!filterOpen) return
+    const handler = (e: MouseEvent) => {
+      const target = e.target as Node
+      if (sliderBtnRef.current?.contains(target)) return
+      if (filterDropdownRef.current?.contains(target)) return
+      setFilterOpen(false)
+      setFilterView(null)
+      setFilterSearch('')
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [filterOpen])
+
+  const openFilter = () => {
+    if (filterOpen) { setFilterOpen(false); setFilterView(null); setFilterSearch(''); return }
+    const rect = sliderBtnRef.current?.getBoundingClientRect()
+    if (rect) {
+      setDropdownPos({ top: rect.top - 8, left: rect.left })
+    }
+    setFilterOpen(true)
+  }
 
   const send = () => {
     if (!input.trim()) return
@@ -48,7 +91,7 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+    <div className="flex flex-col h-full bg-white rounded-xl" style={{ fontFamily: 'Open Sans, sans-serif' }}>
 
       {/* Header */}
       <div className="flex items-center gap-2 h-14 px-4 shrink-0">
@@ -76,8 +119,6 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto panel-scroll px-4 py-4 flex flex-col gap-3">
-
-        {/* Static intro block */}
         <div className="flex flex-col gap-3 pb-2 my-auto">
           <img src="/miro-insights-icon.svg" alt="Miro Insights" style={{ width: 24, height: 20 }} />
           <div className="flex flex-col gap-3">
@@ -101,7 +142,6 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
           </div>
         </div>
 
-        {/* Chat messages */}
         {messages.map((msg, i) => (
           msg.role === 'user' ? (
             <div key={i} className="flex justify-end">
@@ -122,10 +162,10 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
         <div ref={bottomRef} />
       </div>
 
-      {/* Thinking indicator — 16px above input */}
+      {/* Thinking indicator */}
       {typing && (
         <div className="shrink-0 flex items-center gap-2 px-4 text-[#656B81]" style={{ paddingBottom: 16 }}>
-          <IconInsights css={{ width: 16, height: 16 }} />
+          <img src="/miro-insights-icon.svg" alt="" style={{ width: 20, height: 17 }} />
           <span className="text-[13px]">Thinking…</span>
         </div>
       )}
@@ -146,7 +186,12 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
           />
           <div className="flex items-center justify-between px-2 pb-2">
             <div className="flex items-center gap-1">
-              <button className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
+              <button
+                ref={sliderBtnRef}
+                onClick={openFilter}
+                className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors"
+                style={{ color: filterOpen ? '#4262FF' : '#656B81', backgroundColor: filterOpen ? '#F2F4FC' : 'transparent' }}
+              >
                 <IconSlidersX css={{ width: 16, height: 16 }} />
               </button>
               <button className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
@@ -163,6 +208,85 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
           </div>
         </div>
       </div>
+
+      {/* Filter dropdown — portaled to body to escape any overflow clipping */}
+      {filterOpen && createPortal(
+        <div
+          ref={filterDropdownRef}
+          className="fixed z-[9999] bg-white rounded-[8px] flex flex-col overflow-hidden"
+          style={{
+            top: dropdownPos.top,
+            left: dropdownPos.left,
+            width: 200,
+            transform: 'translateY(-100%)',
+            border: '0.5px solid #E9EAEF',
+            boxShadow: '0px 0px 12px 0px rgba(34,36,40,0.04), 0px 2px 8px 0px rgba(34,36,40,0.12)',
+            fontFamily: 'Open Sans, sans-serif',
+          }}
+        >
+          {filterView === null ? (
+            <>
+              <div className="px-3 py-[10px]">
+                <p className="text-[14px] text-[#656B81] leading-[1.4]">Select filters</p>
+              </div>
+              <div className="mx-3 border-t border-[#E9EAEF]" />
+              {FILTER_OPTIONS.map(label => (
+                <button
+                  key={label}
+                  className="flex items-center justify-between px-3 h-10 hover:bg-[#F1F2F5] transition-colors w-full"
+                  onClick={() => { setFilterView(label); setFilterSearch('') }}
+                >
+                  <span className="text-[14px] leading-[1.4] text-[#222428]">{label}</span>
+                  <IconChevronRight css={{ width: 16, height: 16, color: '#656B81' }} />
+                </button>
+              ))}
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-2 px-2 h-10 border-b border-[#E9EAEF] shrink-0">
+                <button
+                  onClick={() => { setFilterView(null); setFilterSearch('') }}
+                  className="flex items-center justify-center w-6 h-6 rounded hover:bg-[#F1F2F5] shrink-0"
+                >
+                  <IconChevronLeft css={{ width: 14, height: 14, color: '#656B81' }} />
+                </button>
+                <span className="text-[14px] text-[#222428]">{filterView}</span>
+              </div>
+              <div className="px-3 py-2 shrink-0">
+                <input
+                  value={filterSearch}
+                  onChange={e => setFilterSearch(e.target.value)}
+                  placeholder="Search..."
+                  className="w-full text-[13px] text-[#222428] placeholder:text-[#AEB2C0] outline-none border border-[#E9EAEF] rounded-lg px-2 py-1"
+                />
+              </div>
+              <div className="flex flex-col overflow-y-auto" style={{ maxHeight: 200 }}>
+                {(FILTER_SUB_OPTIONS[filterView] ?? [])
+                  .filter(opt => opt.toLowerCase().includes(filterSearch.toLowerCase()))
+                  .map(opt => (
+                    <button
+                      key={opt}
+                      className="flex items-center gap-2 px-3 h-10 hover:bg-[#F1F2F5] transition-colors w-full text-left shrink-0"
+                      onClick={() => setFilterChecked(prev => {
+                        const next = new Set(prev)
+                        next.has(opt) ? next.delete(opt) : next.add(opt)
+                        return next
+                      })}
+                    >
+                      <Checkbox
+                        checked={filterChecked.has(opt)}
+                        variant="solid-prominent"
+                        size="small"
+                      />
+                      <span className="text-[14px] text-[#222428] truncate">{opt}</span>
+                    </button>
+                  ))}
+              </div>
+            </>
+          )}
+        </div>,
+        document.body
+      )}
     </div>
   )
 }

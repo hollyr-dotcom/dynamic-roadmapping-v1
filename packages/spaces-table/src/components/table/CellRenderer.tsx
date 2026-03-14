@@ -8,9 +8,10 @@ import { StatusCell } from './cells/StatusCell'
 interface CellRendererProps {
   field: FieldDefinition
   row: SpaceRow
+  onAvatarChipClick?: (name: string) => void
 }
 
-export function CellRenderer({ field, row }: CellRendererProps) {
+export function CellRenderer({ field, row, onAvatarChipClick }: CellRendererProps) {
   const value = row[field.id as keyof SpaceRow]
 
   switch (field.type) {
@@ -21,7 +22,7 @@ export function CellRenderer({ field, row }: CellRendererProps) {
     case 'currency':
       return <CurrencyCell value={value as number} />
     case 'avatars':
-      return <AvatarStackCell values={value as string[]} />
+      return <AvatarStackCell values={value as string[]} onChipClick={onAvatarChipClick} />
     case 'status':
       return <StatusCell value={value as Status | undefined} />
     default:

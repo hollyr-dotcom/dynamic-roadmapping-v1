@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import type { SpaceRow } from '@spaces/shared'
 import {
   IconCross,
@@ -22,11 +23,34 @@ import {
   IconChevronRight,
   IconDotsThree,
   IconInsights,
+  IconBoard,
+  IconSquaresTwoOverlap,
+  IconDocFormat,
+  IconSparksFilled,
+  IconChevronLeft,
+  IconMagnifyingGlass,
+  Checkbox,
+  IconStackedCircles,
+  IconCalendarBlank,
+  IconPlusBox,
+  IconUser,
 } from '@mirohq/design-system'
+
+interface FeedbackCardData {
+  title: string
+  text: string
+  author: string
+  date: string
+  companies: string[]
+  borderColor: string
+  stars?: number
+}
 
 interface RowDetailPanelProps {
   row: SpaceRow
   onClose: () => void
+  initialCompany?: string
+  onAddToBoard?: (data: FeedbackCardData) => void
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -47,6 +71,13 @@ const PRIORITY_CHIP: Record<string, { bg: string; color: string }> = {
 }
 
 const TABS = ['Details', 'Insights', 'Comments', 'Updates']
+
+const FEEDBACK_FILTER_SUB_OPTIONS: Record<string, string[]> = {
+  'Company':   ['Spotify', 'Stripe', 'Linear', 'Atlassian', 'Notion', 'Shopify', 'Dropbox', 'Google', 'Apple'],
+  'Source':    ['Survey', 'Interview', 'Support Ticket', 'NPS', 'Forum'],
+  'Type':      ['Call', 'Ticket', 'Message', 'Other'],
+  'User role': ['Admin', 'End User', 'Manager', 'Developer', 'Designer'],
+}
 
 const INSIGHT_SUMMARIES: Record<string, string> = {
   '1':  'Customer feedback strongly signals demand for personalised portfolio guidance, with 142 mentions across 4,853 accounts. Users report that generic recommendations erode trust and lead to disengagement — AI-driven risk-adjusted suggestions are cited as a key driver of retention and upsell potential, with an estimated $425K revenue impact.',
@@ -144,19 +175,43 @@ function generateFeedbackCards(row: SpaceRow) {
     'Tariq Hassan, Chief Operating Officer',
   ]
 
+  const titles = [
+    `Quarterly Demand for ${t}, Manual Overhead Persists`,
+    `${t} Blocking Downstream Planning Initiatives`,
+    `Churn Risk: Power Users Evaluating Alternatives`,
+    `Positive Pilot Signal, Minor Data Freshness Gaps`,
+    `Exec-Level Gap Affecting Renewal Pipeline`,
+    `Enterprise Trial: Most Impactful Update of the Year`,
+    `Fragile Workaround Creating Ongoing Support Noise`,
+    `Onboarding Gap Blocking Entire Workflow Category`,
+    `Mid-Market Renewals Tied to ${t} Progress`,
+    `Implementation Depth Insufficient for Full Rollout`,
+    `Competitive Gap Surfacing in Enterprise Sales Calls`,
+    `Power User Adoption Exceeds Early Forecasts`,
+    `Platform Trust Eroding Without ${t}`,
+    `Beta Exceeded Expectations, Documentation Gaps Remain`,
+    `Hidden Ops Tax Growing Every Sprint`,
+  ]
+
   return CARD_STYLES.map((style, i) => ({
     ...style,
+    title: titles[i],
     text: texts[i],
     author: authors[i],
     companies: row.companies.slice(0, 2),
   }))
 }
 
-export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
+export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   const [insightDismissed, setInsightDismissed] = useState(false)
-  const [selectedCompany, setSelectedCompany] = useState<string | null>(null)
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
+
+  useEffect(() => {
+    if (initialCompany) setSelectedCompany(initialCompany)
+  }, [initialCompany])
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null)
+  const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[] } | null>(null)
   const [dismissedCards, setDismissedCards] = useState<Set<number>>(new Set())
   const [promptCards, setPromptCards] = useState<Set<number>>(new Set())
   const [showToast, setShowToast] = useState(false)
@@ -164,6 +219,46 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
   const [toastTimer, setToastTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
   const [showFeedbackToast, setShowFeedbackToast] = useState(false)
   const [feedbackToastExiting, setFeedbackToastExiting] = useState(false)
+  const [showFeedbackConfetti, setShowFeedbackConfetti] = useState(false)
+  const [editingField, setEditingField] = useState<'title' | 'description' | null>(null)
+  const [editValue, setEditValue] = useState('')
+  const [savePhase, setSavePhase] = useState<'refreshing' | 'success' | null>(null)
+  const [saveProgress, setSaveProgress] = useState(0)
+  const [saveToastExiting, setSaveToastExiting] = useState(false)
+  const [saveConfetti, setSaveConfetti] = useState(false)
+
+  const [feedbackFilterOpen, setFeedbackFilterOpen] = useState(false)
+  const [feedbackFilterPos, setFeedbackFilterPos] = useState({ top: 0, left: 0 })
+  const [feedbackFilterView, setFeedbackFilterView] = useState<string | null>(null)
+  const [feedbackFilterSearch, setFeedbackFilterSearch] = useState('')
+  const [feedbackFilterChecked, setFeedbackFilterChecked] = useState<Set<string>>(new Set())
+  const feedbackFilterBtnRef = useRef<HTMLButtonElement>(null)
+  const feedbackFilterDropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!feedbackFilterOpen) return
+    const handler = (e: MouseEvent) => {
+      if (feedbackFilterBtnRef.current?.contains(e.target as Node)) return
+      if (feedbackFilterDropdownRef.current?.contains(e.target as Node)) return
+      setFeedbackFilterOpen(false)
+      setFeedbackFilterView(null)
+      setFeedbackFilterSearch('')
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [feedbackFilterOpen])
+
+  const openFeedbackFilter = () => {
+    if (feedbackFilterOpen) {
+      setFeedbackFilterOpen(false)
+      setFeedbackFilterView(null)
+      setFeedbackFilterSearch('')
+      return
+    }
+    const rect = feedbackFilterBtnRef.current?.getBoundingClientRect()
+    if (rect) setFeedbackFilterPos({ top: rect.bottom + 4, left: rect.left - 160 })
+    setFeedbackFilterOpen(true)
+  }
 
   const dismissToast = () => {
     setToastExiting(true)
@@ -173,6 +268,27 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
   const dismissFeedbackToast = () => {
     setFeedbackToastExiting(true)
     setTimeout(() => { setShowFeedbackToast(false); setFeedbackToastExiting(false) }, 300)
+  }
+
+  const dismissSaveToast = () => {
+    setSaveToastExiting(true)
+    setTimeout(() => { setSavePhase(null); setSaveToastExiting(false); setSaveConfetti(false); setInsightDismissed(true) }, 300)
+  }
+
+  const triggerSaveToast = () => {
+    setSaveToastExiting(false)
+    setSaveProgress(0)
+    setSavePhase('refreshing')
+    // Kick off progress bar animation on next frame
+    requestAnimationFrame(() => requestAnimationFrame(() => setSaveProgress(100)))
+    // After 5s switch to success + confetti
+    setTimeout(() => {
+      setSavePhase('success')
+      setSaveConfetti(true)
+      setTimeout(() => setSaveConfetti(false), 2200)
+    }, 5000)
+    // Auto-dismiss after 8s total
+    setTimeout(() => dismissSaveToast(), 8000)
   }
 
   const handleDismissCard = (index: number) => {
@@ -192,6 +308,8 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
   const handlePromptSubmit = (index: number) => {
     handlePromptClose(index)
     setShowFeedbackToast(true)
+    setShowFeedbackConfetti(true)
+    setTimeout(() => setShowFeedbackConfetti(false), 2200)
     setTimeout(() => dismissFeedbackToast(), 2000)
   }
 
@@ -209,6 +327,7 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
     dismissToast()
   }
 
+
   const chip = PRIORITY_CHIP[row.priority] ?? PRIORITY_CHIP.icebox
   const priorityLabel = PRIORITY_LABELS[row.priority] ?? row.priority
 
@@ -218,10 +337,10 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
   const adjRevenue = Math.round(row.estRevenue * remainingFraction)
 
   return (
-    <div className="flex flex-col h-full bg-white overflow-hidden" style={{ width: 476, fontFamily: 'Open Sans, sans-serif' }}>
+    <div className="flex flex-col h-full bg-white overflow-hidden relative" style={{ width: 476, fontFamily: 'Open Sans, sans-serif' }}>
 
       {/* ── Header ──────────────────────────────────────── */}
-      <div className="flex items-center gap-2 h-12 pl-4 pr-3 shrink-0" style={{ display: selectedPrompt ? 'none' : undefined }}>
+      <div className="flex items-center gap-2 h-12 pl-4 pr-3 shrink-0">
         <p
           className="flex-1 min-w-0 truncate text-[#222428] leading-[1.5]"
           style={{
@@ -235,7 +354,10 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
           {row.title}
         </p>
         <div className="flex items-center shrink-0">
-          <button aria-label="More options" className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
+          <button
+            aria-label="More options"
+            className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+          >
             <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
           </button>
           <button aria-label="Close panel" className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors" onClick={onClose}>
@@ -245,14 +367,14 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
       </div>
 
       {/* 4px spacer */}
-      {!selectedPrompt && <div className="h-1 shrink-0" />}
+      <div className="h-1 shrink-0" />
 
       {/* ── Tabs ────────────────────────────────────────── */}
-      <div className="flex pl-4 pr-4 shrink-0 pb-4 pt-2" style={{ display: selectedPrompt ? 'none' : undefined }}>
+      <div className="flex pl-2 pr-4 shrink-0 pb-5 pt-4">
         {TABS.map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => { setActiveTab(tab); if (selectedCompany) setSelectedCompany(null) }}
             className="mr-1 px-2 py-1 rounded-lg text-[14px] font-semibold transition-colors"
             style={{
               fontFamily: 'Open Sans, sans-serif',
@@ -266,16 +388,16 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
       </div>
 
       {/* 4px spacer */}
-      {!selectedPrompt && <div className="h-1 shrink-0" />}
+      <div className="h-1 shrink-0" />
 
       {/* ── Content (sliding panels) ─────────────────── */}
       <div className="flex-1 min-h-0 overflow-hidden relative">
       <div
         className="flex absolute inset-y-0 left-0"
         style={{
-          width: 1428,
-          transform: selectedPrompt ? 'translateX(-952px)' : selectedCompany ? 'translateX(-476px)' : 'translateX(0)',
-          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          width: 952,
+          transform: selectedCompany ? 'translateX(-476px)' : 'translateX(0)',
+          transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
       {/* ── Main panel ─── */}
@@ -285,18 +407,47 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
           <>
             {/* Title */}
             <FieldRow label="Title" alignStart>
-              <div className="bg-white rounded px-2 py-1 w-full">
-                <p className="text-[14px] font-bold text-[#222428] leading-[1.4]">{row.title}</p>
-              </div>
+              {editingField === 'title' ? (
+                <input
+                  autoFocus
+                  value={editValue}
+                  onChange={e => setEditValue(e.target.value)}
+                  onBlur={() => { setEditingField(null); triggerSaveToast() }}
+                  onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); if (e.key === 'Escape') setEditingField(null) }}
+                  className="text-[14px] font-bold text-[#222428] leading-[1.4] w-full px-2 py-1 rounded-md outline-none bg-white"
+                  style={{ border: '1.5px solid #4262FF', boxShadow: '0 0 0 3px rgba(66,98,255,0.12)' }}
+                />
+              ) : (
+                <div
+                  className="rounded px-2 py-1 w-full cursor-text hover:bg-[#F1F2F5] transition-colors"
+                  onClick={() => { setEditingField('title'); setEditValue(row.title) }}
+                >
+                  <p className="text-[14px] font-bold text-[#222428] leading-[1.4]">{row.title}</p>
+                </div>
+              )}
             </FieldRow>
 
             {/* Description */}
             <FieldRow label="Description" alignStart>
-              <div className="bg-white rounded px-2 py-1 w-full" style={{ minHeight: 88 }}>
-                <p className="text-[14px] text-[#222428] leading-[1.4]">
-                  {row.description ?? '—'}
-                </p>
-              </div>
+              {editingField === 'description' ? (
+                <textarea
+                  autoFocus
+                  value={editValue}
+                  onChange={e => setEditValue(e.target.value)}
+                  onBlur={() => { setEditingField(null); triggerSaveToast() }}
+                  onKeyDown={e => { if (e.key === 'Escape') setEditingField(null) }}
+                  className="text-[14px] text-[#222428] leading-[1.4] w-full px-2 py-1 rounded-md outline-none bg-white resize-none"
+                  style={{ minHeight: 56, border: '1.5px solid #4262FF', boxShadow: '0 0 0 3px rgba(66,98,255,0.12)' }}
+                />
+              ) : (
+                <div
+                  className="rounded px-2 py-1 w-full cursor-text hover:bg-[#F1F2F5] transition-colors"
+                  style={{ minHeight: 56 }}
+                  onClick={() => { setEditingField('description'); setEditValue(row.description ?? '') }}
+                >
+                  <p className="text-[14px] text-[#222428] leading-[1.4]">{row.description ?? '—'}</p>
+                </div>
+              )}
             </FieldRow>
 
             {/* Status */}
@@ -331,7 +482,7 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
               <div className="flex flex-wrap gap-2 py-1">
                 {row.companies.map((name) => (
                   <span key={name} onClick={() => setSelectedCompany(name)} style={{ cursor: 'pointer' }}>
-                    <Chip removable={false} css={{ fontSize: 14 }}>{name}</Chip>
+                    <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
                   </span>
                 ))}
               </div>
@@ -377,7 +528,7 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
               <div className="flex flex-wrap gap-2 mt-2">
                 {row.companies.map(name => (
                   <span key={name} onClick={() => setSelectedCompany(name)} style={{ cursor: 'pointer' }}>
-                    <Chip removable={false} css={{ fontSize: 13 }}>{name}</Chip>
+                    <Chip removable={false} css={{ fontSize: 13, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
                   </span>
                 ))}
               </div>
@@ -409,7 +560,12 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
                     Latest
                     <IconChevronDown size="small" />
                   </button>
-                  <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#222428] hover:bg-[#F1F2F5] transition-colors">
+                  <button
+                    ref={feedbackFilterBtnRef}
+                    onClick={openFeedbackFilter}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
+                    style={{ color: '#222428' }}
+                  >
                     <IconSlidersY size="small" />
                   </button>
                 </div>
@@ -430,7 +586,7 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
                   >
                     {promptCards.has(i)
                       ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
-                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} />
+                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies })} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} />
                     }
                   </div>
                 ))}
@@ -439,9 +595,30 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
           </div>
         )}
 
-        {activeTab !== 'Details' && activeTab !== 'Insights' && (
+        {activeTab === 'Updates' && (
+          <div className="flex flex-col">
+            {[
+              { text: 'Prioritized this signal as a recommendation', date: 'May 21, 2026' },
+              { text: 'Updated customer count and mentions by 12% and 8%', date: 'May 21, 2026' },
+              { text: 'Enriched your backlog with new signals', date: 'May 15, 2026' },
+            ].map((item, i) => (
+              <div key={i} className="flex gap-3 items-center pr-5" style={{ paddingTop: i === 0 ? 8 : 12, paddingBottom: 8 }}>
+                <div className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F2F4FC' }}>
+                  <IconSparksFilled css={{ width: 16, height: 16, color: '#4262FF' }} />
+                </div>
+                <p className="text-[14px] leading-[1.4] text-[#555A6A]" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  {item.text}
+                  {' • '}
+                  {item.date}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'Comments' && (
           <div className="flex-1 flex items-center justify-center py-16">
-            <p className="text-[14px] text-[#AEB2C0]">{activeTab} coming soon</p>
+            <p className="text-[14px] text-[#AEB2C0]">Comments coming soon</p>
           </div>
         )}
       </div>
@@ -456,19 +633,32 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
           />
         )}
       </div>
-      {/* ── Chat panel ─── */}
-      <div className="flex flex-col shrink-0 h-full" style={{ width: 476 }}>
-        {selectedPrompt && (
+      </div>{/* end slider */}
+      </div>{/* end overflow wrapper */}
+
+      {/* ── Chat overlay (full-panel, avoids slider height-shift glitch) ─── */}
+      {selectedPrompt && (
+        <div className="absolute inset-0 z-10 bg-white flex flex-col">
           <PromptChatView
             prompt={selectedPrompt}
             company={selectedCompany ?? ''}
             onBack={() => setSelectedPrompt(null)}
             onClose={onClose}
           />
-        )}
-      </div>
-      </div>{/* end slider */}
-      </div>{/* end overflow wrapper */}
+        </div>
+      )}
+
+      {/* ── Feedback card detail overlay ─── */}
+      {selectedFeedbackCard && (
+        <div className="absolute inset-0 z-10 bg-white flex flex-col">
+          <FeedbackCardDetailView
+            card={selectedFeedbackCard}
+            onBack={() => setSelectedFeedbackCard(null)}
+            onClose={onClose}
+            onAddToBoard={onAddToBoard}
+          />
+        </div>
+      )}
       {/* Toast — rendered via portal to escape panel's CSS transform */}
       {showToast && createPortal(
         <div
@@ -499,26 +689,180 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
       )}
       {/* Feedback received toast */}
       {showFeedbackToast && createPortal(
+        <>
+          {showFeedbackConfetti && (
+            <div
+              className="fixed pointer-events-none"
+              style={{
+                bottom: 0, left: 0,
+                width: 520, height: 520,
+                zIndex: 9998,
+                animation: feedbackToastExiting ? 'toastSlideDown 0.3s ease forwards' : undefined,
+              }}
+            >
+              <DotLottieReact src="/confetti.json" autoplay loop={false} style={{ width: '100%', height: '100%' }} />
+            </div>
+          )}
+          <div
+            className="fixed bottom-6 left-6 z-[9999] flex items-center gap-3 rounded-lg"
+            style={{
+              backgroundColor: '#2B2D33',
+              boxShadow: '0px 6px 16px rgba(34,36,40,0.12), 0px 0px 8px rgba(34,36,40,0.06)',
+              width: 280,
+              padding: '16px 40px 16px 16px',
+              overflow: 'visible',
+              animation: feedbackToastExiting ? 'toastSlideDown 0.3s ease forwards' : 'toastSlideUp 0.25s ease',
+            }}
+          >
+            <div className="reaction-pop absolute pointer-events-none" style={{ top: -84, right: -24, zIndex: 1 }}>
+              <img src="/amazing-reaction.png" alt="" style={{ width: 160, height: 160, pointerEvents: 'none' }} />
+            </div>
+            <div className="flex flex-col gap-0 flex-1 min-w-0">
+              <p className="text-[14px] font-semibold text-[#FAFAFC] leading-[1.4]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>Feedback received!</p>
+              <p className="text-[12px] text-[#C7CAD5] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>We really appreciate your feedback.</p>
+            </div>
+            <button
+              onClick={() => dismissFeedbackToast()}
+              className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded text-[#FAFAFC] hover:bg-white/10 transition-colors"
+            >
+              <IconCross css={{ width: 14, height: 14 }} />
+            </button>
+          </div>
+        </>,
+        document.body
+      )}
+      {/* Save toast — phase 1: refreshing, phase 2: success */}
+      {savePhase && createPortal(
+        <>
+          {saveConfetti && (
+            <div
+              className="fixed pointer-events-none"
+              style={{ bottom: 0, left: 0, width: 520, height: 520, zIndex: 9998,
+                animation: saveToastExiting ? 'toastSlideDown 0.3s ease forwards' : undefined }}
+            >
+              <DotLottieReact src="/confetti.json" autoplay loop={false} style={{ width: '100%', height: '100%' }} />
+            </div>
+          )}
+          <div
+            className="fixed bottom-6 left-6 z-[9999] flex items-start overflow-visible rounded-[8px]"
+            style={{
+              backgroundColor: '#2B2D33',
+              boxShadow: '0px 6px 16px rgba(34,36,40,0.12), 0px 0px 8px rgba(34,36,40,0.06)',
+              width: 280,
+              padding: '16px 40px 16px 16px',
+              animation: saveToastExiting ? 'toastSlideDown 0.3s ease forwards' : 'toastSlideUp 0.25s ease',
+            }}
+          >
+            {savePhase === 'success' && (
+              <div className="reaction-pop absolute pointer-events-none" style={{ top: -84, right: -24, zIndex: 1 }}>
+                <img src="/amazing-reaction.png" alt="" style={{ width: 160, height: 160, pointerEvents: 'none' }} />
+              </div>
+            )}
+            <div className="flex flex-col gap-2 flex-1 min-w-0">
+              <p className="text-[14px] font-semibold text-[#FAFAFC] leading-[1.4] truncate" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
+                {savePhase === 'refreshing' ? 'Refreshing...' : 'Changes saved'}
+              </p>
+              {savePhase === 'refreshing' ? (
+                <div className="w-full rounded-full overflow-hidden" style={{ height: 4, backgroundColor: 'rgba(255,255,255,0.15)' }}>
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${saveProgress}%`,
+                      backgroundColor: '#4262FF',
+                      transition: 'width 5s linear',
+                    }}
+                  />
+                </div>
+              ) : (
+                <p className="text-[12px] text-[#C7CAD5] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
+                  Your edits have been saved successfully.
+                </p>
+              )}
+            </div>
+            <button
+              onClick={() => dismissSaveToast()}
+              className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded text-[#FAFAFC] hover:bg-white/10 transition-colors"
+            >
+              <IconCross css={{ width: 14, height: 14 }} />
+            </button>
+          </div>
+        </>,
+        document.body
+      )}
+
+      {feedbackFilterOpen && createPortal(
         <div
-          className="fixed bottom-6 left-6 z-[9999] flex items-center gap-3 rounded-lg"
+          ref={feedbackFilterDropdownRef}
+          className="fixed z-[9999] bg-white rounded-[8px] flex flex-col overflow-hidden"
           style={{
-            backgroundColor: '#2B2D33',
-            boxShadow: '0px 6px 16px rgba(34,36,40,0.12), 0px 0px 8px rgba(34,36,40,0.06)',
-            width: 280,
-            padding: '16px 40px 16px 16px',
-            animation: feedbackToastExiting ? 'toastSlideDown 0.3s ease forwards' : 'toastSlideUp 0.25s ease',
+            top: feedbackFilterPos.top,
+            left: feedbackFilterPos.left,
+            width: 200,
+            border: '0.5px solid #E9EAEF',
+            boxShadow: '0px 0px 12px 0px rgba(34,36,40,0.04), 0px 2px 8px 0px rgba(34,36,40,0.12)',
+            fontFamily: 'Open Sans, sans-serif',
           }}
         >
-          <div className="flex flex-col gap-0 flex-1 min-w-0">
-            <p className="text-[14px] font-semibold text-[#FAFAFC] leading-[1.4]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>Feedback received!</p>
-            <p className="text-[12px] text-[#C7CAD5] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>We really appreciate your feedback.</p>
-          </div>
-          <button
-            onClick={() => dismissFeedbackToast()}
-            className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded text-[#FAFAFC] hover:bg-white/10 transition-colors"
-          >
-            <IconCross css={{ width: 14, height: 14 }} />
-          </button>
+          {feedbackFilterView === null ? (
+            <>
+              <div className="px-3 py-[10px]">
+                <p className="text-[14px] text-[#656B81] leading-[1.4]">Select filters</p>
+              </div>
+              <div className="mx-3 border-t border-[#E9EAEF]" />
+              {['Company', 'Source', 'Type', 'User role'].map(label => (
+                <button
+                  key={label}
+                  className="flex items-center justify-between px-3 h-10 hover:bg-[#F1F2F5] transition-colors w-full"
+                  onClick={() => { setFeedbackFilterView(label); setFeedbackFilterSearch('') }}
+                >
+                  <span className="text-[14px] leading-[1.4] text-[#222428]">{label}</span>
+                  <IconChevronRight css={{ width: 16, height: 16, color: '#656B81' }} />
+                </button>
+              ))}
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-2 px-2 h-10 border-b border-[#E9EAEF] shrink-0">
+                <button
+                  onClick={() => { setFeedbackFilterView(null); setFeedbackFilterSearch('') }}
+                  className="flex items-center justify-center w-6 h-6 rounded hover:bg-[#F1F2F5] shrink-0"
+                >
+                  <IconChevronLeft css={{ width: 14, height: 14, color: '#656B81' }} />
+                </button>
+                <span className="text-[14px] text-[#222428]">{feedbackFilterView}</span>
+              </div>
+              <div className="px-3 py-2 shrink-0">
+                <input
+                  value={feedbackFilterSearch}
+                  onChange={e => setFeedbackFilterSearch(e.target.value)}
+                  placeholder="Search..."
+                  className="w-full text-[13px] text-[#222428] placeholder:text-[#AEB2C0] outline-none border border-[#E9EAEF] rounded-lg px-2 py-1"
+                />
+              </div>
+              <div className="flex flex-col overflow-y-auto" style={{ maxHeight: 200 }}>
+                {(FEEDBACK_FILTER_SUB_OPTIONS[feedbackFilterView] ?? [])
+                  .filter(opt => opt.toLowerCase().includes(feedbackFilterSearch.toLowerCase()))
+                  .map(opt => (
+                    <button
+                      key={opt}
+                      className="flex items-center gap-2 px-3 h-10 hover:bg-[#F1F2F5] transition-colors w-full text-left shrink-0"
+                      onClick={() => setFeedbackFilterChecked(prev => {
+                        const next = new Set(prev)
+                        next.has(opt) ? next.delete(opt) : next.add(opt)
+                        return next
+                      })}
+                    >
+                      <Checkbox
+                        checked={feedbackFilterChecked.has(opt)}
+                        variant="solid-prominent"
+                        size="small"
+                      />
+                      <span className="text-[14px] text-[#222428] truncate">{opt}</span>
+                    </button>
+                  ))}
+              </div>
+            </>
+          )}
         </div>,
         document.body
       )}
@@ -614,7 +958,7 @@ function PromptChatView({ prompt, company, onBack, onClose }: { prompt: string; 
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Header */}
-      <div className="flex items-center h-14 pl-3 pr-2 shrink-0 gap-1">
+      <div className="flex items-center h-14 pl-4 pr-2 shrink-0 gap-1">
         <button onClick={onBack} className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors shrink-0">
           <IconChevronRight css={{ width: 16, height: 16, transform: 'rotate(180deg)' }} />
         </button>
@@ -635,7 +979,7 @@ function PromptChatView({ prompt, company, onBack, onClose }: { prompt: string; 
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto panel-scroll px-6 pt-2 pb-3 flex flex-col gap-4">
+      <div className="flex-1 overflow-y-auto panel-scroll px-5 py-4 flex flex-col gap-4">
         {messages.map((msg, i) => (
           msg.role === 'user' ? (
             <div key={i} className="flex justify-end">
@@ -646,9 +990,9 @@ function PromptChatView({ prompt, company, onBack, onClose }: { prompt: string; 
           ) : (
             <div key={i} className="flex flex-col gap-3">
               <p className="text-[14px] leading-[1.57] text-[#222428]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{msg.intro}</p>
-              <ol className="flex flex-col gap-4 list-decimal list-inside" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+              <ol className="flex flex-col gap-4 list-decimal" style={{ fontFamily: 'Open Sans, sans-serif', paddingLeft: 20 }}>
                 {msg.items.map((item, j) => (
-                  <li key={j} className="text-[14px] leading-[1.57] text-[#222428]" style={{ listStylePosition: 'outside', marginLeft: 16 }}>
+                  <li key={j} className="text-[14px] leading-[1.57] text-[#222428]">
                     <span className="font-semibold">{item.title}</span>
                     <br />
                     <span className="text-[#222428]">({item.stats}): </span>
@@ -668,7 +1012,7 @@ function PromptChatView({ prompt, company, onBack, onClose }: { prompt: string; 
 
       {/* Thinking indicator — 16px above input */}
       {thinking && (
-        <div className="shrink-0 flex items-center gap-2 px-6 text-[#656B81]" style={{ paddingBottom: 16, fontFamily: 'Open Sans, sans-serif' }}>
+        <div className="shrink-0 flex items-center gap-2 px-5 text-[#656B81]" style={{ paddingBottom: 16, fontFamily: 'Open Sans, sans-serif' }}>
           <IconInsights css={{ width: 16, height: 16 }} />
           <span className="text-[13px]">Thinking…</span>
         </div>
@@ -723,11 +1067,11 @@ function CompanyDetailView({ company, rowTitle: _rowTitle, onBack, onPromptSelec
       </button>
       <p className="text-[16px] text-[#222428] leading-[1.5] mb-1" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>Details</p>
       <div className="flex flex-col">
-        <CompanyFieldRow icon={<IconOffice size="small" />} label="Name"><Chip removable={false} css={{ fontSize: 13 }}>{company}</Chip></CompanyFieldRow>
-        <CompanyFieldRow icon={<IconLink size="small" />} label="Domain"><Chip removable={false} css={{ fontSize: 13 }}>{info.domain}</Chip></CompanyFieldRow>
-        <CompanyFieldRow icon={<span className="text-[13px] leading-none">◎</span>} label="Stage"><Chip removable={false} css={{ fontSize: 13 }}>{info.stage}</Chip></CompanyFieldRow>
+        <CompanyFieldRow icon={<IconOffice size="small" />} label="Name"><Chip removable={false} css={{ fontSize: 13, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{company}</Chip></CompanyFieldRow>
+        <CompanyFieldRow icon={<IconLink size="small" />} label="Domain"><Chip removable={false} css={{ fontSize: 13, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{info.domain}</Chip></CompanyFieldRow>
+        <CompanyFieldRow icon={<span className="text-[13px] leading-none">◎</span>} label="Stage"><Chip removable={false} css={{ fontSize: 13, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{info.stage}</Chip></CompanyFieldRow>
         <CompanyFieldRow icon={<span className="text-[13px] font-semibold leading-none">$</span>} label="Deal Value"><span className="text-[14px] text-[#222428] px-1">{info.dealValue}</span></CompanyFieldRow>
-        <CompanyFieldRow icon={<IconGlobe size="small" />} label="Source"><Chip removable={false} css={{ fontSize: 13 }}>{info.source}</Chip></CompanyFieldRow>
+        <CompanyFieldRow icon={<IconGlobe size="small" />} label="Source"><Chip removable={false} css={{ fontSize: 13, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{info.source}</Chip></CompanyFieldRow>
       </div>
       <p className="text-[16px] text-[#222428] leading-[1.5] mt-6 mb-3" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>Discover more about {company}</p>
       <div className="flex flex-col gap-3">
@@ -864,6 +1208,8 @@ function FeedbackCard({
   date,
   companies,
   onDismiss,
+  onSelect,
+  onAddToBoard,
 }: {
   borderColor: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -874,16 +1220,38 @@ function FeedbackCard({
   date: string
   companies: string[]
   onDismiss: () => void
+  onSelect: () => void
+  onAddToBoard?: () => void
 }) {
   const [expanded, setExpanded] = useState(false)
   const [hovered, setHovered] = useState(false)
+  const [tooltipVisible, setTooltipVisible] = useState(false)
+  const [tooltipPos, setTooltipPos] = useState<{ top: number; right: number } | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    if (menuButtonRef.current) {
+      const r = menuButtonRef.current.getBoundingClientRect()
+      setMenuPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+    }
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [menuOpen])
 
   return (
     <div
-      className="w-full rounded-xl flex flex-col gap-2 p-5 transition-all duration-200"
+      className="w-full rounded-xl flex flex-col gap-2 p-5 transition-all duration-200 cursor-pointer"
       style={{ border: `2px solid ${borderColor}`, borderBottomWidth: 6 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={onSelect}
     >
       {/* Card header: icon + date (on hover) + actions */}
       <div className="flex items-center gap-2">
@@ -900,12 +1268,25 @@ function FeedbackCard({
         </span>
         <div className="flex-1" />
         <div className="flex items-center gap-1">
-          <button className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
+          <button
+            ref={menuButtonRef}
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+            onClick={e => { e.stopPropagation(); setMenuOpen(o => !o) }}
+          >
             <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
           </button>
-          <button onClick={onDismiss} aria-label="Remove signal" className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
-            <IconCross css={{ width: 16, height: 16 }} />
-          </button>
+          <div className="relative"
+            onMouseEnter={e => {
+              const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+              setTooltipPos({ top: r.top - 4, right: window.innerWidth - r.right })
+              setTooltipVisible(true)
+            }}
+            onMouseLeave={() => setTooltipVisible(false)}
+          >
+            <button onClick={e => { e.stopPropagation(); onDismiss() }} aria-label="Remove signal" className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
+              <IconCross css={{ width: 16, height: 16 }} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -951,11 +1332,372 @@ function FeedbackCard({
         <div style={{ overflow: 'hidden' }}>
           <div className="flex flex-wrap gap-2 pt-1">
             {companies.map(name => (
-              <Chip key={name} removable={false} css={{ fontSize: 14 }}>{name}</Chip>
+              <Chip key={name} removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
             ))}
           </div>
         </div>
       </div>
+      {menuOpen && menuPos && createPortal(
+        <div
+          ref={menuRef}
+          className="fixed z-[9999] bg-white flex flex-col gap-[4px] py-3 px-3 rounded-lg"
+          style={{ top: menuPos.top, right: menuPos.right, width: 224, boxShadow: '0px 2px 8px rgba(34,36,40,0.12), 0px 0px 12px rgba(34,36,40,0.04)' }}
+        >
+          {[
+            { icon: <IconBoard size="small" />, label: 'Add to board', onClick: () => { onAddToBoard?.(); setMenuOpen(false) } },
+            { icon: <IconSquaresTwoOverlap size="small" />, label: 'Copy', onClick: () => setMenuOpen(false) },
+            { icon: <IconDocFormat size="small" />, label: 'View in transcript', onClick: () => setMenuOpen(false) },
+          ].map(({ icon, label, onClick }) => (
+            <button
+              key={label}
+              className="flex items-center gap-3 w-full px-2 py-2.5 rounded text-[14px] text-[#222428] hover:bg-[#F1F2F5] transition-colors text-left"
+              style={{ fontFamily: 'Open Sans, sans-serif' }}
+              onClick={onClick}
+            >
+              <span className="text-[#656B81] flex items-center shrink-0">{icon}</span>
+              {label}
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
+      {tooltipVisible && tooltipPos && createPortal(
+        <div
+          className="fixed pointer-events-none z-[9999] flex flex-col items-end whitespace-nowrap"
+          style={{ top: tooltipPos.top, right: tooltipPos.right, transform: 'translateY(-100%)' }}
+        >
+          <div className="bg-[#2B2D33] text-white text-[12px] leading-none px-2 py-1.5 rounded-md" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+            Remove signal
+          </div>
+          <div style={{ width: 0, height: 0, borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderTop: '5px solid #2B2D33', marginRight: 8 }} />
+        </div>,
+        document.body
+      )}
+    </div>
+  )
+}
+
+function generateTranscript(card: { title: string; text: string; author: string }) {
+  const firstName = card.author.split(',')[0].split(' ')[0]
+  const interviewer = 'Alex Mercer'
+
+  const sentences = card.text
+    .split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(s => s.length > 15)
+
+  const s0 = sentences[0] ?? card.text
+  const s1 = sentences[1] ?? s0
+  const s2 = sentences.slice(2).join(' ') || s1
+
+  // Find the most impactful sentence for the bold highlight
+  const impactIdx = sentences.findIndex(s =>
+    /revenue|critical|risk|churn|block|erode|trust|renewal|compet|evaluating|alternative/i.test(s)
+  )
+  const boldSentence = impactIdx > 0 ? sentences[impactIdx] : sentences[sentences.length - 1] ?? ''
+  const openingText = (impactIdx > 0 || impactIdx === -1) ? s0 : s0.replace(boldSentence, '').trim()
+  const boldText = boldSentence !== s0 ? boldSentence : ''
+
+  const isPositive = /positive|exceeds|exceeded|adoption|enthusiastic/i.test(card.title)
+  const isRisk = /risk|churn|alternative|competitive|renewal/i.test(card.title)
+
+  const q1 = isPositive
+    ? 'That\'s encouraging to hear. What specifically resonated most with your team?'
+    : 'How long has this been affecting your workflows?'
+  const q2 = isPositive
+    ? 'Were there any gaps or things that didn\'t quite land?'
+    : isRisk
+    ? 'Has this come up in any renewal or contract conversations?'
+    : 'What does your current workaround look like?'
+
+  return [
+    { speaker: firstName, time: '00:01', text: openingText ? openingText + ' ' : s0 + ' ', bold: boldText },
+    { speaker: interviewer, time: '00:03', text: q1, bold: '' },
+    { speaker: firstName, time: '00:05', text: s1, bold: '' },
+    { speaker: interviewer, time: '00:07', text: q2, bold: '' },
+    { speaker: firstName, time: '00:09', text: s2, bold: '' },
+    { speaker: interviewer, time: '00:12', text: 'What would a complete solution look like from your perspective?', bold: '' },
+  ]
+}
+
+function classifyEntry(text: string, borderColor: string): 'praise' | 'request' | 'problem' {
+  const t = text.toLowerCase()
+  const count = (pattern: RegExp) => (t.match(pattern) || []).length
+
+  const praiseScore = count(/(love|great|excellent|amazing|fantastic|saves|saved|cut.*time|really helps|works well|positive|exceeds|exceeded|enthusiastic|adoption|appreciate|brilliant|impressed|game.?changer)/g)
+  const requestScore = count(/(request(ing|ed|s)?|would like|wish|needs?|wants?|should|could you|if only|it would|please add|feature(s)?|improve(ment)?|enhancement|add support|looking for|hoping|asking for|quarters?)/g)
+  const problemScore = count(/(hard|difficult|can't|cannot|broken|issue|problem|frustrated|frustrating|slow|blocking|workaround|complicated|confusing|annoying|painful|cumbersome|impossible|error|fail(ing|ed)?|bug|crash|missing)/g)
+
+  if (praiseScore > requestScore && praiseScore > problemScore) return 'praise'
+  if (requestScore >= problemScore && requestScore > praiseScore) return 'request'
+  if (problemScore > praiseScore) return 'problem'
+
+  // Fallback to card's border color
+  if (borderColor === '#d4bbff') return 'request'
+  if (borderColor === '#ffd4b2') return 'problem'
+  return 'praise'
+}
+
+function FeedbackCardDetailView({
+  card,
+  onBack,
+  onClose,
+  onAddToBoard,
+}: {
+  card: { title: string; text: string; author: string; date: string; companies: string[] }
+  onBack: () => void
+  onClose: () => void
+  onAddToBoard?: (data: import('../canvas/CanvasFeedbackCard').FeedbackCardData) => void
+}) {
+  const [activeTab, setActiveTab] = useState('Conversation')
+  const [search, setSearch] = useState('')
+  const [showCopyToast, setShowCopyToast] = useState(false)
+  const copyToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [convMenuIndex, setConvMenuIndex] = useState<number | null>(null)
+  const [convMenuPos, setConvMenuPos] = useState({ top: 0, right: 0 })
+  const convMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (convMenuIndex === null) return
+    const handler = (e: MouseEvent) => {
+      if (convMenuRef.current?.contains(e.target as Node)) return
+      setConvMenuIndex(null)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [convMenuIndex])
+
+  const openConvMenu = (index: number, btn: HTMLButtonElement) => {
+    if (convMenuIndex === index) { setConvMenuIndex(null); return }
+    const rect = btn.getBoundingClientRect()
+    setConvMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
+    setConvMenuIndex(index)
+  }
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text)
+    setShowCopyToast(true)
+    if (copyToastTimer.current) clearTimeout(copyToastTimer.current)
+    copyToastTimer.current = setTimeout(() => setShowCopyToast(false), 2000)
+  }
+
+  const transcript = generateTranscript(card)
+
+  const authorParts = card.author.split(',')
+  const authorName = authorParts[0].trim()
+  const authorRole = authorParts.slice(1).join(',').trim()
+  const nameWords = authorName.split(' ')
+  const authorInitials = (nameWords.length >= 2
+    ? nameWords[0][0] + nameWords[nameWords.length - 1][0]
+    : authorName.slice(0, 2)).toUpperCase()
+  const AVATAR_COLORS = ['#de350b', '#4262FF', '#00C7A8', '#F5A623', '#7E57C2']
+  const avatarBg = AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]
+
+  return (
+    <div className="flex flex-col h-full bg-white" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+
+      {/* Header */}
+      <div className="flex items-center gap-1 h-12 px-4 shrink-0">
+        <button
+          onClick={onBack}
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors shrink-0"
+          aria-label="Go back"
+        >
+          <IconChevronLeft css={{ width: 16, height: 16 }} />
+        </button>
+        <p
+          className="flex-1 min-w-0 truncate text-[#222428] leading-[1.5]"
+          style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, fontFeatureSettings: "'ss01' 1" }}
+          title={card.title}
+        >
+          {card.title}
+        </p>
+        <div className="flex items-center shrink-0">
+          <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
+            <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
+          </button>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
+            <IconCross css={{ width: 16, height: 16 }} />
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex px-4 shrink-0 pb-4 pt-3 gap-1">
+        {['Summary', 'Conversation'].map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className="px-2 py-1 rounded-lg text-[14px] font-semibold transition-colors"
+            style={{
+              fontFamily: 'Open Sans, sans-serif',
+              color: activeTab === tab ? '#4262FF' : '#656B81',
+              backgroundColor: activeTab === tab ? '#F2F4FC' : 'transparent',
+            }}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Search — only shown on Conversation tab */}
+      {activeTab === 'Conversation' && (
+        <div className="px-6 shrink-0 pb-7">
+          <div className="flex items-center gap-2 h-8 px-3 rounded-lg bg-[#F1F2F5]">
+            <IconMagnifyingGlass css={{ width: 14, height: 14, color: '#7D8297', flexShrink: 0 }} />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search keywords..."
+              className="flex-1 bg-transparent text-[13px] text-[#222428] outline-none placeholder:text-[#7D8297]"
+              style={{ fontFamily: 'Open Sans, sans-serif' }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto panel-scroll pb-6">
+        {activeTab === 'Conversation' ? (
+          <div className="flex flex-col gap-4 px-6">
+            <div className="group relative rounded-lg p-4" style={{ backgroundColor: '#F1F2F5' }}>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-[14px] font-semibold text-[#222428]" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>{transcript[0].speaker}</span>
+                <span className="text-[13px] text-[#656B81]">{transcript[0].time}</span>
+              </div>
+              <p className="text-[14px] text-[#222428] leading-[1.5]">
+                {transcript[0].text}
+                {transcript[0].bold && <strong>{transcript[0].bold}</strong>}
+              </p>
+              <button
+                onClick={e => openConvMenu(0, e.currentTarget)}
+                className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:text-[#222428] hover:bg-white/60 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
+              </button>
+            </div>
+            {transcript.slice(1).map((msg, i) => (
+              <div key={i} className="group relative rounded-lg px-2 py-1 -mx-2 hover:bg-[#F1F2F5] transition-colors">
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-[14px] font-semibold text-[#222428]" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>{msg.speaker}</span>
+                  <span className="text-[13px] text-[#656B81]">{msg.time}</span>
+                </div>
+                <p className="text-[14px] text-[#656B81] leading-[1.5]">{msg.text}</p>
+                <button
+                  onClick={e => openConvMenu(i + 1, e.currentTarget)}
+                  className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:text-[#222428] hover:bg-[#E9EAEF] opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col px-6 pt-5 pb-6 gap-6">
+            {/* Speaker */}
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: avatarBg }}>
+                <span className="text-[8px] font-semibold text-white leading-none" style={{ fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
+              </div>
+              <div className="flex flex-col min-w-0">
+                <p className="text-[14px] font-bold text-[#222428] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>{authorName}</p>
+                {authorRole && <p className="text-[12px] text-[#656B81] leading-[1.5]">{authorRole}</p>}
+              </div>
+            </div>
+
+            {/* Summary text */}
+            <p className="text-[14px] text-[#656B81] leading-[1.4]">{card.text}</p>
+
+            {/* Fields */}
+            <div className="flex flex-col gap-3">
+              <FieldRow label="Source">
+                <Chip removable={false} css={{ fontSize: 14 }}>Customer Interview</Chip>
+              </FieldRow>
+              <FieldRow label="State">
+                <div className="inline-flex items-center rounded-[6px] px-2" style={{ backgroundColor: '#c3faf5', color: '#0e4343', height: 28 }}>
+                  <span className="text-[14px] leading-[20px]">Open</span>
+                </div>
+              </FieldRow>
+              <FieldRow label="Provided">
+                <Chip removable={false} css={{ fontSize: 14 }}>{card.date}</Chip>
+              </FieldRow>
+              <FieldRow label="Created">
+                <Chip removable={false} css={{ fontSize: 14 }}>{card.date}</Chip>
+              </FieldRow>
+              <FieldRow label="Owner">
+                <span className="text-[14px] text-[#222428] leading-[1.4] px-2">—</span>
+              </FieldRow>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Conversation entry menu */}
+      {convMenuIndex !== null && createPortal(
+        <div
+          ref={convMenuRef}
+          className="fixed z-[9999] bg-white flex flex-col gap-[4px] py-3 px-3 rounded-lg"
+          style={{
+            top: convMenuPos.top,
+            right: convMenuPos.right,
+            width: 224,
+            boxShadow: '0px 2px 8px rgba(34,36,40,0.12), 0px 0px 12px rgba(34,36,40,0.04)',
+            fontFamily: 'Open Sans, sans-serif',
+          }}
+        >
+          {[
+            { icon: <IconBoard size="small" />, label: 'Add to board', onClick: () => {
+              const entry = convMenuIndex === 0 ? transcript[0] : transcript[convMenuIndex ?? 0]
+              const text = entry ? (entry.text + (entry.bold ?? '')) : ''
+              const cardType = classifyEntry(text, card.borderColor ?? '')
+              const borderColor = cardType === 'request' ? '#d4bbff' : cardType === 'problem' ? '#ffd4b2' : '#ffc6c6'
+              onAddToBoard?.({
+                title: card.title,
+                text,
+                author: `${entry?.speaker ?? ''} • ${entry?.time ?? ''}`,
+                date: card.date,
+                companies: card.companies,
+                borderColor,
+              })
+              setConvMenuIndex(null)
+            }},
+            { icon: <IconSquaresTwoOverlap size="small" />, label: 'Copy', onClick: () => {
+              const t = convMenuIndex === 0
+                ? transcript[0].text + (transcript[0].bold ?? '')
+                : transcript[convMenuIndex]?.text ?? ''
+              handleCopy(t)
+              setConvMenuIndex(null)
+            }},
+          ].map(({ icon, label, onClick }) => (
+            <button
+              key={label}
+              className="flex items-center gap-3 w-full px-2 py-2.5 rounded text-[14px] text-[#222428] hover:bg-[#F1F2F5] transition-colors text-left"
+              onClick={onClick}
+            >
+              <span className="text-[#656B81] flex items-center shrink-0">{icon}</span>
+              {label}
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
+
+            {/* Copy toast */}
+      {showCopyToast && createPortal(
+        <div
+          className="fixed bottom-6 left-6 z-[9999] flex items-center gap-3 rounded-lg"
+          style={{
+            backgroundColor: '#2B2D33',
+            boxShadow: '0px 6px 16px rgba(34,36,40,0.12), 0px 0px 8px rgba(34,36,40,0.06)',
+            padding: '12px 16px',
+            animation: 'toastSlideUp 0.25s ease',
+            fontFamily: 'Open Sans, sans-serif',
+          }}
+        >
+          <p className="text-[14px] font-semibold text-[#FAFAFC] leading-[1.4]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>Selection copied!</p>
+        </div>,
+        document.body
+      )}
     </div>
   )
 }
