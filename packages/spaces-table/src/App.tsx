@@ -387,7 +387,7 @@ export function App() {
       <div
         className="fixed top-0 right-0 h-full z-50 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{
-          width: activeSidebar === 'row-detail' ? 376 + 24 : activeSidebar === 'ai-sidekick' ? 320 + 36 : 320,
+          width: activeSidebar === 'row-detail' ? 476 + 24 : activeSidebar === 'ai-sidekick' ? 420 + 36 : 320,
           transform: isRightOpen ? 'translateX(0)' : 'translateX(100%)',
         }}
       >

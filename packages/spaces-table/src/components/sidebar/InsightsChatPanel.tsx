@@ -4,6 +4,7 @@ import {
   IconSlidersX,
   IconStickyNote,
   IconArrowUp,
+  IconInsights,
 } from '@mirohq/design-system'
 
 interface InsightsChatPanelProps {
@@ -102,36 +103,35 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
 
         {/* Chat messages */}
         {messages.map((msg, i) => (
-          <div key={i} className="flex justify-end">
-            <div
-              className="max-w-[85%] rounded-2xl px-3 py-2 text-[13px] leading-[1.5] whitespace-pre-wrap"
-              style={{
-                backgroundColor: msg.role === 'user' ? '#4262FF' : '#EEF3FF',
-                color: msg.role === 'user' ? '#fff' : '#222428',
-                borderBottomRightRadius: msg.role === 'user' ? 4 : undefined,
-                borderBottomLeftRadius: msg.role === 'ai' ? 4 : undefined,
-              }}
-            >
-              {msg.text}
+          msg.role === 'user' ? (
+            <div key={i} className="flex justify-end">
+              <div
+                className="max-w-[85%] rounded-lg px-4 py-3 text-[14px] leading-[1.57] text-[#3C3F4A] whitespace-pre-wrap"
+                style={{ backgroundColor: '#F1F2F5', fontFamily: 'Open Sans, sans-serif' }}
+              >
+                {msg.text}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div key={i} className="flex justify-start">
+              <p className="text-[14px] leading-[1.57] text-[#222428] whitespace-pre-wrap" style={{ fontFamily: 'Open Sans, sans-serif' }}>{msg.text}</p>
+            </div>
+          )
         ))}
 
-        {typing && (
-          <div className="flex justify-end">
-            <div className="flex items-center gap-1 px-3 py-2 rounded-2xl rounded-br-[4px] bg-[#EEF3FF]">
-              {[0, 1, 2].map(i => (
-                <span key={i} className="w-1.5 h-1.5 rounded-full bg-[#AEB2C0]"
-                  style={{ animation: `bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
-              ))}
-            </div>
-          </div>
-        )}
         <div ref={bottomRef} />
       </div>
 
+      {/* Thinking indicator — 16px above input */}
+      {typing && (
+        <div className="shrink-0 flex items-center gap-2 px-4 text-[#656B81]" style={{ paddingBottom: 16 }}>
+          <IconInsights css={{ width: 16, height: 16 }} />
+          <span className="text-[13px]">Thinking…</span>
+        </div>
+      )}
+
       {/* Input */}
-      <div className="shrink-0 px-3 pb-4 pt-2">
+      <div className="shrink-0 px-3 pb-4" style={{ paddingTop: typing ? 0 : 8 }}>
         <div
           className="flex flex-col rounded-xl bg-white"
           style={{ border: '1px solid #E0E2E8', boxShadow: '0px 4px 10px rgba(0,0,0,0.05)' }}

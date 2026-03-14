@@ -21,6 +21,7 @@ import {
   IconStickyNote,
   IconChevronRight,
   IconDotsThree,
+  IconInsights,
 } from '@mirohq/design-system'
 
 interface RowDetailPanelProps {
@@ -217,7 +218,7 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
   const adjRevenue = Math.round(row.estRevenue * remainingFraction)
 
   return (
-    <div className="flex flex-col h-full bg-white overflow-hidden" style={{ width: 376, fontFamily: 'Open Sans, sans-serif' }}>
+    <div className="flex flex-col h-full bg-white overflow-hidden" style={{ width: 476, fontFamily: 'Open Sans, sans-serif' }}>
 
       {/* ── Header ──────────────────────────────────────── */}
       <div className="flex items-center gap-2 h-12 pl-4 pr-3 shrink-0" style={{ display: selectedPrompt ? 'none' : undefined }}>
@@ -272,13 +273,13 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
       <div
         className="flex absolute inset-y-0 left-0"
         style={{
-          width: 1128,
-          transform: selectedPrompt ? 'translateX(-752px)' : selectedCompany ? 'translateX(-376px)' : 'translateX(0)',
+          width: 1428,
+          transform: selectedPrompt ? 'translateX(-952px)' : selectedCompany ? 'translateX(-476px)' : 'translateX(0)',
           transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
       {/* ── Main panel ─── */}
-      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2 shrink-0" style={{ width: 376, overflowAnchor: 'none' }}>
+      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2 shrink-0" style={{ width: 476, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -445,7 +446,7 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
         )}
       </div>
       {/* ── Company panel ─── */}
-      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-3 flex flex-col shrink-0" style={{ width: 376 }}>
+      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-3 flex flex-col shrink-0" style={{ width: 476 }}>
         {selectedCompany && (
           <CompanyDetailView
             company={selectedCompany}
@@ -456,7 +457,7 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
         )}
       </div>
       {/* ── Chat panel ─── */}
-      <div className="flex flex-col shrink-0 h-full" style={{ width: 376 }}>
+      <div className="flex flex-col shrink-0 h-full" style={{ width: 476 }}>
         {selectedPrompt && (
           <PromptChatView
             prompt={selectedPrompt}
@@ -638,7 +639,7 @@ function PromptChatView({ prompt, company, onBack, onClose }: { prompt: string; 
         {messages.map((msg, i) => (
           msg.role === 'user' ? (
             <div key={i} className="flex justify-end">
-              <div className="max-w-[75%] rounded-lg px-4 py-3 text-[14px] leading-[1.57] text-[#222428]" style={{ backgroundColor: '#F2F4FC', fontFamily: 'Open Sans, sans-serif' }}>
+              <div className="max-w-[75%] rounded-lg px-4 py-3 text-[14px] leading-[1.57] text-[#3C3F4A]" style={{ backgroundColor: '#F1F2F5', fontFamily: 'Open Sans, sans-serif' }}>
                 {msg.text}
               </div>
             </div>
@@ -662,17 +663,19 @@ function PromptChatView({ prompt, company, onBack, onClose }: { prompt: string; 
             </div>
           )
         ))}
-        {thinking && (
-          <div className="flex items-center gap-2 text-[14px] text-[#7D8297]" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-            <span className="text-[16px]">🟡</span>
-            Thinking...
-          </div>
-        )}
         <div ref={bottomRef} />
       </div>
 
+      {/* Thinking indicator — 16px above input */}
+      {thinking && (
+        <div className="shrink-0 flex items-center gap-2 px-6 text-[#656B81]" style={{ paddingBottom: 16, fontFamily: 'Open Sans, sans-serif' }}>
+          <IconInsights css={{ width: 16, height: 16 }} />
+          <span className="text-[13px]">Thinking…</span>
+        </div>
+      )}
+
       {/* Input card */}
-      <div className="shrink-0 px-4 pb-4 pt-2">
+      <div className="shrink-0 px-4 pb-4" style={{ paddingTop: thinking ? 0 : 8 }}>
         <div className="flex flex-col rounded-lg border border-[#EBEBEB] bg-white" style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.05)' }}>
           <textarea
             value={input}
