@@ -220,7 +220,7 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
     <div className="flex flex-col h-full bg-white overflow-hidden" style={{ width: 376, fontFamily: 'Open Sans, sans-serif' }}>
 
       {/* ── Header ──────────────────────────────────────── */}
-      <div className="flex items-center gap-2 h-12 pl-4 pr-7 shrink-0" style={{ display: selectedPrompt ? 'none' : undefined }}>
+      <div className="flex items-center gap-2 h-12 pl-4 pr-3 shrink-0" style={{ display: selectedPrompt ? 'none' : undefined }}>
         <p
           className="flex-1 min-w-0 truncate text-[#222428] leading-[1.5]"
           style={{
@@ -247,7 +247,7 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
       {!selectedPrompt && <div className="h-1 shrink-0" />}
 
       {/* ── Tabs ────────────────────────────────────────── */}
-      <div className="flex pl-4 pr-7 shrink-0 pb-4 pt-2" style={{ display: selectedPrompt ? 'none' : undefined }}>
+      <div className="flex pl-4 pr-4 shrink-0 pb-4 pt-2" style={{ display: selectedPrompt ? 'none' : undefined }}>
         {TABS.map((tab) => (
           <button
             key={tab}
@@ -268,9 +268,9 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
       {!selectedPrompt && <div className="h-1 shrink-0" />}
 
       {/* ── Content (sliding panels) ─────────────────── */}
-      <div className="flex-1 overflow-hidden relative">
+      <div className="flex-1 min-h-0 overflow-hidden relative">
       <div
-        className="flex h-full"
+        className="flex absolute inset-y-0 left-0"
         style={{
           width: 1128,
           transform: selectedPrompt ? 'translateX(-752px)' : selectedCompany ? 'translateX(-376px)' : 'translateX(0)',
@@ -278,7 +278,7 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
         }}
       >
       {/* ── Main panel ─── */}
-      <div className="overflow-y-auto panel-scroll pl-4 pr-7 pt-2 flex flex-col gap-2 shrink-0" style={{ width: 376, overflowAnchor: 'none' }}>
+      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2 shrink-0" style={{ width: 376, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -445,7 +445,7 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
         )}
       </div>
       {/* ── Company panel ─── */}
-      <div className="overflow-y-auto panel-scroll pl-4 pr-7 pt-3 flex flex-col shrink-0" style={{ width: 376 }}>
+      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-3 flex flex-col shrink-0" style={{ width: 376 }}>
         {selectedCompany && (
           <CompanyDetailView
             company={selectedCompany}
@@ -619,7 +619,7 @@ function PromptChatView({ prompt, company, onBack, onClose }: { prompt: string; 
         </button>
         <div className="flex-1 flex items-center gap-2 min-w-0">
           <span className="text-[16px] text-[#222428] leading-[1.5] font-semibold truncate" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>
-            {company} Insights
+            Miro Insights
           </span>
           <span className="shrink-0 px-1.5 py-0.5 rounded text-[11px] font-semibold text-[#3C3F4A] bg-[#E9EAEF] leading-none" style={{ fontFamily: 'Open Sans, sans-serif' }}>
             Beta

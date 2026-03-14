@@ -5,41 +5,13 @@ interface InsightsToastProps {
   onDismiss: () => void
 }
 
-// Recreates the Figma "Amazing!" reaction sticker by compositing its layers.
-// FRAME = logical Figma frame size; everything is scaled down to `size` px.
-const FRAME = 648
-
 function AmazingReaction({ size = 80 }: { size?: number }) {
-  const scale = size / FRAME
   return (
-    // Outer container defines the rendered size; overflow:visible lets bubbles peek out
-    <div style={{ width: size, height: size, position: 'relative', overflow: 'visible', pointerEvents: 'none' }}>
-      {/* Inner logical frame — all children use Figma coordinates, then scale down */}
-      <div style={{
-        width: FRAME,
-        height: FRAME,
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        transform: `scale(${scale})`,
-        transformOrigin: 'top left',
-      }}>
-        {/* Layer 1: raster PNG — pink blob body + floating spheres (all baked in) */}
-        <img
-          src="/reaction-blob.png"
-          alt=""
-          style={{ position: 'absolute', left: -353, top: -111, width: 1354, height: 758 }}
-        />
-
-        {/* Layer 2: face SVG — heart eyes, pupils, mouth as vectors */}
-        {/* Actual bounds derived from Figma inset: left:158, top:171, w:300, h:196 */}
-        <img
-          src="/reaction-body.svg"
-          alt=""
-          style={{ position: 'absolute', left: 158, top: 171, width: 300, height: 196 }}
-        />
-      </div>
-    </div>
+    <img
+      src="/amazing-reaction.png"
+      alt=""
+      style={{ width: size, height: size, pointerEvents: 'none' }}
+    />
   )
 }
 
@@ -97,9 +69,9 @@ export function InsightsToast({ onDismiss }: InsightsToastProps) {
         {/* Reaction sticker — pops in at top-right corner */}
         <div
           className="reaction-pop absolute pointer-events-none"
-          style={{ top: -40, right: -24, zIndex: 1 }}
+          style={{ top: -84, right: -24, zIndex: 1 }}
         >
-          <AmazingReaction size={80} />
+          <AmazingReaction size={160} />
         </div>
 
         {/* Close */}

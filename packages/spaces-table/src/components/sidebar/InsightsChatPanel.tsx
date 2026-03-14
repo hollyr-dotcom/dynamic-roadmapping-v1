@@ -15,29 +15,14 @@ interface Message {
   text: string
 }
 
-const INITIAL_MESSAGES: Message[] = [
-  {
-    role: 'ai',
-    text: "I can help you identify patterns in your backlog, surface high-impact items, and connect customer feedback to your roadmap priorities. I'm connected to your linked tools and feedback sources.\n\nCan you provide context on ownership & goals?",
-  },
-]
-
 const AI_RESPONSES: string[] = [
   "Based on your backlog, the top 3 items by estimated revenue impact are the AI portfolio advisor ($425K), real-time transaction categorisation ($917K), and tax-loss harvesting ($921K). These also have the highest customer mention counts.",
   "I can see 9,873 unique customers have requested improvements to transaction categorisation. Companies like Spotify, Stripe, and Linear are most affected. Would you like me to pull the latest feedback signals for this item?",
   "Looking at your 'Now' priority items, the multi-currency wallet has the broadest customer base (8,532 accounts). Atlassian and Notion have flagged FX conversion delays as a top renewal blocker.",
 ]
 
-function MiroLogo({ size = 24 }: { size?: number }) {
-  return (
-    <svg width={size} height={Math.round(size * 0.833)} viewBox="0 0 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M16.53 0h-3.22l3.38 5.56-3.76-5.56H9.71l3.07 5.93L9.07 0H5.85l2.73 6.31L5.15 0H1.94L5.5 7.64 0 20h3.22l4.24-9.84L11.7 20h3.22l-4.57-10.62L14.76 20H18l-5.17-11.84L16.53 0zM22.06 0h-3.22l5.16 20H27L22.06 0z" fill="#FFD02F"/>
-    </svg>
-  )
-}
-
 export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
-  const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES)
+  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [typing, setTyping] = useState(false)
   const responseIndex = useRef(0)
@@ -65,8 +50,7 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
     <div className="flex flex-col h-full bg-white" style={{ fontFamily: 'Open Sans, sans-serif' }}>
 
       {/* Header */}
-      <div className="flex items-center gap-2 h-14 px-4 shrink-0 border-b border-[#E9EAEF]">
-        <MiroLogo size={22} />
+      <div className="flex items-center gap-2 h-14 px-4 shrink-0">
         <span
           className="text-[16px] text-[#222428] leading-[1.4]"
           style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}
@@ -91,17 +75,38 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto panel-scroll px-4 py-4 flex flex-col gap-3">
+
+        {/* Static intro block */}
+        <div className="flex flex-col gap-3 pb-2 my-auto">
+          <img src="/miro-insights-icon.svg" alt="Miro Insights" style={{ width: 24, height: 20 }} />
+          <div className="flex flex-col gap-3">
+            <p
+              className="text-[#222428] leading-[1.4]"
+              style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 20, fontFeatureSettings: "'ss01' 1" }}
+            >
+              Hey Richard
+            </p>
+            <p className="text-[14px] text-[#222428] leading-[1.5]">
+              Easily surface customer feedback across all of your{' '}
+              <span style={{ textDecoration: 'underline' }}>connected tools</span>{' '}
+              in your organization with Miro Insights.
+            </p>
+            <p className="text-[14px] text-[#222428] leading-[1.5]">
+              The AI uses your team's ownership and goals to find the most relevant signals in customer feedback and surface high-confidence insights.
+            </p>
+            <p className="text-[14px] text-[#222428] leading-[1.5]">
+              Can you provide context on ownership & goals?
+            </p>
+          </div>
+        </div>
+
+        {/* Chat messages */}
         {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            {msg.role === 'ai' && (
-              <div className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center mr-2 mt-0.5" style={{ backgroundColor: '#FFF4C2' }}>
-                <MiroLogo size={14} />
-              </div>
-            )}
+          <div key={i} className="flex justify-end">
             <div
               className="max-w-[85%] rounded-2xl px-3 py-2 text-[13px] leading-[1.5] whitespace-pre-wrap"
               style={{
-                backgroundColor: msg.role === 'user' ? '#4262FF' : '#F1F2F5',
+                backgroundColor: msg.role === 'user' ? '#4262FF' : '#EEF3FF',
                 color: msg.role === 'user' ? '#fff' : '#222428',
                 borderBottomRightRadius: msg.role === 'user' ? 4 : undefined,
                 borderBottomLeftRadius: msg.role === 'ai' ? 4 : undefined,
@@ -113,11 +118,8 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
         ))}
 
         {typing && (
-          <div className="flex justify-start">
-            <div className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center mr-2" style={{ backgroundColor: '#FFF4C2' }}>
-              <MiroLogo size={14} />
-            </div>
-            <div className="flex items-center gap-1 px-3 py-2 rounded-2xl rounded-bl-[4px] bg-[#F1F2F5]">
+          <div className="flex justify-end">
+            <div className="flex items-center gap-1 px-3 py-2 rounded-2xl rounded-br-[4px] bg-[#EEF3FF]">
               {[0, 1, 2].map(i => (
                 <span key={i} className="w-1.5 h-1.5 rounded-full bg-[#AEB2C0]"
                   style={{ animation: `bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />

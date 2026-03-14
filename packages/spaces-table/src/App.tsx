@@ -387,12 +387,12 @@ export function App() {
       <div
         className="fixed top-0 right-0 h-full z-50 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{
-          width: activeSidebar === 'row-detail' ? 376 + 24 : 320,
+          width: activeSidebar === 'row-detail' ? 376 + 24 : activeSidebar === 'ai-sidekick' ? 320 + 36 : 320,
           transform: isRightOpen ? 'translateX(0)' : 'translateX(100%)',
         }}
       >
         {activeSidebar === 'row-detail' ? (
-          <div className="h-full pl-3 pr-6 py-6 flex">
+          <div className="h-full px-3 py-6 flex">
             <div
               className="flex-1 overflow-hidden rounded-xl"
               style={{ boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)' }}
@@ -400,10 +400,18 @@ export function App() {
               {selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} />}
             </div>
           </div>
+        ) : activeSidebar === 'ai-sidekick' ? (
+          <div className="h-full pl-3 pr-6 py-6 flex">
+            <div
+              className="flex-1 overflow-hidden rounded-xl"
+              style={{ boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)' }}
+            >
+              <InsightsChatPanel onClose={closeSidebar} />
+            </div>
+          </div>
         ) : (
           <SidebarShell side="right" onClose={closeSidebar} showClose={activeSidebar !== 'view-settings'} width={320}>
             {activeSidebar === 'view-settings' && <SidePanel onClose={closeSidebar} fields={pageFields} />}
-            {activeSidebar === 'ai-sidekick' && <InsightsChatPanel onClose={closeSidebar} />}
           </SidebarShell>
         )}
       </div>
