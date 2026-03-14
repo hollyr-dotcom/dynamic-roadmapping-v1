@@ -98,14 +98,14 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
             {/* Title */}
             <FieldRow label="Title">
               <div className="bg-white rounded px-2 py-1 w-full">
-                <p className="text-[14px] text-[#222428] leading-[1.4]">{row.title}</p>
+                <p className="text-[14px] text-[#222428] leading-[1.4]" style={{ fontWeight: 600 }}>{row.title}</p>
               </div>
             </FieldRow>
 
             {/* Description */}
             <FieldRow label="Description" alignStart>
               <div className="bg-white rounded px-2 py-1 w-full" style={{ minHeight: 88 }}>
-                <p className="text-[14px] text-[#222428] leading-[1.4]">
+                <p className="text-[14px] font-semibold text-[#222428] leading-[1.4]">
                   {row.description ?? '—'}
                 </p>
               </div>
@@ -195,7 +195,7 @@ function FieldRow({
 }) {
   return (
     <div className={`flex gap-2 min-h-[40px] ${alignStart ? 'items-start' : 'items-center'}`}>
-      <div className="w-[100px] shrink-0 flex items-center min-h-[40px]">
+      <div className="w-[100px] shrink-0 flex items-center">
         <span className="text-[14px] text-[#656B81] leading-[1.4]">{label}</span>
       </div>
       <div className="flex-1 min-w-0 flex items-center flex-wrap">
