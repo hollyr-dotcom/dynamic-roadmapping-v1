@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import type { SpaceRow } from '@spaces/shared'
 import {
@@ -12,6 +12,15 @@ import {
   IconStarFilled,
   IconChevronDown,
   IconSlidersY,
+  IconArrowLeft,
+  IconOffice,
+  IconLink,
+  IconGlobe,
+  IconArrowUp,
+  IconSlidersX,
+  IconStickyNote,
+  IconChevronRight,
+  IconDotsThree,
 } from '@mirohq/design-system'
 
 interface RowDetailPanelProps {
@@ -72,6 +81,9 @@ const INSIGHT_SUMMARIES: Record<string, string> = {
   'r12': 'Dark mode surfaces in 6 mentions from 1,847 accounts — lower volume but consistent sentiment across Apple, Google, and Atlassian users. Feedback frames it as a quality-of-life expectation rather than a nice-to-have, with its absence noted as a signal of product immaturity. NPS data correlates dark mode delivery with a 12-point satisfaction improvement.',
   '18': 'Gamified savings challenges appear in 5 mentions from 982 accounts, driven by younger users at Shopify and Airbnb. Feedback describes the current savings experience as transactional and uninspiring — badges, streaks, and challenges are seen as motivators that could meaningfully improve goal completion rates, with $130K in projected revenue impact.',
 }
+
+// Per-card impact weights — must sum to 1.0
+const CARD_WEIGHTS = [0.13, 0.12, 0.10, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06, 0.05, 0.05, 0.04, 0.03, 0.02, 0.01]
 
 const CARD_STYLES = [
   { borderColor: '#ffc6c6', Icon: IconHeart, stars: 3, date: 'Aug 02' },
@@ -142,16 +154,44 @@ function generateFeedbackCards(row: SpaceRow) {
 export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   const [insightDismissed, setInsightDismissed] = useState(false)
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(null)
+  const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null)
   const [dismissedCards, setDismissedCards] = useState<Set<number>>(new Set())
+  const [promptCards, setPromptCards] = useState<Set<number>>(new Set())
   const [showToast, setShowToast] = useState(false)
+  const [toastExiting, setToastExiting] = useState(false)
   const [toastTimer, setToastTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
+  const [showFeedbackToast, setShowFeedbackToast] = useState(false)
+  const [feedbackToastExiting, setFeedbackToastExiting] = useState(false)
+
+  const dismissToast = () => {
+    setToastExiting(true)
+    setTimeout(() => { setShowToast(false); setToastExiting(false) }, 300)
+  }
+
+  const dismissFeedbackToast = () => {
+    setFeedbackToastExiting(true)
+    setTimeout(() => { setShowFeedbackToast(false); setFeedbackToastExiting(false) }, 300)
+  }
 
   const handleDismissCard = (index: number) => {
-    setDismissedCards(prev => new Set([...prev, index]))
+    setPromptCards(prev => new Set([...prev, index]))
+    setToastExiting(false)
     setShowToast(true)
     if (toastTimer) clearTimeout(toastTimer)
-    const t = setTimeout(() => setShowToast(false), 4000)
+    const t = setTimeout(() => dismissToast(), 2000)
     setToastTimer(t)
+  }
+
+  const handlePromptClose = (index: number) => {
+    setPromptCards(prev => { const s = new Set(prev); s.delete(index); return s })
+    setDismissedCards(prev => new Set([...prev, index]))
+  }
+
+  const handlePromptSubmit = (index: number) => {
+    handlePromptClose(index)
+    setShowFeedbackToast(true)
+    setTimeout(() => dismissFeedbackToast(), 2000)
   }
 
   const handleUndo = () => {
@@ -160,17 +200,27 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
       arr.pop()
       return new Set(arr)
     })
-    setShowToast(false)
+    setPromptCards(prev => {
+      const arr = [...prev]
+      arr.pop()
+      return new Set(arr)
+    })
+    dismissToast()
   }
 
   const chip = PRIORITY_CHIP[row.priority] ?? PRIORITY_CHIP.icebox
   const priorityLabel = PRIORITY_LABELS[row.priority] ?? row.priority
 
+  const remainingFraction = CARD_WEIGHTS.reduce((sum, w, i) => dismissedCards.has(i) ? sum : sum + w, 0)
+  const adjMentions = Math.round(row.mentions * remainingFraction)
+  const adjCustomers = Math.round(row.customers * remainingFraction)
+  const adjRevenue = Math.round(row.estRevenue * remainingFraction)
+
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden" style={{ width: 376, fontFamily: 'Open Sans, sans-serif' }}>
 
       {/* ── Header ──────────────────────────────────────── */}
-      <div className="flex items-center gap-2 h-12 pl-4 pr-7 shrink-0">
+      <div className="flex items-center gap-2 h-12 pl-4 pr-7 shrink-0" style={{ display: selectedPrompt ? 'none' : undefined }}>
         <p
           className="flex-1 min-w-0 truncate text-[#222428] leading-[1.5]"
           style={{
@@ -194,10 +244,10 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
       </div>
 
       {/* 4px spacer */}
-      <div className="h-1 shrink-0" />
+      {!selectedPrompt && <div className="h-1 shrink-0" />}
 
       {/* ── Tabs ────────────────────────────────────────── */}
-      <div className="flex pl-4 pr-7 shrink-0 pb-4 pt-2">
+      <div className="flex pl-4 pr-7 shrink-0 pb-4 pt-2" style={{ display: selectedPrompt ? 'none' : undefined }}>
         {TABS.map((tab) => (
           <button
             key={tab}
@@ -215,10 +265,20 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
       </div>
 
       {/* 4px spacer */}
-      <div className="h-1 shrink-0" />
+      {!selectedPrompt && <div className="h-1 shrink-0" />}
 
-      {/* ── Content ─────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto panel-scroll pl-4 pr-7 pt-2 flex flex-col gap-2">
+      {/* ── Content (sliding panels) ─────────────────── */}
+      <div className="flex-1 overflow-hidden relative">
+      <div
+        className="flex h-full"
+        style={{
+          width: 1128,
+          transform: selectedPrompt ? 'translateX(-752px)' : selectedCompany ? 'translateX(-376px)' : 'translateX(0)',
+          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
+      {/* ── Main panel ─── */}
+      <div className="overflow-y-auto panel-scroll pl-4 pr-7 pt-2 flex flex-col gap-2 shrink-0" style={{ width: 376, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -269,7 +329,9 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
             <FieldRow label="Companies" alignStart>
               <div className="flex flex-wrap gap-2 py-1">
                 {row.companies.map((name) => (
-                  <Chip key={name} removable={false} css={{ fontSize: 14 }}>{name}</Chip>
+                  <span key={name} onClick={() => setSelectedCompany(name)} style={{ cursor: 'pointer' }}>
+                    <Chip removable={false} css={{ fontSize: 14 }}>{name}</Chip>
+                  </span>
                 ))}
               </div>
             </FieldRow>
@@ -313,7 +375,9 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
             <InsightSection label="Top impacted customers">
               <div className="flex flex-wrap gap-2 mt-2">
                 {row.companies.map(name => (
-                  <Chip key={name} removable={false} css={{ fontSize: 13 }}>{name}</Chip>
+                  <span key={name} onClick={() => setSelectedCompany(name)} style={{ cursor: 'pointer' }}>
+                    <Chip removable={false} css={{ fontSize: 13 }}>{name}</Chip>
+                  </span>
                 ))}
               </div>
             </InsightSection>
@@ -322,12 +386,12 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
             <InsightSection label="Impact estimates">
               <div className="flex flex-col gap-0 w-full">
                 <div className="flex gap-3">
-                  <StatBox value={String(row.mentions)} label="Total Mentions" />
-                  <StatBox value={String(row.customers.toLocaleString())} label="Unique Customers" />
+                  <StatBox value={adjMentions} format={n => String(n)} label="Total Mentions" />
+                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Unique Customers" />
                 </div>
                 <div className="flex gap-3">
-                  <StatBox value={String(row.customers.toLocaleString())} label="Total Users" />
-                  <StatBox value={row.estRevenue > 0 ? `$${row.estRevenue}K` : '—'} label="Est. Revenue Impact" />
+                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" />
+                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Est. Revenue Impact" />
                 </div>
               </div>
             </InsightSection>
@@ -356,14 +420,17 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
                   <div
                     key={i}
                     style={{
-                      maxHeight: dismissedCards.has(i) ? 0 : 600,
+                      maxHeight: dismissedCards.has(i) ? 0 : 800,
                       opacity: dismissedCards.has(i) ? 0 : 1,
                       marginBottom: dismissedCards.has(i) ? 0 : 12,
                       overflow: 'hidden',
                       transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease',
                     }}
                   >
-                    <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} />
+                    {promptCards.has(i)
+                      ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
+                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} />
+                    }
                   </div>
                 ))}
               </div>
@@ -377,6 +444,30 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
           </div>
         )}
       </div>
+      {/* ── Company panel ─── */}
+      <div className="overflow-y-auto panel-scroll pl-4 pr-7 pt-3 flex flex-col shrink-0" style={{ width: 376 }}>
+        {selectedCompany && (
+          <CompanyDetailView
+            company={selectedCompany}
+            rowTitle={row.title}
+            onBack={() => setSelectedCompany(null)}
+            onPromptSelect={(prompt) => setSelectedPrompt(prompt)}
+          />
+        )}
+      </div>
+      {/* ── Chat panel ─── */}
+      <div className="flex flex-col shrink-0 h-full" style={{ width: 376 }}>
+        {selectedPrompt && (
+          <PromptChatView
+            prompt={selectedPrompt}
+            company={selectedCompany ?? ''}
+            onBack={() => setSelectedPrompt(null)}
+            onClose={onClose}
+          />
+        )}
+      </div>
+      </div>{/* end slider */}
+      </div>{/* end overflow wrapper */}
       {/* Toast — rendered via portal to escape panel's CSS transform */}
       {showToast && createPortal(
         <div
@@ -386,7 +477,7 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
             boxShadow: '0px 6px 16px rgba(34,36,40,0.12), 0px 0px 8px rgba(34,36,40,0.06)',
             width: 280,
             padding: '16px 40px 16px 16px',
-            animation: 'toastSlideUp 0.25s ease',
+            animation: toastExiting ? 'toastSlideDown 0.3s ease forwards' : 'toastSlideUp 0.25s ease',
           }}
         >
           <div className="flex flex-col gap-0 flex-1 min-w-0">
@@ -397,7 +488,7 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
             </div>
           </div>
           <button
-            onClick={() => setShowToast(false)}
+            onClick={() => dismissToast()}
             className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded text-[#FAFAFC] hover:bg-white/10 transition-colors"
           >
             <IconCross css={{ width: 14, height: 14 }} />
@@ -405,6 +496,256 @@ export function RowDetailPanel({ row, onClose }: RowDetailPanelProps) {
         </div>,
         document.body
       )}
+      {/* Feedback received toast */}
+      {showFeedbackToast && createPortal(
+        <div
+          className="fixed bottom-6 left-6 z-[9999] flex items-center gap-3 rounded-lg"
+          style={{
+            backgroundColor: '#2B2D33',
+            boxShadow: '0px 6px 16px rgba(34,36,40,0.12), 0px 0px 8px rgba(34,36,40,0.06)',
+            width: 280,
+            padding: '16px 40px 16px 16px',
+            animation: feedbackToastExiting ? 'toastSlideDown 0.3s ease forwards' : 'toastSlideUp 0.25s ease',
+          }}
+        >
+          <div className="flex flex-col gap-0 flex-1 min-w-0">
+            <p className="text-[14px] font-semibold text-[#FAFAFC] leading-[1.4]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>Feedback received!</p>
+            <p className="text-[12px] text-[#C7CAD5] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>We really appreciate your feedback.</p>
+          </div>
+          <button
+            onClick={() => dismissFeedbackToast()}
+            className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded text-[#FAFAFC] hover:bg-white/10 transition-colors"
+          >
+            <IconCross css={{ width: 14, height: 14 }} />
+          </button>
+        </div>,
+        document.body
+      )}
+    </div>
+  )
+}
+
+const COMPANY_INFO: Record<string, { domain: string; stage: string; dealValue: string; source: string }> = {
+  Figma:     { domain: 'figma.com',          stage: 'Enterprise', dealValue: '$85K',  source: 'Salesforce' },
+  Airbnb:    { domain: 'airbnb.com',         stage: 'Enterprise', dealValue: '$120K', source: 'Salesforce' },
+  Stripe:    { domain: 'stripe.com',         stage: 'Enterprise', dealValue: '$200K', source: 'Salesforce' },
+  Notion:    { domain: 'notion.so',          stage: 'Growth',     dealValue: '$48K',  source: 'HubSpot' },
+  Spotify:   { domain: 'spotify.com',        stage: 'Enterprise', dealValue: '$175K', source: 'Salesforce' },
+  Linear:    { domain: 'linear.app',         stage: 'Growth',     dealValue: '$32K',  source: 'HubSpot' },
+  Shopify:   { domain: 'shopify.com',        stage: 'Enterprise', dealValue: '$160K', source: 'Salesforce' },
+  Dropbox:   { domain: 'dropbox.com',        stage: 'Enterprise', dealValue: '$95K',  source: 'Salesforce' },
+  Atlassian: { domain: 'atlassian.com',      stage: 'Enterprise', dealValue: '$240K', source: 'Salesforce' },
+  Miro:      { domain: 'miro.com',           stage: 'Enterprise', dealValue: '$110K', source: 'Salesforce' },
+  Apple:     { domain: 'apple.com',          stage: 'Enterprise', dealValue: '$500K', source: 'Salesforce' },
+  Google:    { domain: 'google.com',         stage: 'Enterprise', dealValue: '$500K', source: 'Salesforce' },
+  Slack:     { domain: 'slack.com',          stage: 'Enterprise', dealValue: '$145K', source: 'Salesforce' },
+  Asana:     { domain: 'asana.com',          stage: 'Growth',     dealValue: '$62K',  source: 'HubSpot' },
+  ZenDesk:   { domain: 'zendesk.com',        stage: 'Enterprise', dealValue: '$88K',  source: 'Salesforce' },
+  Jira:      { domain: 'jira.atlassian.com', stage: 'Enterprise', dealValue: '$240K', source: 'Salesforce' },
+}
+
+type AiItem = { title: string; stats: string; description: string }
+type AiMessage = { role: 'user'; text: string } | { role: 'ai'; intro: string; items: AiItem[] }
+
+function generateAiResponse(prompt: string, company: string): { intro: string; items: AiItem[] } {
+  if (prompt.startsWith('Top 3 issues')) return {
+    intro: `Here are the top 3 issues from ${company} the last 14 days, based on feedback count and company impact:`,
+    items: [
+      { title: 'Difficulty Managing Teams and Sub-Accounts', stats: '8 feedback, 6 companies, $277,298', description: `Users report it's "hard to keep track of teams and sub-accounts," leading to confusion and inefficiency.` },
+      { title: 'Limited Section-Level Access Control in Spaces', stats: '6 feedback, 6 companies, $1,017,654', description: `Customers say, "We need more granular access controls within Spaces," highlighting security and collaboration concerns.` },
+      { title: 'Cumbersome Addition and Arrangement of New Elements', stats: '4 feedback, 3 companies, $525,001', description: `Feedback includes, "Adding new elements is too complicated and disrupts workflow."` },
+    ],
+  }
+  if (prompt.startsWith('Top five key insights')) return {
+    intro: `Here are the five key insights for ${company} based on recent feedback:`,
+    items: [
+      { title: 'Renewal risk tied to feature gaps', stats: '14 mentions, 8 companies, $842,000', description: `Multiple stakeholders have flagged missing capabilities as a direct factor in renewal decisions.` },
+      { title: 'Power users most impacted', stats: '11 mentions, 6 companies, $614,500', description: `Advanced workflows are disproportionately affected, increasing churn risk among high-value users.` },
+      { title: 'Manual workarounds are widespread', stats: '9 mentions, 5 companies, $390,200', description: `Teams have built brittle internal processes to compensate, adding ongoing maintenance overhead.` },
+      { title: 'Competitive alternatives being evaluated', stats: '7 mentions, 4 companies, $512,000', description: `At least two contacts have mentioned evaluating competing tools in the past quarter.` },
+      { title: 'Exec-level escalation is high', stats: '5 mentions, 3 companies, $725,000', description: `This has been escalated to VP and C-suite stakeholders, making it a priority for account health.` },
+    ],
+  }
+  return {
+    intro: `Here's what I found about ${company} based on available feedback and account data:`,
+    items: [
+      { title: 'Enterprise-tier account with high engagement', stats: '42 total feedback signals', description: `${company} is an active feedback contributor across multiple product areas, with signals spanning 6+ internal teams.` },
+      { title: 'Top requested capabilities', stats: '18 mentions in last 30 days', description: `Automation, reporting, and third-party integrations are the most consistently requested improvements.` },
+      { title: 'Renewal timeline context', stats: 'Contract review in Q3', description: `Based on deal data, ${company}'s renewal window aligns with Q3 — making current feature gaps time-sensitive.` },
+    ],
+  }
+}
+
+function PromptChatView({ prompt, company, onBack, onClose }: { prompt: string; company: string; onBack: () => void; onClose: () => void }) {
+  const [input, setInput] = useState('')
+  const [messages, setMessages] = useState<AiMessage[]>([])
+  const [thinking, setThinking] = useState(false)
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setMessages([{ role: 'user', text: prompt }])
+    setThinking(true)
+    const t = setTimeout(() => {
+      setThinking(false)
+      setMessages(m => [...m, { role: 'ai', ...generateAiResponse(prompt, company) }])
+    }, 1400)
+    return () => clearTimeout(t)
+  }, [prompt, company])
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, thinking])
+
+  const send = () => {
+    if (!input.trim()) return
+    const userMsg = input.trim()
+    setInput('')
+    setMessages(m => [...m, { role: 'user', text: userMsg }])
+    setThinking(true)
+    setTimeout(() => {
+      setThinking(false)
+      setMessages(m => [...m, { role: 'ai', intro: `Based on available data for ${company}:`, items: [
+        { title: 'Follow-up context', stats: 'Latest signals', description: `For "${userMsg}" — the most relevant feedback points to workflow friction and integration gaps as root causes. Would you like me to filter by a specific time range or team?` },
+      ] }])
+    }, 1400)
+  }
+
+  return (
+    <div className="flex flex-col h-full bg-white">
+      {/* Header */}
+      <div className="flex items-center h-14 pl-3 pr-2 shrink-0 gap-1">
+        <button onClick={onBack} className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors shrink-0">
+          <IconChevronRight css={{ width: 16, height: 16, transform: 'rotate(180deg)' }} />
+        </button>
+        <div className="flex-1 flex items-center gap-2 min-w-0">
+          <span className="text-[16px] text-[#222428] leading-[1.5] font-semibold truncate" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>
+            {company} Insights
+          </span>
+          <span className="shrink-0 px-1.5 py-0.5 rounded text-[11px] font-semibold text-[#3C3F4A] bg-[#E9EAEF] leading-none" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+            Beta
+          </span>
+        </div>
+        <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors shrink-0">
+          <IconDotsThree css={{ width: 16, height: 16 }} />
+        </button>
+        <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors shrink-0">
+          <IconCross css={{ width: 16, height: 16 }} />
+        </button>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto panel-scroll px-6 pt-2 pb-3 flex flex-col gap-4">
+        {messages.map((msg, i) => (
+          msg.role === 'user' ? (
+            <div key={i} className="flex justify-end">
+              <div className="max-w-[75%] rounded-lg px-4 py-3 text-[14px] leading-[1.57] text-[#222428]" style={{ backgroundColor: '#F2F4FC', fontFamily: 'Open Sans, sans-serif' }}>
+                {msg.text}
+              </div>
+            </div>
+          ) : (
+            <div key={i} className="flex flex-col gap-3">
+              <p className="text-[14px] leading-[1.57] text-[#222428]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{msg.intro}</p>
+              <ol className="flex flex-col gap-4 list-decimal list-inside" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                {msg.items.map((item, j) => (
+                  <li key={j} className="text-[14px] leading-[1.57] text-[#222428]" style={{ listStylePosition: 'outside', marginLeft: 16 }}>
+                    <span className="font-semibold">{item.title}</span>
+                    <br />
+                    <span className="text-[#222428]">({item.stats}): </span>
+                    <button className="inline-flex items-center justify-center w-5 h-5 rounded-md align-middle mx-0.5" style={{ backgroundColor: '#E8ECFC' }}>
+                      <IconLink css={{ width: 10, height: 10, color: '#4262FF' }} />
+                    </button>
+                    <br />
+                    <span className="text-[#656B81]">{item.description}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )
+        ))}
+        {thinking && (
+          <div className="flex items-center gap-2 text-[14px] text-[#7D8297]" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+            <span className="text-[16px]">🟡</span>
+            Thinking...
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input card */}
+      <div className="shrink-0 px-4 pb-4 pt-2">
+        <div className="flex flex-col rounded-lg border border-[#EBEBEB] bg-white" style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.05)' }}>
+          <textarea
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
+            placeholder="Ask anything..."
+            rows={2}
+            className="w-full px-4 pt-4 pb-2 text-[14px] text-[#222428] outline-none bg-transparent resize-none placeholder:text-[#7D8297] leading-[1.4]"
+            style={{ fontFamily: 'Open Sans, sans-serif' }}
+          />
+          <div className="flex items-center justify-between px-3 pb-3">
+            <div className="flex items-center gap-1">
+              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
+                <IconSlidersX size="small" />
+              </button>
+              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
+                <IconStickyNote size="small" />
+              </button>
+            </div>
+            <button
+              onClick={send}
+              className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
+              style={{ backgroundColor: input.trim() ? '#4262FF' : '#E9EAEF', color: input.trim() ? '#fff' : '#AEB2C0' }}
+            >
+              <IconArrowUp css={{ width: 16, height: 16 }} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CompanyDetailView({ company, onBack, onPromptSelect }: { company: string; onBack: () => void; onPromptSelect: (prompt: string) => void }) {
+  const info = COMPANY_INFO[company] ?? { domain: `${company.toLowerCase()}.com`, stage: 'N/A', dealValue: 'N/A', source: 'N/A' }
+  return (
+    <div className="flex flex-col pb-6">
+      <button
+        onClick={onBack}
+        className="flex items-center gap-1 h-8 rounded-lg px-2 text-[14px] font-semibold text-[#656B81] hover:bg-[#F1F2F5] transition-colors self-start -ml-2 mb-2"
+        style={{ fontFamily: 'Open Sans, sans-serif' }}
+      >
+        <IconArrowLeft size="small" />
+        {company}
+      </button>
+      <p className="text-[16px] text-[#222428] leading-[1.5] mb-1" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>Details</p>
+      <div className="flex flex-col">
+        <CompanyFieldRow icon={<IconOffice size="small" />} label="Name"><Chip removable={false} css={{ fontSize: 13 }}>{company}</Chip></CompanyFieldRow>
+        <CompanyFieldRow icon={<IconLink size="small" />} label="Domain"><Chip removable={false} css={{ fontSize: 13 }}>{info.domain}</Chip></CompanyFieldRow>
+        <CompanyFieldRow icon={<span className="text-[13px] leading-none">◎</span>} label="Stage"><Chip removable={false} css={{ fontSize: 13 }}>{info.stage}</Chip></CompanyFieldRow>
+        <CompanyFieldRow icon={<span className="text-[13px] font-semibold leading-none">$</span>} label="Deal Value"><span className="text-[14px] text-[#222428] px-1">{info.dealValue}</span></CompanyFieldRow>
+        <CompanyFieldRow icon={<IconGlobe size="small" />} label="Source"><Chip removable={false} css={{ fontSize: 13 }}>{info.source}</Chip></CompanyFieldRow>
+      </div>
+      <p className="text-[16px] text-[#222428] leading-[1.5] mt-6 mb-3" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>Discover more about {company}</p>
+      <div className="flex flex-col gap-3">
+        {[`Top five key insights`, `Learn more about ${company}`, `Top 3 issues from ${company}`].map(label => (
+          <button key={label} onClick={() => onPromptSelect(label)} className="flex items-center h-8 px-3 rounded-xl text-[14px] text-[#222428] bg-white border border-[#E9EAEF] hover:border-[#C2C5D3] transition-colors self-start whitespace-nowrap" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function CompanyFieldRow({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 min-h-[40px]">
+      <div className="w-[120px] shrink-0 flex items-center gap-2 text-[#656B81]">
+        <span className="flex items-center shrink-0">{icon}</span>
+        <span className="text-[14px] leading-[1.4]">{label}</span>
+      </div>
+      <div className="flex-1 flex items-center">{children}</div>
     </div>
   )
 }
@@ -420,13 +761,93 @@ function InsightSection({ label, children }: { label: string; children: React.Re
   )
 }
 
-function StatBox({ value, label }: { value: string; label: string }) {
+function useAnimatedNumber(target: number, duration = 600): number {
+  const [displayed, setDisplayed] = useState(target)
+  const prevRef = useRef(target)
+  const rafRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    const from = prevRef.current
+    const to = target
+    if (from === to) return
+    let startTs: number | null = null
+    const animate = (ts: number) => {
+      if (!startTs) startTs = ts
+      const progress = Math.min((ts - startTs) / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3) // ease-out cubic
+      setDisplayed(Math.round(from + (to - from) * eased))
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(animate)
+      } else {
+        prevRef.current = to
+      }
+    }
+    rafRef.current = requestAnimationFrame(animate)
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
+  }, [target, duration])
+
+  return displayed
+}
+
+function StatBox({ value, format, label }: { value: number; format: (n: number) => string; label: string }) {
+  const animated = useAnimatedNumber(value)
   return (
     <div className="flex-1 flex flex-col gap-1 pb-3">
-      <span className="text-[32px] text-[#222428] leading-[1.2]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>
-        {value}
+      <span className="text-[32px] text-[#222428] leading-[1.2]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1", display: 'block' }}>
+        {format(animated)}
       </span>
       <span className="text-[14px] text-[#656B81] leading-[1.4]">{label}</span>
+    </div>
+  )
+}
+
+function FeedbackPrompt({ onSubmit, onClose }: { onSubmit: () => void; onClose: () => void }) {
+  const [value, setValue] = useState('')
+
+  return (
+    <div
+      className="w-full rounded-xl p-4 flex flex-col gap-3 relative"
+      style={{ backgroundColor: '#F2F4FC' }}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#E2E6F7] transition-colors"
+        aria-label="Close"
+      >
+        <IconCross css={{ width: 14, height: 14 }} />
+      </button>
+
+      <p className="text-[16px] text-[#222428] pr-8 leading-[1.5]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
+        Share your feedback?
+      </p>
+
+      <textarea
+        value={value}
+        onChange={e => setValue(e.target.value)}
+        placeholder="Tell us why you're removing this..."
+        rows={3}
+        className="w-full rounded-lg px-3 py-2 text-[14px] text-[#222428] leading-[1.5] resize-none outline-none border border-[#C2C5D3] focus:border-[#4262FF] bg-white placeholder:text-[#AEB2C0] transition-colors"
+        style={{ fontFamily: 'Open Sans, sans-serif' }}
+      />
+
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onSubmit}
+          className="px-4 h-8 rounded-lg text-[14px] font-semibold text-white transition-colors"
+          style={{ backgroundColor: '#4262FF', fontFamily: 'Open Sans, sans-serif' }}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2D4FE0')}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#4262FF')}
+        >
+          Submit
+        </button>
+        <button
+          onClick={onClose}
+          className="px-4 h-8 rounded-lg text-[14px] font-semibold text-[#222428] hover:bg-[#E2E6F7] transition-colors"
+          style={{ fontFamily: 'Open Sans, sans-serif' }}
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   )
 }
@@ -464,11 +885,16 @@ function FeedbackCard({
       {/* Card header: icon + date (on hover) + actions */}
       <div className="flex items-center gap-2">
         <Icon css={{ width: 25, height: 25 }} />
-        {hovered && (
-          <span className="text-[12px] text-[#959AAC] leading-[1.5] whitespace-nowrap">
-            {date}
-          </span>
-        )}
+        <span
+          className="text-[12px] text-[#959AAC] leading-[1.5] whitespace-nowrap overflow-hidden"
+          style={{
+            maxWidth: hovered ? 120 : 0,
+            opacity: hovered ? 1 : 0,
+            transition: 'max-width 0.25s ease, opacity 0.2s ease',
+          }}
+        >
+          {date}
+        </span>
         <div className="flex-1" />
         <div className="flex items-center gap-1">
           <button className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
@@ -511,14 +937,22 @@ function FeedbackCard({
         {author}
       </p>
 
-      {/* Company chips — visible on hover */}
-      {hovered && (
-        <div className="flex flex-wrap gap-2 pt-1">
-          {companies.map(name => (
-            <Chip key={name} removable={false} css={{ fontSize: 14 }}>{name}</Chip>
-          ))}
+      {/* Company chips — smooth slide-in on hover using CSS grid trick */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateRows: hovered ? '1fr' : '0fr',
+          transition: 'grid-template-rows 0.25s ease',
+        }}
+      >
+        <div style={{ overflow: 'hidden' }}>
+          <div className="flex flex-wrap gap-2 pt-1">
+            {companies.map(name => (
+              <Chip key={name} removable={false} css={{ fontSize: 14 }}>{name}</Chip>
+            ))}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }
