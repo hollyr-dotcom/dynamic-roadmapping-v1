@@ -334,17 +334,7 @@ export function App() {
           pointerEvents: canvasOpen ? 'none' : 'auto',
         }}
       >
-      {/* Left sidebar slot */}
-      <div
-        className="shrink-0 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-        style={{ width: isLeftOpen ? 320 : 0 }}
-      >
-        <SidebarShell side="left" onClose={closeSidebar} showClose={false} width={320}>
-          <SpaceMenu onClose={closeSidebar} activePage={activePage} onPageChange={switchPage} onGoHome={() => { closeSidebar(); setView('home') }} />
-        </SidebarShell>
-      </div>
-
-      {/* Main content */}
+      {/* Main content — full width; sidebars are overlays */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <div onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
           <TopNavBar
@@ -378,11 +368,28 @@ export function App() {
           )}
         </div>
       </div>
+      </div>
 
-      {/* Right sidebar slot */}
+      {/* Left sidebar — fixed overlay, slides in over the top nav */}
       <div
-        className="shrink-0 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-        style={{ width: isRightOpen ? (activeSidebar === 'row-detail' ? 376 + 24 : 320) : 0 }}
+        className="fixed top-0 left-0 h-full z-50 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        style={{
+          width: 320,
+          transform: isLeftOpen ? 'translateX(0)' : 'translateX(-100%)',
+        }}
+      >
+        <SidebarShell side="left" onClose={closeSidebar} showClose={false} width={320}>
+          <SpaceMenu onClose={closeSidebar} activePage={activePage} onPageChange={switchPage} onGoHome={() => { closeSidebar(); setView('home') }} />
+        </SidebarShell>
+      </div>
+
+      {/* Right sidebar — fixed overlay, slides in over the top nav */}
+      <div
+        className="fixed top-0 right-0 h-full z-50 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        style={{
+          width: activeSidebar === 'row-detail' ? 376 + 24 : 320,
+          transform: isRightOpen ? 'translateX(0)' : 'translateX(100%)',
+        }}
       >
         {activeSidebar === 'row-detail' ? (
           <div className="h-full pr-6 py-6 flex">
@@ -399,7 +406,6 @@ export function App() {
             {activeSidebar === 'ai-sidekick' && <AiSidekickPanel />}
           </SidebarShell>
         )}
-      </div>
       </div>
 
       {/* Canvas overlay */}
@@ -477,7 +483,7 @@ export function App() {
 
       {/* Pill button — only shown in table mode (hover-to-reveal); canvas-mode "Go to Backlog" disabled for now — using expand button on widget instead */}
       {/* {canvasOpen ? null : ( */}
-      <CanvasPillButton canvasOpen={false} onToggle={toggleCanvas} leftWidth={isLeftOpen ? 320 : 0} rightWidth={isRightOpen ? 320 : 0} visible={navHovered && !canvasOpen} onHoverChange={setNavHovered} pageTitle={databaseTitle} />
+      <CanvasPillButton canvasOpen={false} onToggle={toggleCanvas} leftWidth={0} rightWidth={0} visible={navHovered && !canvasOpen} onHoverChange={setNavHovered} pageTitle={databaseTitle} />
       {/* )} */}
     </div>
   )
