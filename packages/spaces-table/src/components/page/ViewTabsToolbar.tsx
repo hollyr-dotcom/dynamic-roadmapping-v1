@@ -605,9 +605,9 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
               variant="ghost"
               size="medium"
               onPress={variant !== 'widget' ? () => onToggleSidebar('ai-sidekick') : undefined}
-              css={activeSidebar === 'ai-sidekick' && variant !== 'widget' ? { borderRadius: 8, background: '#F2F4FC' } : { borderRadius: 8 }}
+              css={activeSidebar === 'ai-sidekick' && variant !== 'widget' ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}
             >
-              <IconInsights css={activeSidebar === 'ai-sidekick' && variant !== 'widget' ? { color: '#2B4DF8' } : {}} />
+              <IconInsights />
             </IconButton>
           </Tooltip.Trigger>
           <Tooltip.Content side="top" sideOffset={4}>Insights</Tooltip.Content>

@@ -542,17 +542,15 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: R
         {activeTab === 'Updates' && (
           <div className="flex flex-col">
             {[
-              { text: 'prioritized this signal as a recommendation', date: 'May 21, 2026' },
-              { text: 'updated customer count and mentions by 12% and 8%', date: 'May 21, 2026' },
-              { text: 'enriched your backlog with new signals', date: 'May 15, 2026' },
+              { text: 'Prioritized this signal as a recommendation', date: 'May 21, 2026' },
+              { text: 'Updated customer count and mentions by 12% and 8%', date: 'May 21, 2026' },
+              { text: 'Enriched your backlog with new signals', date: 'May 15, 2026' },
             ].map((item, i) => (
               <div key={i} className="flex gap-3 items-center pr-5" style={{ paddingTop: i === 0 ? 8 : 12, paddingBottom: 8 }}>
                 <div className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F2F4FC' }}>
                   <IconSparksFilled css={{ width: 16, height: 16, color: '#4262FF' }} />
                 </div>
                 <p className="text-[14px] leading-[1.4] text-[#555A6A]" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-                  <span className="font-semibold text-[#222428]">Miro Insights</span>
-                  {' '}
                   {item.text}
                   {' • '}
                   {item.date}
