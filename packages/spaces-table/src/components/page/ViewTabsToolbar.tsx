@@ -7,7 +7,11 @@ import {
   InputSearch,
   IconMagnifyingGlass,
   IconSparksFilled,
+  IconInsights,
   IconSlidersY,
+  IconFunnel,
+  IconArrowsDownUp,
+  IconColumnsThree,
   IconPlus,
   IconTable,
   IconKanban,
@@ -24,7 +28,7 @@ import {
 
 export const MENU_WIDTH = 220
 
-export type SidebarId = 'space-menu' | 'ai-sidekick' | 'view-settings'
+export type SidebarId = 'space-menu' | 'ai-sidekick' | 'view-settings' | 'row-detail'
 export type ViewType = 'table' | 'kanban' | 'timeline'
 
 export interface TabConfig {
@@ -235,7 +239,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
   return (
     <div className={`group sticky top-0 left-0 z-20 bg-white flex items-center gap-4 shrink-0 ${variant === 'widget' ? 'pl-0 pr-0 pt-2 pb-4' : 'pl-14 pr-12 pt-4 pb-6'}`}>
       {/* Left: tabs + chevron + plus — tight group */}
-      <div ref={tabsAreaRef} className="flex items-center gap-2 flex-1 min-w-0">
+      <div ref={tabsAreaRef} className="flex items-center gap-2 flex-1 min-w-0 self-center">
         <Tabs value={activeTab} onChange={(tabId: string) => {
           if (variant === 'widget' && tabId !== activeTab) {
             setPendingTabId(tabId)
@@ -539,7 +543,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
       </div>
 
       {/* Right: actions — disabled (no handlers) on canvas widget */}
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-1 shrink-0 self-center">
         <Tooltip>
           <Tooltip.Trigger asChild>
             <IconButton aria-label="Search" variant="ghost" size="medium" css={{ borderRadius: 8 }}>
@@ -554,20 +558,20 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
 
         <Tooltip>
           <Tooltip.Trigger asChild>
-            <IconButton
-              aria-label="AI Sidekick"
-              variant="ghost"
-              size="medium"
-              onPress={variant !== 'widget' ? () => onToggleSidebar('ai-sidekick') : undefined}
-              css={activeSidebar === 'ai-sidekick' && variant !== 'widget' ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}
-            >
-              <IconSparksFilled />
+            <IconButton aria-label="Filter" variant="ghost" size="medium" css={{ borderRadius: 8 }}>
+              <IconFunnel />
             </IconButton>
           </Tooltip.Trigger>
-          <Tooltip.Content side="top" sideOffset={4}>
-            AI Sidekick
-            <Tooltip.Hotkey>⌘ + K</Tooltip.Hotkey>
-          </Tooltip.Content>
+          <Tooltip.Content side="top" sideOffset={4}>Filter</Tooltip.Content>
+        </Tooltip>
+
+        <Tooltip>
+          <Tooltip.Trigger asChild>
+            <IconButton aria-label="Sort" variant="ghost" size="medium" css={{ borderRadius: 8 }}>
+              <IconArrowsDownUp />
+            </IconButton>
+          </Tooltip.Trigger>
+          <Tooltip.Content side="top" sideOffset={4}>Sort</Tooltip.Content>
         </Tooltip>
 
         <Tooltip>
@@ -586,6 +590,21 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
             View settings
             <Tooltip.Hotkey>⌘ + ,</Tooltip.Hotkey>
           </Tooltip.Content>
+        </Tooltip>
+
+        <Tooltip>
+          <Tooltip.Trigger asChild>
+            <IconButton
+              aria-label="Insights"
+              variant="ghost"
+              size="medium"
+              onPress={variant !== 'widget' ? () => onToggleSidebar('ai-sidekick') : undefined}
+              css={activeSidebar === 'ai-sidekick' && variant !== 'widget' ? { borderRadius: 8, background: '#F2F4FC' } : { borderRadius: 8 }}
+            >
+              <IconInsights css={activeSidebar === 'ai-sidekick' && variant !== 'widget' ? { color: '#2B4DF8' } : {}} />
+            </IconButton>
+          </Tooltip.Trigger>
+          <Tooltip.Content side="top" sideOffset={4}>Insights</Tooltip.Content>
         </Tooltip>
 
         {variant !== 'widget' ? (

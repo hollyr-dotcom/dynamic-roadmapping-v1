@@ -6,9 +6,10 @@ import { TableRow } from './TableRow'
 interface DataTableProps {
   data: SpaceRow[]
   fields: FieldDefinition[]
+  onRowClick?: (row: SpaceRow) => void
 }
 
-export function DataTable({ data, fields }: DataTableProps) {
+export function DataTable({ data, fields, onRowClick }: DataTableProps) {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const tableRef = useRef<HTMLDivElement>(null)
 
@@ -43,6 +44,7 @@ export function DataTable({ data, fields }: DataTableProps) {
               isSelected={selectedRowId === row.id}
               onToggleSelect={handleDotsClick}
               onDeselect={() => setSelectedRowId(null)}
+              onRowClick={onRowClick}
             />
           ))}
         </tbody>

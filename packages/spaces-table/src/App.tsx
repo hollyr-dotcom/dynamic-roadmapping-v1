@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { sampleData, fields, roadmapData, roadmapFields } from '@spaces/shared'
-import type { Priority } from '@spaces/shared'
+import type { Priority, SpaceRow } from '@spaces/shared'
 import { TopNavBar } from './components/page/TopNavBar'
 import { DatabaseTitle } from './components/page/DatabaseTitle'
 import { ViewTabsToolbar, type SidebarId, type TabConfig, type ViewType } from './components/page/ViewTabsToolbar'
@@ -9,9 +9,12 @@ import { KanbanBoard } from './components/kanban'
 import { TimelinePlaceholder } from './components/timeline'
 import { SidebarShell } from './components/sidebar/SidebarShell'
 import { HomePage } from './components/page/HomePage'
+import { InsightsModal } from './components/page/InsightsModal'
+import { InsightsToast } from './components/page/InsightsToast'
 import { SpaceMenu } from './components/sidebar/SpaceMenu'
 import { AiSidekickPanel } from './components/sidebar/AiSidekickPanel'
 import { SidePanel } from './components/sidebar/SidePanel'
+import { RowDetailPanel } from './components/sidebar/RowDetailPanel'
 import { CanvasOverlay } from './components/canvas/CanvasOverlay'
 import { CanvasTableWidget } from './components/canvas/CanvasTableWidget'
 import { CanvasPillButton } from './components/canvas/CanvasPillButton'
@@ -36,9 +39,8 @@ const PAGE_CONFIGS: Record<PageId, PageConfig> = {
   backlog: {
     title: 'Backlog',
     tabs: [
-      { id: 'all-items', label: 'All items', type: 'table' },
-      { id: 'prioritization', label: 'Kanban', type: 'kanban' },
-      { id: 'timeline-view', label: 'Timeline', type: 'timeline' },
+      { id: 'all-items', label: 'All ideas', type: 'table' },
+      { id: 'prioritization', label: 'Prioritization', type: 'kanban' },
     ],
     defaultTab: 'all-items',
   },
@@ -58,6 +60,8 @@ const ROADMAP_KANBAN_COLUMNS: Priority[] = ['now', 'next', 'later']
 export function App() {
   const [scrollFade, setScrollFade] = useState(0)
   const [view, setView] = useState<'home' | 'app'>('home')
+  const [showInsightsModal, setShowInsightsModal] = useState(false)
+  const [showInsightsToast, setShowInsightsToast] = useState(false)
   const [activePage, setActivePage] = useState<PageId>('backlog')
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
   const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
@@ -68,6 +72,7 @@ export function App() {
   })
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  const [selectedRow, setSelectedRow] = useState<SpaceRow | null>(null)
   const [newColumnMenuOpen, setNewColumnMenuOpen] = useState(false)
   const [canvasOpen, setCanvasOpen] = useState(false)
   const [navHovered, setNavHovered] = useState(false)
@@ -306,7 +311,7 @@ export function App() {
   }
 
   const isLeftOpen = activeSidebar === 'space-menu'
-  const isRightOpen = activeSidebar === 'ai-sidekick' || activeSidebar === 'view-settings'
+  const isRightOpen = activeSidebar === 'ai-sidekick' || activeSidebar === 'view-settings' || activeSidebar === 'row-detail'
   // Dynamic view rendering
   const currentTabs = pageTabs[activePage]
   const activeTabConfig = currentTabs.find(t => t.id === activeTab)
@@ -315,7 +320,7 @@ export function App() {
   const viewData = activeTab === 'done' ? pageData.filter(r => r.status === 'done') : pageData
 
   if (view === 'home') {
-    return <HomePage onOpenApp={() => setView('app')} />
+    return <HomePage onOpenApp={() => { setView('app'); setShowInsightsModal(true) }} />
   }
 
   return (
@@ -351,7 +356,7 @@ export function App() {
           />
         </div>
         {/* Scroll area — vertical + horizontal, table header sticks below toolbar */}
-        <div ref={scrollRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-auto page-scroll flex flex-col">
+        <div ref={scrollRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden page-scroll flex flex-col">
           <div onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
             <DatabaseTitle opacity={1 - scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} />
           </div>
@@ -361,7 +366,9 @@ export function App() {
 
           {/* Type-based view renderer */}
           {activeTabConfig?.type === 'table' && (
-            <DataTable key={activeTab} data={viewData} fields={pageFields} />
+            <div className="overflow-x-auto page-scroll">
+              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setActiveSidebar('row-detail') }} />
+            </div>
           )}
           {activeTabConfig?.type === 'kanban' && (
             <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} />
@@ -375,12 +382,23 @@ export function App() {
       {/* Right sidebar slot */}
       <div
         className="shrink-0 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-        style={{ width: isRightOpen ? 320 : 0 }}
+        style={{ width: isRightOpen ? (activeSidebar === 'row-detail' ? 376 + 24 : 320) : 0 }}
       >
-        <SidebarShell side="right" onClose={closeSidebar} showClose={activeSidebar !== 'view-settings'}>
-          {activeSidebar === 'view-settings' && <SidePanel onClose={closeSidebar} fields={pageFields} />}
-          {activeSidebar === 'ai-sidekick' && <AiSidekickPanel />}
-        </SidebarShell>
+        {activeSidebar === 'row-detail' ? (
+          <div className="h-full pr-6 py-6 flex">
+            <div
+              className="flex-1 overflow-hidden rounded-xl"
+              style={{ boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)' }}
+            >
+              {selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} />}
+            </div>
+          </div>
+        ) : (
+          <SidebarShell side="right" onClose={closeSidebar} showClose={activeSidebar !== 'view-settings'} width={320}>
+            {activeSidebar === 'view-settings' && <SidePanel onClose={closeSidebar} fields={pageFields} />}
+            {activeSidebar === 'ai-sidekick' && <AiSidekickPanel />}
+          </SidebarShell>
+        )}
       </div>
       </div>
 
@@ -444,6 +462,18 @@ export function App() {
 
       {/* Canvas floating nav panels */}
       <CanvasNavPanels isOpen={canvasOpen} databaseTitle={databaseTitle} />
+
+      {/* Insights modal */}
+      {showInsightsModal && (
+        <InsightsModal
+          onEnable={() => { setShowInsightsModal(false); setShowInsightsToast(true) }}
+          onSkip={() => setShowInsightsModal(false)}
+        />
+      )}
+
+      {showInsightsToast && (
+        <InsightsToast onDismiss={() => setShowInsightsToast(false)} />
+      )}
 
       {/* Pill button — only shown in table mode (hover-to-reveal); canvas-mode "Go to Backlog" disabled for now — using expand button on widget instead */}
       {/* {canvasOpen ? null : ( */}

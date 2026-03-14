@@ -114,30 +114,30 @@ export function HomePage({ onOpenApp }: HomePageProps) {
     <div className="flex w-screen h-screen bg-white overflow-hidden">
 
       {/* ── Left sidebar ── */}
-      <div className="flex flex-col w-[236px] shrink-0 bg-white border-r border-[#d1d4db] h-full overflow-y-auto">
+      <div className="flex flex-col w-[236px] shrink-0 bg-white border-r border-[#d1d4db] h-full overflow-visible">
 
         {/* Team header */}
-        <div className="flex items-center gap-2 px-3 pt-2 pb-1 mt-1">
+        <div className="flex items-center gap-2 px-3 pt-4 pb-2 mt-1">
           <div className="w-8 h-8 rounded-[6px] overflow-hidden shrink-0 border border-[#d1d4db]">
             <img src={imgTeamLogo} alt="Mirage" className="w-full h-full object-cover" />
           </div>
           <div className="flex flex-col min-w-0 flex-1">
-            <span className="font-semibold text-[16px] text-[#1a1b1e] leading-tight truncate" style={{ fontFamily: 'Roobert PRO, sans-serif', letterSpacing: '-0.16px' }}>Mirage</span>
-            <span className="text-[12px] text-[#656b81] leading-tight" style={{ fontFamily: 'Roobert PRO, sans-serif' }}>Miro</span>
+            <span className="font-semibold text-[16px] text-[#1a1b1e] leading-tight truncate" style={{ fontFamily: "'Roobert PRO', sans-serif", letterSpacing: '-0.16px' }}>Mirage</span>
+            <span className="text-[12px] text-[#656b81] leading-tight" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>Miro</span>
           </div>
           <IconChevronDown size="small" />
         </div>
 
         {/* Search */}
-        <div className="px-3 py-2">
-          <div className="flex items-center gap-2 border border-[#d1d4db] rounded-lg px-3 h-8">
+        <div className="px-3 pt-1 pb-4">
+          <div className="flex items-center gap-2 border border-[#d1d4db] bg-[#f8f8f9] rounded-lg px-3 h-9">
             <IconMagnifyingGlass size="small" />
-            <span className="text-[13px] text-[#656b81]" style={{ fontFamily: 'Noto Sans, sans-serif' }}>Search by title or topic</span>
+            <span className="text-[13px] text-[#9da3b4]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Search by title or topic</span>
           </div>
         </div>
 
         {/* Nav */}
-        <nav className="flex flex-col gap-0.5 px-2 mb-2">
+        <nav className="flex flex-col gap-1 px-2 mb-4">
           {[
             { label: 'Home', icon: IconHouse, active: true },
             { label: 'Recent', icon: IconClock, active: false },
@@ -148,10 +148,10 @@ export function HomePage({ onOpenApp }: HomePageProps) {
             <button
               key={label}
               onClick={active ? undefined : onOpenApp}
-              className={`flex items-center gap-3 px-2 py-2 rounded-lg w-full text-left transition-colors ${active ? 'bg-[#f3f4f6]' : 'hover:bg-[#f3f4f6]'}`}
+              className={`flex items-center gap-2.5 px-2 py-2 rounded-lg w-full text-left transition-colors ${active ? 'bg-[#f3f4f6]' : 'hover:bg-[#f3f4f6]'}`}
             >
               <Icon size="medium" />
-              <span className={`text-[14px] text-[#1a1b1e] leading-none ${active ? 'font-bold' : ''}`} style={{ fontFamily: 'Open Sans, sans-serif' }}>
+              <span className={`text-[14px] text-[#1a1b1e] leading-none ${active ? 'font-semibold' : ''}`} style={{ fontFamily: 'Open Sans, sans-serif' }}>
                 {label}
               </span>
             </button>
@@ -159,12 +159,12 @@ export function HomePage({ onOpenApp }: HomePageProps) {
         </nav>
 
         {/* Divider */}
-        <div className="mx-3 h-px bg-[#e9eaef] mb-3" />
+        <div className="mx-3 h-px bg-[#e9eaef] mb-4" />
 
         {/* Spaces */}
         <div className="px-2 relative" ref={menuRef}>
-          <div className="flex items-center justify-between pl-2 pr-1 mb-1">
-            <span className="text-[14px] text-[#656b81]" style={{ fontFamily: 'Noto Sans, sans-serif' }}>Spaces</span>
+          <div className="flex items-center justify-between pl-2 pr-1 mb-2">
+            <span className="text-[14px] text-[#656b81]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Spaces</span>
             <button
               onClick={() => setSpacesMenuOpen(v => !v)}
               className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#f3f4f6] transition-colors"
@@ -179,7 +179,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
               <div className="px-3 py-2 hover:bg-[#f3f4f6] cursor-pointer rounded-lg mx-1" onClick={() => { setSpacesMenuOpen(false); onOpenApp() }}>
                 <div className="flex items-center gap-2 mb-0.5">
                   <div className="w-5 h-5 rounded bg-[#FFD02F] flex items-center justify-center shrink-0 text-[10px] font-bold">M</div>
-                  <span className="text-[14px] font-semibold text-[#1a1b1e]" style={{ fontFamily: 'Noto Sans, sans-serif' }}>Miro</span>
+                  <span className="text-[14px] font-semibold text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Miro</span>
                 </div>
                 <div className="flex items-center gap-1 pl-7">
                   <span className="text-[12px] text-[#656b81]">Official blueprints ·</span>
@@ -190,7 +190,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 <div className="w-5 h-5 rounded bg-[#4262FF] flex items-center justify-center shrink-0">
                   <svg viewBox="0 0 10 10" width="10" height="10" fill="white"><rect x="0" y="0" width="4" height="4" rx="0.5"/><rect x="6" y="0" width="4" height="4" rx="0.5"/><rect x="0" y="6" width="4" height="4" rx="0.5"/></svg>
                 </div>
-                <span className="text-[14px] text-[#1a1b1e]" style={{ fontFamily: 'Noto Sans, sans-serif' }}>Miro EPD Project</span>
+                <span className="text-[14px] text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Miro EPD Project</span>
               </button>
               <div className="relative">
                 <button
@@ -202,7 +202,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                     <div className="w-5 h-5 rounded border border-dashed border-[#d1d4db] flex items-center justify-center shrink-0">
                       <IconPlus size="small" />
                     </div>
-                    <span className="text-[14px] text-[#1a1b1e]" style={{ fontFamily: 'Noto Sans, sans-serif' }}>blank Space</span>
+                    <span className="text-[14px] text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif' }}>blank Space</span>
                   </div>
                   <IconChevronRight size="small" />
                 </button>
@@ -235,14 +235,14 @@ export function HomePage({ onOpenApp }: HomePageProps) {
             className="flex items-center gap-1.5 px-2 py-2 rounded-lg w-full text-left hover:bg-[#f3f4f6] transition-colors"
           >
             {yourSpacesExpanded ? <IconChevronDown size="small" /> : <IconChevronRight size="small" />}
-            <span className="text-[14px] font-semibold text-[#1a1b1e]" style={{ fontFamily: 'Noto Sans, sans-serif' }}>Your Spaces</span>
+            <span className="text-[14px] font-semibold text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Your Spaces</span>
           </button>
 
           {yourSpacesExpanded && (
             <div className="flex flex-col gap-0.5 pl-2 mb-1">
               {['Project Newton', 'Sync Communication', 'Project Newton'].map((name, i) => (
                 <button key={i} onClick={onOpenApp} className="flex items-center px-3 py-2 rounded-lg w-full text-left hover:bg-[#f3f4f6] transition-colors">
-                  <span className="text-[14px] text-[#1c1c1c]" style={{ fontFamily: 'Noto Sans, sans-serif' }}>{name}</span>
+                  <span className="text-[14px] text-[#1c1c1c]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{name}</span>
                 </button>
               ))}
             </div>
@@ -251,7 +251,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
           {/* All Spaces */}
           <button onClick={onOpenApp} className="flex items-center gap-1.5 px-2 py-2 rounded-lg w-full text-left hover:bg-[#f3f4f6] transition-colors">
             <IconChevronRight size="small" />
-            <span className="text-[14px] font-semibold text-[#1a1b1e]" style={{ fontFamily: 'Noto Sans, sans-serif' }}>All Spaces</span>
+            <span className="text-[14px] font-semibold text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif' }}>All Spaces</span>
           </button>
         </div>
       </div>
@@ -278,19 +278,18 @@ export function HomePage({ onOpenApp }: HomePageProps) {
 
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto">
-          <div className="px-8 pt-4 pb-10">
+          <div className="px-8 pt-6 pb-10">
 
             {/* Template carousel */}
-            <div className="bg-[#f3f4f6] rounded-lg p-6 mb-8">
-              <div className="flex gap-4 overflow-x-auto">
+            <div className="mb-8 pt-2">
+              <div className="flex gap-5">
                 {templates.map((t) => (
                   <button
                     key={t.label}
                     onClick={onOpenApp}
-                    className="flex-shrink-0 flex flex-col gap-2"
-                    style={{ width: '168px' }}
+                    className="flex-1 flex flex-col gap-2"
                   >
-                    <div className="w-full h-[92px] rounded-xl border border-[#d1d4db] overflow-hidden bg-white flex items-center justify-center hover:border-[#4262FF] transition-colors">
+                    <div className="w-full h-[108px] rounded-xl border border-[#d1d4db] overflow-hidden bg-white flex items-center justify-center hover:border-[#4262FF] transition-colors">
                       {t.isBlank ? (
                         <div className="flex items-center justify-center w-full h-full">
                           <IconPlus size="large" />
@@ -301,7 +300,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                         t.custom
                       ) : null}
                     </div>
-                    <span className="text-[16px] text-[#6c7173] px-1 text-left" style={{ fontFamily: 'Roobert PRO, sans-serif', fontWeight: 500 }}>
+                    <span className="text-[16px] text-[#6c7173] px-1 text-left" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600 }}>
                       {t.label}
                     </span>
                   </button>
@@ -311,7 +310,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
 
             {/* Boards header */}
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-[20px] font-semibold text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Boards in this team</h2>
+              <h2 className="text-[24px] font-semibold text-[#1a1b1e]" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>Boards in this team</h2>
               <button onClick={onOpenApp} className="flex items-center gap-1.5 bg-[#4262FF] hover:bg-[#2D4FE0] text-white text-[14px] font-medium px-4 py-2 rounded-lg transition-colors">
                 <IconPlus size="small" />
                 Create new
@@ -335,11 +334,11 @@ export function HomePage({ onOpenApp }: HomePageProps) {
             </div>
 
             {/* Board table */}
-            <div className="border border-[#e9eaef] rounded-xl overflow-hidden">
+            <div>
               {/* Header */}
-              <div className="grid gap-4 px-4 py-2 bg-white border-b border-[#e9eaef]" style={{ gridTemplateColumns: '3fr 1fr 1.5fr 1fr 1fr 1.5fr' }}>
-                {['Name', 'Online users', 'Space', 'Last opened', 'Classification', 'Owner'].map((h, i) => (
-                  <span key={i} className="text-[16px] text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{h}</span>
+              <div className="grid gap-4 px-4 py-2 border-b border-[#e9eaef]" style={{ gridTemplateColumns: '3fr 1fr 1.5fr 1fr 1fr 1.5fr' }}>
+                {['', 'Online users', 'Space', 'Last opened', 'Classification', 'Owner'].map((h, i) => (
+                  <span key={i} className="text-[13px] text-[#656b81]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{h}</span>
                 ))}
               </div>
 
@@ -348,12 +347,14 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 <button
                   key={idx}
                   onClick={onOpenApp}
-                  className={`w-full grid gap-4 px-4 py-3 text-left hover:bg-[#f9f9fb] transition-colors ${idx < boards.length - 1 ? 'border-b border-[#f3f4f6]' : ''}`}
+                  className={`w-full grid gap-4 px-4 py-4 text-left hover:bg-[#f9f9fb] transition-colors ${idx < boards.length - 1 ? 'border-b border-[#e9eaef]' : ''}`}
                   style={{ gridTemplateColumns: '3fr 1fr 1.5fr 1fr 1fr 1.5fr' }}
                 >
                   {/* Name + icon */}
                   <div className="flex items-center gap-3 min-w-0">
-                    <img src={board.iconImg} alt="" className="w-6 h-6 shrink-0 object-contain" />
+                    <div className="w-6 h-6 shrink-0 flex items-center justify-center">
+                      <img src={board.iconImg} alt="" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
+                    </div>
                     <div className="min-w-0">
                       <div className="text-[14px] font-semibold text-[#1a1b1e] truncate" style={{ fontFamily: 'Open Sans, sans-serif' }}>{board.name}</div>
                       <div className="text-[12px] text-[#656b81]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Modified by {board.modifier}, {board.date}</div>
