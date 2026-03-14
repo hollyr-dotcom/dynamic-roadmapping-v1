@@ -40,7 +40,7 @@ export interface TabConfig {
 // Estimate tab width from label text (MDS button tab: ~8px per char + 28px padding)
 const estimateTabWidth = (label: string) => Math.ceil(label.length * 8 + 28)
 
-const TAB_GAP = 8
+const TAB_GAP = 12
 const BUTTON_SIZE = 32   // MDS medium icon button
 const BTN_SLOT = BUTTON_SIZE + TAB_GAP // 40px — one button + gap
 const ITEM_SLOT = 38     // 36px item height + 2px gap
@@ -247,7 +247,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
             onTabChange(tabId)
           }
         }} variant="buttons" size="medium">
-          <Tabs.List css={{ gap: '8px', flexWrap: 'nowrap', whiteSpace: 'nowrap', '& button': { borderRadius: 8 } }}>
+          <Tabs.List css={{ gap: '12px', flexWrap: 'nowrap', whiteSpace: 'nowrap', '& button': { borderRadius: 8 } }}>
             {visibleTabs.map((tab) => (
               <div key={tab.id} className="relative shrink-0">
                 <DropdownMenu
