@@ -62,13 +62,13 @@ const PRIORITY_LABELS: Record<string, string> = {
   icebox: 'Icebox',
 }
 
-// Colors from Figma: Triage = #ffc6c6 / #600000; others extrapolated from design system
+// Colors matched to KanbanBoard column tags
 const PRIORITY_CHIP: Record<string, { bg: string; color: string }> = {
-  now:    { bg: '#C6E9C6', color: '#003C00' },
-  next:   { bg: '#C6D9FF', color: '#001E6B' },
-  later:  { bg: '#FFE5C6', color: '#5C2D00' },
-  triage: { bg: '#FFC6C6', color: '#600000' },
-  icebox: { bg: '#E9EAEF', color: '#3C3F4A' },
+  triage: { bg: '#ffc6c6', color: '#600000' },
+  now:    { bg: '#b5ecff', color: '#003d54' },
+  next:   { bg: '#ffc795', color: '#5c3200' },
+  later:  { bg: '#d4bbff', color: '#2d0066' },
+  icebox: { bg: '#dad8d8', color: '#222428' },
 }
 
 const TABS = ['Details', 'Insights', 'Comments', 'Updates']
@@ -378,7 +378,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div className="h-1 shrink-0" />
 
       {/* ── Tabs ────────────────────────────────────────── */}
-      <div className="flex pl-2 pr-4 shrink-0 pb-5 pt-4">
+      <div className="flex pl-3 pr-4 shrink-0 pb-5 pt-4">
         {TABS.map((tab) => (
           <button
             key={tab}
