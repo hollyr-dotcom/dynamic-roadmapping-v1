@@ -62,8 +62,8 @@ const ROADMAP_KANBAN_COLUMNS: Priority[] = ['now', 'next', 'later']
 
 export function App() {
   const [scrollFade, setScrollFade] = useState(0)
-  const [view, setView] = useState<'home' | 'app'>('home')
-  const [showInsightsModal, setShowInsightsModal] = useState(false)
+  const [view, setView] = useState<'home' | 'app'>('app')
+  const [showInsightsModal, setShowInsightsModal] = useState(true)
   const [showInsightsToast, setShowInsightsToast] = useState(false)
   const [activePage, setActivePage] = useState<PageId>('backlog')
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
@@ -88,6 +88,7 @@ export function App() {
   const [widgets, setWidgets] = useState<CanvasWidget[]>([])
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null)
   const [smoothPanning, setSmoothPanning] = useState(false)
+  const [updatedRows, setUpdatedRows] = useState<Set<string>>(new Set())
   const [syncShimmering, setSyncShimmering] = useState(false)
 
   const toggleSidebar = useCallback((id: SidebarId) =>
@@ -307,6 +308,10 @@ export function App() {
     setWidgets(prev => prev.map(w => w.id === widgetId ? { ...w, x, y } : w))
   }, [])
 
+  const handleRowUpdated = useCallback((id: string) => {
+    setUpdatedRows(prev => new Set([...prev, id]))
+  }, [])
+
   const handleAddToBoard = useCallback((cardData: FeedbackCardData) => {
     const cardWidget: CanvasWidget = {
       id: `feedback-${Date.now()}`,
@@ -383,7 +388,7 @@ export function App() {
           {/* Type-based view renderer */}
           {activeTabConfig?.type === 'table' && (
             <div className="overflow-x-auto page-scroll">
-              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setInitialCompany(name); setActiveSidebar('row-detail') }} />
+              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setInitialCompany(name); setActiveSidebar('row-detail') }} updatedRows={updatedRows} />
             </div>
           )}
           {activeTabConfig?.type === 'kanban' && (
@@ -423,7 +428,7 @@ export function App() {
               className="flex-1 overflow-hidden rounded-xl"
               style={{ boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)' }}
             >
-              {selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} initialCompany={initialCompany} onAddToBoard={handleAddToBoard} />}
+              {selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} initialCompany={initialCompany} onAddToBoard={handleAddToBoard} onRowUpdated={handleRowUpdated} />}
             </div>
           </div>
         ) : activeSidebar === 'ai-sidekick' ? (

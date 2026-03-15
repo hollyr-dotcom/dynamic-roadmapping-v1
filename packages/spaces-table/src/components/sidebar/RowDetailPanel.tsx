@@ -47,6 +47,7 @@ interface RowDetailPanelProps {
   onClose: () => void
   initialCompany?: string
   onAddToBoard?: (data: FeedbackCardData) => void
+  onRowUpdated?: (id: string) => void
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -198,7 +199,7 @@ function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: RowDetailPanelProps) {
+export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
@@ -222,6 +223,9 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: R
   const [saveProgress, setSaveProgress] = useState(0)
   const [saveToastExiting, setSaveToastExiting] = useState(false)
   const [saveConfetti, setSaveConfetti] = useState(false)
+  const [saveChangesCount, setSaveChangesCount] = useState(1)
+  const savePhaseRef = useRef<'refreshing' | 'success' | null>(null)
+  const [companiesExpanded, setCompaniesExpanded] = useState(false)
 
   const [feedbackFilterOpen, setFeedbackFilterOpen] = useState(false)
   const [feedbackFilterPos, setFeedbackFilterPos] = useState({ top: 0, left: 0 })
@@ -268,10 +272,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: R
 
   const dismissSaveToast = () => {
     setSaveToastExiting(true)
-    setTimeout(() => { setSavePhase(null); setSaveToastExiting(false); setSaveConfetti(false); setInsightDismissed(true) }, 300)
+    setTimeout(() => { savePhaseRef.current = null; setSavePhase(null); setSaveToastExiting(false); setSaveConfetti(false); setInsightDismissed(true) }, 300)
   }
 
   const triggerSaveToast = () => {
+    onRowUpdated?.(row.id)
+    setSaveChangesCount(prev => savePhaseRef.current === 'refreshing' ? prev + 1 : 1)
+    savePhaseRef.current = 'refreshing'
     setSaveToastExiting(false)
     setSaveProgress(0)
     setSavePhase('refreshing')
@@ -279,6 +286,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: R
     requestAnimationFrame(() => requestAnimationFrame(() => setSaveProgress(100)))
     // After 5s switch to success + confetti
     setTimeout(() => {
+      savePhaseRef.current = 'success'
       setSavePhase('success')
       setSaveConfetti(true)
       setTimeout(() => setSaveConfetti(false), 2200)
@@ -474,15 +482,43 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: R
             </FieldRow>
 
             {/* Companies */}
-            <FieldRow label="Companies" alignStart>
-              <div className="flex flex-wrap gap-2 py-1">
-                {row.companies.map((name) => (
-                  <span key={name} onClick={() => setSelectedCompany(name)} style={{ cursor: 'pointer' }}>
-                    <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
-                  </span>
-                ))}
-              </div>
-            </FieldRow>
+            {(() => {
+              const allCompanies = [...new Set([...row.companies, ...Object.keys(COMPANY_INFO)])]
+              const MAX_VISIBLE = 4
+              const overflow = allCompanies.length - MAX_VISIBLE
+              return (
+                <FieldRow label="Companies" alignStart>
+                  <div className="flex flex-col gap-0 py-1 w-full">
+                    <div className="flex flex-wrap gap-2">
+                      {allCompanies.slice(0, MAX_VISIBLE).map(name => (
+                        <span key={name} onClick={() => setSelectedCompany(name)} style={{ cursor: 'pointer' }}>
+                          <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
+                        </span>
+                      ))}
+                      {overflow > 0 && (
+                        <button
+                          onClick={() => setCompaniesExpanded(v => !v)}
+                          className="inline-flex items-center h-[28px] px-2 rounded-lg text-[13px] font-semibold transition-colors"
+                          style={{ backgroundColor: companiesExpanded ? '#E0E2E8' : '#F1F2F5', color: '#656B81' }}
+                        >
+                          {companiesExpanded ? '−' : `+${overflow}`}
+                        </button>
+                      )}
+                    </div>
+                    {/* Accordion overflow */}
+                    <div style={{ maxHeight: companiesExpanded ? 200 : 0, overflow: 'hidden', transition: 'max-height 0.3s cubic-bezier(0.16,1,0.3,1)' }}>
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        {allCompanies.slice(MAX_VISIBLE).map(name => (
+                          <span key={name} onClick={() => setSelectedCompany(name)} style={{ cursor: 'pointer' }}>
+                            <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </FieldRow>
+              )
+            })()}
 
             {/* Low-confidence Insights callout */}
             {!insightDismissed && (
@@ -756,7 +792,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: R
             )}
             <div className="flex flex-col gap-2 flex-1 min-w-0">
               <p className="text-[14px] font-semibold text-[#FAFAFC] leading-[1.4] truncate" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
-                {savePhase === 'refreshing' ? 'Refreshing...' : 'Changes saved'}
+                {savePhase === 'refreshing' ? 'Refreshing...' : 'Refresh successful'}
               </p>
               {savePhase === 'refreshing' ? (
                 <div className="w-full rounded-full overflow-hidden" style={{ height: 4, backgroundColor: 'rgba(255,255,255,0.15)' }}>
@@ -770,9 +806,18 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: R
                   />
                 </div>
               ) : (
-                <p className="text-[12px] text-[#C7CAD5] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
-                  Your edits have been saved successfully.
-                </p>
+                <>
+                  <p className="text-[12px] text-[#C7CAD5] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
+                    {saveChangesCount === 1 ? '1 insight has been updated' : `${saveChangesCount} insights have been updated`}
+                  </p>
+                  <button
+                    onClick={() => dismissSaveToast()}
+                    className="mt-1 px-3 py-1.5 rounded-lg text-[13px] font-semibold text-white self-start w-fit"
+                    style={{ backgroundColor: '#4262FF' }}
+                  >
+                    View updates
+                  </button>
+                </>
               )}
             </div>
             <button

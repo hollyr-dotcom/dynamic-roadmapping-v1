@@ -1,6 +1,7 @@
 interface TextCellProps {
   value: string
   isPrimary?: boolean
+  isUpdated?: boolean
 }
 
 export function TextCell({ value, isPrimary }: TextCellProps) {
