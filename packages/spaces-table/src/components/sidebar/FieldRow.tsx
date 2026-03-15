@@ -14,7 +14,7 @@ interface FieldRowProps {
 export function FieldRow({ icon: Icon, label, isPrimary = false, visible = true, onToggleVisibility, onEdit, onClick }: FieldRowProps) {
   return (
     <div className="group flex items-center justify-between pl-4 pr-2 py-3 rounded-xl w-full cursor-pointer" onClick={onClick}>
-      <div className="flex items-start gap-4">
+      <div className="flex items-center gap-4">
         <div
           className={`flex items-center justify-center w-10 h-10 rounded-lg shrink-0 transition-colors duration-150 ${
             visible

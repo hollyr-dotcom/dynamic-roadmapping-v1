@@ -1,9 +1,9 @@
 import type { Status } from '@spaces/shared'
 
 const STATUS_STYLES: Record<Status, { bg: string; text: string; label: string }> = {
-  planning:      { bg: '#FFF3CD', text: '#664D03', label: 'Planning' },
-  'in-progress': { bg: '#D1ECF1', text: '#0C5460', label: 'In Progress' },
-  done:          { bg: '#D4EDDA', text: '#155724', label: 'Done' },
+  planning:      { bg: '#F0F0F0', text: '#414141', label: 'To do' },
+  'in-progress': { bg: '#D5F0FE', text: '#0A5E8A', label: 'In progress' },
+  done:          { bg: '#D5F5E3', text: '#1A6B45', label: 'Done' },
 }
 
 interface StatusCellProps {
@@ -16,7 +16,7 @@ export function StatusCell({ value }: StatusCellProps) {
   const style = STATUS_STYLES[value]
   return (
     <span
-      className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-body font-semibold"
+      className="inline-flex items-center rounded px-2.5 py-1 text-xs font-body font-medium"
       style={{ backgroundColor: style.bg, color: style.text }}
     >
       {style.label}

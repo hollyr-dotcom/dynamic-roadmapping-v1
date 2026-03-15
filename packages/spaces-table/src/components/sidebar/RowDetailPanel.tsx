@@ -634,7 +634,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         {activeTab === 'Updates' && (
           <div className="flex flex-col">
             {[
-              { text: 'Prioritized this signal as a recommendation', date: 'May 21, 2026' },
+              { text: 'Prioritized this signal as an idea', date: 'May 21, 2026' },
               { text: 'Updated customer count and mentions by 12% and 8%', date: 'May 21, 2026' },
               { text: 'Enriched your backlog with new signals', date: 'May 15, 2026' },
             ].map((item, i) => (

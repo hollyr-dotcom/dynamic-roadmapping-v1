@@ -5,7 +5,6 @@ import {
   IconSlidersX,
   IconStickyNote,
   IconArrowUp,
-  IconInsights,
   IconChevronRight,
   IconChevronLeft,
   Checkbox,
@@ -34,6 +33,31 @@ const AI_RESPONSES: string[] = [
   "I can see 9,873 unique customers have requested improvements to transaction categorisation. Companies like Spotify, Stripe, and Linear are most affected. Would you like me to pull the latest feedback signals for this item?",
   "Looking at your 'Now' priority items, the multi-currency wallet has the broadest customer base (8,532 accounts). Atlassian and Notion have flagged FX conversion delays as a top renewal blocker.",
 ]
+
+function buildFilteredResponse(filterChecked: Set<string>): string | null {
+  const companies = FILTER_SUB_OPTIONS['Company'].filter(f => filterChecked.has(f))
+  const sources   = FILTER_SUB_OPTIONS['Source'].filter(f => filterChecked.has(f))
+  const roles     = FILTER_SUB_OPTIONS['User role'].filter(f => filterChecked.has(f))
+  const types     = FILTER_SUB_OPTIONS['Type'].filter(f => filterChecked.has(f))
+
+  if (companies.length > 0 && sources.length > 0) {
+    return `Scoped to ${companies.join(', ')} via ${sources.join(' & ')}: I found ${companies.length * 2800 + 900} signals. The top theme is integration reliability (${companies.length * 700 + 300} mentions). ${companies[0]} has flagged this as a Q3 renewal risk with an estimated impact of $${(companies.length * 48 + 32)}K.`
+  }
+  if (companies.length > 0) {
+    const second = companies[1] ?? companies[0]
+    return `Scoped to ${companies.join(', ')}: ${companies.length * 2400 + 800} relevant signals found. Leading themes are workflow automation gaps (${companies.length * 580 + 210} mentions) and API rate limits. Both ${companies[0]} and ${second} have escalated these to your CSM in the last 30 days.`
+  }
+  if (sources.length > 0) {
+    return `Looking at ${sources.join(' & ')} data: the highest-signal theme is onboarding complexity (1,847 mentions), followed by export limitations. Confidence is high — over 80% of sampled items are clearly categorised across your backlog.`
+  }
+  if (roles.length > 0) {
+    return `Filtering to ${roles.join(' & ')} users: this cohort has ${roles.length * 1200 + 400} unique signals. ${roles.includes('Admin') ? 'Admins primarily flag permission management and audit log gaps. ' : ''}${roles.includes('End User') ? 'End users cite performance issues during peak hours. ' : ''}${roles.includes('Developer') ? 'Developers report API documentation gaps and webhook reliability issues.' : ''}`
+  }
+  if (types.length > 0) {
+    return `Filtered to ${types.join(' & ')} signal types: ${types.length * 1600 + 500} items matched. The top 3 recurring themes are onboarding gaps, notification overload, and missing bulk actions — accounting for 67% of all matched signals.`
+  }
+  return null
+}
 
 export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([])
@@ -70,10 +94,12 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
   const openFilter = () => {
     if (filterOpen) { setFilterOpen(false); setFilterView(null); setFilterSearch(''); return }
     const rect = sliderBtnRef.current?.getBoundingClientRect()
-    if (rect) {
-      setDropdownPos({ top: rect.top - 8, left: rect.left })
-    }
+    if (rect) setDropdownPos({ top: rect.top - 8, left: rect.left })
     setFilterOpen(true)
+  }
+
+  const removeFilter = (opt: string) => {
+    setFilterChecked(prev => { const n = new Set(prev); n.delete(opt); return n })
   }
 
   const send = () => {
@@ -84,11 +110,15 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
     setTyping(true)
     setTimeout(() => {
       setTyping(false)
-      const response = AI_RESPONSES[responseIndex.current % AI_RESPONSES.length]
-      responseIndex.current++
+      const filtered = buildFilteredResponse(filterChecked)
+      const response = filtered ?? AI_RESPONSES[responseIndex.current % AI_RESPONSES.length]
+      if (!filtered) responseIndex.current++
       setMessages(m => [...m, { role: 'ai', text: response }])
     }, 1000)
   }
+
+  const activeFilters = [...filterChecked]
+  const hasFilters = activeFilters.length > 0
 
   return (
     <div className="flex flex-col h-full bg-white rounded-xl" style={{ fontFamily: 'Open Sans, sans-serif' }}>
@@ -176,6 +206,27 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
           className="flex flex-col rounded-xl bg-white"
           style={{ border: '1px solid #E0E2E8', boxShadow: '0px 4px 10px rgba(0,0,0,0.05)' }}
         >
+          {/* Active filter chips */}
+          {hasFilters && (
+            <div className="flex flex-wrap gap-1 px-3 pt-2">
+              {activeFilters.map(f => (
+                <span
+                  key={f}
+                  className="inline-flex items-center gap-1 pl-2 pr-1 h-[22px] rounded-full text-[12px] font-medium"
+                  style={{ backgroundColor: '#EEF1FF', color: '#4262FF' }}
+                >
+                  {f}
+                  <button
+                    onClick={() => removeFilter(f)}
+                    className="flex items-center justify-center w-4 h-4 rounded-full hover:bg-[#C6D0FF] transition-colors"
+                  >
+                    <IconCross css={{ width: 8, height: 8 }} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
           <input
             value={input}
             onChange={e => setInput(e.target.value)}
@@ -189,10 +240,18 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
               <button
                 ref={sliderBtnRef}
                 onClick={openFilter}
-                className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors"
-                style={{ color: filterOpen ? '#4262FF' : '#656B81', backgroundColor: filterOpen ? '#F2F4FC' : 'transparent' }}
+                className="relative w-7 h-7 flex items-center justify-center rounded-lg transition-colors"
+                style={{ color: filterOpen || hasFilters ? '#4262FF' : '#656B81', backgroundColor: filterOpen || hasFilters ? '#F2F4FC' : 'transparent' }}
               >
                 <IconSlidersX css={{ width: 16, height: 16 }} />
+                {hasFilters && (
+                  <span
+                    className="absolute -top-1 -right-1 min-w-[14px] h-[14px] flex items-center justify-center rounded-full text-white px-[3px]"
+                    style={{ backgroundColor: '#4262FF', fontSize: 9, lineHeight: 1 }}
+                  >
+                    {filterChecked.size}
+                  </span>
+                )}
               </button>
               <button className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
                 <IconStickyNote css={{ width: 16, height: 16 }} />
@@ -209,7 +268,7 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
         </div>
       </div>
 
-      {/* Filter dropdown — portaled to body to escape any overflow clipping */}
+      {/* Filter dropdown */}
       {filterOpen && createPortal(
         <div
           ref={filterDropdownRef}
@@ -226,20 +285,41 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
         >
           {filterView === null ? (
             <>
-              <div className="px-3 py-[10px]">
+              <div className="flex items-center justify-between px-3 py-[10px]">
                 <p className="text-[14px] text-[#656B81] leading-[1.4]">Select filters</p>
+                {hasFilters && (
+                  <button
+                    onClick={() => setFilterChecked(new Set())}
+                    className="text-[12px] text-[#4262FF] hover:underline"
+                  >
+                    Clear all
+                  </button>
+                )}
               </div>
               <div className="mx-3 border-t border-[#E9EAEF]" />
-              {FILTER_OPTIONS.map(label => (
-                <button
-                  key={label}
-                  className="flex items-center justify-between px-3 h-10 hover:bg-[#F1F2F5] transition-colors w-full"
-                  onClick={() => { setFilterView(label); setFilterSearch('') }}
-                >
-                  <span className="text-[14px] leading-[1.4] text-[#222428]">{label}</span>
-                  <IconChevronRight css={{ width: 16, height: 16, color: '#656B81' }} />
-                </button>
-              ))}
+              {FILTER_OPTIONS.map(label => {
+                const count = FILTER_SUB_OPTIONS[label].filter(o => filterChecked.has(o)).length
+                return (
+                  <button
+                    key={label}
+                    className="flex items-center justify-between px-3 h-10 hover:bg-[#F1F2F5] transition-colors w-full"
+                    onClick={() => { setFilterView(label); setFilterSearch('') }}
+                  >
+                    <span className="text-[14px] leading-[1.4] text-[#222428]">{label}</span>
+                    <div className="flex items-center gap-1.5">
+                      {count > 0 && (
+                        <span
+                          className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-white px-1"
+                          style={{ backgroundColor: '#4262FF', fontSize: 11 }}
+                        >
+                          {count}
+                        </span>
+                      )}
+                      <IconChevronRight css={{ width: 16, height: 16, color: '#656B81' }} />
+                    </div>
+                  </button>
+                )
+              })}
             </>
           ) : (
             <>
@@ -264,22 +344,24 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
                 {(FILTER_SUB_OPTIONS[filterView] ?? [])
                   .filter(opt => opt.toLowerCase().includes(filterSearch.toLowerCase()))
                   .map(opt => (
-                    <button
+                    <div
                       key={opt}
-                      className="flex items-center gap-2 px-3 h-10 hover:bg-[#F1F2F5] transition-colors w-full text-left shrink-0"
+                      className="flex items-center gap-2 px-3 h-10 hover:bg-[#F1F2F5] transition-colors w-full text-left shrink-0 cursor-pointer select-none"
                       onClick={() => setFilterChecked(prev => {
                         const next = new Set(prev)
                         next.has(opt) ? next.delete(opt) : next.add(opt)
                         return next
                       })}
                     >
-                      <Checkbox
-                        checked={filterChecked.has(opt)}
-                        variant="solid-prominent"
-                        size="small"
-                      />
+                      <div className="pointer-events-none shrink-0">
+                        <Checkbox
+                          checked={filterChecked.has(opt)}
+                          variant="solid-prominent"
+                          size="small"
+                        />
+                      </div>
                       <span className="text-[14px] text-[#222428] truncate">{opt}</span>
-                    </button>
+                    </div>
                   ))}
               </div>
             </>
