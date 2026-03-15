@@ -51,6 +51,7 @@ interface RowDetailPanelProps {
   onClose: () => void
   initialCompany?: string
   onAddToBoard?: (data: FeedbackCardData) => void
+  onRowUpdated?: (id: string) => void
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -202,7 +203,7 @@ function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: RowDetailPanelProps) {
+export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
@@ -226,6 +227,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: R
   const [saveProgress, setSaveProgress] = useState(0)
   const [saveToastExiting, setSaveToastExiting] = useState(false)
   const [saveConfetti, setSaveConfetti] = useState(false)
+  const [companiesExpanded, setCompaniesExpanded] = useState(false)
 
   const [feedbackFilterOpen, setFeedbackFilterOpen] = useState(false)
   const [feedbackFilterPos, setFeedbackFilterPos] = useState({ top: 0, left: 0 })
@@ -276,6 +278,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: R
   }
 
   const triggerSaveToast = () => {
+    onRowUpdated?.(row.id)
     setSaveToastExiting(false)
     setSaveProgress(0)
     setSavePhase('refreshing')
@@ -478,15 +481,43 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard }: R
             </FieldRow>
 
             {/* Companies */}
-            <FieldRow label="Companies" alignStart>
-              <div className="flex flex-wrap gap-2 py-1">
-                {row.companies.map((name) => (
-                  <span key={name} onClick={() => setSelectedCompany(name)} style={{ cursor: 'pointer' }}>
-                    <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
-                  </span>
-                ))}
-              </div>
-            </FieldRow>
+            {(() => {
+              const allCompanies = [...new Set([...row.companies, ...Object.keys(COMPANY_INFO)])]
+              const MAX_VISIBLE = 4
+              const overflow = allCompanies.length - MAX_VISIBLE
+              return (
+                <FieldRow label="Companies" alignStart>
+                  <div className="flex flex-col gap-0 py-1 w-full">
+                    <div className="flex flex-wrap gap-2">
+                      {allCompanies.slice(0, MAX_VISIBLE).map(name => (
+                        <span key={name} onClick={() => setSelectedCompany(name)} style={{ cursor: 'pointer' }}>
+                          <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
+                        </span>
+                      ))}
+                      {overflow > 0 && (
+                        <button
+                          onClick={() => setCompaniesExpanded(v => !v)}
+                          className="inline-flex items-center h-[28px] px-2 rounded-lg text-[13px] font-semibold transition-colors"
+                          style={{ backgroundColor: companiesExpanded ? '#E0E2E8' : '#F1F2F5', color: '#656B81' }}
+                        >
+                          {companiesExpanded ? '−' : `+${overflow}`}
+                        </button>
+                      )}
+                    </div>
+                    {/* Accordion overflow */}
+                    <div style={{ maxHeight: companiesExpanded ? 200 : 0, overflow: 'hidden', transition: 'max-height 0.3s cubic-bezier(0.16,1,0.3,1)' }}>
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        {allCompanies.slice(MAX_VISIBLE).map(name => (
+                          <span key={name} onClick={() => setSelectedCompany(name)} style={{ cursor: 'pointer' }}>
+                            <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </FieldRow>
+              )
+            })()}
 
             {/* Low-confidence Insights callout */}
             {!insightDismissed && (

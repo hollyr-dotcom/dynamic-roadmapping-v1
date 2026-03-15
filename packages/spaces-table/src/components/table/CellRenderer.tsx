@@ -9,9 +9,10 @@ interface CellRendererProps {
   field: FieldDefinition
   row: SpaceRow
   onAvatarChipClick?: (name: string) => void
+  isUpdated?: boolean
 }
 
-export function CellRenderer({ field, row, onAvatarChipClick }: CellRendererProps) {
+export function CellRenderer({ field, row, onAvatarChipClick, isUpdated }: CellRendererProps) {
   const value = row[field.id as keyof SpaceRow]
 
   switch (field.type) {

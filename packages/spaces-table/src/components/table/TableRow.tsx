@@ -12,6 +12,7 @@ interface TableRowProps {
   onDeselect: () => void
   onRowClick?: (row: SpaceRow) => void
   onCompanyClick?: (row: SpaceRow, name: string) => void
+  isUpdated?: boolean
 }
 
 function RowContextMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete: () => void }) {
@@ -34,14 +35,17 @@ function RowContextMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; on
   )
 }
 
-export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDeselect, onRowClick, onCompanyClick }: TableRowProps) {
+export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDeselect, onRowClick, onCompanyClick, isUpdated }: TableRowProps) {
   return (
     <tr
       className={isSelected ? 'row-selected' : ''}
       style={{ height: '56px', cursor: onRowClick ? 'pointer' : undefined }}
       onClick={() => onRowClick?.(row)}
     >
-      <td className="pl-14 divider-first" style={{ fontSize: '12px' }}>
+      <td className="pl-14 divider-first" style={{ fontSize: '12px', position: 'relative' }}>
+        {isUpdated && (
+          <span style={{ position: 'absolute', left: 28, top: '50%', transform: 'translateY(-50%)', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4262FF', zIndex: 1 }} />
+        )}
         <div className="flex items-center">
           {/* Row number + spacer — idle */}
           <div className="row-number w-8 h-8 items-center text-[#AEB2C0]">
