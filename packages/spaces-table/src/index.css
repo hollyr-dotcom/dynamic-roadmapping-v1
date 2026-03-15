@@ -74,7 +74,7 @@ tbody tr.row-selected .row-comment      { display: none; }
 
 /* ── Active row shared (hover + selected) ─────────────── */
 tbody tr:hover td {
-  background-color: #F2F4FC;
+  background-color: #F1F2F5;
   border-color: transparent;
 }
 tbody tr.row-selected td {
@@ -142,7 +142,7 @@ tbody tr.row-selected td.table-fill::before {
 }
 
 /* ── Hover background ─────────────────────────────────── */
-tbody tr:hover td { background-color: #F2F4FC; }
+tbody tr:hover td { background-color: #F1F2F5; }
 tbody tr:hover td.divider-first { background: transparent; }
 tbody tr:hover td.divider-first::before {
   content: '';
