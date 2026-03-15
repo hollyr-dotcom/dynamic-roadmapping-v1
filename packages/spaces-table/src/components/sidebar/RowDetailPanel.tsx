@@ -227,6 +227,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const [saveProgress, setSaveProgress] = useState(0)
   const [saveToastExiting, setSaveToastExiting] = useState(false)
   const [saveConfetti, setSaveConfetti] = useState(false)
+  const [saveChangesCount, setSaveChangesCount] = useState(1)
+  const savePhaseRef = useRef<'refreshing' | 'success' | null>(null)
   const [companiesExpanded, setCompaniesExpanded] = useState(false)
 
   const [feedbackFilterOpen, setFeedbackFilterOpen] = useState(false)
@@ -274,11 +276,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
   const dismissSaveToast = () => {
     setSaveToastExiting(true)
-    setTimeout(() => { setSavePhase(null); setSaveToastExiting(false); setSaveConfetti(false); setInsightDismissed(true) }, 300)
+    setTimeout(() => { savePhaseRef.current = null; setSavePhase(null); setSaveToastExiting(false); setSaveConfetti(false); setInsightDismissed(true) }, 300)
   }
 
   const triggerSaveToast = () => {
     onRowUpdated?.(row.id)
+    setSaveChangesCount(prev => savePhaseRef.current === 'refreshing' ? prev + 1 : 1)
+    savePhaseRef.current = 'refreshing'
     setSaveToastExiting(false)
     setSaveProgress(0)
     setSavePhase('refreshing')
@@ -286,6 +290,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     requestAnimationFrame(() => requestAnimationFrame(() => setSaveProgress(100)))
     // After 5s switch to success + confetti
     setTimeout(() => {
+      savePhaseRef.current = 'success'
       setSavePhase('success')
       setSaveConfetti(true)
       setTimeout(() => setSaveConfetti(false), 2200)
@@ -791,7 +796,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             )}
             <div className="flex flex-col gap-2 flex-1 min-w-0">
               <p className="text-[14px] font-semibold text-[#FAFAFC] leading-[1.4] truncate" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
-                {savePhase === 'refreshing' ? 'Refreshing...' : 'Changes saved'}
+                {savePhase === 'refreshing' ? 'Refreshing...' : 'Refresh successful'}
               </p>
               {savePhase === 'refreshing' ? (
                 <div className="w-full rounded-full overflow-hidden" style={{ height: 4, backgroundColor: 'rgba(255,255,255,0.15)' }}>
@@ -805,9 +810,18 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   />
                 </div>
               ) : (
-                <p className="text-[12px] text-[#C7CAD5] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
-                  Your edits have been saved successfully.
-                </p>
+                <>
+                  <p className="text-[12px] text-[#C7CAD5] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
+                    {saveChangesCount === 1 ? '1 insight has been updated' : `${saveChangesCount} insights have been updated`}
+                  </p>
+                  <button
+                    onClick={() => dismissSaveToast()}
+                    className="mt-1 px-3 py-1.5 rounded-lg text-[13px] font-semibold text-white self-start w-fit"
+                    style={{ backgroundColor: '#4262FF' }}
+                  >
+                    View updates
+                  </button>
+                </>
               )}
             </div>
             <button
