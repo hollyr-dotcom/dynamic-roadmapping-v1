@@ -392,7 +392,7 @@ export function App() {
             </div>
           )}
           {activeTabConfig?.type === 'kanban' && (
-            <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} />
+            <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onCardClick={(row) => { setSelectedRow(row); setInitialCompany(undefined); setActiveSidebar('row-detail') }} />
           )}
           {activeTabConfig?.type === 'timeline' && (
             <TimelinePlaceholder key={activeTab} />

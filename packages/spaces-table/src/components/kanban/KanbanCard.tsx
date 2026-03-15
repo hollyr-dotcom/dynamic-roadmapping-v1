@@ -4,6 +4,7 @@ interface KanbanCardProps {
   row: SpaceRow
   fields: FieldDefinition[]
   borderColor: string
+  onClick?: (row: SpaceRow) => void
 }
 
 function FieldTag({ field, row }: { field: FieldDefinition; row: SpaceRow }) {
@@ -41,14 +42,16 @@ function FieldTag({ field, row }: { field: FieldDefinition; row: SpaceRow }) {
   )
 }
 
-export function KanbanCard({ row, fields, borderColor }: KanbanCardProps) {
+export function KanbanCard({ row, fields, borderColor, onClick }: KanbanCardProps) {
   return (
     <div
       className="rounded-lg bg-white"
       style={{
         border: `1.5px solid ${borderColor}`,
         boxShadow: '0px 2px 4px rgba(34,36,40,0.08)',
+        cursor: onClick ? 'pointer' : undefined,
       }}
+      onClick={() => onClick?.(row)}
     >
       <div className="px-4 py-3">
         <p className="font-body text-sm text-[#222428] leading-snug m-0 font-bold">
