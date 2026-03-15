@@ -50,9 +50,22 @@ export function KanbanCard({ row, fields, borderColor }: KanbanCardProps) {
       }}
     >
       <div className="px-4 py-3">
-        <p className="font-body text-sm text-[#222428] leading-snug m-0">
+        <p className="font-body text-sm text-[#222428] leading-snug m-0 font-bold">
           {row.title}
         </p>
+
+        {row.description && (
+          <p
+            className="font-body text-xs text-[#656B81] leading-snug m-0 mt-1 overflow-hidden"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+            }}
+          >
+            {row.description}
+          </p>
+        )}
 
         <div className="flex flex-wrap gap-2 mt-2">
           {fields.map(field => (
