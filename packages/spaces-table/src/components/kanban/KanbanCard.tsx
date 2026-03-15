@@ -24,17 +24,20 @@ function FieldTag({ field, row }: { field: FieldDefinition; row: SpaceRow }) {
       displayText = String(value)
   }
 
+  const isDescription = field.id === 'description'
+
   return (
     <span
-      className="inline-flex items-center gap-1.5 font-body text-[#222428] rounded whitespace-nowrap"
+      className={`inline-flex items-center gap-1.5 font-body text-[#222428] rounded ${isDescription ? '' : 'whitespace-nowrap'}`}
       style={{
         fontSize: '12px',
-        height: '26px',
+        minHeight: '26px',
         padding: '4px 8px',
         backgroundColor: '#F1F2F5',
+        ...(isDescription ? { maxWidth: '100%', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const } : {}),
       }}
     >
-      <span className="text-[#656B81]">{field.label}</span>
+      {!isDescription && <span className="text-[#656B81]">{field.label}</span>}
       <span>{displayText}</span>
     </span>
   )
@@ -55,7 +58,7 @@ export function KanbanCard({ row, fields, borderColor }: KanbanCardProps) {
         </p>
 
         <div className="flex flex-wrap gap-2 mt-2">
-          {fields.filter(f => f.id !== 'title' && f.id !== 'description').map(field => (
+          {fields.filter(f => f.id !== 'title').map(field => (
             <FieldTag key={field.id} field={field} row={row} />
           ))}
         </div>
