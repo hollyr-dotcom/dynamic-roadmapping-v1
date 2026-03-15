@@ -54,19 +54,6 @@ export function KanbanCard({ row, fields, borderColor }: KanbanCardProps) {
           {row.title}
         </p>
 
-        {row.description && (
-          <p
-            className="font-body text-xs text-[#656B81] leading-snug m-0 mt-1 overflow-hidden"
-            style={{
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-            }}
-          >
-            {row.description}
-          </p>
-        )}
-
         <div className="flex flex-wrap gap-2 mt-2">
           {fields.filter(f => f.id !== 'title' && f.id !== 'description').map(field => (
             <FieldTag key={field.id} field={field} row={row} />
