@@ -51,7 +51,8 @@ const PAGE_CONFIGS: Record<PageId, PageConfig> = {
     title: 'Roadmap',
     tabs: [
       { id: 'roadmap', label: 'Roadmap', type: 'timeline' },
-      { id: 'kanban', label: 'Kanban', type: 'kanban' },
+      { id: 'kanban', label: 'Now, next, later', type: 'kanban' },
+      { id: 'all-items-roadmap', label: 'All items', type: 'table' },
       { id: 'done', label: 'Done', type: 'table' },
     ],
     defaultTab: 'roadmap',
@@ -67,7 +68,7 @@ export function App() {
   const [showInsightsToast, setShowInsightsToast] = useState(false)
   const [activePage, setActivePage] = useState<PageId>('backlog')
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
-  const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
+  const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>('ai-sidekick')
   const [activeTab, setActiveTab] = useState('all-items')
   const [pageTabs, setPageTabs] = useState<Record<PageId, TabConfig[]>>({
     backlog: PAGE_CONFIGS.backlog.tabs,
@@ -89,6 +90,7 @@ export function App() {
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null)
   const [smoothPanning, setSmoothPanning] = useState(false)
   const [updatedRows, setUpdatedRows] = useState<Set<string>>(new Set())
+  const [insightsAllDots, setInsightsAllDots] = useState(false)
   const [syncShimmering, setSyncShimmering] = useState(false)
 
   const toggleSidebar = useCallback((id: SidebarId) =>
@@ -388,11 +390,11 @@ export function App() {
           {/* Type-based view renderer */}
           {activeTabConfig?.type === 'table' && (
             <div className="overflow-x-auto page-scroll">
-              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setInitialCompany(name); setActiveSidebar('row-detail') }} updatedRows={updatedRows} />
+              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setInitialCompany(name); setActiveSidebar('row-detail') }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} />
             </div>
           )}
           {activeTabConfig?.type === 'kanban' && (
-            <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onCardClick={(row) => { setSelectedRow(row); setInitialCompany(undefined); setActiveSidebar('row-detail') }} />
+            <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setInitialCompany(undefined); setActiveSidebar('row-detail') }} />
           )}
           {activeTabConfig?.type === 'timeline' && (
             <TimelinePlaceholder key={activeTab} />
@@ -529,7 +531,7 @@ export function App() {
       {/* Insights modal */}
       {showInsightsModal && (
         <InsightsModal
-          onEnable={() => { setShowInsightsModal(false); setShowInsightsToast(true) }}
+          onEnable={() => { setShowInsightsModal(false); setShowInsightsToast(true); setInsightsAllDots(true) }}
           onSkip={() => setShowInsightsModal(false)}
         />
       )}

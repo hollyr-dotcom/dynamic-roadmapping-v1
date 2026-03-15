@@ -9,9 +9,11 @@ interface DataTableProps {
   onRowClick?: (row: SpaceRow) => void
   onCompanyClick?: (row: SpaceRow, name: string) => void
   updatedRows?: Set<string>
+  insightsAllDots?: boolean
+  onTableInteract?: () => void
 }
 
-export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows }: DataTableProps) {
+export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract }: DataTableProps) {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const tableRef = useRef<HTMLDivElement>(null)
 
@@ -33,7 +35,7 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
   }, [])
 
   return (
-    <div ref={tableRef} className="w-full shrink-0 item-enter" style={{ animationDelay: '80ms' }}>
+    <div ref={tableRef} className="w-full shrink-0 item-enter" style={{ animationDelay: '80ms' }} onClick={insightsAllDots ? onTableInteract : undefined}>
       <table className="border-separate" style={{ borderSpacing: 0, minWidth: '100%' }}>
         <TableHeader fields={fields} />
         <tbody>
@@ -43,6 +45,7 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
               row={row}
               idx={idx}
               fields={fields}
+              isUpdated={insightsAllDots || (updatedRows?.has(row.id) ?? false)}
               isSelected={selectedRowId === row.id}
               onToggleSelect={handleDotsClick}
               onDeselect={() => setSelectedRowId(null)}

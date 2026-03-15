@@ -136,7 +136,7 @@ tbody tr.row-selected td.table-fill::before {
   position: absolute;
   top: 0; bottom: 0;
   left: 0; right: 56px;
-  background: #F2F4FC;
+  background: #F1F2F5;
   border-radius: 0 8px 8px 0;
   z-index: -1;
 }
@@ -149,21 +149,21 @@ tbody tr:hover td.divider-first::before {
   position: absolute;
   top: 0; bottom: 0;
   left: 56px; right: 0;
-  background: #F2F4FC;
+  background: #F1F2F5;
   border-radius: 8px 0 0 8px;
   z-index: -1;
 }
 
 /* ── Selected background (overrides hover) ────────────── */
 tbody tr.row-selected { position: relative; z-index: 30; }
-tbody tr.row-selected td { background-color: #F2F4FC; }
+tbody tr.row-selected td { background-color: #F1F2F5; }
 tbody tr.row-selected td.divider-first { background: transparent; }
 tbody tr.row-selected td.divider-first::before {
   content: '';
   position: absolute;
   top: 0; bottom: 0;
   left: 56px; right: 0;
-  background: #F2F4FC;
+  background: #F1F2F5;
   border-radius: 8px 0 0 8px;
   z-index: -1;
 }

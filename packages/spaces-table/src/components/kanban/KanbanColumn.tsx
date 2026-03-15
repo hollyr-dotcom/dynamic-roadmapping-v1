@@ -13,7 +13,7 @@ interface KanbanColumnProps {
   }
   rows: SpaceRow[]
   fields: FieldDefinition[]
-  onCardClick?: (row: SpaceRow) => void
+  onRowClick?: (row: SpaceRow) => void
 }
 
 function ColumnIconButton({ label, color, children }: { label: string; color: string; children: React.ReactNode }) {
@@ -28,15 +28,12 @@ function ColumnIconButton({ label, color, children }: { label: string; color: st
   )
 }
 
-export function KanbanColumn({ priority: _priority, config, rows, fields, onCardClick }: KanbanColumnProps) {
+export function KanbanColumn({ priority: _priority, config, rows, fields, onRowClick }: KanbanColumnProps) {
   return (
     <div
       className="group flex flex-col"
       style={{ width: 340 }}
     >
-      {/* Column header — sticky below tabs toolbar.
-           Outer wrapper is sticky with white bg to mask the cards area
-           behind the inner div's rounded corners when scrolled. */}
       <div className="sticky top-16 z-10 bg-white">
         <div
           className="flex items-center justify-between p-4 rounded-t-lg"
@@ -73,7 +70,6 @@ export function KanbanColumn({ priority: _priority, config, rows, fields, onCard
         </div>
       </div>
 
-      {/* Cards area */}
       <div
         className="flex flex-col gap-4 px-4 pb-6 rounded-b-lg"
         style={{ backgroundColor: config.columnBg }}
@@ -84,7 +80,7 @@ export function KanbanColumn({ priority: _priority, config, rows, fields, onCard
             row={row}
             fields={fields}
             borderColor={config.cardBorder}
-            onClick={onCardClick}
+            onRowClick={onRowClick}
           />
         ))}
       </div>

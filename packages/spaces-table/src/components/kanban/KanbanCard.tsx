@@ -4,7 +4,7 @@ interface KanbanCardProps {
   row: SpaceRow
   fields: FieldDefinition[]
   borderColor: string
-  onClick?: (row: SpaceRow) => void
+  onRowClick?: (row: SpaceRow) => void
 }
 
 function FieldTag({ field, row }: { field: FieldDefinition; row: SpaceRow }) {
@@ -27,31 +27,32 @@ function FieldTag({ field, row }: { field: FieldDefinition; row: SpaceRow }) {
 
   return (
     <span
-      className="inline-flex items-center gap-1.5 font-body text-[#222428] rounded whitespace-nowrap"
+      className="inline-flex items-center gap-1.5 font-body text-[#222428] rounded whitespace-nowrap min-w-0"
       style={{
         fontSize: '12px',
         height: '26px',
         padding: '4px 8px',
         backgroundColor: '#F1F2F5',
-        ...(field.id === 'description' ? { maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' } : {}),
+        maxWidth: '100%',
       }}
     >
-      <span className="text-[#656B81]">{field.label}</span>
-      <span style={field.id === 'description' ? { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } : undefined}>{displayText}</span>
+      <span className="text-[#656B81] shrink-0">{field.label}</span>
+      <span className="truncate">{displayText}</span>
     </span>
   )
 }
 
-export function KanbanCard({ row, fields, borderColor, onClick }: KanbanCardProps) {
+export function KanbanCard({ row, fields, borderColor, onRowClick }: KanbanCardProps) {
   return (
     <div
-      className="rounded-lg bg-white"
+      className="rounded-lg bg-white overflow-hidden"
       style={{
         border: `1.5px solid ${borderColor}`,
+        borderBottomWidth: 6,
         boxShadow: '0px 2px 4px rgba(34,36,40,0.08)',
-        cursor: onClick ? 'pointer' : undefined,
+        cursor: onRowClick ? 'pointer' : undefined,
       }}
-      onClick={() => onClick?.(row)}
+      onClick={() => onRowClick?.(row)}
     >
       <div className="px-4 py-3">
         <p className="font-body text-sm text-[#222428] leading-snug m-0 font-bold">
