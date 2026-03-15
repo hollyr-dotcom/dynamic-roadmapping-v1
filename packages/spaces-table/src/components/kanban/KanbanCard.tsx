@@ -68,7 +68,7 @@ export function KanbanCard({ row, fields, borderColor }: KanbanCardProps) {
         )}
 
         <div className="flex flex-wrap gap-2 mt-2">
-          {fields.map(field => (
+          {fields.filter(f => f.id !== 'title' && f.id !== 'description').map(field => (
             <FieldTag key={field.id} field={field} row={row} />
           ))}
         </div>
