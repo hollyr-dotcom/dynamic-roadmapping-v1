@@ -24,21 +24,19 @@ function FieldTag({ field, row }: { field: FieldDefinition; row: SpaceRow }) {
       displayText = String(value)
   }
 
-  const isDescription = field.id === 'description'
-
   return (
     <span
-      className={`inline-flex items-center gap-1.5 font-body text-[#222428] rounded ${isDescription ? '' : 'whitespace-nowrap'}`}
+      className="inline-flex items-center gap-1.5 font-body text-[#222428] rounded whitespace-nowrap"
       style={{
         fontSize: '12px',
-        minHeight: '26px',
+        height: '26px',
         padding: '4px 8px',
         backgroundColor: '#F1F2F5',
-        ...(isDescription ? { maxWidth: '100%', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const } : {}),
+        ...(field.id === 'description' ? { maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' } : {}),
       }}
     >
-      {!isDescription && <span className="text-[#656B81]">{field.label}</span>}
-      <span>{displayText}</span>
+      <span className="text-[#656B81]">{field.label}</span>
+      <span style={field.id === 'description' ? { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } : undefined}>{displayText}</span>
     </span>
   )
 }
