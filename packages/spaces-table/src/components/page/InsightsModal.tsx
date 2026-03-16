@@ -1,3 +1,5 @@
+import { Button } from '@mirohq/design-system'
+
 // Figma asset URLs (valid 7 days)
 const imgV0 = 'https://www.figma.com/api/mcp/asset/d9c857ac-c452-4281-8374-00cba8f8b02b'
 const imgV1 = 'https://www.figma.com/api/mcp/asset/5bfeda60-2af9-427a-b118-a90fc38faafd'
@@ -95,18 +97,12 @@ export function InsightsModal({ onEnable, onSkip }: InsightsModalProps) {
 
         {/* CTA */}
         <div className="flex items-center gap-2 pt-8 pb-[60px] px-12">
-          <button
-            onClick={onEnable}
-            className="h-10 px-5 bg-[#4262FF] hover:bg-[#2D4FE0] text-white text-[14px] font-semibold rounded-lg transition-colors"
-          >
-            Enable insights
-          </button>
-          <button
-            onClick={onSkip}
-            className="h-10 px-4 text-[14px] text-[#1a1b1e] hover:bg-[#f3f4f6] rounded-lg transition-colors"
-          >
-            Skip for now
-          </button>
+          <Button variant="primary" size="large" onPress={onEnable}>
+            <Button.Label>Enable insights</Button.Label>
+          </Button>
+          <Button variant="ghost" size="large" onPress={onSkip}>
+            <Button.Label>Skip for now</Button.Label>
+          </Button>
         </div>
       </div>
     </div>
