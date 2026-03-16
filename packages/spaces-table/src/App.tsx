@@ -543,7 +543,7 @@ export function App() {
       {/* Insights modal */}
       {showInsightsModal && (
         <InsightsModal
-          onEnable={() => { setShowInsightsModal(false); setShowInsightsToast(true); setInsightsAllDots(true) }}
+          onEnable={() => { setShowInsightsModal(false); setShowInsightsToast(true) }}
           onSkip={() => setShowInsightsModal(false)}
         />
       )}
