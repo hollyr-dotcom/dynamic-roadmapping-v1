@@ -15,6 +15,7 @@ import { SpaceMenu } from './components/sidebar/SpaceMenu'
 import { InsightsChatPanel } from './components/sidebar/InsightsChatPanel'
 import { SidePanel } from './components/sidebar/SidePanel'
 import { RowDetailPanel } from './components/sidebar/RowDetailPanel'
+import { JiraPanel } from './components/sidebar/JiraPanel'
 import { CanvasOverlay } from './components/canvas/CanvasOverlay'
 import { CanvasTableWidget } from './components/canvas/CanvasTableWidget'
 import { CanvasPillButton } from './components/canvas/CanvasPillButton'
@@ -77,6 +78,9 @@ export function App() {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const [selectedRow, setSelectedRow] = useState<SpaceRow | null>(null)
+  const [selectedRowDates, setSelectedRowDates] = useState<{ startDate: string; endDate: string } | undefined>(undefined)
+  const [selectedJiraRow, setSelectedJiraRow] = useState<SpaceRow | null>(null)
+  const [jiraPanelOpen, setJiraPanelOpen] = useState(false)
   const [initialCompany, setInitialCompany] = useState<string | undefined>(undefined)
   const [newColumnMenuOpen, setNewColumnMenuOpen] = useState(false)
   const [canvasOpen, setCanvasOpen] = useState(false)
@@ -343,7 +347,7 @@ export function App() {
     setScrollFade(Math.max(0, Math.min(1, (scrollTop - fadeStart) / fadeZone)))
   }
 
-  const isLeftOpen = activeSidebar === 'space-menu'
+  const isLeftOpen = activeSidebar === 'space-menu' || jiraPanelOpen
   const isRightOpen = activeSidebar === 'ai-sidekick' || activeSidebar === 'view-settings' || activeSidebar === 'row-detail'
   // Dynamic view rendering
   const currentTabs = pageTabs[activePage]
@@ -390,14 +394,14 @@ export function App() {
           {/* Type-based view renderer */}
           {activeTabConfig?.type === 'table' && (
             <div className="overflow-x-auto page-scroll">
-              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setInitialCompany(name); setActiveSidebar('row-detail') }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} />
+              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail') }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} />
             </div>
           )}
           {activeTabConfig?.type === 'kanban' && (
-            <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setInitialCompany(undefined); setActiveSidebar('row-detail') }} />
+            <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} />
           )}
           {activeTabConfig?.type === 'timeline' && (
-            <TimelinePlaceholder key={activeTab} />
+            <TimelinePlaceholder key={activeTab} onRowClick={(row, dates) => { setSelectedRow(row); setSelectedRowDates(dates); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onJiraRowClick={(row) => { setSelectedJiraRow(row); setJiraPanelOpen(true); setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} />
           )}
         </div>
       </div>
@@ -405,15 +409,23 @@ export function App() {
 
       {/* Left sidebar — fixed overlay, slides in over the top nav */}
       <div
-        className="fixed top-0 left-0 h-full z-50 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className="fixed top-0 left-0 h-full z-50 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{
-          width: 320,
+          width: jiraPanelOpen ? 376 + 24 : 320,
           transform: isLeftOpen ? 'translateX(0)' : 'translateX(-100%)',
         }}
       >
-        <SidebarShell side="left" onClose={closeSidebar} showClose={false} width={320}>
-          <SpaceMenu onClose={closeSidebar} activePage={activePage} onPageChange={switchPage} onGoHome={() => { closeSidebar(); setView('home') }} />
-        </SidebarShell>
+        {jiraPanelOpen ? (
+          <div className="h-full px-3 py-6 flex">
+            <div className="flex-1 overflow-hidden rounded-xl" style={{ boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)' }}>
+              {selectedJiraRow && <JiraPanel row={selectedJiraRow} onClose={() => setJiraPanelOpen(false)} />}
+            </div>
+          </div>
+        ) : (
+          <SidebarShell side="left" onClose={closeSidebar} showClose={false} width={320}>
+            <SpaceMenu onClose={closeSidebar} activePage={activePage} onPageChange={switchPage} onGoHome={() => { closeSidebar(); setView('home') }} />
+          </SidebarShell>
+        )}
       </div>
 
       {/* Right sidebar — fixed overlay, slides in over the top nav */}
@@ -430,7 +442,7 @@ export function App() {
               className="flex-1 overflow-hidden rounded-xl"
               style={{ boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)' }}
             >
-              {selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} initialCompany={initialCompany} onAddToBoard={handleAddToBoard} onRowUpdated={handleRowUpdated} />}
+              {selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} initialCompany={initialCompany} onAddToBoard={handleAddToBoard} onRowUpdated={handleRowUpdated} timelineDates={selectedRowDates} />}
             </div>
           </div>
         ) : activeSidebar === 'ai-sidekick' ? (

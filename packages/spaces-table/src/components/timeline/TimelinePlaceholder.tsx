@@ -1,33 +1,37 @@
+import { useState, useRef } from 'react'
 import { roadmapData } from '@spaces/shared'
+import type { SpaceRow } from '@spaces/shared'
+import { IconSocialJira } from '@mirohq/design-system'
+
+const JIRA_ITEMS = new Set(['r2', 'r3', 'r7', 'r8'])
 
 const DAY_WIDTH = 48
 const BAR_HEIGHT = 40
 const ROW_HEIGHT = 56
 const MONTH_H = 44
 const DAYS_H = 44
+const HANDLE_W = 8
 
 // View: March 1 – April 15, 2026
 const VIEW_START = new Date(2026, 2, 1)
 const TODAY = new Date(2026, 2, 15)
 const TOTAL_DAYS = 46
 
-// Person assignments per row
-const PEOPLE: Record<string, { initials: string; bg: string }> = {
-  r1:  { initials: 'H', bg: '#4262FF' },
-  r2:  { initials: 'M', bg: '#FF7842' },
-  r3:  { initials: 'S', bg: '#9B42FF' },
-  r4:  { initials: 'H', bg: '#4262FF' },
-  r5:  { initials: 'M', bg: '#FF7842' },
-  r6:  { initials: 'S', bg: '#9B42FF' },
-  r7:  { initials: 'H', bg: '#4262FF' },
-  r8:  { initials: 'M', bg: '#FF7842' },
-  r9:  { initials: 'S', bg: '#9B42FF' },
-  r10: { initials: 'H', bg: '#4262FF' },
-  r11: { initials: 'M', bg: '#FF7842' },
+const PEOPLE: Record<string, { avatar: string }> = {
+  r1:  { avatar: 'https://i.pravatar.cc/40?img=47' },
+  r2:  { avatar: 'https://i.pravatar.cc/40?img=12' },
+  r3:  { avatar: 'https://i.pravatar.cc/40?img=56' },
+  r4:  { avatar: 'https://i.pravatar.cc/40?img=19' },
+  r5:  { avatar: 'https://i.pravatar.cc/40?img=47' },
+  r6:  { avatar: 'https://i.pravatar.cc/40?img=15' },
+  r7:  { avatar: 'https://i.pravatar.cc/40?img=56' },
+  r8:  { avatar: 'https://i.pravatar.cc/40?img=12' },
+  r9:  { avatar: 'https://i.pravatar.cc/40?img=19' },
+  r10: { avatar: 'https://i.pravatar.cc/40?img=15' },
+  r11: { avatar: 'https://i.pravatar.cc/40?img=47' },
 }
 
-// [startOffset, lengthInDays] from March 1
-const POSITIONS: Record<string, [number, number]> = {
+const INITIAL_POSITIONS: Record<string, [number, number]> = {
   r1:  [0,  10],
   r2:  [2,  13],
   r3:  [5,  15],
@@ -41,9 +45,8 @@ const POSITIONS: Record<string, [number, number]> = {
   r11: [36, 13],
 }
 
-const MILESTONE_OFFSET = 19 // March 20
+const MILESTONE_OFFSET = 19
 
-// Build day list
 const days = Array.from({ length: TOTAL_DAYS }, (_, i) => {
   const d = new Date(VIEW_START)
   d.setDate(d.getDate() + i)
@@ -57,7 +60,6 @@ const days = Array.from({ length: TOTAL_DAYS }, (_, i) => {
   }
 })
 
-// Group by month for header
 const monthGroups: { label: string; startOffset: number; count: number }[] = []
 for (const day of days) {
   const label = new Date(VIEW_START.getFullYear(), day.month, 1)
@@ -70,24 +72,169 @@ for (const day of days) {
   }
 }
 
-const TODAY_OFFSET = Math.floor((TODAY.getTime() - VIEW_START.getTime()) / 86400000)
-
-// Only show non-done items
-const timelineItems = roadmapData.filter(r => r.status !== 'done' && POSITIONS[r.id])
-
+const timelineItems = roadmapData.filter(r => r.status !== 'done' && INITIAL_POSITIONS[r.id])
 const GRID_HEIGHT = timelineItems.length * ROW_HEIGHT
 const TOTAL_WIDTH = TOTAL_DAYS * DAY_WIDTH
 
-export function TimelinePlaceholder() {
+function offsetToDate(offset: number): string {
+  const d = new Date(VIEW_START)
+  d.setDate(d.getDate() + offset)
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+type DragState = {
+  id: string
+  type: 'move' | 'resize-right' | 'resize-left'
+  startX: number
+  startY: number
+  origStart: number
+  origLen: number
+  origRowIndex: number
+}
+
+type PanState = { startX: number; startScrollLeft: number }
+
+interface TimelinePlaceholderProps {
+  onRowClick?: (row: SpaceRow, dates: { startDate: string; endDate: string }) => void
+  onJiraRowClick?: (row: SpaceRow) => void
+}
+
+export function TimelinePlaceholder({ onRowClick, onJiraRowClick }: TimelinePlaceholderProps) {
+  const [positions, setPositions] = useState<Record<string, [number, number]>>(INITIAL_POSITIONS)
+  const [rowOrder, setRowOrder] = useState<string[]>(() => timelineItems.map(r => r.id))
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [dragTargetRow, setDragTargetRow] = useState<number | null>(null)
+  const [isPanning, setIsPanning] = useState(false)
+  const [milestoneOffset, setMilestoneOffset] = useState(MILESTONE_OFFSET)
+  const dragRef = useRef<DragState | null>(null)
+  const panRef = useRef<PanState | null>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
+
+  // Compute live display order while dragging (one card per row — swap preview)
+  const displayOrder = (() => {
+    if (draggingId === null || dragTargetRow === null) return rowOrder
+    const from = rowOrder.indexOf(draggingId)
+    if (from === dragTargetRow) return rowOrder
+    const result = [...rowOrder]
+    result.splice(from, 1)
+    result.splice(dragTargetRow, 0, draggingId)
+    return result
+  })()
+
+  const onGridMouseMove = (e: React.MouseEvent) => {
+    if (!gridRef.current || dragRef.current) return
+    const rect = gridRef.current.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const day = Math.max(0, Math.min(TOTAL_DAYS - 1, Math.floor(x / DAY_WIDTH)))
+    setMilestoneOffset(day)
+  }
+
+  const startDrag = (e: React.PointerEvent, id: string, type: DragState['type']) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const [s, l] = positions[id]
+    const origRowIndex = rowOrder.indexOf(id)
+    dragRef.current = { id, type, startX: e.clientX, startY: e.clientY, origStart: s, origLen: l, origRowIndex }
+    setDraggingId(id)
+    setDragTargetRow(origRowIndex)
+    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+  }
+
+  const onPointerMove = (e: React.PointerEvent, id: string) => {
+    if (!dragRef.current || dragRef.current.id !== id) return
+    const dx = e.clientX - dragRef.current.startX
+    const dd = Math.round(dx / DAY_WIDTH)
+    const { origStart, origLen, type, startY, origRowIndex } = dragRef.current
+
+    // Horizontal position update
+    setPositions(prev => {
+      if (type === 'move') {
+        const s = Math.max(0, Math.min(TOTAL_DAYS - origLen, origStart + dd))
+        return { ...prev, [id]: [s, origLen] }
+      }
+      if (type === 'resize-right') {
+        const l = Math.max(1, Math.min(TOTAL_DAYS - origStart, origLen + dd))
+        return { ...prev, [id]: [origStart, l] }
+      }
+      // resize-left: shift start, keep end fixed
+      const s = Math.max(0, Math.min(origStart + origLen - 1, origStart + dd))
+      const l = origLen - (s - origStart)
+      return { ...prev, [id]: [s, l] }
+    })
+
+    // Vertical row target (move only)
+    if (type === 'move') {
+      const dy = e.clientY - startY
+      const dr = Math.round(dy / ROW_HEIGHT)
+      const target = Math.max(0, Math.min(rowOrder.length - 1, origRowIndex + dr))
+      setDragTargetRow(target)
+    }
+  }
+
+  const endDrag = (e: React.PointerEvent, row?: SpaceRow) => {
+    const state = dragRef.current
+    const wasDrag = state && (Math.abs(e.clientX - state.startX) > 4 || Math.abs(e.clientY - state.startY) > 4)
+
+    // Commit row reorder
+    if (state?.type === 'move' && dragTargetRow !== null && dragTargetRow !== state.origRowIndex) {
+      setRowOrder(prev => {
+        const from = prev.indexOf(state.id)
+        if (from === dragTargetRow) return prev
+        const result = [...prev]
+        result.splice(from, 1)
+        result.splice(dragTargetRow, 0, state.id)
+        return result
+      })
+    }
+
+    dragRef.current = null
+    setDraggingId(null)
+    setDragTargetRow(null)
+    ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
+
+    if (!wasDrag && row) {
+      if (JIRA_ITEMS.has(row.id)) {
+        onJiraRowClick?.(row)
+      } else {
+        const [startOff, len] = positions[row.id]
+        onRowClick?.(row, { startDate: offsetToDate(startOff), endDate: offsetToDate(startOff + len) })
+      }
+    }
+  }
+
+  const onPanStart = (e: React.PointerEvent) => {
+    if (dragRef.current || !scrollRef.current) return
+    panRef.current = { startX: e.clientX, startScrollLeft: scrollRef.current.scrollLeft }
+    setIsPanning(true)
+    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+  }
+
+  const onPanMove = (e: React.PointerEvent) => {
+    if (!panRef.current || !scrollRef.current) return
+    scrollRef.current.scrollLeft = panRef.current.startScrollLeft - (e.clientX - panRef.current.startX)
+  }
+
+  const onPanEnd = (e: React.PointerEvent) => {
+    if (!panRef.current) return
+    panRef.current = null
+    setIsPanning(false)
+    ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
+  }
+
   return (
-    <div className="flex-1 overflow-auto item-enter" style={{ animationDelay: '80ms' }}>
+    <div
+      ref={scrollRef}
+      className="flex-1 overflow-auto item-enter"
+      style={{ animationDelay: '80ms', cursor: isPanning ? 'grabbing' : 'default' }}
+      onPointerDown={onPanStart}
+      onPointerMove={onPanMove}
+      onPointerUp={onPanEnd}
+    >
       <div style={{ position: 'relative', width: TOTAL_WIDTH, minHeight: MONTH_H + DAYS_H + GRID_HEIGHT }}>
 
         {/* Month header — sticky */}
-        <div style={{
-          position: 'sticky', top: 0, zIndex: 20, background: 'white',
-          display: 'flex', height: MONTH_H,
-        }}>
+        <div style={{ position: 'sticky', top: 0, zIndex: 20, background: 'white', display: 'flex', height: MONTH_H }}>
           {monthGroups.map(mg => (
             <div key={mg.label} style={{ width: mg.count * DAY_WIDTH, padding: '0 16px', display: 'flex', alignItems: 'center' }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: '#656B81', whiteSpace: 'nowrap' }}>{mg.label}</span>
@@ -95,124 +242,124 @@ export function TimelinePlaceholder() {
           ))}
         </div>
 
-        {/* Day numbers row — sticky below month */}
-        <div style={{
-          position: 'sticky', top: MONTH_H, zIndex: 20, background: 'white',
-          display: 'flex', height: DAYS_H,
-          borderBottom: '1px solid #E9EAEF',
-        }}>
-          {days.map(day => (
-            <div
-              key={day.offset}
-              style={{
-                width: DAY_WIDTH,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
-              {day.isToday ? (
-                <span style={{
-                  width: 28, height: 28, borderRadius: '50%',
-                  backgroundColor: '#EDEDED',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 14, color: '#333',
-                }}>
-                  {day.num}
-                </span>
-              ) : (
-                <span style={{ fontSize: 14, color: '#222428' }}>{day.num}</span>
-              )}
-            </div>
-          ))}
+        {/* Day numbers — sticky below month */}
+        <div style={{ position: 'sticky', top: MONTH_H, zIndex: 20, background: 'white', display: 'flex', height: DAYS_H, borderBottom: '1px solid #E9EAEF' }}>
+          {days.map(day => {
+            const isMilestone = day.offset === milestoneOffset
+            return (
+              <div key={day.offset} style={{ width: DAY_WIDTH, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                {isMilestone ? (
+                  <span style={{ width: 24, height: 24, borderRadius: '50%', backgroundColor: '#1a1b1e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: '#f7f7f7' }}>
+                    {day.num}
+                  </span>
+                ) : day.isToday ? (
+                  <span style={{ width: 24, height: 24, borderRadius: '50%', backgroundColor: '#EDEDED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#333' }}>
+                    {day.num}
+                  </span>
+                ) : (
+                  <span style={{ fontSize: 12, color: '#656b81' }}>{day.num}</span>
+                )}
+              </div>
+            )
+          })}
         </div>
 
         {/* Grid area */}
-        <div style={{ position: 'relative', height: GRID_HEIGHT, width: TOTAL_WIDTH }}>
+        <div ref={gridRef} onMouseMove={onGridMouseMove} style={{ position: 'relative', height: GRID_HEIGHT, width: TOTAL_WIDTH }}>
 
           {/* Background columns */}
           {days.map(day => (
-            <div
-              key={day.offset}
-              style={{
-                position: 'absolute',
-                left: day.offset * DAY_WIDTH,
-                top: 0,
-                width: DAY_WIDTH,
-                height: '100%',
-                backgroundColor: day.isWeekend ? '#F7F7F7' : 'white',
-              }}
-            />
+            <div key={day.offset} style={{ position: 'absolute', left: day.offset * DAY_WIDTH, top: 0, width: DAY_WIDTH, height: '100%', backgroundColor: day.isWeekend ? '#F7F7F7' : 'white' }} />
           ))}
 
-          {/* Today vertical line */}
-          <div style={{
-            position: 'absolute',
-            left: (TODAY_OFFSET + 0.5) * DAY_WIDTH,
-            top: 0,
-            width: 0,
-            height: '100%',
-            borderLeft: '1px dashed #FF9F4D',
-            zIndex: 2,
-          }} />
+          {/* Drop indicator — highlights target row while dragging */}
+          {draggingId !== null && dragTargetRow !== null && (
+            <div style={{
+              position: 'absolute',
+              left: 0, width: '100%',
+              top: dragTargetRow * ROW_HEIGHT,
+              height: ROW_HEIGHT,
+              backgroundColor: '#F1F2F5',
+              borderTop: 'none',
+              borderBottom: 'none',
+              pointerEvents: 'none',
+              zIndex: 1,
+            }} />
+          )}
 
-          {/* Milestone dashed line */}
-          <div style={{
-            position: 'absolute',
-            left: (MILESTONE_OFFSET + 0.5) * DAY_WIDTH,
-            top: 0,
-            width: 0,
-            height: '100%',
-            borderLeft: '1px dashed #C7CAD5',
-            zIndex: 2,
-          }} />
+          {/* Milestone line — tracks diamond */}
+          <div style={{ position: 'absolute', left: (milestoneOffset + 0.5) * DAY_WIDTH, top: 0, width: 0, height: '100%', borderLeft: '1px dashed #C7CAD5', zIndex: 2, transition: 'left 0.1s ease' }} />
 
           {/* Timeline bars */}
-          {timelineItems.map((row, i) => {
-            const [startOff, len] = POSITIONS[row.id]
-            const person = PEOPLE[row.id] ?? { initials: '?', bg: '#AEB2C0' }
+          {timelineItems.map(row => {
+            const rowIndex = displayOrder.indexOf(row.id)
+            const [startOff, len] = positions[row.id]
+            const person = PEOPLE[row.id] ?? { avatar: 'https://i.pravatar.cc/40?img=1' }
+            const isDragging = draggingId === row.id
+            const isMove = isDragging && dragRef.current?.type === 'move'
+
             return (
               <div
                 key={row.id}
                 style={{
                   position: 'absolute',
                   left: startOff * DAY_WIDTH,
-                  top: i * ROW_HEIGHT + (ROW_HEIGHT - BAR_HEIGHT) / 2,
+                  top: rowIndex * ROW_HEIGHT + (ROW_HEIGHT - BAR_HEIGHT) / 2,
                   width: len * DAY_WIDTH - 4,
                   height: BAR_HEIGHT,
                   backgroundColor: 'white',
                   border: '1px solid #C7CAD5',
                   borderRadius: 4,
-                  boxShadow: '0px 2px 4px rgba(34,36,40,0.08)',
+                  boxShadow: isDragging ? '0px 8px 20px rgba(34,36,40,0.16)' : '0px 2px 4px rgba(34,36,40,0.08)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 8,
-                  padding: '0 12px',
+                  padding: `0 ${HANDLE_W + 4}px`,
                   overflow: 'hidden',
-                  zIndex: 3,
-                  cursor: 'pointer',
+                  zIndex: isDragging ? 10 : 3,
+                  cursor: isMove ? 'grabbing' : 'grab',
+                  userSelect: 'none',
+                  transition: isDragging ? 'none' : 'top 0.15s ease, box-shadow 0.15s ease',
                 }}
+                onPointerDown={e => startDrag(e, row.id, 'move')}
+                onPointerMove={e => onPointerMove(e, row.id)}
+                onPointerUp={e => endDrag(e, row)}
               >
-                <div style={{
-                  width: 24, height: 24, borderRadius: '50%',
-                  backgroundColor: person.bg,
-                  flexShrink: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'white', fontSize: 10, fontWeight: 700,
-                }}>
-                  {person.initials}
-                </div>
-                <span style={{
-                  fontSize: 14,
-                  color: '#222428',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  flex: 1,
-                }}>
+                {/* Left resize handle */}
+                <div
+                  style={{ position: 'absolute', left: 0, top: 0, width: HANDLE_W, height: '100%', cursor: 'ew-resize', zIndex: 1 }}
+                  onPointerDown={e => startDrag(e, row.id, 'resize-left')}
+                  onPointerMove={e => onPointerMove(e, row.id)}
+                  onPointerUp={e => endDrag(e)}
+                />
+
+                <img src={person.avatar} alt="" style={{ width: 24, height: 24, borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
+                {JIRA_ITEMS.has(row.id) && (
+                  <IconSocialJira css={{ width: 16, height: 16, flexShrink: 0 }} />
+                )}
+                <span style={{ fontSize: 14, color: '#222428', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                   {row.title}
                 </span>
+
+                {/* Date tooltip while dragging */}
+                {isDragging && (
+                  <div style={{
+                    position: 'absolute', bottom: BAR_HEIGHT + 6, left: '50%', transform: 'translateX(-50%)',
+                    backgroundColor: '#2B2D33', color: 'white', fontSize: 11, fontWeight: 500,
+                    padding: '3px 8px', borderRadius: 4, whiteSpace: 'nowrap', pointerEvents: 'none',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                  }}>
+                    {offsetToDate(startOff)} – {offsetToDate(startOff + len)}
+                  </div>
+                )}
+
+                {/* Right resize handle */}
+                <div
+                  style={{ position: 'absolute', right: 0, top: 0, width: HANDLE_W, height: '100%', cursor: 'ew-resize', zIndex: 1 }}
+                  onPointerDown={e => startDrag(e, row.id, 'resize-right')}
+                  onPointerMove={e => onPointerMove(e, row.id)}
+                  onPointerUp={e => endDrag(e)}
+                />
               </div>
             )
           })}
@@ -220,21 +367,16 @@ export function TimelinePlaceholder() {
           {/* Milestone diamond */}
           <div style={{
             position: 'absolute',
-            left: MILESTONE_OFFSET * DAY_WIDTH + DAY_WIDTH / 2 - 16,
+            left: milestoneOffset * DAY_WIDTH + DAY_WIDTH / 2 - 16,
             top: 3 * ROW_HEIGHT + ROW_HEIGHT / 2 - 16,
-            width: 32,
-            height: 32,
-            transform: 'rotate(45deg)',
-            backgroundColor: 'white',
-            border: '1px solid #C7CAD5',
-            borderRadius: 5,
+            width: 32, height: 32, transform: 'rotate(45deg)',
+            backgroundColor: 'white', border: '1px solid #C7CAD5', borderRadius: 5,
             boxShadow: '0px 2px 4px rgba(34,36,40,0.08)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 4,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5,
+            pointerEvents: 'none',
+            transition: 'left 0.1s ease',
           }}>
-            <div style={{ width: 16, height: 16, borderRadius: 2, backgroundColor: '#FE9F4D' }} />
+            <div style={{ width: 16, height: 16, borderRadius: 2, backgroundColor: '#4262FF' }} />
           </div>
 
         </div>

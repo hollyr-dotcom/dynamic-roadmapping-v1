@@ -26,7 +26,7 @@ import {
 
 export const MENU_WIDTH = 220
 
-export type SidebarId = 'space-menu' | 'ai-sidekick' | 'view-settings' | 'row-detail'
+export type SidebarId = 'space-menu' | 'ai-sidekick' | 'view-settings' | 'row-detail' | 'jira'
 export type ViewType = 'table' | 'kanban' | 'timeline'
 
 export interface TabConfig {

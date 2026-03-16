@@ -55,12 +55,12 @@ export function KanbanCard({ row, fields, borderColor, onRowClick }: KanbanCardP
       onClick={() => onRowClick?.(row)}
     >
       <div className="px-4 py-3">
-        <p className="font-body text-sm text-[#222428] leading-snug m-0 font-bold">
+        <p className="font-body text-sm font-semibold text-[#222428] leading-snug m-0 truncate">
           {row.title}
         </p>
 
         <div className="flex flex-wrap gap-2 mt-2">
-          {fields.filter(f => f.id !== 'title').map(field => (
+          {fields.map(field => (
             <FieldTag key={field.id} field={field} row={row} />
           ))}
         </div>
