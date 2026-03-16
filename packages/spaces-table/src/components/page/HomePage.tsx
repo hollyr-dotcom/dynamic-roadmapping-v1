@@ -10,7 +10,6 @@ import {
   IconChevronRight,
   IconChevronDown,
   IconMagnifyingGlass,
-  IconTable,
   IconWand,
   IconCard,
   IconEyeOpen,
@@ -104,7 +103,7 @@ const boards = [
 
 export function HomePage({ onOpenApp }: HomePageProps) {
   const [spacesMenuOpen, setSpacesMenuOpen] = useState(false)
-  const [yourSpacesExpanded, setYourSpacesExpanded] = useState(true)
+  const [yourSpacesExpanded, _setYourSpacesExpanded] = useState(true)
   const [createSpaceModalOpen, setCreateSpaceModalOpen] = useState(false)
   const [modalStep, setModalStep] = useState<'create' | 'setup' | 'csv' | 'share' | 'miro' | 'jira'>('create')
   const [jiraSelectedKeys, setJiraSelectedKeys] = useState<Set<string>>(new Set(['UR-348', 'UR-347']))
@@ -323,7 +322,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 <Button
                   variant="primary"
                   size="large"
-                  isDisabled={!roadmapChecked}
+                  disabled={!roadmapChecked}
                   onPress={() => { setModalFading(true); setTimeout(() => { setModalStep('setup'); setModalFading(false) }, 220) }}
                 >
                   <Button.Label>Create</Button.Label>
@@ -511,7 +510,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                   onPress={() => { setCreateSpaceModalOpen(false); setSpaceName(''); setRoadmapChecked(false); setModalStep('create'); onOpenApp() }}
                 >
                   <Button.Label>Continue without inviting</Button.Label>
-                  <Button.IconSlot placement="end"><IconChevronRight /></Button.IconSlot>
+                  <Button.IconSlot><IconChevronRight /></Button.IconSlot>
                 </Button>
               </div>
             </>) : modalStep === 'jira' ? (<>
@@ -527,7 +526,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                     { label: 'Configure cards', Icon: IconCard },
                     { label: 'Show imported', Icon: IconEyeOpen },
                     { label: 'Create issue', Icon: IconSquarePencil },
-                  ] as Array<{ label: string; Icon: (props: { css?: Record<string, unknown> }) => JSX.Element }>).map(({ label, Icon }) => (
+                  ] as Array<{ label: string; Icon: (props: { css?: Record<string, unknown> }) => React.JSX.Element }>).map(({ label, Icon }) => (
                     <button key={label} className="hover:bg-[#f1f2f5] transition-colors" style={{ height: 32, padding: '0 10px', borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', fontSize: 16, color: '#222428', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
                       <Icon css={{ width: 16, height: 16, minWidth: 16, minHeight: 16, color: '#222428', flexShrink: 0 }} />
                       {label}
