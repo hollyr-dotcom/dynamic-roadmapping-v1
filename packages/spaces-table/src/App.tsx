@@ -83,7 +83,7 @@ export function App() {
   const [initialCompany, setInitialCompany] = useState<string | undefined>(undefined)
   const [newColumnMenuOpen, setNewColumnMenuOpen] = useState(false)
   const [canvasOpen, setCanvasOpen] = useState(false)
-  const [navHovered, setNavHovered] = useState(false)
+  const [_navHovered, setNavHovered] = useState(false)
 
   // Canvas pan/zoom/selection state
   const [panX, setPanX] = useState(0)
