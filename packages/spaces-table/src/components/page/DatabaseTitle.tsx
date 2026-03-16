@@ -79,7 +79,7 @@ export function DatabaseTitle({ opacity, title, onTitleChange, variant = 'page',
   return (
     <div
       className={`group/title sticky left-0 z-30 flex items-center gap-1 pb-1 shrink-0 ${variant === 'widget' ? 'px-0' : 'px-14'}`}
-      style={{ paddingTop: variant === 'widget' ? 0 : '48px', opacity }}
+      style={{ paddingTop: variant === 'widget' ? 0 : '28px', opacity }}
     >
       {/* Hidden span to measure text width */}
       <span

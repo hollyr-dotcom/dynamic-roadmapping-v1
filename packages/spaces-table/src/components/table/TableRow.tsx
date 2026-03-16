@@ -47,16 +47,13 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
           <span style={{ position: 'absolute', left: 28, top: '50%', transform: 'translateY(-50%)', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4262FF', zIndex: 1 }} />
         )}
         <div className="flex items-center w-full">
-          {/* Row number — idle */}
-          <div className="row-number w-8 h-8 flex items-center justify-center shrink-0">
-            {idx + 1}
-          </div>
-
-          {/* Icon group — centered in remaining space */}
-          <div className="flex flex-1 items-center justify-center gap-0">
-            {/* Drag handle — selected */}
+          {/* Row number / dots — swap in the same slot */}
+          <div className="relative w-8 h-8 shrink-0">
+            <div className="row-number w-8 h-8 flex items-center justify-center">
+              {idx + 1}
+            </div>
             <button
-              className="row-dots flex w-8 h-8 items-center justify-center rounded-lg cursor-grab"
+              className="row-dots absolute inset-0 flex items-center justify-center rounded-lg cursor-grab"
               onClick={(e) => onToggleSelect(row.id, e)}
             >
               <IconDotsSixVertical
@@ -64,7 +61,10 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
                 color={isSelected ? 'icon-primary' : 'icon-neutrals-subtle'}
               />
             </button>
+          </div>
 
+          {/* Hover icons */}
+          <div className="flex flex-1 items-center justify-center gap-0">
             {/* Drag handle — hover only */}
             <button
               className="row-drag flex w-8 h-8 items-center justify-center rounded-lg cursor-grab hover:bg-[#E9EAEF] transition-colors"

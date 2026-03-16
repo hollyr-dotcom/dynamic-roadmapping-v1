@@ -18,7 +18,6 @@ import { RowDetailPanel } from './components/sidebar/RowDetailPanel'
 import { JiraPanel } from './components/sidebar/JiraPanel'
 import { CanvasOverlay } from './components/canvas/CanvasOverlay'
 import { CanvasTableWidget } from './components/canvas/CanvasTableWidget'
-import { CanvasPillButton } from './components/canvas/CanvasPillButton'
 import { CanvasNavPanels } from './components/canvas/CanvasNavPanels'
 import { CanvasFeedbackCard, type FeedbackCardData } from './components/canvas/CanvasFeedbackCard'
 
@@ -371,8 +370,12 @@ export function App() {
           pointerEvents: canvasOpen ? 'none' : 'auto',
         }}
       >
-      {/* Main content — full width; sidebars are overlays */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      {/* Main content — shifts right when left sidebar is open */}
+      <div
+        className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden transition-[padding-left] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        style={{ paddingLeft: isLeftOpen ? (jiraPanelOpen ? 400 : 320) : 0 }}
+        onClick={isLeftOpen ? () => { setActiveSidebar(null); setJiraPanelOpen(false) } : undefined}
+      >
         <div onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
           <TopNavBar
             borderOpacity={scrollFade}
@@ -407,13 +410,6 @@ export function App() {
       </div>
       </div>
 
-      {/* Left sidebar backdrop */}
-      {isLeftOpen && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => { setActiveSidebar(null); setJiraPanelOpen(false) }}
-        />
-      )}
 
       {/* Left sidebar — fixed overlay, slides in over the top nav */}
       <div
@@ -568,10 +564,6 @@ export function App() {
         <InsightsToast onDismiss={() => setShowInsightsToast(false)} />
       )}
 
-      {/* Pill button — only shown in table mode (hover-to-reveal); canvas-mode "Go to Backlog" disabled for now — using expand button on widget instead */}
-      {/* {canvasOpen ? null : ( */}
-      <CanvasPillButton canvasOpen={false} onToggle={toggleCanvas} leftWidth={0} rightWidth={0} visible={navHovered && !canvasOpen} onHoverChange={setNavHovered} pageTitle={databaseTitle} />
-      {/* )} */}
     </div>
   )
 }
