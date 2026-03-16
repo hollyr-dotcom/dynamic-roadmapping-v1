@@ -46,31 +46,41 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
         {isUpdated && (
           <span style={{ position: 'absolute', left: 28, top: '50%', transform: 'translateY(-50%)', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4262FF', zIndex: 1 }} />
         )}
-        <div className="flex items-center">
-          {/* Row number + spacer — idle */}
-          <div className="row-number w-8 h-8 items-center text-[#AEB2C0]">
+        <div className="flex items-center w-full">
+          {/* Row number — idle */}
+          <div className="row-number w-8 h-8 flex items-center justify-center shrink-0">
             {idx + 1}
           </div>
-          <div className="row-number w-8 h-8" aria-hidden="true" />
 
-          {/* Drag handle — hover & selected */}
-          <button
-            className="row-dots w-8 h-8 items-center justify-center rounded-lg cursor-grab"
-            onClick={(e) => onToggleSelect(row.id, e)}
-          >
-            <IconDotsSixVertical
-              size="small"
-              color={isSelected ? 'icon-primary' : 'icon-neutrals-subtle'}
-            />
-          </button>
+          {/* Icon group — centered in remaining space */}
+          <div className="flex flex-1 items-center justify-center gap-0">
+            {/* Drag handle — selected */}
+            <button
+              className="row-dots flex w-8 h-8 items-center justify-center rounded-lg cursor-grab"
+              onClick={(e) => onToggleSelect(row.id, e)}
+            >
+              <IconDotsSixVertical
+                size="small"
+                color={isSelected ? 'icon-primary' : 'icon-neutrals-subtle'}
+              />
+            </button>
 
-          {/* Comment button — hover only */}
-          <button
-            className="row-comment w-8 h-8 items-center justify-center rounded-lg hover:bg-[#E9EAEF] transition-colors"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <IconChatPlus size="small" color="icon-neutrals-subtle" />
-          </button>
+            {/* Drag handle — hover only */}
+            <button
+              className="row-drag flex w-8 h-8 items-center justify-center rounded-lg cursor-grab hover:bg-[#E9EAEF] transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <IconDotsSixVertical size="small" color="icon-neutrals-subtle" />
+            </button>
+
+            {/* Comment button — hover only */}
+            <button
+              className="row-comment flex w-8 h-8 items-center justify-center rounded-lg hover:bg-[#E9EAEF] transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <IconChatPlus size="small" color="icon-neutrals-subtle" />
+            </button>
+          </div>
         </div>
 
         {/* Context menu */}

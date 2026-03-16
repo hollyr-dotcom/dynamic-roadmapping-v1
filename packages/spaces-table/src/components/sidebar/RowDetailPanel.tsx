@@ -31,7 +31,6 @@ import {
   IconMagnifyingGlass,
   Checkbox,
   IconStackedCircles,
-  IconCalendarBlank,
   IconPlusBox,
   IconUser,
 } from '@mirohq/design-system'
@@ -52,6 +51,7 @@ interface RowDetailPanelProps {
   initialCompany?: string
   onAddToBoard?: (data: FeedbackCardData) => void
   onRowUpdated?: (id: string) => void
+  timelineDates?: { startDate: string; endDate: string }
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -203,7 +203,7 @@ function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated }: RowDetailPanelProps) {
+export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
@@ -470,20 +470,22 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               </div>
             </FieldRow>
 
-            {/* Start date */}
-            <FieldRow label="Start date">
-              <Chip removable={false} css={{ fontSize: 14 }}>02-Aug-2026</Chip>
-            </FieldRow>
-
-            {/* End date */}
-            <FieldRow label="End date">
-              <Chip removable={false} css={{ fontSize: 14 }}>08-Aug-2026</Chip>
-            </FieldRow>
-
             {/* Blocking */}
             <FieldRow label="Blocking">
               <span className="text-[14px] text-[#222428] leading-[1.4] px-2">—</span>
             </FieldRow>
+
+            {/* Start / End dates (timeline only) */}
+            {timelineDates && (
+              <>
+                <FieldRow label="Start date">
+                  <span className="text-[14px] text-[#222428] leading-[1.4] px-2">{timelineDates.startDate}</span>
+                </FieldRow>
+                <FieldRow label="End date">
+                  <span className="text-[14px] text-[#222428] leading-[1.4] px-2">{timelineDates.endDate}</span>
+                </FieldRow>
+              </>
+            )}
 
             {/* Companies */}
             {(() => {
