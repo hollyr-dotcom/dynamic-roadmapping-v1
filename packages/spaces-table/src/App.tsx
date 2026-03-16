@@ -407,6 +407,14 @@ export function App() {
       </div>
       </div>
 
+      {/* Left sidebar backdrop */}
+      {isLeftOpen && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => { setActiveSidebar(null); setJiraPanelOpen(false) }}
+        />
+      )}
+
       {/* Left sidebar — fixed overlay, slides in over the top nav */}
       <div
         className="fixed top-0 left-0 h-full z-50 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
