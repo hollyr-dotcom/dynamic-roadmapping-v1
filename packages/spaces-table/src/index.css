@@ -65,10 +65,10 @@ tbody tr:last-child td { border-bottom-color: transparent; }
 .row-comment,
 .row-drag    { display: flex; visibility: hidden; pointer-events: none; }
 
-tbody tr:hover .row-number              { display: flex; color: #222428; }
-tbody tr:hover .row-dots               { display: none; }
-tbody tr:hover .row-comment,
-tbody tr:hover .row-drag               { visibility: visible; pointer-events: auto; }
+tbody tr:hover .row-number             { display: none; }
+tbody tr:hover .row-dots               { display: flex; }
+tbody tr:hover .row-comment            { visibility: visible; pointer-events: auto; }
+tbody tr:hover .row-drag               { visibility: hidden; pointer-events: none; }
 
 tbody tr.row-selected .row-number       { display: none; }
 tbody tr.row-selected .row-dots         { display: flex; }
@@ -294,12 +294,12 @@ tbody tr.row-selected td.divider-first::before {
 
 /* ── Toast slide-up / slide-down animations ──────────── */
 @keyframes toastSlideUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 @keyframes toastSlideDown {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(20px); }
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to   { opacity: 0; transform: translateX(-50%) translateY(20px); }
 }
 @keyframes bounce {
   0%, 60%, 100% { transform: translateY(0); }

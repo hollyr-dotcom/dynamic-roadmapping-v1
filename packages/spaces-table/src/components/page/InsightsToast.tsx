@@ -38,7 +38,8 @@ export function InsightsToast({ onDismiss }: InsightsToastProps) {
           className="fixed pointer-events-none"
           style={{
             bottom: 0,
-            left: 0,
+            left: '50%',
+            transform: 'translateX(-50%)',
             width: 520,
             height: 520,
             zIndex: 49,
@@ -56,7 +57,7 @@ export function InsightsToast({ onDismiss }: InsightsToastProps) {
 
       {/* Toast */}
       <div
-        className="fixed bottom-6 left-6 z-50 flex flex-col gap-2 rounded-[8px] px-4 py-4"
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 rounded-[8px] px-4 py-4"
         style={{
           width: '480px',
           backgroundColor: '#1a1b1e',
