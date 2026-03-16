@@ -436,6 +436,14 @@ export function App() {
         )}
       </div>
 
+      {/* Right sidebar backdrop */}
+      {isRightOpen && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={closeSidebar}
+        />
+      )}
+
       {/* Right sidebar — fixed overlay, slides in over the top nav */}
       <div
         className="fixed top-0 right-0 h-full z-50 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
