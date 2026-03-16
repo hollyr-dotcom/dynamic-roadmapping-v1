@@ -64,8 +64,8 @@ const ROADMAP_KANBAN_COLUMNS: Priority[] = ['now', 'next', 'later']
 
 export function App() {
   const [scrollFade, setScrollFade] = useState(0)
-  const [view, setView] = useState<'home' | 'app'>('app')
-  const [showInsightsModal, setShowInsightsModal] = useState(true)
+  const [view, setView] = useState<'home' | 'app'>('home')
+  const [showInsightsModal, setShowInsightsModal] = useState(false)
   const [showInsightsToast, setShowInsightsToast] = useState(false)
   const [activePage, setActivePage] = useState<PageId>('backlog')
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
@@ -357,7 +357,7 @@ export function App() {
   const viewData = activeTab === 'done' ? pageData.filter(r => r.status === 'done') : pageData
 
   if (view === 'home') {
-    return <HomePage onOpenApp={() => { setView('app'); setShowInsightsModal(true) }} />
+    return <HomePage onOpenApp={() => { setView('app'); setActivePage('backlog'); setActiveTab('all-items'); setShowInsightsModal(true) }} />
   }
 
   return (
