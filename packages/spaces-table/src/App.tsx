@@ -179,10 +179,11 @@ export function App() {
         e.preventDefault()
         toggleSidebar('ai-sidekick')
       }
-      if (meta && e.key === ',') {
-        e.preventDefault()
-        toggleSidebar('view-settings')
-      }
+      // View settings sidebar disabled
+      // if (meta && e.key === ',') {
+      //   e.preventDefault()
+      //   toggleSidebar('view-settings')
+      // }
       if (e.key === '+' && !meta && !isEditing && !canvasOpen) {
         e.preventDefault()
         setNewColumnMenuOpen(true)

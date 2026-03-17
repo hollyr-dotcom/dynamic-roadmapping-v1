@@ -62,18 +62,15 @@ tbody tr:last-child td { border-bottom-color: transparent; }
 /* ── Row controls visibility ──────────────────────────── */
 .row-number  { display: flex; color: #AEB2C0; }
 .row-dots    { display: none; }
-.row-comment,
-.row-drag    { display: flex; visibility: hidden; pointer-events: none; }
+.row-comment { display: flex; visibility: hidden; pointer-events: none; }
 
 tbody tr:hover .row-number             { display: none; }
 tbody tr:hover .row-dots               { display: flex; }
 tbody tr:hover .row-comment            { visibility: visible; pointer-events: auto; }
-tbody tr:hover .row-drag               { visibility: hidden; pointer-events: none; }
 
 tbody tr.row-selected .row-number       { display: none; }
 tbody tr.row-selected .row-dots         { display: flex; }
-tbody tr.row-selected .row-comment,
-tbody tr.row-selected .row-drag         { visibility: hidden; pointer-events: none; }
+tbody tr.row-selected .row-comment      { visibility: hidden; pointer-events: none; }
 
 /* ── Active row shared (hover + selected) ─────────────── */
 tbody tr:hover td {
@@ -121,28 +118,6 @@ tbody tr.row-selected td.table-fill::after,
 tbody tr:has(+ tr:hover) td.table-fill::after,
 tbody tr:has(+ tr.row-selected) td.table-fill::after { background: transparent; }
 
-/* Hover — rounded right edge matching divider-first's left edge */
-tbody tr:hover td.table-fill { background: transparent; }
-tbody tr:hover td.table-fill::before {
-  content: '';
-  position: absolute;
-  top: 0; bottom: 0;
-  left: 0; right: 56px;
-  background: #FAFBFC;
-  border-radius: 0 8px 8px 0;
-  z-index: -1;
-}
-/* Selected — same shape, selection colour */
-tbody tr.row-selected td.table-fill { background: transparent; }
-tbody tr.row-selected td.table-fill::before {
-  content: '';
-  position: absolute;
-  top: 0; bottom: 0;
-  left: 0; right: 56px;
-  background: #F1F2F5;
-  border-radius: 0 8px 8px 0;
-  z-index: -1;
-}
 
 /* ── Hover background ─────────────────────────────────── */
 tbody tr:hover td { background-color: #F1F2F5; }
@@ -151,11 +126,14 @@ tbody tr:hover td.divider-first::before {
   content: '';
   position: absolute;
   top: 0; bottom: 0;
-  left: 32px; right: 0;
+  left: 56px; right: 0;
   background: #F1F2F5;
   border-radius: 8px 0 0 8px;
   z-index: -1;
 }
+/* Right end cap — round the last data cell before table-fill */
+tbody tr:hover td.table-fill { background: transparent; }
+tbody tr:hover td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
 
 /* ── Selected background (overrides hover) ────────────── */
 tbody tr.row-selected { position: relative; z-index: 30; }
@@ -165,11 +143,13 @@ tbody tr.row-selected td.divider-first::before {
   content: '';
   position: absolute;
   top: 0; bottom: 0;
-  left: 32px; right: 0;
+  left: 56px; right: 0;
   background: #F1F2F5;
   border-radius: 8px 0 0 8px;
   z-index: -1;
 }
+tbody tr.row-selected td.table-fill { background: transparent; }
+tbody tr.row-selected td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
 
 
 /* ── Sidebar content stagger ─────────────────────────── */

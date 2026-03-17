@@ -303,6 +303,7 @@ docs/plans/
 - Canvas widget polish — resize widget, widget-to-widget navigation (clicking sync indicator scrolls/pans to linked widget)
 
 ### Recently completed
+- **Visual fixes** (`improvement-visual-fixes`) — tightened spacing between drag handle and comment button on table rows; row hover/selection highlight end caps aligned with divider insets (left cap starts at 56px, right cap rounds last data cell via `:has(+ td.table-fill)`); removed unused `row-drag` element and CSS; narrowed description column to 320px (⅔ title width) with ellipsis truncation; breadcrumb nudged 2px right; view settings sidebar disabled; title cells and kanban card titles changed from semibold to regular weight; kanban card titles wrap up to 3 lines before truncating
 - **Sticky headers & scroll improvements** (`improvement-sticky-headers`) — table header sticks below tabs; kanban column headers stick with gap coverage; timeline date headers stick below tabs; DatabaseTitle fades instead of scaling; kanban columns stretch to equal height; horizontal scroll only moves content (tabs/title pinned via `sticky left-0`); timeline integrated into main page scroll with `parentScrollRef` for drag-to-pan; space menu button click propagation fixed
 - **Brownfield creation flow** — see above
 - **Sync indicator animation fix** — the sync indicator icon button was jumping vertically when the pulse animation fired. Root cause: `translate-y-1` (Tailwind transform) was overridden by the `sync-in` keyframe animation's `transform: scale(...)`, and when `sync-pulse` replaced the animation property, the translateY snapped back. Fix: (1) swapped `translate-y-1` → `mt-[6px]` so vertical offset uses margin instead of transform, (2) separated entrance and pulse onto different elements (outer div for `sync-in`, inner span for `sync-pulse`) so removing the pulse class doesn't re-trigger the entrance animation, (3) extended `syncShimmering` timeout from 3.5s → 4.8s so all 3 pulse iterations complete (500ms delay + 3 × 1.4s = 4.7s)
@@ -311,7 +312,6 @@ docs/plans/
 - **Tab reorder on tab bar** — inline drag on the tab bar itself still blocked by Radix `Tabs.Trigger` intercepting pointer events; reordering is now available via the overflow menu's drag-to-reorder; visual reorder on the bar itself is a future enhancement. See `docs/plans/2026-03-06-tab-drag-reorder-design.md` for decision log.
 
 ### Backlog — Table Interactions
-- **Row hover corner radius** — left and right corners of hover/selected highlight render at visually different radii despite identical CSS values (8px); likely a browser compositing issue with separate `::before` pseudo-elements on `divider-first` vs `table-fill` cells; tried unifying to `border-radius: 8px` on both and a single `<tr>::before` approach (didn't work — `<tr>` positioned box doesn't span full table width); needs a different strategy
 - **Column resizing** — drag column edges to resize, persist widths
 - **Inline cell editing** — click to edit text/number/currency cells in place
 - **Sort interaction** — click column headers to sort ascending/descending with indicator arrow
