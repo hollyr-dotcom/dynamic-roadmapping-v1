@@ -1,7 +1,6 @@
 import type { FieldDefinition } from './types.ts'
 
 export const fields: FieldDefinition[] = [
-  { id: "jiraKey",     label: "ID",           type: "jiraId" },
   { id: "title",       label: "Title",        type: "text",     isPrimary: true },
   { id: "description", label: "Description",  type: "text"     },
   { id: "mentions",    label: "Mentions",      type: "number"   },
