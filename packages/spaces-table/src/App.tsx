@@ -100,6 +100,16 @@ export function App() {
   const [updatedRows, setUpdatedRows] = useState<Set<string>>(new Set())
   const [insightsAllDots, setInsightsAllDots] = useState(false)
   const [syncShimmering, setSyncShimmering] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
+  const [pendingToast, setPendingToast] = useState(false)
+
+  const handleImportComplete = useCallback(() => {
+    setIsImporting(false)
+    if (pendingToast) {
+      setPendingToast(false)
+      setShowInsightsToast(true)
+    }
+  }, [pendingToast])
 
   const toggleSidebar = useCallback((id: SidebarId) =>
     setActiveSidebar((prev) => (prev === id ? null : id)), [])
@@ -368,6 +378,7 @@ export function App() {
       setActiveTab('all-items')
       if (importSource) {
         setHasData(false)
+        setPendingToast(true)
         setTimeout(() => setPendingImport(importSource), 1500)
       } else {
         setTimeout(() => setShowInsightsToast(true), 600)
@@ -413,7 +424,7 @@ export function App() {
 
           {/* Type-based view renderer */}
           {activeTabConfig?.type === 'table' && (
-              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail') }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} />
+              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail') }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} />
           )}
           {activeTabConfig?.type === 'kanban' && (
             <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} />
@@ -573,7 +584,7 @@ export function App() {
       {/* Jira import modal */}
       {pendingImport === 'jira' && (
         <JiraImportModal
-          onImport={() => { setPendingImport(null); setHasData(true); setTimeout(() => setShowInsightsToast(true), 600) }}
+          onImport={() => { setPendingImport(null); setHasData(true); setIsImporting(true) }}
           onClose={() => { setPendingImport(null) }}
         />
       )}

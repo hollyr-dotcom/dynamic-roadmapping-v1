@@ -4,6 +4,19 @@ import { Button, IconPlus } from '@mirohq/design-system'
 import { TableHeader } from './TableHeader'
 import { TableRow } from './TableRow'
 
+const IMPORT_INITIAL_DELAY = 400
+const IMPORT_ROW_DURATION = 300
+const IMPORT_TOAST_PAUSE = 600
+
+// Compute cumulative delay for row index using ease-in curve
+// First rows arrive slowly, later rows come in rapid-fire
+function getRowDelay(idx: number, total: number): number {
+  const t = total <= 1 ? 1 : idx / (total - 1)
+  const eased = t * t * t // cubic ease-in — slow start, fast finish
+  const totalCascade = 1800 // total ms spread across all rows
+  return IMPORT_INITIAL_DELAY + eased * totalCascade
+}
+
 interface DataTableProps {
   data: SpaceRow[]
   fields: FieldDefinition[]
@@ -12,9 +25,11 @@ interface DataTableProps {
   updatedRows?: Set<string>
   insightsAllDots?: boolean
   onTableInteract?: () => void
+  isImporting?: boolean
+  onImportComplete?: () => void
 }
 
-export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract }: DataTableProps) {
+export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete }: DataTableProps) {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const tableRef = useRef<HTMLDivElement>(null)
 
@@ -29,6 +44,15 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [selectedRowId])
+
+  // Fire completion callback after all rows have animated in
+  useEffect(() => {
+    if (!isImporting || !onImportComplete || data.length === 0) return
+    const lastRowDelay = getRowDelay(data.length - 1, data.length)
+    const totalTime = lastRowDelay + IMPORT_ROW_DURATION + IMPORT_TOAST_PAUSE
+    const timer = setTimeout(onImportComplete, totalTime)
+    return () => clearTimeout(timer)
+  }, [isImporting, onImportComplete, data.length])
 
   const handleDotsClick = useCallback((rowId: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -55,9 +79,9 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
   }
 
   return (
-    <div ref={tableRef} className="w-full shrink-0 item-enter" style={{ animationDelay: '80ms' }} onClick={insightsAllDots ? onTableInteract : undefined}>
+    <div ref={tableRef} className={`w-full shrink-0 ${!isImporting ? 'item-enter' : ''}`} style={!isImporting ? { animationDelay: '80ms' } : undefined} onClick={insightsAllDots ? onTableInteract : undefined}>
       <table className="border-separate" style={{ borderSpacing: 0, minWidth: '100%' }}>
-        <TableHeader fields={fields} />
+        <TableHeader fields={fields} className={isImporting ? 'import-header-enter' : undefined} />
         <tbody>
           {data.map((row, idx) => (
             <TableRow
@@ -71,6 +95,7 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
               onDeselect={() => setSelectedRowId(null)}
               onRowClick={onRowClick}
               onCompanyClick={onCompanyClick}
+              importDelay={isImporting ? getRowDelay(idx, data.length) : undefined}
             />
           ))}
         </tbody>

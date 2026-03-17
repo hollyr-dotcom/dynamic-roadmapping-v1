@@ -5,11 +5,12 @@ const GAP_COVER = '0 -12px 0 0 white'
 
 interface TableHeaderProps {
   fields: FieldDefinition[]
+  className?: string
 }
 
-export function TableHeader({ fields }: TableHeaderProps) {
+export function TableHeader({ fields, className }: TableHeaderProps) {
   return (
-    <thead>
+    <thead className={className}>
       <tr>
         <th
           className="pl-14 w-0 sticky z-10 bg-white"

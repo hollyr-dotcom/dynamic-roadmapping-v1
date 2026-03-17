@@ -25,8 +25,8 @@ export function InsightsToast({ onDismiss }: InsightsToastProps) {
   }
 
   useEffect(() => {
-    const dismissTimer = setTimeout(dismiss, 2000)
-    const confettiTimer = setTimeout(() => setShowConfetti(false), 2200)
+    const dismissTimer = setTimeout(dismiss, 4000)
+    const confettiTimer = setTimeout(() => setShowConfetti(false), 4200)
     return () => { clearTimeout(dismissTimer); clearTimeout(confettiTimer) }
   }, [])
 
