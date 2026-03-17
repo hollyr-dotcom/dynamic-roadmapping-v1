@@ -162,6 +162,20 @@ tbody tr.row-selected td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
   animation: item-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* ── Row-by-row import entrance ──────────────────────── */
+@keyframes row-import-enter {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+@keyframes row-arrival-wash {
+  0%   { background-color: rgba(66, 98, 255, 0.04); }
+  100% { background-color: transparent; }
+}
+.import-header-enter {
+  opacity: 0;
+  animation: item-enter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* ── AI icon gentle pulse ────────────────────────────── */
 @keyframes sparks-pulse {
   0%, 100% { transform: scale(1); }
