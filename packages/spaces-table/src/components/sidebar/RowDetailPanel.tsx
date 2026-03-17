@@ -69,7 +69,7 @@ const PRIORITY_CHIP: Record<string, { bg: string; color: string }> = {
   icebox: { bg: '#dad8d8', color: '#222428' },
 }
 
-const TABS = ['Details', 'Insights', 'Comments', 'Updates']
+const TABS = ['Details', 'Insights', 'Comments']
 
 const FEEDBACK_FILTER_SUB_OPTIONS: Record<string, string[]> = {
   'Company':   ['Spotify', 'Stripe', 'Linear', 'Atlassian', 'Notion', 'Shopify', 'Dropbox', 'Google', 'Apple'],

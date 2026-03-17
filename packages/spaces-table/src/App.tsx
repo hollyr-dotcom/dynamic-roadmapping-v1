@@ -364,6 +364,7 @@ export function App() {
       setView('app')
       setActivePage('backlog')
       setActiveTab('all-items')
+      setShowInsightsToast(true)
       if (importSource) {
         setHasData(false)
         setTimeout(() => setPendingImport(importSource), 1500)
