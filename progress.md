@@ -108,8 +108,8 @@ Full-screen space with **two pages** (Backlog, Roadmap) and **dynamic views** ac
 | File | Description |
 |------|-------------|
 | `index.ts` | Barrel export — single public surface (`KanbanBoard`) |
-| `KanbanBoard.tsx` | Accepts `data`, `fields`, and optional `columns` (Priority subset) props; groups data by priority, renders columns in horizontal `flex items-start` layout with 56px left padding, 40px trailing spacer; colour config per priority; staggered `item-enter` animation on mount (60ms increments per column) |
-| `KanbanColumn.tsx` | 340px-wide column; two-layer sticky header (`top-16`, z-10) — outer `bg-white` wrapper masks cards area behind rounded corners, inner div has `rounded-t-lg` + column bg colour; cards area has own bg + `rounded-b-lg`; custom Canvas Tag header (28px, 6px radius) with item count + add/options icon buttons on `group` hover; custom `ColumnIconButton` uses `color-mix` for tinted hover/active states |
+| `KanbanBoard.tsx` | Accepts `data`, `fields`, and optional `columns` (Priority subset) props; groups data by priority, renders columns in horizontal `flex items-stretch` layout with 56px left padding, 40px trailing spacer; columns stretch to match tallest column height; colour config per priority; staggered `item-enter` animation on mount (60ms increments per column) |
+| `KanbanColumn.tsx` | 340px-wide column (`h-full` to fill stretched parent); two-layer sticky header (`top: 64px` with `paddingTop: 12px`, z-10) — outer `bg-white` wrapper masks cards area behind rounded corners and covers gap below tabs, inner div has `rounded-t-lg` + column bg colour; cards area has own bg + `rounded-b-lg` + `flex-1` to fill remaining height; custom Canvas Tag header (28px, 6px radius) with item count + add/options icon buttons on `group` hover; custom `ColumnIconButton` uses `color-mix` for tinted hover/active states |
 | `KanbanCard.tsx` | White card with coloured border (1.5px), 8px radius, subtle shadow; title text (14px Noto Sans) + field tags (flex-wrap, 8px gap); inline `FieldTag` sub-component formats values per field type |
 
 ### Canvas Module (`src/components/canvas/`)
@@ -126,7 +126,7 @@ Full-screen space with **two pages** (Backlog, Roadmap) and **dynamic views** ac
 | File | Description |
 |------|-------------|
 | `index.ts` | Barrel export — single public surface (`TimelinePlaceholder`) |
-| `TimelinePlaceholder.tsx` | Centered empty state — icon, "Timeline view" heading (Roobert), description (Noto Sans), `item-enter` animation |
+| `TimelinePlaceholder.tsx` | Interactive Gantt-style timeline — 14 roadmap items as draggable bars (move, resize-left, resize-right) with avatar + title + optional Jira icon; March 1 – April 15 date range; sticky month header (`top: 64px`) and day numbers (`top: 108px`) below tabs toolbar with gap-cover box-shadow; drag-to-pan via `parentScrollRef` (scrolls main page container); drag-to-reorder rows vertically with swap preview; dragging milestone diamond follows cursor column; date tooltip while dragging; alternating weekend column backgrounds; grid fills viewport height (`min-height: calc(100vh - 64px)` on outer, `flex: 1` on grid); `item-enter` animation |
 
 ### Pages & Views
 
@@ -136,7 +136,7 @@ Full-screen space with **two pages** (Backlog, Roadmap) and **dynamic views** ac
 - **Kanban** tab — KanbanBoard with all 5 priority columns (Triage/Now/Next/Later/Icebox)
 
 #### Roadmap Page
-- **Roadmap** tab — TimelinePlaceholder (coming soon)
+- **Roadmap** tab — Interactive timeline with 14 draggable bars, sticky date headers, drag-to-pan and drag-to-reorder
 - **Kanban** tab — KanbanBoard with 3 priority columns (Now/Next/Later), roadmap data with status tags on cards
 - **Done** tab — DataTable filtered to `status === 'done'`, 5 columns (Title, Status, Customers, Est. revenue, Companies)
 
@@ -178,9 +178,11 @@ Full-screen space with **two pages** (Backlog, Roadmap) and **dynamic views** ac
 
 ### Scroll & Sticky Behaviour
 
-- **Two-zone layout** — TopNavBar is fixed (`shrink-0`, outside scroll area); everything else (title, tabs, table/kanban) lives in a single scroll area (`flex-1 min-h-0 overflow-auto flex flex-col`)
-- **Horizontal scroll isolation** — only the table/kanban scrolls horizontally; DatabaseTitle and ViewTabsToolbar use `sticky left-0` to stay pinned while content scrolls sideways
-- **Vertical sticky layers within scroll area:** tabs toolbar (top-0, z-20) → table header (top-16, z-10) → kanban column headers (top-16, z-10)
+- **Two-zone layout** — TopNavBar is fixed (`shrink-0`, outside scroll area); everything else (title, tabs, table/kanban/timeline) lives in a single scroll area (`flex-1 min-h-0 overflow-auto flex flex-col`)
+- **Horizontal scroll isolation** — main scroll container uses `overflow: auto` for both axes; DatabaseTitle and ViewTabsToolbar use `sticky left-0` to stay pinned while table/kanban/timeline content scrolls horizontally
+- **Vertical sticky layers within scroll area:** tabs toolbar wrapper (`sticky top-0 left-0 z-20`) → table header `<th>` cells (`sticky top-[64px] z-10`) → kanban column headers (`sticky top-[64px] z-10 with 12px paddingTop`) → timeline month header (`sticky top-[64px] z-10`) → timeline day numbers (`sticky top-[108px] z-10`)
+- **Gap coverage** — table header uses `box-shadow: 0 -12px 0 0 white` to cover the gap between tabs and header; kanban column headers use `top: 64px` with `paddingTop: 12px` on a white bg wrapper to mask cards scrolling behind; timeline month header uses the same box-shadow technique
+- **Database title fade** — title stays at fixed 48px font size and fades to 0% opacity on scroll (`opacity: 1 - scrollFade`), replacing the previous font-size-shrink approach
 - **Fixed column widths** — Title: 480px, data columns: 208px; table uses `min-width: 100%` with a trailing fill column to extend row dividers and hover highlights to the viewport edge
 - **Scroll-linked fade** — App `onScroll` handler computes `scrollFade` (0→1) from `scrollTop`; title opacity = `1 - scrollFade`, nav border opacity = `scrollFade`; fade starts at 10px, completes by 35px; breadcrumb fades in on scroll even when space menu is open (`opacity: isMenuOpen ? scrollFade : 1`)
 - **Page switch scroll reset** — `switchPage()` resets `scrollTop` and `scrollFade` to 0 via scroll container ref
@@ -253,7 +255,7 @@ packages/
     src/components/ (SidePanel, AiBar, FilterPage, SectionHeader, SettingCell, FieldRow)
     src/lib/filterParser.ts, filterParser.test.ts
   spaces-table/
-    src/components/page/ (TopNavBar, DatabaseTitle, ViewTabsToolbar)
+    src/components/page/ (TopNavBar, DatabaseTitle, ViewTabsToolbar, JiraImportModal)
     src/components/sidebar/ (SidebarShell, SpaceMenu, AiSidekickPanel, SidePanel, AiBar, FilterPage, SectionHeader, SettingCell, FieldRow)
     src/components/table/ (index, DataTable, TableHeader, TableRow, CellRenderer)
     src/components/table/cells/ (TextCell, NumberCell, CurrencyCell, AvatarStackCell, StatusCell)
@@ -272,23 +274,49 @@ docs/plans/
 
 ## Next Steps
 
-### Immediate
+### Immediate — Brownfield creation flow (`feature-brownfield-creation`)
+
+**Done:**
+- Replaced Home sidebar "Spaces" `+` dropdown with MDS `DropdownMenu` (EPD WoW v2.2, Roadmap, Blueprint, Blank items; proper separators, `alignOffset={-16}`, active state on button, instant MDS Tooltip)
+- Combined old two-step modal ("Create Space" + "Set up your Roadmap") into single "Name your roadmap space" modal
+- MDS `Input` at `size="x-large"`, pre-filled "Project Galaxy"
+- **Redesigned pill tags** (Figma review) — MDS icons (`IconTable`, `IconFileSpreadsheet`, Jira logo) + MDS `Checkbox` per pill; fully rounded checkboxes (CSS override on Stitches `borderRadius`); white bg in all states, border-only interaction (off: `#e9eaef` → hover `#d5d8de` → pressed `#c2c5cc`; on: `#4262FF` → hover `#3350e0` → pressed `#2b44c7`); 48px pill height, 1.5px border
+- **Mutual exclusion on import pills** — only one import source (Jira/Tables/CSV) can be selected at a time; Insights pill remains independent
+- **Section labels updated** — "Import records from" / "Enrich records with" (16px Noto Sans semibold)
+- **Insights pill pre-selected** by default; resets to selected on modal close
+- **Dynamic primary button** — "Create and import" when any import pill is checked, "Create" when none; "Cancel" button (was "Skip for now") closes modal without opening app
+- **Close button** — MDS `IconButton` large with `IconCross`, positioned top-right
+- **Buttons in content flow** — removed absolute positioning, buttons sit naturally in flex column
+- **End-to-end import journey** — "Create and import" opens app with empty table state, then Jira import modal appears after 1.5s delay with smooth entrance animation (backdrop fade + modal slide-up/scale from 97%, expo-out easing)
+- **Empty table state** — centered blank state with table icon, "No records yet" heading, "Add your first record to get started" subtext, MDS "Add record" button with plus icon
+- **JiraImportModal extracted** to standalone component (`JiraImportModal.tsx`) — renders as overlay in App.tsx; "Import" loads data and dismisses; close/backdrop dismisses without loading data
+- **Disabled auto-opens** — AI Sidekick sidebar no longer opens on app load; Insights modal removed from app open flow; share step skipped in import journey
+
+**Next:**
+- Polish Jira import modal transitions and content
+- Design and build import step modals for Tables and CSV sources
+- End-to-end test: dropdown → modal → empty state → import → populated table
+- Wire "Enrich data" toggle to downstream behaviour
+
+### Other immediate
 - **Sync mode communication** — design how read-only vs two-way sync modes are communicated to users on canvas widgets (sync indicator, UI affordances, state differences)
 - Canvas widget polish — resize widget, widget-to-widget navigation (clicking sync indicator scrolls/pans to linked widget)
 
-### Recently Completed
+### Recently completed
+- **Visual fixes** (`improvement-visual-fixes`) — tightened spacing between drag handle and comment button on table rows; row hover/selection highlight end caps aligned with divider insets (left cap starts at 56px, right cap rounds last data cell via `:has(+ td.table-fill)`); removed unused `row-drag` element and CSS; narrowed description column to 320px (⅔ title width) with ellipsis truncation; breadcrumb nudged 2px right; view settings sidebar disabled; title cells and kanban card titles changed from semibold to regular weight; kanban card titles wrap up to 3 lines before truncating
+- **Sticky headers & scroll improvements** (`improvement-sticky-headers`) — table header sticks below tabs; kanban column headers stick with gap coverage; timeline date headers stick below tabs; DatabaseTitle fades instead of scaling; kanban columns stretch to equal height; horizontal scroll only moves content (tabs/title pinned via `sticky left-0`); timeline integrated into main page scroll with `parentScrollRef` for drag-to-pan; space menu button click propagation fixed
+- **Brownfield creation flow** — see above
 - **Sync indicator animation fix** — the sync indicator icon button was jumping vertically when the pulse animation fired. Root cause: `translate-y-1` (Tailwind transform) was overridden by the `sync-in` keyframe animation's `transform: scale(...)`, and when `sync-pulse` replaced the animation property, the translateY snapped back. Fix: (1) swapped `translate-y-1` → `mt-[6px]` so vertical offset uses margin instead of transform, (2) separated entrance and pulse onto different elements (outer div for `sync-in`, inner span for `sync-pulse`) so removing the pulse class doesn't re-trigger the entrance animation, (3) extended `syncShimmering` timeout from 3.5s → 4.8s so all 3 pulse iterations complete (500ms delay + 3 × 1.4s = 4.7s)
 
 ### Backlog — Tab Bar
 - **Tab reorder on tab bar** — inline drag on the tab bar itself still blocked by Radix `Tabs.Trigger` intercepting pointer events; reordering is now available via the overflow menu's drag-to-reorder; visual reorder on the bar itself is a future enhancement. See `docs/plans/2026-03-06-tab-drag-reorder-design.md` for decision log.
 
 ### Backlog — Table Interactions
-- **Row hover corner radius** — left and right corners of hover/selected highlight render at visually different radii despite identical CSS values (8px); likely a browser compositing issue with separate `::before` pseudo-elements on `divider-first` vs `table-fill` cells; tried unifying to `border-radius: 8px` on both and a single `<tr>::before` approach (didn't work — `<tr>` positioned box doesn't span full table width); needs a different strategy
 - **Column resizing** — drag column edges to resize, persist widths
 - **Inline cell editing** — click to edit text/number/currency cells in place
 - **Sort interaction** — click column headers to sort ascending/descending with indicator arrow
 - **Filter integration** — connect sidebar filter panel to table data (shared filter state)
-- **Empty state** — design for zero-row / no-results scenarios
+- ~~**Empty state**~~ — done (blank state in DataTable with "No records yet" message + Add record CTA)
 - **Row reordering** — drag handle actually reorders rows with animation
 - **Keyboard navigation** — arrow keys to move between cells, Enter to edit
 

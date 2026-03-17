@@ -4,10 +4,10 @@ interface TextCellProps {
   isUpdated?: boolean
 }
 
-export function TextCell({ value, isPrimary }: TextCellProps) {
+export function TextCell({ value, isPrimary: _isPrimary }: TextCellProps) {
   return (
     <span
-      className={`truncate block font-body text-[#222428] ${isPrimary ? 'font-bold' : 'font-normal'}`}
+      className={`truncate block font-body text-[#222428] font-normal`}
       style={{ fontSize: '14px' }}
     >
       {value}

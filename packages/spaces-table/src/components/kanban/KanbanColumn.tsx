@@ -31,13 +31,13 @@ function ColumnIconButton({ label, color, children }: { label: string; color: st
 export function KanbanColumn({ priority: _priority, config, rows, fields, onRowClick }: KanbanColumnProps) {
   return (
     <div
-      className="group flex flex-col"
+      className="group flex flex-col h-full"
       style={{ width: 340 }}
     >
       {/* Column header — sticky below tabs toolbar.
            Outer wrapper is sticky with white bg to mask the cards area
            behind the inner div's rounded corners when scrolled. */}
-      <div className="sticky top-16 z-10 bg-white">
+      <div className="sticky z-10 bg-white" style={{ top: 64, paddingTop: 12 }}>
         <div
           className="flex items-center justify-between p-4 rounded-t-lg"
           style={{ backgroundColor: config.columnBg }}
@@ -75,7 +75,7 @@ export function KanbanColumn({ priority: _priority, config, rows, fields, onRowC
 
       {/* Cards area */}
       <div
-        className="flex flex-col gap-4 px-4 pb-6 rounded-b-lg"
+        className="flex flex-col gap-4 px-4 pb-6 rounded-b-lg flex-1"
         style={{ backgroundColor: config.columnBg }}
       >
         {rows.map(row => (

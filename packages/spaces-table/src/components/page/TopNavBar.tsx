@@ -37,6 +37,7 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
         <div
           className="transition-opacity duration-200"
           style={{ opacity: isMenuOpen ? 0 : 1, pointerEvents: isMenuOpen ? 'none' : 'auto' }}
+          onClick={(e) => e.stopPropagation()}
         >
           <IconButton aria-label="Menu" variant="ghost" size="large" onPress={onToggleMenu}>
             <IconLinesThreeHorizontal />
@@ -45,7 +46,7 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
 
         <div
           className="flex items-center transition-opacity duration-200"
-          style={{ gap: '2px', opacity: isMenuOpen ? scrollFade : 1 }}
+          style={{ gap: '2px', opacity: isMenuOpen ? scrollFade : 1, marginLeft: '2px' }}
         >
           <span
             className="font-heading font-semibold text-[#222428] leading-none select-none"

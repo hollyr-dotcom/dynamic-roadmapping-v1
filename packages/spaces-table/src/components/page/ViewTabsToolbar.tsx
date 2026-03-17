@@ -584,7 +584,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
               aria-label="View settings"
               variant="ghost"
               size="medium"
-              onPress={variant !== 'widget' ? () => onToggleSidebar('view-settings') : undefined}
+              onPress={undefined}
               css={activeSidebar === 'view-settings' && variant !== 'widget' ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}
             >
               <IconSlidersY />

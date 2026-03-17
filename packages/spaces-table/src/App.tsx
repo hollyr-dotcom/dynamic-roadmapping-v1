@@ -10,6 +10,7 @@ import { TimelinePlaceholder } from './components/timeline'
 import { SidebarShell } from './components/sidebar/SidebarShell'
 import { HomePage } from './components/page/HomePage'
 import { InsightsModal } from './components/page/InsightsModal'
+import { JiraImportModal } from './components/page/JiraImportModal'
 import { InsightsToast } from './components/page/InsightsToast'
 import { SpaceMenu } from './components/sidebar/SpaceMenu'
 import { InsightsChatPanel } from './components/sidebar/InsightsChatPanel'
@@ -68,7 +69,9 @@ export function App() {
   const [showInsightsToast, setShowInsightsToast] = useState(false)
   const [activePage, setActivePage] = useState<PageId>('backlog')
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
-  const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>('ai-sidekick')
+  const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
+  const [pendingImport, setPendingImport] = useState<'jira' | 'miro' | 'csv' | null>(null)
+  const [hasData, setHasData] = useState(true)
   const [activeTab, setActiveTab] = useState('all-items')
   const [pageTabs, setPageTabs] = useState<Record<PageId, TabConfig[]>>({
     backlog: PAGE_CONFIGS.backlog.tabs,
@@ -176,10 +179,11 @@ export function App() {
         e.preventDefault()
         toggleSidebar('ai-sidekick')
       }
-      if (meta && e.key === ',') {
-        e.preventDefault()
-        toggleSidebar('view-settings')
-      }
+      // View settings sidebar disabled
+      // if (meta && e.key === ',') {
+      //   e.preventDefault()
+      //   toggleSidebar('view-settings')
+      // }
       if (e.key === '+' && !meta && !isEditing && !canvasOpen) {
         e.preventDefault()
         setNewColumnMenuOpen(true)
@@ -351,12 +355,20 @@ export function App() {
   // Dynamic view rendering
   const currentTabs = pageTabs[activePage]
   const activeTabConfig = currentTabs.find(t => t.id === activeTab)
-  const pageData = activePage === 'backlog' ? sampleData : roadmapData
+  const pageData = hasData ? (activePage === 'backlog' ? sampleData : roadmapData) : []
   const pageFields = activePage === 'backlog' ? fields : roadmapFields
   const viewData = activeTab === 'done' ? pageData.filter(r => r.status === 'done') : pageData
 
   if (view === 'home') {
-    return <HomePage onOpenApp={() => { setView('app'); setActivePage('backlog'); setActiveTab('all-items'); setShowInsightsModal(true) }} />
+    return <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv') => {
+      setView('app')
+      setActivePage('backlog')
+      setActiveTab('all-items')
+      if (importSource) {
+        setHasData(false)
+        setTimeout(() => setPendingImport(importSource), 1500)
+      }
+    }} />
   }
 
   return (
@@ -386,25 +398,23 @@ export function App() {
           />
         </div>
         {/* Scroll area — vertical + horizontal, table header sticks below toolbar */}
-        <div ref={scrollRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden page-scroll flex flex-col">
-          <div onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
+        <div ref={scrollRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-auto page-scroll flex flex-col">
+          <div className="sticky left-0" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
             <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} />
           </div>
-          <div className="sticky top-0 z-20" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
+          <div className="sticky top-0 left-0 z-20" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
             <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} />
           </div>
 
           {/* Type-based view renderer */}
           {activeTabConfig?.type === 'table' && (
-            <div className="overflow-x-auto page-scroll">
               <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail') }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} />
-            </div>
           )}
           {activeTabConfig?.type === 'kanban' && (
             <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} />
           )}
           {activeTabConfig?.type === 'timeline' && (
-            <TimelinePlaceholder key={activeTab} onRowClick={(row, dates) => { setSelectedRow(row); setSelectedRowDates(dates); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onJiraRowClick={(row) => { setSelectedJiraRow(row); setJiraPanelOpen(true); setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} />
+            <TimelinePlaceholder key={activeTab} parentScrollRef={scrollRef} onRowClick={(row, dates) => { setSelectedRow(row); setSelectedRowDates(dates); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onJiraRowClick={(row) => { setSelectedJiraRow(row); setJiraPanelOpen(true); setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} />
           )}
         </div>
       </div>
@@ -551,6 +561,14 @@ export function App() {
 
       {/* Canvas floating nav panels */}
       <CanvasNavPanels isOpen={canvasOpen} databaseTitle={databaseTitle} />
+
+      {/* Jira import modal */}
+      {pendingImport === 'jira' && (
+        <JiraImportModal
+          onImport={() => { setPendingImport(null); setHasData(true) }}
+          onClose={() => { setPendingImport(null) }}
+        />
+      )}
 
       {/* Insights modal */}
       {showInsightsModal && (

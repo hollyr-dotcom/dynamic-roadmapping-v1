@@ -146,7 +146,22 @@
       "Bash(bunx tsc --noEmit --project packages/spaces-table/tsconfig.app.json)",
       "Bash(lsof -i :5174 -P -n)",
       "Bash(node -e \"const ds = require\\(''@mirohq/design-system''\\); const icons = Object.keys\\(ds\\).filter\\(k => k.startsWith\\(''Icon''\\)\\).filter\\(k => /link|clock|info|star|check|history|time|copy|pin/i.test\\(k\\)\\); console.log\\(icons.join\\(''\\\\n''\\)\\)\")",
-      "Bash(bun -e \"import * as ds from ''@mirohq/design-system''; const icons = Object.keys\\(ds\\).filter\\(k => k.startsWith\\(''Icon''\\)\\).filter\\(k => /link|clock|info|star|check|history|time|copy|pin/i.test\\(k\\)\\); console.log\\(icons.join\\(''\\\\n''\\)\\)\")"
+      "Bash(bun -e \"import * as ds from ''@mirohq/design-system''; const icons = Object.keys\\(ds\\).filter\\(k => k.startsWith\\(''Icon''\\)\\).filter\\(k => /link|clock|info|star|check|history|time|copy|pin/i.test\\(k\\)\\); console.log\\(icons.join\\(''\\\\n''\\)\\)\")",
+      "Bash(git checkout:*)",
+      "mcp__figma__get_code_connect_suggestions",
+      "Bash(grep -r \"IconFileSpreadsheet\\\\|IconFile\" /Users/mike/Developer/dynamic-roadmapping-v1/node_modules/@mirohq/design-system/ --include=*.js -l)",
+      "Bash(grep -oP Icon[A-Z][a-zA-Z]* /Users/mike/Developer/dynamic-roadmapping-v1/node_modules/@mirohq/design-system/dist/main.js)",
+      "Bash(grep -oP Icon[A-Z][a-zA-Z]+ /Users/mike/Developer/dynamic-roadmapping-v1/node_modules/@mirohq/design-system/dist/module.js)",
+      "Bash(grep -oP Icon[A-Z][a-zA-Z]+ /Users/mike/Developer/dynamic-roadmapping-v1/node_modules/@mirohq/design-system-icons/dist/module.js)",
+      "Bash(grep -ohP Icon[A-Z][a-zA-Z]+ /Users/mike/Developer/dynamic-roadmapping-v1/packages/spaces-table/src/**/*.tsx)",
+      "Bash(npx tsc:*)",
+      "Bash(find /Users/mike/Developer/dynamic-roadmapping-v1/node_modules/@mirohq/design-system -path *checkbox* -type f)",
+      "Bash(find /Users/mike/Developer/dynamic-roadmapping-v1/node_modules -path *design-system-checkbox* -name *.js -not -path */node_modules/*/node_modules/*)",
+      "Bash(find /Users/mike/Developer/dynamic-roadmapping-v1 -path *design-system-checkbox* -maxdepth 6)",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(git remote:*)",
+      "Bash(gh pr:*)"
     ]
   }
 }
