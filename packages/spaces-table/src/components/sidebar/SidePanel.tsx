@@ -56,7 +56,6 @@ const FIELD_TYPE_ICONS: Record<FieldType, MiroIcon> = {
   status:   IconTickCircle,
   person:   IconTextT,
   date:     IconTextT,
-  jiraId:   IconTextT,
 }
 
 
