@@ -381,7 +381,7 @@ export function App() {
         setPendingToast(true)
         setTimeout(() => setPendingImport(importSource), 1500)
       } else {
-        setTimeout(() => setShowInsightsToast(true), 600)
+        setShowInsightsToast(true)
       }
     }} />
   }

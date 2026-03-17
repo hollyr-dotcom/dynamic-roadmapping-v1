@@ -2,7 +2,6 @@ import { useState, useRef } from 'react'
 import { roadmapData } from '@spaces/shared'
 import type { SpaceRow } from '@spaces/shared'
 const JIRA_LOGO = 'https://www.figma.com/api/mcp/asset/f169e443-27f1-401b-994d-4f720c63f0c7'
-const JIRA_ITEMS = new Set(['r2', 'r3', 'r7', 'r8'])
 
 const DAY_WIDTH = 48
 const BAR_HEIGHT = 40
