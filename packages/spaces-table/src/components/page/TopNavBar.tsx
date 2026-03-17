@@ -37,6 +37,7 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
         <div
           className="transition-opacity duration-200"
           style={{ opacity: isMenuOpen ? 0 : 1, pointerEvents: isMenuOpen ? 'none' : 'auto' }}
+          onClick={(e) => e.stopPropagation()}
         >
           <IconButton aria-label="Menu" variant="ghost" size="large" onPress={onToggleMenu}>
             <IconLinesThreeHorizontal />
