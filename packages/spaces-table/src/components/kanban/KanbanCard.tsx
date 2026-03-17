@@ -7,8 +7,22 @@ interface KanbanCardProps {
   onRowClick?: (row: SpaceRow) => void
 }
 
+const JIRA_LOGO = 'https://www.figma.com/api/mcp/asset/f169e443-27f1-401b-994d-4f720c63f0c7'
+
 function FieldTag({ field, row }: { field: FieldDefinition; row: SpaceRow }) {
   const value = row[field.id as keyof SpaceRow]
+
+  if (field.type === 'jiraId') {
+    return (
+      <span
+        className="inline-flex items-center gap-1.5 font-body text-[#222428] rounded whitespace-nowrap min-w-0"
+        style={{ fontSize: '12px', height: '26px', padding: '4px 8px', backgroundColor: '#F1F2F5', maxWidth: '100%' }}
+      >
+        <img src={JIRA_LOGO} alt="Jira" style={{ width: 14, height: 14, flexShrink: 0, objectFit: 'contain' }} />
+        <span className="truncate">{String(value)}</span>
+      </span>
+    )
+  }
 
   let displayText: string
   switch (field.type) {
@@ -63,7 +77,7 @@ export function KanbanCard({ row, fields, borderColor, onRowClick }: KanbanCardP
         </p>
 
         <div className="flex flex-wrap gap-2 mt-2">
-          {fields.map(field => (
+          {fields.filter(field => field.id !== 'description').map(field => (
             <FieldTag key={field.id} field={field} row={row} />
           ))}
         </div>

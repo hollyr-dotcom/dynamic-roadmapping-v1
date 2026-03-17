@@ -1,16 +1,13 @@
+import { useEffect, useRef } from 'react'
 import {
   Button,
   IconButton,
   IconLinesThreeHorizontal,
   IconBell,
   IconChevronRightSmall,
+  Tooltip,
 } from '@mirohq/design-system'
 
-const avatars = [
-  { name: 'MK', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=56&h=56&fit=crop&crop=face' },
-  { name: 'AJ', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=56&h=56&fit=crop&crop=face' },
-  { name: 'TS', img: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=56&h=56&fit=crop&crop=face' },
-]
 
 interface TopNavBarProps {
   borderOpacity: number
@@ -18,9 +15,16 @@ interface TopNavBarProps {
   databaseTitle: string
   isMenuOpen: boolean
   onToggleMenu: () => void
+  showShareTooltip?: boolean
 }
 
-export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen, onToggleMenu }: TopNavBarProps) {
+export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen, onToggleMenu, showShareTooltip: _showShareTooltip = false }: TopNavBarProps) {
+  const tooltipTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => { if (tooltipTimer.current) clearTimeout(tooltipTimer.current) }
+  }, [])
+
   return (
     <div
       className="flex items-center justify-between bg-white shrink-0"
@@ -84,21 +88,42 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
 
         {/* Presence avatars */}
         <div className="flex items-center mr-1">
-          {avatars.map((a, i) => (
-            <img
-              key={a.name}
-              src={a.img}
-              alt={a.name}
-              className="w-7 h-7 rounded-full border-2 border-white object-cover"
+          {([
+            { bg: '#FFF0C2', fg: '#A07800' },
+            { bg: '#EDE0FF', fg: '#7C3AED' },
+            { bg: '#D1FAE5', fg: '#059669' },
+          ]).map(({ bg, fg }, i) => (
+            <div
+              key={i}
               style={{
-                marginLeft: i > 0 ? '-6px' : 0,
-                zIndex: avatars.length - i,
+                width: 32,
+                height: 32,
+                borderRadius: 999,
+                border: '3px solid #FFFFFF',
+                marginLeft: i > 0 ? '-8px' : 0,
+                zIndex: 3 - i,
+                position: 'relative',
+                background: bg,
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'center',
+                overflow: 'hidden',
               }}
-            />
+            >
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <circle cx="11" cy="8" r="4" fill={fg} />
+                <path d="M3 21c0-4.418 3.582-8 8-8s8 3.582 8 8" fill={fg} />
+              </svg>
+            </div>
           ))}
         </div>
 
-        <Button size="medium">Share</Button>
+        <Tooltip>
+          <Tooltip.Trigger asChild>
+            <Button size="medium">Share</Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content side="bottom">Share space with your team</Tooltip.Content>
+        </Tooltip>
       </div>
     </div>
   )

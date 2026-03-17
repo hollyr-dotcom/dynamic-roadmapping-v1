@@ -13,6 +13,7 @@ interface TableRowProps {
   onRowClick?: (row: SpaceRow) => void
   onCompanyClick?: (row: SpaceRow, name: string) => void
   isUpdated?: boolean
+  importDelay?: number
 }
 
 function RowContextMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; onDelete: () => void }) {
@@ -35,11 +36,16 @@ function RowContextMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; on
   )
 }
 
-export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDeselect, onRowClick, onCompanyClick, isUpdated }: TableRowProps) {
+export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDeselect, onRowClick, onCompanyClick, isUpdated, importDelay }: TableRowProps) {
+  const importStyle = importDelay !== undefined ? {
+    opacity: 0,
+    animation: `row-import-enter 300ms cubic-bezier(0.16, 1, 0.3, 1) ${importDelay}ms forwards, row-arrival-wash 600ms ease ${importDelay + 300}ms forwards`,
+  } : {}
+
   return (
     <tr
       className={isSelected ? 'row-selected' : ''}
-      style={{ height: '56px', cursor: onRowClick ? 'pointer' : undefined }}
+      style={{ height: '56px', cursor: onRowClick ? 'pointer' : undefined, ...importStyle }}
       onClick={() => onRowClick?.(row)}
     >
       <td className="pl-14 divider-first" style={{ fontSize: '12px', position: 'relative' }}>

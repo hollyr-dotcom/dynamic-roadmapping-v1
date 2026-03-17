@@ -5,11 +5,12 @@ const GAP_COVER = '0 -12px 0 0 white'
 
 interface TableHeaderProps {
   fields: FieldDefinition[]
+  className?: string
 }
 
-export function TableHeader({ fields }: TableHeaderProps) {
+export function TableHeader({ fields, className }: TableHeaderProps) {
   return (
-    <thead>
+    <thead className={className}>
       <tr>
         <th
           className="pl-14 w-0 sticky z-10 bg-white"
@@ -24,7 +25,8 @@ export function TableHeader({ fields }: TableHeaderProps) {
               top: STICKY_TOP,
               boxShadow: GAP_COVER,
               fontSize: '14px',
-              width: field.isPrimary ? '480px' : field.id === 'description' ? '320px' : field.type === 'avatars' ? '300px' : '208px',
+              width: field.type === 'jiraId' ? '130px' : field.isPrimary ? '480px' : field.id === 'description' ? '320px' : field.type === 'avatars' ? '300px' : '208px',
+              minWidth: field.type === 'jiraId' ? '130px' : undefined,
               paddingLeft: '12px',
               paddingRight: '20px',
             }}

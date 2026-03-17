@@ -18,12 +18,12 @@ import {
   IconRocket,
   IconTable,
   IconFileSpreadsheet,
+  Tooltip,
   IconWand,
   IconCard,
   IconEyeOpen,
   IconSquarePencil,
   Input,
-  Tooltip,
 } from '@mirohq/design-system'
 
 // Figma asset URLs (valid for 7 days)
@@ -312,26 +312,30 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 <span className="font-body font-semibold text-[16px] text-[#1a1b1e] leading-none">Import records from</span>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    { icon: <img src={imgJiraLogo} alt="Jira" className="w-5 h-5 object-contain" />, label: 'Jira', checked: importJira, toggle: () => { setImportJira(v => !v); setImportTables(false); setImportCsv(false) } },
-                    { icon: <IconTable css={{ width: 20, height: 20 }} />, label: 'Tables', checked: importTables, toggle: () => { setImportTables(v => !v); setImportJira(false); setImportCsv(false) } },
-                    { icon: <IconFileSpreadsheet css={{ width: 20, height: 20 }} />, label: 'CSV', checked: importCsv, toggle: () => { setImportCsv(v => !v); setImportJira(false); setImportTables(false) } },
-                  ].map(({ icon, label, checked, toggle }) => (
-                    <button
-                      key={label}
-                      onClick={toggle}
-                      className={`flex items-center gap-2 h-12 rounded-full transition-colors duration-150 ${
-                        checked
-                          ? 'border-[#4262FF] hover:border-[#3350e0] active:border-[#2b44c7]'
-                          : 'border-[#e9eaef] hover:border-[#d5d8de] active:border-[#c2c5cc]'
-                      } bg-white`}
-                      style={{ borderWidth: '1.5px', borderStyle: 'solid', paddingLeft: 18, paddingRight: 12 }}
-                    >
-                      <span className="shrink-0 -translate-y-px">{icon}</span>
-                      <span className="text-[16px] text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif', paddingBottom: 1 }}>{label}</span>
-                      <div className="pointer-events-none shrink-0 pill-checkbox translate-y-0.5">
-                        <Checkbox checked={checked} />
-                      </div>
-                    </button>
+                    { icon: <img src={imgJiraLogo} alt="Jira" className="w-5 h-5 object-contain" />, label: 'Jira', tooltip: 'Import issues and epics from your Jira projects', checked: importJira, toggle: () => { setImportJira(v => !v); setImportTables(false); setImportCsv(false) } },
+                    { icon: <IconTable css={{ width: 20, height: 20 }} />, label: 'Tables', tooltip: 'Pull in items from your Miro tables', checked: importTables, toggle: () => { setImportTables(v => !v); setImportJira(false); setImportCsv(false) } },
+                    { icon: <IconFileSpreadsheet css={{ width: 20, height: 20 }} />, label: 'CSV', tooltip: 'Upload a spreadsheet of work items', checked: importCsv, toggle: () => { setImportCsv(v => !v); setImportJira(false); setImportTables(false) } },
+                  ].map(({ icon, label, tooltip, checked, toggle }) => (
+                    <Tooltip key={label}>
+                      <Tooltip.Trigger asChild>
+                        <button
+                          onClick={toggle}
+                          className={`flex items-center gap-2 h-12 rounded-full transition-colors duration-150 ${
+                            checked
+                              ? 'border-[#4262FF] hover:border-[#3350e0] active:border-[#2b44c7]'
+                              : 'border-[#e9eaef] hover:border-[#d5d8de] active:border-[#c2c5cc]'
+                          } bg-white`}
+                          style={{ borderWidth: '1.5px', borderStyle: 'solid', paddingLeft: 18, paddingRight: 12 }}
+                        >
+                          <span className="shrink-0 -translate-y-px">{icon}</span>
+                          <span className="text-[16px] text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif', paddingBottom: 1 }}>{label}</span>
+                          <div className="pointer-events-none shrink-0 pill-checkbox translate-y-0.5">
+                            <Checkbox checked={checked} />
+                          </div>
+                        </button>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content side="top" sideOffset={4}>{tooltip}</Tooltip.Content>
+                    </Tooltip>
                   ))}
                 </div>
               </div>
@@ -340,23 +344,28 @@ export function HomePage({ onOpenApp }: HomePageProps) {
               <div className="flex flex-col gap-5 py-2">
                 <span className="font-body font-semibold text-[16px] text-[#1a1b1e] leading-none">Enrich records with</span>
                 <div className="flex">
-                  <button
-                    onClick={() => setEnrichInsights(v => !v)}
-                    className={`flex items-center gap-2 h-12 rounded-full transition-colors duration-150 ${
-                      enrichInsights
-                        ? 'border-[#4262FF] hover:border-[#3350e0] active:border-[#2b44c7]'
-                        : 'border-[#e9eaef] hover:border-[#d5d8de] active:border-[#c2c5cc]'
-                    } bg-white`}
-                    style={{ borderWidth: '1.5px', borderStyle: 'solid', paddingLeft: 18, paddingRight: 12 }}
-                  >
-                    <span className="shrink-0 -translate-y-px">
-                      <IconInsights css={{ width: 20, height: 20 }} />
-                    </span>
-                    <span className="text-[16px] text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif', paddingBottom: 1 }}>Insights</span>
-                    <div className="pointer-events-none shrink-0 pill-checkbox translate-y-0.5">
-                      <Checkbox checked={enrichInsights} />
-                    </div>
-                  </button>
+                  <Tooltip>
+                    <Tooltip.Trigger asChild>
+                      <button
+                        onClick={() => setEnrichInsights(v => !v)}
+                        className={`flex items-center gap-2 h-12 rounded-full transition-colors duration-150 ${
+                          enrichInsights
+                            ? 'border-[#4262FF] hover:border-[#3350e0] active:border-[#2b44c7]'
+                            : 'border-[#e9eaef] hover:border-[#d5d8de] active:border-[#c2c5cc]'
+                        } bg-white`}
+                        style={{ borderWidth: '1.5px', borderStyle: 'solid', paddingLeft: 18, paddingRight: 12 }}
+                      >
+                        <span className="shrink-0 -translate-y-px">
+                          <IconInsights css={{ width: 20, height: 20 }} />
+                        </span>
+                        <span className="text-[16px] text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif', paddingBottom: 1 }}>Insights</span>
+                        <div className="pointer-events-none shrink-0 pill-checkbox translate-y-0.5">
+                          <Checkbox checked={enrichInsights} />
+                        </div>
+                      </button>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content side="top" sideOffset={4}>Enrich items with customer feedback and signals</Tooltip.Content>
+                  </Tooltip>
                 </div>
               </div>
 
