@@ -337,7 +337,7 @@ export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClic
               />
 
               <img src={person.avatar} alt="" style={{ width: 24, height: 24, borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
-              <img src={JIRA_LOGO} alt="Jira" style={{ width: 16, height: 16, flexShrink: 0, objectFit: 'contain' }} />
+              {JIRA_ITEMS.has(row.id) && <img src={JIRA_LOGO} alt="Jira" style={{ width: 16, height: 16, flexShrink: 0, objectFit: 'contain', cursor: 'pointer' }} />}
               <span style={{ fontSize: 14, color: '#222428', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                 {row.title}
               </span>
