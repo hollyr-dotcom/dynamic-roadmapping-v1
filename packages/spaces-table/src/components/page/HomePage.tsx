@@ -1,26 +1,33 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   Button,
+  Checkbox,
+  DropdownMenu,
+  IconButton,
   IconHouse,
   IconClock,
+  IconCross,
   IconStar,
   IconInsights,
   IconRectanglePlayStack,
   IconPlus,
   IconChevronRight,
   IconChevronDown,
+  IconLayout,
   IconMagnifyingGlass,
+  IconRocket,
   IconTable,
+  IconFileSpreadsheet,
   IconWand,
   IconCard,
   IconEyeOpen,
   IconSquarePencil,
+  Input,
+  Tooltip,
 } from '@mirohq/design-system'
 
 // Figma asset URLs (valid for 7 days)
-const imgJiraIcon = 'https://www.figma.com/api/mcp/asset/e1f4830a-3679-4546-a33e-af94aa394513'
-const imgTableIcon = 'https://www.figma.com/api/mcp/asset/c15d2df2-0a45-4560-93e5-e508deef2075'
-const imgCsvIcon = 'https://www.figma.com/api/mcp/asset/17455209-cc41-48fd-9b9b-675fc46c2ae2'
+const imgJiraLogo = 'https://www.figma.com/api/mcp/asset/f169e443-27f1-401b-994d-4f720c63f0c7'
 const imgBoardIconTable = 'https://www.figma.com/api/mcp/asset/dde5c8f2-a0b4-4648-ad27-3260ba6cc12a'
 const imgLogotype = 'https://www.figma.com/api/mcp/asset/57392f00-4031-499f-ad53-d04ee453643d'
 const imgFlowchart = 'https://www.figma.com/api/mcp/asset/6ba42a08-630f-4ccc-9f62-54f93def85ef'
@@ -37,7 +44,7 @@ const imgShareAvatar = 'https://www.figma.com/api/mcp/asset/33cf113b-9e21-4dfe-8
 const imgMiroTeamLogo = 'https://www.figma.com/api/mcp/asset/c9119d54-1298-4f33-a414-9b1ce85ffd9c'
 
 interface HomePageProps {
-  onOpenApp: () => void
+  onOpenApp: (importSource?: 'jira' | 'miro' | 'csv') => void
 }
 
 const templates = [
@@ -106,11 +113,14 @@ export function HomePage({ onOpenApp }: HomePageProps) {
   const [spacesMenuOpen, setSpacesMenuOpen] = useState(false)
   const [yourSpacesExpanded, setYourSpacesExpanded] = useState(true)
   const [createSpaceModalOpen, setCreateSpaceModalOpen] = useState(false)
-  const [modalStep, setModalStep] = useState<'create' | 'setup' | 'csv' | 'share' | 'miro' | 'jira'>('create')
+  const [modalStep, setModalStep] = useState<'create' | 'csv' | 'share' | 'miro' | 'jira'>('create')
   const [jiraSelectedKeys, setJiraSelectedKeys] = useState<Set<string>>(new Set(['UR-348', 'UR-347']))
   const [modalFading, setModalFading] = useState(false)
-  const [spaceName, setSpaceName] = useState('')
-  const [roadmapChecked, setRoadmapChecked] = useState(false)
+  const [spaceName, setSpaceName] = useState('Project Galaxy')
+  const [importJira, setImportJira] = useState(false)
+  const [importTables, setImportTables] = useState(false)
+  const [importCsv, setImportCsv] = useState(false)
+  const [enrichInsights, setEnrichInsights] = useState(true)
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -178,41 +188,50 @@ export function HomePage({ onOpenApp }: HomePageProps) {
         <div className="px-2 relative" ref={menuRef}>
           <div className="flex items-center justify-between pl-2 pr-1 mb-2">
             <span className="text-[14px] text-[#656b81]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Spaces</span>
-            <button
-              onClick={() => setSpacesMenuOpen(v => !v)}
-              className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#f3f4f6] transition-colors"
-            >
-              <IconPlus size="small" />
-            </button>
+            <DropdownMenu open={spacesMenuOpen} onClose={() => setSpacesMenuOpen(false)}>
+              <Tooltip delayDuration={0} open={spacesMenuOpen ? false : undefined}>
+                <Tooltip.Trigger asChild>
+                  <DropdownMenu.Trigger asChild>
+                    <button
+                      onClick={() => setSpacesMenuOpen(v => !v)}
+                      className={`w-7 h-7 flex items-center justify-center rounded-lg transition-colors ${
+                        spacesMenuOpen ? 'bg-[#e9eaef]' : 'hover:bg-[#f3f4f6]'
+                      }`}
+                    >
+                      <IconPlus size="small" />
+                    </button>
+                  </DropdownMenu.Trigger>
+                </Tooltip.Trigger>
+                <Tooltip.Content side="top" sideOffset={4}>
+                  Create a space
+                </Tooltip.Content>
+              </Tooltip>
+              <DropdownMenu.Content side="bottom" align="start" sideOffset={4} alignOffset={-16} css={{ minWidth: 220 }}>
+                <DropdownMenu.Item onSelect={() => { setSpacesMenuOpen(false); onOpenApp() }}>
+                  <DropdownMenu.IconSlot>
+                    <span className="inline-flex items-center justify-center size-4 rounded-sm bg-gradient-to-br from-[#6C5CE7] to-[#2D3436] overflow-hidden">
+                      <span className="text-white text-[8px] font-bold">E</span>
+                    </span>
+                  </DropdownMenu.IconSlot>
+                  EPD WoW v2.2
+                </DropdownMenu.Item>
+                <DropdownMenu.Separator css={{ marginTop: 4, marginBottom: 4 }} />
+                <DropdownMenu.Item onSelect={() => { setSpacesMenuOpen(false); setCreateSpaceModalOpen(true) }}>
+                  <DropdownMenu.IconSlot><IconRocket /></DropdownMenu.IconSlot>
+                  Roadmap
+                </DropdownMenu.Item>
+                <DropdownMenu.Separator css={{ marginTop: 4, marginBottom: 4 }} />
+                <DropdownMenu.Item onSelect={() => { setSpacesMenuOpen(false) }}>
+                  <DropdownMenu.IconSlot><IconLayout /></DropdownMenu.IconSlot>
+                  Blueprint
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={() => { setSpacesMenuOpen(false); setCreateSpaceModalOpen(true) }}>
+                  <DropdownMenu.IconSlot><IconPlus /></DropdownMenu.IconSlot>
+                  Blank
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu>
           </div>
-
-          {/* Spaces dropdown */}
-          {spacesMenuOpen && (
-            <div className="absolute left-full top-0 ml-2 w-[220px] bg-white border border-[#e9eaef] rounded-xl shadow-[0px_4px_16px_rgba(0,0,0,0.12)] z-50 py-2">
-              <div className="px-3 py-2 hover:bg-[#f3f4f6] cursor-pointer rounded-lg mx-1" onClick={() => { setSpacesMenuOpen(false); onOpenApp() }}>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <div className="w-5 h-5 rounded bg-[#FFD02F] flex items-center justify-center shrink-0 text-[10px] font-bold">M</div>
-                  <span className="text-[14px] font-semibold text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Miro</span>
-                </div>
-                <div className="flex items-center gap-1 pl-7">
-                  <span className="text-[12px] text-[#656b81]">Official blueprints ·</span>
-                  <span className="text-[12px] text-[#4262FF]">View all</span>
-                </div>
-              </div>
-              <button onClick={() => { setSpacesMenuOpen(false); onOpenApp() }} className="flex items-center gap-2 w-full px-3 py-2.5 hover:bg-[#f3f4f6] text-left rounded-lg">
-                <div className="w-5 h-5 rounded bg-[#4262FF] flex items-center justify-center shrink-0">
-                  <svg viewBox="0 0 10 10" width="10" height="10" fill="white"><rect x="0" y="0" width="4" height="4" rx="0.5"/><rect x="6" y="0" width="4" height="4" rx="0.5"/><rect x="0" y="6" width="4" height="4" rx="0.5"/></svg>
-                </div>
-                <span className="text-[14px] text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Miro EPD Project</span>
-              </button>
-              <button onClick={() => { setSpacesMenuOpen(false); setCreateSpaceModalOpen(true) }} className="flex items-center gap-2 w-full px-3 py-2.5 hover:bg-[#f3f4f6] text-left rounded-lg">
-                <div className="w-5 h-5 rounded border border-dashed border-[#d1d4db] flex items-center justify-center shrink-0">
-                  <IconPlus size="small" />
-                </div>
-                <span className="text-[14px] text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif' }}>blank Space</span>
-              </button>
-            </div>
-          )}
 
           {/* Your Spaces */}
           <div className="flex items-center gap-1.5 px-2 py-2 rounded-lg w-full text-left">
@@ -243,7 +262,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center"
           style={{ backgroundColor: 'rgba(99,107,130,0.55)' }}
-          onClick={() => { setCreateSpaceModalOpen(false); setSpaceName(''); setRoadmapChecked(false); setModalStep('create') }}
+          onClick={() => { setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create') }}
         >
           <div
             className="bg-white flex flex-col relative"
@@ -251,7 +270,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
               width: (modalStep === 'miro' || modalStep === 'jira') ? 1200 : 560,
               maxWidth: (modalStep === 'miro' || modalStep === 'jira') ? 1200 : 560,
               height: (modalStep === 'miro' || modalStep === 'jira') ? 752 : undefined,
-              padding: (modalStep === 'miro' || modalStep === 'jira' || modalStep === 'share') ? 0 : '40px 40px 96px 40px',
+              padding: (modalStep === 'miro' || modalStep === 'jira' || modalStep === 'share') ? 0 : 40,
               gap: (modalStep === 'miro' || modalStep === 'jira' || modalStep === 'share') ? 0 : 16,
               borderRadius: modalStep === 'share' ? 16 : 8,
               isolation: 'isolate',
@@ -264,119 +283,102 @@ export function HomePage({ onOpenApp }: HomePageProps) {
             onClick={e => e.stopPropagation()}
           >
             {/* Close */}
-            <button
-              onClick={() => { setCreateSpaceModalOpen(false); setSpaceName(''); setRoadmapChecked(false); setModalStep('create') }}
-              className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center text-[#1a1b1e] hover:bg-[#f3f4f6] rounded transition-colors"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1 1 13" stroke="#1a1b1e" strokeWidth="1.5" strokeLinecap="round"/></svg>
-            </button>
+            <div className="absolute top-4 right-4 z-10">
+              <IconButton
+                variant="ghost"
+                size="large"
+                aria-label="Close"
+                onPress={() => { setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create') }}
+              >
+                <IconCross />
+              </IconButton>
+            </div>
 
             {modalStep === 'create' ? (<>
-              {/* Title + subtitle */}
-              <div className="flex flex-col gap-4 pr-6">
-                <h2 className="text-[22px] text-[#1a1b1e] leading-tight font-semibold" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>Create Space</h2>
-                <p className="text-[13px] text-[#656b81] leading-[1.5]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Group boards by project, team, or topic so everything stays organized and easy to access.</p>
-              </div>
+              {/* Title */}
+              <h2 className="text-[22px] text-[#1a1b1e] leading-[40px] font-semibold" style={{ fontFamily: "'Roobert PRO', sans-serif", minHeight: 40 }}>Name your roadmap space</h2>
 
               {/* Space name */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Space name</label>
-                <input
-                  autoFocus
-                  type="text"
-                  placeholder="Project Galaxy"
-                  value={spaceName}
-                  onChange={e => setSpaceName(e.target.value)}
-                  className="w-full border border-[#d1d4db] rounded-lg px-3 py-2 text-[13px] text-[#1a1b1e] outline-none placeholder-[#9da3b4] focus:border-[#4262FF] transition-colors"
-                  style={{ fontFamily: 'Open Sans, sans-serif' }}
-                />
+              <Input
+                autoFocus
+                size="x-large"
+                placeholder="Project Galaxy"
+                value={spaceName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSpaceName(e.target.value)}
+              />
+
+              {/* Import records from */}
+              <div className="flex flex-col gap-5 py-2">
+                <span className="font-body font-semibold text-[16px] text-[#1a1b1e] leading-none">Import records from</span>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { icon: <img src={imgJiraLogo} alt="Jira" className="w-5 h-5 object-contain" />, label: 'Jira', checked: importJira, toggle: () => { setImportJira(v => !v); setImportTables(false); setImportCsv(false) } },
+                    { icon: <IconTable css={{ width: 20, height: 20 }} />, label: 'Tables', checked: importTables, toggle: () => { setImportTables(v => !v); setImportJira(false); setImportCsv(false) } },
+                    { icon: <IconFileSpreadsheet css={{ width: 20, height: 20 }} />, label: 'CSV', checked: importCsv, toggle: () => { setImportCsv(v => !v); setImportJira(false); setImportTables(false) } },
+                  ].map(({ icon, label, checked, toggle }) => (
+                    <button
+                      key={label}
+                      onClick={toggle}
+                      className={`flex items-center gap-2 h-12 rounded-full transition-colors duration-150 ${
+                        checked
+                          ? 'border-[#4262FF] hover:border-[#3350e0] active:border-[#2b44c7]'
+                          : 'border-[#e9eaef] hover:border-[#d5d8de] active:border-[#c2c5cc]'
+                      } bg-white`}
+                      style={{ borderWidth: '1.5px', borderStyle: 'solid', paddingLeft: 18, paddingRight: 12 }}
+                    >
+                      <span className="shrink-0 -translate-y-px">{icon}</span>
+                      <span className="text-[16px] text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif', paddingBottom: 1 }}>{label}</span>
+                      <div className="pointer-events-none shrink-0 pill-checkbox translate-y-0.5">
+                        <Checkbox checked={checked} />
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {/* Add to Space */}
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[13px] font-semibold text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Add to Space</span>
-                <div className="border border-[#d1d4db] rounded-lg p-3 flex items-center gap-3 bg-white">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <span className="text-[13px] font-semibold text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Roadmap</span>
-                      <span className="text-[10px] font-bold text-white bg-[#4262FF] px-1.5 py-0.5 rounded-full leading-none">New</span>
-                    </div>
-                    <p className="text-[12px] text-[#656b81] leading-[1.4]" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-                      Plan, visualize, and track your project timeline with milestones and dependencies.{' '}
-                      <span className="text-[#4262FF] cursor-pointer hover:underline">Learn more</span>
-                    </p>
-                  </div>
+              {/* Enrich records with */}
+              <div className="flex flex-col gap-5 py-2">
+                <span className="font-body font-semibold text-[16px] text-[#1a1b1e] leading-none">Enrich records with</span>
+                <div className="flex">
                   <button
-                    onClick={() => setRoadmapChecked(v => !v)}
-                    className="shrink-0 w-5 h-5 rounded flex items-center justify-center border-2 transition-colors"
-                    style={{ backgroundColor: roadmapChecked ? '#4262FF' : 'white', borderColor: roadmapChecked ? '#4262FF' : '#d1d4db' }}
+                    onClick={() => setEnrichInsights(v => !v)}
+                    className={`flex items-center gap-2 h-12 rounded-full transition-colors duration-150 ${
+                      enrichInsights
+                        ? 'border-[#4262FF] hover:border-[#3350e0] active:border-[#2b44c7]'
+                        : 'border-[#e9eaef] hover:border-[#d5d8de] active:border-[#c2c5cc]'
+                    } bg-white`}
+                    style={{ borderWidth: '1.5px', borderStyle: 'solid', paddingLeft: 18, paddingRight: 12 }}
                   >
-                    {roadmapChecked && (
-                      <svg width="11" height="8" viewBox="0 0 11 8" fill="none"><path d="M1 4l3 3 6-6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    )}
+                    <span className="shrink-0 -translate-y-px">
+                      <IconInsights css={{ width: 20, height: 20 }} />
+                    </span>
+                    <span className="text-[16px] text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif', paddingBottom: 1 }}>Insights</span>
+                    <div className="pointer-events-none shrink-0 pill-checkbox translate-y-0.5">
+                      <Checkbox checked={enrichInsights} />
+                    </div>
                   </button>
                 </div>
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-3" style={{ position: 'absolute', bottom: 40, left: 40 }}>
+              <div className="flex items-center gap-3 pt-4">
                 <Button
                   variant="primary"
                   size="large"
-                  isDisabled={!roadmapChecked}
-                  onPress={() => { setModalFading(true); setTimeout(() => { setModalStep('setup'); setModalFading(false) }, 220) }}
+                  onPress={() => {
+                    const importSource = importJira ? 'jira' as const : importTables ? 'miro' as const : importCsv ? 'csv' as const : null
+                    setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create')
+                    onOpenApp(importSource ?? undefined)
+                  }}
                 >
-                  <Button.Label>Create</Button.Label>
+                  <Button.Label>{(importJira || importTables || importCsv) ? 'Create and import' : 'Create'}</Button.Label>
                 </Button>
                 <Button
                   variant="ghost"
                   size="large"
-                  onPress={() => { setCreateSpaceModalOpen(false); setSpaceName(''); setRoadmapChecked(false); setModalStep('create') }}
+                  onPress={() => { setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create') }}
                 >
                   <Button.Label>Cancel</Button.Label>
-                </Button>
-              </div>
-            </>) : modalStep === 'setup' ? (<>
-              {/* Setup step */}
-              <div className="flex flex-col gap-3 pr-12">
-                <h2 className="text-[24px] text-[#222428] leading-[1.35]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 400 }}>Set up your Roadmap</h2>
-                <p className="text-[16px] text-[#222428] leading-[1.5]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Select a data source to bring your tasks and issues into your Backlog.</p>
-              </div>
-
-              {/* Data source options */}
-              <div className="flex flex-col gap-2">
-                {[
-                  { iconBg: '#c6dcff', iconSrc: imgJiraIcon, name: 'Jira', desc: 'Sync issues and epics from Jira', action: 'Connect', btnBg: '#e0e2e8', onClick: () => { setModalFading(true); setTimeout(() => { setModalStep('jira'); setModalFading(false) }, 220) } },
-                  { iconBg: '#adf0c7', iconSrc: imgTableIcon, name: 'Miro Table', desc: 'Select from your existing boards', action: 'Select', btnBg: '#e9eaef', onClick: () => { setModalFading(true); setTimeout(() => { setModalStep('miro'); setModalFading(false) }, 220) } },
-                  { iconBg: '#f1f2f5', iconSrc: imgCsvIcon, name: 'CSV', desc: 'Import from a .csv file', action: 'Import', btnBg: '#e9eaef', onClick: () => { setModalFading(true); setTimeout(() => { setModalStep('csv'); setModalFading(false) }, 220) } },
-                ].map(({ iconBg, iconSrc, name, desc, action, btnBg, onClick }) => (
-                  <div key={name} className="border border-[#e0e2e8] rounded-lg flex items-center gap-6" style={{ height: 94, padding: 24 }}>
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: iconBg }}>
-                      <img src={iconSrc} alt={name} className="w-6 h-6 object-contain" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[16px] font-semibold text-[#222428] leading-[1.5]" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>{name}</p>
-                      <p className="text-[14px] text-[#222428] leading-[1.4]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{desc}</p>
-                    </div>
-                    <button
-                      onClick={onClick}
-                      className="shrink-0 h-8 px-2 rounded text-[14px] font-semibold text-[#1a1b1e] transition-colors hover:brightness-95"
-                      style={{ fontFamily: 'Open Sans, sans-serif', backgroundColor: btnBg, minWidth: 73 }}
-                    >
-                      {action}
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-2" style={{ position: 'absolute', bottom: 40, left: 40 }}>
-                <Button
-                  variant="ghost"
-                  size="large"
-                  onPress={() => { setCreateSpaceModalOpen(false); setSpaceName(''); setRoadmapChecked(false); setModalStep('create'); onOpenApp() }}
-                >
-                  <Button.Label>Skip for now</Button.Label>
                 </Button>
               </div>
             </>) : modalStep === 'csv' ? (<>
@@ -508,7 +510,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 <Button
                   variant="ghost"
                   size="large"
-                  onPress={() => { setCreateSpaceModalOpen(false); setSpaceName(''); setRoadmapChecked(false); setModalStep('create'); onOpenApp() }}
+                  onPress={() => { setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create'); onOpenApp() }}
                 >
                   <Button.Label>Continue without inviting</Button.Label>
                   <Button.IconSlot placement="end"><IconChevronRight /></Button.IconSlot>
@@ -699,7 +701,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 <Button
                   variant="ghost"
                   size="large"
-                  onPress={() => { setCreateSpaceModalOpen(false); setSpaceName(''); setRoadmapChecked(false); setModalStep('create'); onOpenApp() }}
+                  onPress={() => { setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create'); onOpenApp() }}
                 >
                   <Button.Label>Configure later</Button.Label>
                 </Button>

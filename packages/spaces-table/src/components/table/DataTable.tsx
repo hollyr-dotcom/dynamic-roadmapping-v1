@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { SpaceRow, FieldDefinition } from '@spaces/shared'
+import { Button, IconPlus } from '@mirohq/design-system'
 import { TableHeader } from './TableHeader'
 import { TableRow } from './TableRow'
 
@@ -33,6 +34,25 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
     e.stopPropagation()
     setSelectedRowId((prev) => (prev === rowId ? null : rowId))
   }, [])
+
+  if (data.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 item-enter" style={{ animationDelay: '80ms' }}>
+        <div className="w-12 h-12 rounded-xl bg-[#f1f2f5] flex items-center justify-center mb-4">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="3" width="18" height="18" rx="2" stroke="#7D8297" strokeWidth="1.5"/>
+            <path d="M3 9h18M9 9v12" stroke="#7D8297" strokeWidth="1.5"/>
+          </svg>
+        </div>
+        <h3 className="text-[16px] font-semibold text-[#1a1b1e] mb-1" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>No records yet</h3>
+        <p className="text-[14px] text-[#7D8297] mb-5" style={{ fontFamily: 'Open Sans, sans-serif' }}>Add your first record to get started</p>
+        <Button variant="secondary" size="medium">
+          <Button.IconSlot><IconPlus /></Button.IconSlot>
+          <Button.Label>Add record</Button.Label>
+        </Button>
+      </div>
+    )
+  }
 
   return (
     <div ref={tableRef} className="w-full shrink-0 item-enter" style={{ animationDelay: '80ms' }} onClick={insightsAllDots ? onTableInteract : undefined}>
