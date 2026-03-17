@@ -10,6 +10,7 @@ import { TimelinePlaceholder } from './components/timeline'
 import { SidebarShell } from './components/sidebar/SidebarShell'
 import { HomePage } from './components/page/HomePage'
 import { InsightsModal } from './components/page/InsightsModal'
+import { JiraImportModal } from './components/page/JiraImportModal'
 import { InsightsToast } from './components/page/InsightsToast'
 import { SpaceMenu } from './components/sidebar/SpaceMenu'
 import { InsightsChatPanel } from './components/sidebar/InsightsChatPanel'
@@ -68,7 +69,9 @@ export function App() {
   const [showInsightsToast, setShowInsightsToast] = useState(false)
   const [activePage, setActivePage] = useState<PageId>('backlog')
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
-  const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>('ai-sidekick')
+  const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
+  const [pendingImport, setPendingImport] = useState<'jira' | 'miro' | 'csv' | null>(null)
+  const [hasData, setHasData] = useState(true)
   const [activeTab, setActiveTab] = useState('all-items')
   const [pageTabs, setPageTabs] = useState<Record<PageId, TabConfig[]>>({
     backlog: PAGE_CONFIGS.backlog.tabs,
@@ -351,12 +354,20 @@ export function App() {
   // Dynamic view rendering
   const currentTabs = pageTabs[activePage]
   const activeTabConfig = currentTabs.find(t => t.id === activeTab)
-  const pageData = activePage === 'backlog' ? sampleData : roadmapData
+  const pageData = hasData ? (activePage === 'backlog' ? sampleData : roadmapData) : []
   const pageFields = activePage === 'backlog' ? fields : roadmapFields
   const viewData = activeTab === 'done' ? pageData.filter(r => r.status === 'done') : pageData
 
   if (view === 'home') {
-    return <HomePage onOpenApp={() => { setView('app'); setActivePage('backlog'); setActiveTab('all-items'); setShowInsightsModal(true) }} />
+    return <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv') => {
+      setView('app')
+      setActivePage('backlog')
+      setActiveTab('all-items')
+      if (importSource) {
+        setHasData(false)
+        setTimeout(() => setPendingImport(importSource), 1500)
+      }
+    }} />
   }
 
   return (
@@ -549,6 +560,14 @@ export function App() {
 
       {/* Canvas floating nav panels */}
       <CanvasNavPanels isOpen={canvasOpen} databaseTitle={databaseTitle} />
+
+      {/* Jira import modal */}
+      {pendingImport === 'jira' && (
+        <JiraImportModal
+          onImport={() => { setPendingImport(null); setHasData(true) }}
+          onClose={() => { setPendingImport(null) }}
+        />
+      )}
 
       {/* Insights modal */}
       {showInsightsModal && (

@@ -305,3 +305,15 @@ tbody tr.row-selected td.divider-first::before {
   0%, 60%, 100% { transform: translateY(0); }
   30%            { transform: translateY(-5px); }
 }
+
+/* ── Pill checkbox — fully rounded, border matches pill ─ */
+.pill-checkbox button > div,
+.pill-checkbox [data-form-element="checkbox"] > div {
+  border-radius: 9999px !important;
+}
+.pill-checkbox [data-form-element="checkbox"][aria-checked="false"] > div {
+  border: 1.5px solid #e9eaef !important;
+}
+.pill-checkbox [data-form-element="checkbox"][aria-checked="true"] > div {
+  border: 1.5px solid transparent !important;
+}
