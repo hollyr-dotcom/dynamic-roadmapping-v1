@@ -4,7 +4,6 @@ import { NumberCell } from './cells/NumberCell'
 import { CurrencyCell } from './cells/CurrencyCell'
 import { AvatarStackCell } from './cells/AvatarStackCell'
 import { StatusCell } from './cells/StatusCell'
-import { JiraIdCell } from './cells/JiraIdCell'
 
 interface CellRendererProps {
   field: FieldDefinition
@@ -27,8 +26,6 @@ export function CellRenderer({ field, row, onAvatarChipClick, isUpdated }: CellR
       return <AvatarStackCell values={value as string[]} onChipClick={onAvatarChipClick} />
     case 'status':
       return <StatusCell value={value as Status | undefined} />
-    case 'jiraId':
-      return <JiraIdCell value={value as string} />
     default:
       return <span className="text-sm text-[#656B81]">{String(value)}</span>
   }

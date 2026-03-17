@@ -1,7 +1,9 @@
 import { useState, useRef } from 'react'
 import { roadmapData } from '@spaces/shared'
 import type { SpaceRow } from '@spaces/shared'
-const JIRA_LOGO = 'https://www.figma.com/api/mcp/asset/f169e443-27f1-401b-994d-4f720c63f0c7'
+import { IconSocialJira } from '@mirohq/design-system'
+
+const JIRA_ITEMS = new Set(['r2', 'r3', 'r7', 'r8'])
 
 const DAY_WIDTH = 48
 const BAR_HEIGHT = 40
@@ -338,7 +340,9 @@ export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClic
               />
 
               <img src={person.avatar} alt="" style={{ width: 24, height: 24, borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
-              <img src={JIRA_LOGO} alt="Jira" style={{ width: 16, height: 16, flexShrink: 0, objectFit: 'contain' }} />
+              {JIRA_ITEMS.has(row.id) && (
+                <IconSocialJira css={{ width: 16, height: 16, flexShrink: 0 }} />
+              )}
               <span style={{ fontSize: 14, color: '#222428', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                 {row.title}
               </span>
