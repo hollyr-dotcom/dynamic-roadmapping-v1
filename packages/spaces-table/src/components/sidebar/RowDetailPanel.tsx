@@ -40,6 +40,7 @@ interface FeedbackCardData {
   companies: string[]
   borderColor: string
   stars?: number
+  source?: string
 }
 
 interface RowDetailPanelProps {
@@ -116,21 +117,21 @@ const INSIGHT_SUMMARIES: Record<string, string> = {
 const CARD_WEIGHTS = [0.13, 0.12, 0.10, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06, 0.05, 0.05, 0.04, 0.03, 0.02, 0.01]
 
 const CARD_STYLES = [
-  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 3, date: 'Aug 02' },
-  { borderColor: '#d4bbff', Icon: IconFlag, date: 'Jul 18' },
-  { borderColor: '#ffd4b2', Icon: IconExclamationPointCircle, date: 'Jun 30' },
-  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 5, date: 'Jun 12' },
-  { borderColor: '#d4bbff', Icon: IconFlag, date: 'May 28' },
-  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 4, date: 'May 14' },
-  { borderColor: '#ffd4b2', Icon: IconExclamationPointCircle, date: 'Apr 29' },
-  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 5, date: 'Apr 11' },
-  { borderColor: '#d4bbff', Icon: IconFlag, date: 'Mar 27' },
-  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 2, date: 'Mar 10' },
-  { borderColor: '#ffd4b2', Icon: IconExclamationPointCircle, date: 'Feb 22' },
-  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 4, date: 'Feb 05' },
-  { borderColor: '#d4bbff', Icon: IconFlag, date: 'Jan 20' },
-  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 5, date: 'Jan 08' },
-  { borderColor: '#d4bbff', Icon: IconFlag, date: 'Dec 19' },
+  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 3, date: 'Aug 02', source: 'App Store' },
+  { borderColor: '#d4bbff', Icon: IconFlag, date: 'Jul 18', source: 'Gong' },
+  { borderColor: '#ffd4b2', Icon: IconExclamationPointCircle, date: 'Jun 30', source: 'SurveyMonkey' },
+  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 5, date: 'Jun 12', source: 'App Store' },
+  { borderColor: '#d4bbff', Icon: IconFlag, date: 'May 28', source: 'Play Store' },
+  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 4, date: 'May 14', source: 'Gong' },
+  { borderColor: '#ffd4b2', Icon: IconExclamationPointCircle, date: 'Apr 29', source: 'SurveyMonkey' },
+  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 5, date: 'Apr 11', source: 'Play Store' },
+  { borderColor: '#d4bbff', Icon: IconFlag, date: 'Mar 27', source: 'Gong' },
+  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 2, date: 'Mar 10', source: 'App Store' },
+  { borderColor: '#ffd4b2', Icon: IconExclamationPointCircle, date: 'Feb 22', source: 'SurveyMonkey' },
+  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 4, date: 'Feb 05', source: 'Play Store' },
+  { borderColor: '#d4bbff', Icon: IconFlag, date: 'Jan 20', source: 'Gong' },
+  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 5, date: 'Jan 08', source: 'App Store' },
+  { borderColor: '#d4bbff', Icon: IconFlag, date: 'Dec 19', source: 'Play Store' },
 ]
 
 function generateFeedbackCards(row: SpaceRow) {
@@ -196,7 +197,7 @@ function generateFeedbackCards(row: SpaceRow) {
     title: titles[i],
     text: texts[i],
     author: authors[i],
-    companies: row.companies.slice(0, 2),
+    companies: row.companies.slice(0, 1),
   }))
 }
 
@@ -1251,6 +1252,7 @@ function FeedbackCard({
   author,
   date,
   companies,
+  source,
   onDismiss,
   onSelect,
   onAddToBoard,
@@ -1263,6 +1265,7 @@ function FeedbackCard({
   author: string
   date: string
   companies: string[]
+  source?: string
   onDismiss: () => void
   onSelect: () => void
   onAddToBoard?: () => void
@@ -1365,7 +1368,7 @@ function FeedbackCard({
         {author}
       </p>
 
-      {/* Company chips — smooth slide-in on hover using CSS grid trick */}
+      {/* Source + company — smooth slide-in on hover using CSS grid trick */}
       <div
         style={{
           display: 'grid',
@@ -1374,10 +1377,13 @@ function FeedbackCard({
         }}
       >
         <div style={{ overflow: 'hidden' }}>
-          <div className="flex flex-wrap gap-2 pt-1">
-            {companies.map(name => (
-              <Chip key={name} removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
-            ))}
+          <div className="flex items-center gap-2 pt-1">
+            {source && (
+              <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{source}</Chip>
+            )}
+            {companies[0] && (
+              <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{companies[0]}</Chip>
+            )}
           </div>
         </div>
       </div>
