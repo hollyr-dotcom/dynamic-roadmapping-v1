@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import {
   Button,
   IconButton,
@@ -21,10 +22,16 @@ interface TopNavBarProps {
 export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen, onToggleMenu, showShareTooltip = false }: TopNavBarProps) {
   const [tooltipOpen, setTooltipOpen] = useState(false)
   const tooltipTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const shareRef = useRef<HTMLDivElement>(null)
+  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null)
 
   useEffect(() => {
     if (!showShareTooltip) return
     setTooltipOpen(true)
+    if (shareRef.current) {
+      const rect = shareRef.current.getBoundingClientRect()
+      setTooltipPos({ top: rect.bottom + 8, left: rect.left + rect.width / 2 })
+    }
     if (tooltipTimer.current) clearTimeout(tooltipTimer.current)
     tooltipTimer.current = setTimeout(() => setTooltipOpen(false), 2000)
   }, [showShareTooltip])
@@ -119,34 +126,34 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
           ))}
         </div>
 
-        <div style={{ position: 'relative' }}>
+        <div ref={shareRef}>
           <Tooltip>
             <Tooltip.Trigger asChild>
               <Button size="medium">Share</Button>
             </Tooltip.Trigger>
             <Tooltip.Content side="bottom">Share space with your team</Tooltip.Content>
           </Tooltip>
-          {tooltipOpen && (
-            <div style={{
-              position: 'absolute',
-              top: '100%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              marginTop: 8,
-              padding: '6px 12px',
-              backgroundColor: '#050038',
-              color: 'white',
-              borderRadius: 6,
-              fontSize: 13,
-              fontFamily: 'Open Sans, sans-serif',
-              whiteSpace: 'nowrap',
-              zIndex: 9999,
-              pointerEvents: 'none',
-            }}>
-              Share space with your team
-            </div>
-          )}
         </div>
+        {tooltipOpen && tooltipPos && createPortal(
+          <div style={{
+            position: 'fixed',
+            top: tooltipPos.top,
+            left: tooltipPos.left,
+            transform: 'translateX(-50%)',
+            padding: '6px 12px',
+            backgroundColor: '#050038',
+            color: 'white',
+            borderRadius: 6,
+            fontSize: 13,
+            fontFamily: 'Open Sans, sans-serif',
+            whiteSpace: 'nowrap',
+            zIndex: 9999,
+            pointerEvents: 'none',
+          }}>
+            Share space with your team
+          </div>,
+          document.body
+        )}
       </div>
     </div>
   )
