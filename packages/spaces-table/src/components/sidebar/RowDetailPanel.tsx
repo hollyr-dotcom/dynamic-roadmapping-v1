@@ -65,7 +65,7 @@ const PRIORITY_LABELS: Record<string, string> = {
 
 // Colors matched to KanbanBoard column tags
 const PRIORITY_CHIP: Record<string, { bg: string; color: string }> = {
-  triage: { bg: '#ffc6c6', color: '#600000' },
+  triage: { bg: '#BADEB1', color: '#600000' },
   now:    { bg: '#b5ecff', color: '#003d54' },
   next:   { bg: '#ffc795', color: '#5c3200' },
   later:  { bg: '#d4bbff', color: '#2d0066' },
@@ -120,20 +120,20 @@ const INSIGHT_SUMMARIES: Record<string, string> = {
 const CARD_WEIGHTS = [0.13, 0.12, 0.10, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06, 0.05, 0.05, 0.04, 0.03, 0.02, 0.01]
 
 const CARD_STYLES = [
-  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 3, date: 'Aug 02', source: 'App Store' },
+  { borderColor: '#BADEB1', Icon: IconHeart, stars: 3, date: 'Aug 02', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Jul 18', source: 'Gong' },
   { borderColor: '#ffd4b2', Icon: IconExclamationPointCircle, date: 'Jun 30', source: 'SurveyMonkey' },
-  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 5, date: 'Jun 12', source: 'App Store' },
+  { borderColor: '#BADEB1', Icon: IconHeart, stars: 5, date: 'Jun 12', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'May 28', source: 'Play Store' },
-  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 4, date: 'May 14', source: 'Gong' },
+  { borderColor: '#BADEB1', Icon: IconHeart, stars: 4, date: 'May 14', source: 'Gong' },
   { borderColor: '#ffd4b2', Icon: IconExclamationPointCircle, date: 'Apr 29', source: 'SurveyMonkey' },
-  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 5, date: 'Apr 11', source: 'Play Store' },
+  { borderColor: '#BADEB1', Icon: IconHeart, stars: 5, date: 'Apr 11', source: 'Play Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Mar 27', source: 'Gong' },
-  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 2, date: 'Mar 10', source: 'App Store' },
+  { borderColor: '#BADEB1', Icon: IconHeart, stars: 2, date: 'Mar 10', source: 'App Store' },
   { borderColor: '#ffd4b2', Icon: IconExclamationPointCircle, date: 'Feb 22', source: 'SurveyMonkey' },
-  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 4, date: 'Feb 05', source: 'Play Store' },
+  { borderColor: '#BADEB1', Icon: IconHeart, stars: 4, date: 'Feb 05', source: 'Play Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Jan 20', source: 'Gong' },
-  { borderColor: '#ffc6c6', Icon: IconHeart, stars: 5, date: 'Jan 08', source: 'App Store' },
+  { borderColor: '#BADEB1', Icon: IconHeart, stars: 5, date: 'Jan 08', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Dec 19', source: 'Play Store' },
 ]
 
@@ -502,13 +502,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                           <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
                         </span>
                       ))}
-                      {overflow > 0 && (
+                      {overflow > 0 && !companiesExpanded && (
                         <button
-                          onClick={() => setCompaniesExpanded(v => !v)}
+                          onClick={() => setCompaniesExpanded(true)}
                           className="inline-flex items-center h-[28px] px-2 rounded-lg text-[13px] font-semibold transition-colors"
-                          style={{ backgroundColor: companiesExpanded ? '#E0E2E8' : '#F1F2F5', color: '#656B81' }}
+                          style={{ backgroundColor: '#F1F2F5', color: '#656B81' }}
                         >
-                          {companiesExpanded ? '−' : `+${overflow}`}
+                          +{overflow}
                         </button>
                       )}
                     </div>
@@ -520,6 +520,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                             <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
                           </span>
                         ))}
+                        <button
+                          onClick={() => setCompaniesExpanded(false)}
+                          className="inline-flex items-center h-[28px] px-2 rounded-lg text-[13px] font-semibold transition-colors"
+                          style={{ backgroundColor: '#E0E2E8', color: '#656B81' }}
+                        >
+                          −
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -1703,7 +1710,7 @@ function FeedbackCardDetailView({
               const entry = convMenuIndex === 0 ? transcript[0] : transcript[convMenuIndex ?? 0]
               const text = entry ? (entry.text + (entry.bold ?? '')) : ''
               const cardType = classifyEntry(text, card.borderColor ?? '')
-              const borderColor = cardType === 'request' ? '#d4bbff' : cardType === 'problem' ? '#ffd4b2' : '#ffc6c6'
+              const borderColor = cardType === 'request' ? '#d4bbff' : cardType === 'problem' ? '#ffd4b2' : '#BADEB1'
               onAddToBoard?.({
                 title: card.title,
                 text,
