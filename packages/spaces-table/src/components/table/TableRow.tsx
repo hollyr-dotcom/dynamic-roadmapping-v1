@@ -46,7 +46,7 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
         {isUpdated && (
           <span style={{ position: 'absolute', left: 28, top: '50%', transform: 'translateY(-50%)', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4262FF', zIndex: 1 }} />
         )}
-        <div className="flex items-center w-full">
+        <div className="flex items-center w-full gap-0.5">
           {/* Row number / dots — swap in the same slot */}
           <div className="relative w-8 h-8 shrink-0">
             <div className="row-number w-8 h-8 flex items-center justify-center">
@@ -63,24 +63,13 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
             </button>
           </div>
 
-          {/* Hover icons */}
-          <div className="flex flex-1 items-center justify-center gap-0">
-            {/* Drag handle — hover only */}
-            <button
-              className="row-drag flex w-8 h-8 items-center justify-center rounded-lg cursor-grab hover:bg-[#E9EAEF] transition-colors"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <IconDotsSixVertical size="small" color="icon-neutrals-subtle" />
-            </button>
-
-            {/* Comment button — hover only */}
-            <button
-              className="row-comment flex w-8 h-8 items-center justify-center rounded-lg hover:bg-[#E9EAEF] transition-colors"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <IconChatPlus size="small" color="icon-neutrals-subtle" />
-            </button>
-          </div>
+          {/* Comment button — hover only */}
+          <button
+            className="row-comment flex w-8 h-8 items-center justify-center rounded-lg hover:bg-[#E9EAEF] transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <IconChatPlus size="small" color="icon-neutrals-subtle" />
+          </button>
         </div>
 
         {/* Context menu */}
@@ -93,7 +82,11 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
       </td>
 
       {fields.map((field) => (
-        <td key={field.id} className="px-3 border-b border-[#F1F2F5]">
+        <td
+          key={field.id}
+          className="px-3 border-b border-[#F1F2F5]"
+          style={field.id === 'description' ? { maxWidth: '320px' } : undefined}
+        >
           <CellRenderer field={field} row={row} onAvatarChipClick={onCompanyClick ? (name) => onCompanyClick(row, name) : undefined} />
         </td>
       ))}

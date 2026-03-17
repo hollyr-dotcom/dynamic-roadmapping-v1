@@ -24,7 +24,7 @@ export function TableHeader({ fields }: TableHeaderProps) {
               top: STICKY_TOP,
               boxShadow: GAP_COVER,
               fontSize: '14px',
-              width: field.isPrimary ? '480px' : field.type === 'avatars' ? '300px' : '208px',
+              width: field.isPrimary ? '480px' : field.id === 'description' ? '320px' : field.type === 'avatars' ? '300px' : '208px',
               paddingLeft: '12px',
               paddingRight: '20px',
             }}

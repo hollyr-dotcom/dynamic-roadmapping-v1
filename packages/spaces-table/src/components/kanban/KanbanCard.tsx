@@ -55,7 +55,10 @@ export function KanbanCard({ row, fields, borderColor, onRowClick }: KanbanCardP
       onClick={() => onRowClick?.(row)}
     >
       <div className="px-4 py-3">
-        <p className="font-body text-sm font-semibold text-[#222428] leading-snug m-0 truncate">
+        <p
+          className="font-body text-sm font-normal text-[#222428] leading-snug m-0 overflow-hidden"
+          style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}
+        >
           {row.title}
         </p>
 
