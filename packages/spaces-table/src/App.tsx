@@ -17,6 +17,7 @@ import { InsightsChatPanel } from './components/sidebar/InsightsChatPanel'
 import { SidePanel } from './components/sidebar/SidePanel'
 import { RowDetailPanel } from './components/sidebar/RowDetailPanel'
 import { JiraPanel } from './components/sidebar/JiraPanel'
+import { JiraDetailPanel } from './components/sidebar/JiraDetailPanel'
 import { CanvasOverlay } from './components/canvas/CanvasOverlay'
 import { CanvasTableWidget } from './components/canvas/CanvasTableWidget'
 import { CanvasNavPanels } from './components/canvas/CanvasNavPanels'
@@ -83,6 +84,7 @@ export function App() {
   const [selectedRowDates, setSelectedRowDates] = useState<{ startDate: string; endDate: string } | undefined>(undefined)
   const [selectedJiraRow, setSelectedJiraRow] = useState<SpaceRow | null>(null)
   const [jiraPanelOpen, setJiraPanelOpen] = useState(false)
+  const [isJiraDetailOpen, setIsJiraDetailOpen] = useState(false)
   const [initialCompany, setInitialCompany] = useState<string | undefined>(undefined)
   const [newColumnMenuOpen, setNewColumnMenuOpen] = useState(false)
   const [canvasOpen, setCanvasOpen] = useState(false)
@@ -203,7 +205,7 @@ export function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [toggleSidebar, canvasOpen, zoom, zoomTo, widgets, selectedWidgetId])
 
-  const closeSidebar = () => setActiveSidebar(null)
+  const closeSidebar = () => { setActiveSidebar(null); setIsJiraDetailOpen(false) }
 
   const switchPage = useCallback((pageId: string) => {
     const id = pageId as PageId
@@ -408,6 +410,7 @@ export function App() {
             databaseTitle={databaseTitle}
             isMenuOpen={isLeftOpen}
             onToggleMenu={() => toggleSidebar('space-menu')}
+            showShareTooltip={showInsightsToast}
           />
         </div>
         {/* Scroll area — vertical + horizontal, table header sticks below toolbar */}
@@ -427,7 +430,7 @@ export function App() {
             <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} />
           )}
           {activeTabConfig?.type === 'timeline' && (
-            <TimelinePlaceholder key={activeTab} parentScrollRef={scrollRef} onRowClick={(row, dates) => { setSelectedRow(row); setSelectedRowDates(dates); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onJiraRowClick={(row) => { setSelectedJiraRow(row); setJiraPanelOpen(true); setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} />
+            <TimelinePlaceholder key={activeTab} parentScrollRef={scrollRef} onRowClick={(row, dates) => { setSelectedRow(row); setSelectedRowDates(dates); setInitialCompany(undefined); setIsJiraDetailOpen(false); setActiveSidebar('row-detail') }} onJiraRowClick={(row) => { setSelectedJiraRow(row); setSelectedRow(row); setSelectedRowDates(undefined); setIsJiraDetailOpen(true); setActiveSidebar('row-detail') }} />
           )}
         </div>
       </div>
@@ -477,7 +480,10 @@ export function App() {
               className="flex-1 overflow-hidden rounded-xl"
               style={{ boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)' }}
             >
-              {selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} initialCompany={initialCompany} onAddToBoard={handleAddToBoard} onRowUpdated={handleRowUpdated} timelineDates={selectedRowDates} />}
+              {isJiraDetailOpen && selectedJiraRow
+                ? <JiraDetailPanel row={selectedJiraRow} onClose={() => { setIsJiraDetailOpen(false); closeSidebar() }} />
+                : selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} initialCompany={initialCompany} onAddToBoard={handleAddToBoard} onRowUpdated={handleRowUpdated} timelineDates={selectedRowDates} />
+              }
             </div>
           </div>
         ) : activeSidebar === 'ai-sidekick' ? (

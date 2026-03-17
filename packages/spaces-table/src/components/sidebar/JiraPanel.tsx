@@ -33,6 +33,8 @@ const TABLE_ROWS: JiraTableRow[] = [
 ]
 
 export function JiraPanel({ row, onClose }: JiraPanelProps) {
+  const selectedTicket = TABLE_ROWS.find(r => r.rowId === row.id)
+
   return (
     <div
       className="flex flex-col h-full bg-white overflow-hidden"
@@ -42,7 +44,15 @@ export function JiraPanel({ row, onClose }: JiraPanelProps) {
       }}
     >
       {/* Top bar with sidebar toggle */}
-      <div className="flex justify-end px-1.5 pt-1.5 pb-0 shrink-0">
+      <div className="flex items-center justify-between px-1.5 pt-1.5 pb-0 shrink-0">
+        {selectedTicket?.id ? (
+          <div className="flex items-center gap-1.5 pl-1">
+            <IconSocialJira css={{ width: 14, height: 14, flexShrink: 0 }} />
+            <span className="text-[13px] font-semibold text-[#222428]">{selectedTicket.id}</span>
+          </div>
+        ) : (
+          <div />
+        )}
         <button
           onClick={onClose}
           className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
