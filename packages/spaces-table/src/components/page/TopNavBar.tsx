@@ -19,15 +19,14 @@ interface TopNavBarProps {
 }
 
 export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen, onToggleMenu, showShareTooltip = false }: TopNavBarProps) {
-  const [tooltipVisible, setTooltipVisible] = useState(false)
+  const [tooltipOpen, setTooltipOpen] = useState(false)
   const tooltipTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (!showShareTooltip) return
-    setTooltipVisible(true)
+    setTooltipOpen(true)
     if (tooltipTimer.current) clearTimeout(tooltipTimer.current)
-    tooltipTimer.current = setTimeout(() => setTooltipVisible(false), 2000)
-    return () => { if (tooltipTimer.current) clearTimeout(tooltipTimer.current) }
+    tooltipTimer.current = setTimeout(() => setTooltipOpen(false), 2000)
   }, [showShareTooltip])
 
   return (
@@ -43,70 +42,79 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
     >
       {/* Left: menu + breadcrumb */}
       <div className="flex items-center gap-2">
-        <IconButton variant="ghost" size="large" aria-label="Menu" onPress={onToggleMenu}>
-          <IconLinesThreeHorizontal />
-        </IconButton>
+        <div
+          className="transition-opacity duration-200"
+          style={{ opacity: isMenuOpen ? 0 : 1, pointerEvents: isMenuOpen ? 'none' : 'auto' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <IconButton aria-label="Menu" variant="ghost" size="large" onPress={onToggleMenu}>
+            <IconLinesThreeHorizontal />
+          </IconButton>
+        </div>
 
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-1 font-body text-[#222428]" style={{ fontSize: '14px' }}>
-          <span style={{ opacity: scrollFade }}>Mirage</span>
-          <IconChevronRightSmall css={{ width: 14, height: 14, opacity: scrollFade }} />
-          <span>{isMenuOpen ? 'Spaces' : databaseTitle}</span>
+        <div
+          className="flex items-center transition-opacity duration-200"
+          style={{ gap: '2px', opacity: isMenuOpen ? scrollFade : 1, marginLeft: '2px' }}
+        >
+          <span
+            className="font-heading font-semibold text-[#222428] leading-none select-none"
+            style={{ fontSize: '14px' }}
+          >
+            Project Galaxy
+          </span>
+
+          <span
+            className="flex items-center transition-opacity duration-200"
+            style={{ opacity: scrollFade, gap: '2px', color: '#B3B9C4' }}
+          >
+            <IconChevronRightSmall size="small" />
+            <span
+              className="font-heading font-semibold text-[#222428] leading-none select-none"
+              style={{ fontSize: '14px' }}
+            >
+              {databaseTitle}
+            </span>
+          </span>
         </div>
       </div>
 
-      {/* Right: actions */}
+      {/* Right: notifications + avatars */}
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1">
-          {[
-            { label: 'Adam', url: 'https://randomuser.me/api/portraits/men/75.jpg' },
-            { label: 'Beth', url: 'https://randomuser.me/api/portraits/women/68.jpg' },
-            { label: 'Carl', url: 'https://randomuser.me/api/portraits/men/32.jpg' },
-          ].map((a) => (
-            <div
-              key={a.label}
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: '50%',
-                overflow: 'hidden',
-                border: '2px solid white',
-                marginLeft: -6,
-                flexShrink: 0,
-              }}
-            >
-              <img
-                src={a.url}
-                alt={a.label}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            </div>
-          ))}
-        </div>
-
-        <IconButton variant="ghost" size="medium" aria-label="Notifications">
+        <IconButton
+          aria-label="Notifications"
+          variant="ghost"
+          size="large"
+        >
           <IconBell />
         </IconButton>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {[
-            { icon: (
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <rect x="3" y="3" width="6" height="6" rx="1" stroke="#050038" strokeWidth="1.5"/>
-                <rect x="11" y="3" width="6" height="6" rx="1" stroke="#050038" strokeWidth="1.5"/>
-                <rect x="3" y="11" width="6" height="6" rx="1" stroke="#050038" strokeWidth="1.5"/>
-                <rect x="11" y="11" width="6" height="6" rx="1" stroke="#050038" strokeWidth="1.5"/>
+        <div className="flex items-center mr-1">
+          {([
+            { bg: '#FFF0C2', fg: '#A07800' },
+            { bg: '#EDE0FF', fg: '#7C3AED' },
+            { bg: '#D1FAE5', fg: '#059669' },
+          ]).map(({ bg, fg }, i) => (
+            <div
+              key={i}
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 999,
+                border: '3px solid #FFFFFF',
+                marginLeft: i > 0 ? '-8px' : 0,
+                zIndex: 3 - i,
+                position: 'relative',
+                background: bg,
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'center',
+                overflow: 'hidden',
+              }}
+            >
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <circle cx="11" cy="8" r="4" fill={fg} />
+                <path d="M3 21c0-4.418 3.582-8 8-8s8 3.582 8 8" fill={fg} />
               </svg>
-            )},
-            { icon: (
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <circle cx="10" cy="10" r="7" stroke="#050038" strokeWidth="1.5"/>
-                <path d="M10 6v4l3 2" stroke="#050038" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            )},
-          ].map((item, i) => (
-            <div key={i} style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', borderRadius: 6 }} className="hover:bg-[#f1f2f5]">
-              {item.icon}
             </div>
           ))}
         </div>
@@ -118,7 +126,7 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
             </Tooltip.Trigger>
             <Tooltip.Content side="bottom">Share space with your team</Tooltip.Content>
           </Tooltip>
-          {tooltipVisible && (
+          {tooltipOpen && (
             <div style={{
               position: 'absolute',
               top: '100%',
