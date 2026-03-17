@@ -4,16 +4,16 @@ import { Button, IconPlus } from '@mirohq/design-system'
 import { TableHeader } from './TableHeader'
 import { TableRow } from './TableRow'
 
-const IMPORT_INITIAL_DELAY = 400
-const IMPORT_ROW_DURATION = 300
-const IMPORT_TOAST_PAUSE = 600
+const IMPORT_INITIAL_DELAY = 100
+const IMPORT_ROW_DURATION = 200
+const IMPORT_TOAST_PAUSE = 150
 
 // Compute cumulative delay for row index using ease-in curve
 // First rows arrive slowly, later rows come in rapid-fire
 function getRowDelay(idx: number, total: number): number {
   const t = total <= 1 ? 1 : idx / (total - 1)
   const eased = t * t * t // cubic ease-in — slow start, fast finish
-  const totalCascade = 1800 // total ms spread across all rows
+  const totalCascade = 700 // total ms spread across all rows
   return IMPORT_INITIAL_DELAY + eased * totalCascade
 }
 
