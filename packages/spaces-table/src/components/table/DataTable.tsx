@@ -71,7 +71,6 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
               onDeselect={() => setSelectedRowId(null)}
               onRowClick={onRowClick}
               onCompanyClick={onCompanyClick}
-              isUpdated={updatedRows?.has(row.id) ?? false}
             />
           ))}
         </tbody>

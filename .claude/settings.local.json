@@ -160,7 +160,8 @@
       "Bash(find /Users/mike/Developer/dynamic-roadmapping-v1 -path *design-system-checkbox* -maxdepth 6)",
       "Bash(git add:*)",
       "Bash(git push:*)",
-      "Bash(git remote:*)"
+      "Bash(git remote:*)",
+      "Bash(gh pr:*)"
     ]
   }
 }

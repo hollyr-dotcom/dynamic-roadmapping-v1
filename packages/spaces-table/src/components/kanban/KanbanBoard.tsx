@@ -64,11 +64,11 @@ export function KanbanBoard({ data, fields, columns, onRowClick }: KanbanBoardPr
   const tagFields = fields.filter(f => !f.isPrimary)
 
   return (
-    <div className="flex items-start gap-4 pl-14 pt-3 pb-8 flex-1 min-h-0">
+    <div className="flex items-stretch gap-4 pl-14 pt-3 pb-10">
       {columnOrder.map((priority, i) => (
         <div
           key={priority}
-          className="shrink-0 item-enter"
+          className="shrink-0 item-enter flex"
           style={{ animationDelay: `${80 + i * 60}ms` }}
         >
           <KanbanColumn
