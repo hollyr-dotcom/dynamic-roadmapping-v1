@@ -44,7 +44,7 @@ const imgShareAvatar = 'https://www.figma.com/api/mcp/asset/33cf113b-9e21-4dfe-8
 const imgMiroTeamLogo = 'https://www.figma.com/api/mcp/asset/c9119d54-1298-4f33-a414-9b1ce85ffd9c'
 
 interface HomePageProps {
-  onOpenApp: () => void
+  onOpenApp: (importSource?: 'jira' | 'miro' | 'csv') => void
 }
 
 const templates = [
@@ -296,7 +296,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
 
             {modalStep === 'create' ? (<>
               {/* Title */}
-              <h2 className="text-[22px] text-[#1a1b1e] leading-[40px] font-semibold" style={{ fontFamily: "'Roobert PRO', sans-serif", minHeight: 40 }}>Name your space</h2>
+              <h2 className="text-[22px] text-[#1a1b1e] leading-[40px] font-semibold" style={{ fontFamily: "'Roobert PRO', sans-serif", minHeight: 40 }}>Name your roadmap space</h2>
 
               {/* Space name */}
               <Input
@@ -312,9 +312,9 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 <span className="font-body font-semibold text-[16px] text-[#1a1b1e] leading-none">Import records from</span>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    { icon: <img src={imgJiraLogo} alt="Jira" className="w-5 h-5 object-contain" />, label: 'Jira', checked: importJira, toggle: () => setImportJira(v => !v) },
-                    { icon: <IconTable css={{ width: 20, height: 20 }} />, label: 'Tables', checked: importTables, toggle: () => setImportTables(v => !v) },
-                    { icon: <IconFileSpreadsheet css={{ width: 20, height: 20 }} />, label: 'CSV', checked: importCsv, toggle: () => setImportCsv(v => !v) },
+                    { icon: <img src={imgJiraLogo} alt="Jira" className="w-5 h-5 object-contain" />, label: 'Jira', checked: importJira, toggle: () => { setImportJira(v => !v); setImportTables(false); setImportCsv(false) } },
+                    { icon: <IconTable css={{ width: 20, height: 20 }} />, label: 'Tables', checked: importTables, toggle: () => { setImportTables(v => !v); setImportJira(false); setImportCsv(false) } },
+                    { icon: <IconFileSpreadsheet css={{ width: 20, height: 20 }} />, label: 'CSV', checked: importCsv, toggle: () => { setImportCsv(v => !v); setImportJira(false); setImportTables(false) } },
                   ].map(({ icon, label, checked, toggle }) => (
                     <button
                       key={label}
@@ -366,14 +366,9 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                   variant="primary"
                   size="large"
                   onPress={() => {
-                    const nextStep = importJira ? 'jira' : importTables ? 'miro' : importCsv ? 'csv' : null
-                    if (nextStep) {
-                      setModalFading(true)
-                      setTimeout(() => { setModalStep(nextStep); setModalFading(false) }, 220)
-                    } else {
-                      setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create')
-                      onOpenApp()
-                    }
+                    const importSource = importJira ? 'jira' as const : importTables ? 'miro' as const : importCsv ? 'csv' as const : null
+                    setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create')
+                    onOpenApp(importSource ?? undefined)
                   }}
                 >
                   <Button.Label>{(importJira || importTables || importCsv) ? 'Create and import' : 'Create'}</Button.Label>
@@ -381,9 +376,9 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 <Button
                   variant="ghost"
                   size="large"
-                  onPress={() => { setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create'); onOpenApp() }}
+                  onPress={() => { setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create') }}
                 >
-                  <Button.Label>Skip for now</Button.Label>
+                  <Button.Label>Cancel</Button.Label>
                 </Button>
               </div>
             </>) : modalStep === 'csv' ? (<>
