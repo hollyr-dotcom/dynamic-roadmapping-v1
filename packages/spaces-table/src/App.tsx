@@ -377,6 +377,7 @@ export function App() {
     return <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv') => {
       setView('app')
       setActivePage('backlog')
+      setDatabaseTitle('Backlog')
       setActiveTab('all-items')
       if (importSource) {
         setHasData(false)
