@@ -46,10 +46,9 @@ interface KanbanBoardProps {
   data: SpaceRow[]
   fields: FieldDefinition[]
   columns?: Priority[]
-  onRowClick?: (row: SpaceRow) => void
 }
 
-export function KanbanBoard({ data, fields, columns, onRowClick }: KanbanBoardProps) {
+export function KanbanBoard({ data, fields, columns }: KanbanBoardProps) {
   const columnOrder = columns ?? DEFAULT_COLUMNS
 
   const grouped = useMemo(() => {
@@ -76,7 +75,6 @@ export function KanbanBoard({ data, fields, columns, onRowClick }: KanbanBoardPr
             config={PRIORITY_CONFIG[priority]}
             rows={grouped[priority] ?? []}
             fields={tagFields}
-            onRowClick={onRowClick}
           />
         </div>
       ))}

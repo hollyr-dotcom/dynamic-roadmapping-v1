@@ -137,14 +137,14 @@ tbody tr:hover td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
 
 /* ── Selected background (overrides hover) ────────────── */
 tbody tr.row-selected { position: relative; z-index: 30; }
-tbody tr.row-selected td { background-color: #F1F2F5; }
+tbody tr.row-selected td { background-color: #F2F4FC; }
 tbody tr.row-selected td.divider-first { background: transparent; }
 tbody tr.row-selected td.divider-first::before {
   content: '';
   position: absolute;
   top: 0; bottom: 0;
   left: 56px; right: 0;
-  background: #F1F2F5;
+  background: #F2F4FC;
   border-radius: 8px 0 0 8px;
   z-index: -1;
 }
@@ -295,6 +295,18 @@ tbody tr.row-selected td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
   from { opacity: 1; transform: translateX(-50%) translateY(0); }
   to   { opacity: 0; transform: translateX(-50%) translateY(20px); }
 }
+@keyframes snackbarProgress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+/* ── Page transition out ─────────────────────────────── */
+.page-transitioning-out {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 150ms ease-out, transform 150ms ease-out;
+}
+
 @keyframes bounce {
   0%, 60%, 100% { transform: translateY(0); }
   30%            { transform: translateY(-5px); }

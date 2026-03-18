@@ -13,7 +13,6 @@ interface KanbanColumnProps {
   }
   rows: SpaceRow[]
   fields: FieldDefinition[]
-  onRowClick?: (row: SpaceRow) => void
 }
 
 function ColumnIconButton({ label, color, children }: { label: string; color: string; children: React.ReactNode }) {
@@ -28,7 +27,7 @@ function ColumnIconButton({ label, color, children }: { label: string; color: st
   )
 }
 
-export function KanbanColumn({ priority, config, rows, fields, onRowClick }: KanbanColumnProps) {
+export function KanbanColumn({ priority, config, rows, fields }: KanbanColumnProps) {
   return (
     <div
       className="group flex flex-col h-full"
@@ -84,7 +83,6 @@ export function KanbanColumn({ priority, config, rows, fields, onRowClick }: Kan
             row={row}
             fields={fields}
             borderColor={config.cardBorder}
-            onRowClick={onRowClick}
           />
         ))}
       </div>

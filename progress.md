@@ -72,6 +72,7 @@ Full-screen space with **two pages** (Backlog, Roadmap) and **dynamic views** ac
 |------|-------------|
 | `TopNavBar.tsx` | Fixed nav (shrink-0, outside scroll area) with hamburger (toggles space menu), breadcrumb + scroll-linked database title, notification bell, 3 Unsplash photo avatars, Share button; 8px left / 12px right padding; 1px bottom border (#F1F2F5) fades in on scroll; breadcrumb fades in on scroll even when menu is open |
 | `DatabaseTitle.tsx` | Always-input editable title (32px Roobert), 48px top spacing; sticky left-0 (pinned horizontally, scrolls vertically); 3 CSS-driven states (idle/hover/focused) matching Figma `.Editable Title`; auto-sizing via hidden measuring span; opacity fades out on scroll; updates per page; **three-dots menu** beside title — hover-to-reveal with fade+scale animation (`group/title`), stays visible while dropdown is open (`menuOpen` state via `onOpen`/`onClose`), hidden when title input is focused; all icon buttons baseline-aligned via `self-end mb-[7px]`; **sync indicator** (widget variant only) — `IconArrowUpRight` in blue icon button (`#E8ECFC` bg, `#2B4DF8` icon, 8px radius); appears right of h1 with `ml-1.5` when `syncCount > 1`; always visible (not hover-gated); `sync-in` keyframe animation on entrance; MDS Tooltip "Synced with N other view(s)"; **expand button** (widget variant only) — `IconArrowsOutSimple` icon button, hover-to-reveal pattern, calls `onExitCanvas` to return to full view |
+| `MoveToRoadmapSnackbar.tsx` | Dark snackbar (`#2B2D33`, `#7D8297` border, 8px radius) — `IconCheckMark` + "Record moved to roadmap" + "Open roadmap" ghost button; blue progress bar (`#3859FF`, 4px tall) shrinks over 6s; slides up/down via `toastSlideUp`/`toastSlideDown` keyframes; auto-dismisses after 6s; "Open roadmap" triggers page transition to roadmap with delayed sidebar open |
 | `ViewTabsToolbar.tsx` | Dynamic tabs from `TabConfig[]` prop with **searchable tab overflow popover** (MDS Popover + InputSearch replacing DropdownMenu; auto-focused search input with suppressed focus ring, "Find a view" placeholder, clearable; 16px icons, 36px items with 8px padding matching DropdownMenu.Item spec; 12px container padding; active tab highlighted blue; "No views found" empty state; query resets on close), **right-click context menu** (Rename/Duplicate/Delete with MDS icons, `alignOffset={-8}` to align icons with tab text), **"New View" dropdown** (+ button with `icon-neutrals-subtle`, appears on toolbar hover with fade+scale animation, stays visible while menu is open), **inline tab renaming** (double-click active tab to edit, blur/Enter saves, Escape cancels, tab grows to fit text), and **tab-switch confirmation** (widget variant only) — clicking a non-active tab sets `pendingTabId` instead of switching; shows DropdownMenu with IconUsers "Change view for everyone" and IconArrowUpRight "Make a copy and sync"; tab shows `#F1F2F5` bg while dropdown is open; `pointer-events-none` invisible trigger lets clicks pass through to Tabs.Trigger; **unified 8px border-radius** on all tabs (`Tabs.List` `& button` override) and all `IconButton` components (overflow chevron, add-view, search, AI sidekick, settings, new column); **right-side action buttons** — search, AI sidekick, settings, new column (all medium/32px ghost) with **MDS Tooltips + Hotkey badges** (Search ⌘F, AI Sidekick ⌘K, View settings ⌘,, New column +); new column dropdown is controlled (`newColumnMenuOpen` prop from App.tsx); sticky top-0 left-0 z-20 within scroll area; exports `SidebarId`, `TabConfig`, `ViewType`, and `MENU_WIDTH` |
 
 ### Sidebar Components (`src/components/sidebar/`)
@@ -93,9 +94,9 @@ Full-screen space with **two pages** (Backlog, Roadmap) and **dynamic views** ac
 | File | Description |
 |------|-------------|
 | `index.ts` | Barrel export — single public surface (`DataTable`) |
-| `DataTable.tsx` | Accepts `data: SpaceRow[]` and `fields: FieldDefinition[]` props; selection state, click-outside handler, composes TableHeader + TableRow; table has `min-width: 100%` so rows stretch to viewport; `item-enter` animation on mount |
+| `DataTable.tsx` | Accepts `data: SpaceRow[]` and `fields: FieldDefinition[]` props; selection state, click-outside handler, composes TableHeader + TableRow; table has `min-width: 100%` so rows stretch to viewport; `item-enter` animation on mount; threads `onMoveToRoadmap` and `showMoveToRoadmap` props to rows |
 | `TableHeader.tsx` | Sticky `<thead>` (top-16, below tabs toolbar within scroll area), bookmark icon on primary field, 56px tall, 14px Noto Sans semibold #656B81; fixed column widths (480px primary, 208px data); first column `w-0` to prevent expansion; trailing `table-fill` column absorbs remaining space |
-| `TableRow.tsx` | Single `<tr>` — row number, drag handle, comment button (0px margin, no layout shift between idle/hover), MDS DropdownMenu context menu (Duplicate/Delete with icons), cells (12px horizontal padding); trailing `table-fill` column with divider line + rounded hover/selection highlight via `::before`/`::after` |
+| `TableRow.tsx` | Single `<tr>` — row number, drag handle, comment button (0px margin, no layout shift between idle/hover), MDS DropdownMenu context menu (9 items + 3 separators: Open in side panel, View comments, Move to roadmap, Add record above/below, Add sub-record, Duplicate, Delete; "Move to roadmap" is functional on backlog page only, others close menu), cells (12px horizontal padding); trailing `table-fill` column with divider line + rounded hover/selection highlight via `::before`/`::after`; selected row bg `#F2F4FC` (light blue) |
 | `CellRenderer.tsx` | Field-type dispatcher — routes to the correct cell component (text, number, currency, avatars, status) |
 | `cells/TextCell.tsx` | Text cell (14px Noto Sans regular) |
 | `cells/NumberCell.tsx` | Number cell with locale formatting (Noto Sans) |
@@ -255,7 +256,7 @@ packages/
     src/components/ (SidePanel, AiBar, FilterPage, SectionHeader, SettingCell, FieldRow)
     src/lib/filterParser.ts, filterParser.test.ts
   spaces-table/
-    src/components/page/ (TopNavBar, DatabaseTitle, ViewTabsToolbar, JiraImportModal)
+    src/components/page/ (TopNavBar, DatabaseTitle, ViewTabsToolbar, JiraImportModal, MoveToRoadmapSnackbar)
     src/components/sidebar/ (SidebarShell, SpaceMenu, AiSidekickPanel, SidePanel, AiBar, FilterPage, SectionHeader, SettingCell, FieldRow)
     src/components/table/ (index, DataTable, TableHeader, TableRow, CellRenderer)
     src/components/table/cells/ (TextCell, NumberCell, CurrencyCell, AvatarStackCell, StatusCell)
@@ -293,16 +294,32 @@ docs/plans/
 - **Disabled auto-opens** — AI Sidekick sidebar no longer opens on app load; Insights modal removed from app open flow; share step skipped in import journey
 
 **Next:**
-- Polish Jira import modal transitions and content
 - Design and build import step modals for Tables and CSV sources
 - End-to-end test: dropdown → modal → empty state → import → populated table
 - Wire "Enrich data" toggle to downstream behaviour
+
+### Immediate — Promote to Roadmap flow (`flow-promote-to-roadmap`)
+
+**Done:**
+- Restored Jira ID column to backlog fields (was removed in PR #5 merge)
+- `sampleData` and `roadmapData` converted from static imports to React state (`backlogData`/`roadmapItems`) in App.tsx for data mutation
+- Expanded row context menu from 2 items to full Figma spec: Open in side panel, View comments, Move to roadmap (with separator), Add record above/below, Add sub-record, Duplicate, Delete — 9 items + 3 separators; inline SVG icons for `IconAddLineTop`, `IconAddLineBottom`, `IconFilledBottomBox` (not in MDS)
+- "Move to roadmap" functional on backlog page only — removes row from backlog, adds to roadmap with `status: 'planning'`
+- Selected row background changed to light blue `#F2F4FC` (was neutral `#F1F2F5`)
+- `MoveToRoadmapSnackbar` component — dark pill matching Figma design, checkmark + "Record moved to roadmap" + "Open roadmap" action button, blue progress bar shrinking over 6s, auto-dismiss with slide-down
+- "Open roadmap" action triggers page transition: content fades out (150ms, `page-transitioning-out` CSS class), switches to Roadmap "All items" tab, then opens row detail sidebar after 400ms delay showing the moved record
+- `handleMoveToRoadmap` closes any open sidebar to prevent stale row detail from lingering
+
+**In progress:**
+- Row detail sidebar still opens on row click before context menu appears — need to prevent sidebar opening when user intends to use the context menu (dots click → select → menu flow should not trigger `onRowClick`)
 
 ### Other immediate
 - **Sync mode communication** — design how read-only vs two-way sync modes are communicated to users on canvas widgets (sync indicator, UI affordances, state differences)
 - Canvas widget polish — resize widget, widget-to-widget navigation (clicking sync indicator scrolls/pans to linked widget)
 
 ### Recently completed
+- **Jira import animation** (`flow-import-jira-pre-merge`) — staggered row-by-row import animation with accelerating ease-in curve (cubic `t³`); rows stream in over ~1.8s with slow start and rapid finish; table header fades in first, then rows cascade with subtle blue arrival wash; toast notification deferred until all rows have landed (600ms pause after last row); toast visibility extended to 4 seconds; cherry-picked Jira detail panel, TopNavBar share tooltip, JiraPanel and RowDetailPanel updates from main while preserving pill tooltips, Jira ID column, and timeline Jira logo approach
+- **Jira integration** (`feature-jira`) — added jiraId field type with Jira logo + key in table cells and kanban card tags; Jira import modal polished (matching sample data titles, cleaner layout, status pills, "Import Jira issues" header, IconCog for settings); replaced MDS IconSocialJira with Figma asset logo on all timeline rows; tooltips on import/enrichment pills in creation modal; description tags filtered from kanban cards; 8/10 issues pre-selected for demo flow
 - **Visual fixes** (`improvement-visual-fixes`) — tightened spacing between drag handle and comment button on table rows; row hover/selection highlight end caps aligned with divider insets (left cap starts at 56px, right cap rounds last data cell via `:has(+ td.table-fill)`); removed unused `row-drag` element and CSS; narrowed description column to 320px (⅔ title width) with ellipsis truncation; breadcrumb nudged 2px right; view settings sidebar disabled; title cells and kanban card titles changed from semibold to regular weight; kanban card titles wrap up to 3 lines before truncating
 - **Sticky headers & scroll improvements** (`improvement-sticky-headers`) — table header sticks below tabs; kanban column headers stick with gap coverage; timeline date headers stick below tabs; DatabaseTitle fades instead of scaling; kanban columns stretch to equal height; horizontal scroll only moves content (tabs/title pinned via `sticky left-0`); timeline integrated into main page scroll with `parentScrollRef` for drag-to-pan; space menu button click propagation fixed
 - **Brownfield creation flow** — see above

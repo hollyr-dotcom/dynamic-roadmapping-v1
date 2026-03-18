@@ -1,9 +1,6 @@
 import { useState, useRef } from 'react'
 import { roadmapData } from '@spaces/shared'
-import type { SpaceRow } from '@spaces/shared'
 const JIRA_LOGO = 'https://www.figma.com/api/mcp/asset/f169e443-27f1-401b-994d-4f720c63f0c7'
-const JIRA_ITEMS = new Set(['r2', 'r3', 'r7', 'r8'])
-
 const DAY_WIDTH = 48
 const BAR_HEIGHT = 40
 const ROW_HEIGHT = 56
@@ -104,11 +101,9 @@ type PanState = { startX: number; startScrollLeft: number }
 
 interface TimelinePlaceholderProps {
   parentScrollRef: React.RefObject<HTMLDivElement | null>
-  onRowClick?: (row: SpaceRow, dates: { startDate: string; endDate: string }) => void
-  onJiraRowClick?: (row: SpaceRow) => void
 }
 
-export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClick }: TimelinePlaceholderProps) {
+export function TimelinePlaceholder({ parentScrollRef }: TimelinePlaceholderProps) {
   const [positions, setPositions] = useState<Record<string, [number, number]>>(INITIAL_POSITIONS)
   const [rowOrder, setRowOrder] = useState<string[]>(() => timelineItems.map(r => r.id))
   const [draggingId, setDraggingId] = useState<string | null>(null)
@@ -180,9 +175,8 @@ export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClic
     }
   }
 
-  const endDrag = (e: React.PointerEvent, row?: SpaceRow) => {
+  const endDrag = (e: React.PointerEvent) => {
     const state = dragRef.current
-    const wasDrag = state && (Math.abs(e.clientX - state.startX) > 4 || Math.abs(e.clientY - state.startY) > 4)
 
     // Commit row reorder
     if (state?.type === 'move' && dragTargetRow !== null && dragTargetRow !== state.origRowIndex) {
@@ -200,15 +194,6 @@ export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClic
     setDraggingId(null)
     setDragTargetRow(null)
     ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
-
-    if (!wasDrag && row) {
-      if (JIRA_ITEMS.has(row.id)) {
-        onJiraRowClick?.(row)
-      } else {
-        const [startOff, len] = positions[row.id]
-        onRowClick?.(row, { startDate: offsetToDate(startOff), endDate: offsetToDate(startOff + len) })
-      }
-    }
   }
 
   const onPanStart = (e: React.PointerEvent) => {
@@ -328,7 +313,7 @@ export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClic
               }}
               onPointerDown={e => startDrag(e, row.id, 'move')}
               onPointerMove={e => onPointerMove(e, row.id)}
-              onPointerUp={e => endDrag(e, row)}
+              onPointerUp={e => endDrag(e)}
             >
               {/* Left resize handle */}
               <div

@@ -4,7 +4,6 @@ interface KanbanCardProps {
   row: SpaceRow
   fields: FieldDefinition[]
   borderColor: string
-  onRowClick?: (row: SpaceRow) => void
 }
 
 const JIRA_LOGO = 'https://www.figma.com/api/mcp/asset/f169e443-27f1-401b-994d-4f720c63f0c7'
@@ -56,7 +55,7 @@ function FieldTag({ field, row }: { field: FieldDefinition; row: SpaceRow }) {
   )
 }
 
-export function KanbanCard({ row, fields, borderColor, onRowClick }: KanbanCardProps) {
+export function KanbanCard({ row, fields, borderColor }: KanbanCardProps) {
   return (
     <div
       className="rounded-lg bg-white overflow-hidden"
@@ -64,9 +63,7 @@ export function KanbanCard({ row, fields, borderColor, onRowClick }: KanbanCardP
         border: `1.5px solid ${borderColor}`,
         borderBottomWidth: 6,
         boxShadow: '0px 2px 4px rgba(34,36,40,0.08)',
-        cursor: onRowClick ? 'pointer' : undefined,
       }}
-      onClick={() => onRowClick?.(row)}
     >
       <div className="px-4 py-3">
         <p
