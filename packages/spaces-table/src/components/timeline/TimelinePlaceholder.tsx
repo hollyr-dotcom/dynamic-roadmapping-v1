@@ -13,8 +13,9 @@ const STICKY_GAP_COVER = '0 -12px 0 0 white'
 
 // View: March 1 – April 15, 2026
 const VIEW_START = new Date(2026, 2, 1)
-const TODAY = new Date(2026, 2, 15)
+const TODAY = new Date()
 const TOTAL_DAYS = 46
+const GRID_TOP_OFFSET = (ROW_HEIGHT - BAR_HEIGHT) / 2  // extra top padding = gap between bars
 
 const PEOPLE: Record<string, { avatar: string }> = {
   r1:  { avatar: 'https://i.pravatar.cc/40?img=47' },
@@ -290,7 +291,7 @@ const [selectedBarId, setSelectedBarId] = useState<string | null>(null)
         {days.map(day => (
           <div key={day.offset} style={{ width: DAY_WIDTH, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             {day.isToday ? (
-              <span style={{ width: 24, height: 24, borderRadius: '50%', backgroundColor: '#EDEDED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#333' }}>
+              <span style={{ width: 24, height: 24, borderRadius: '50%', backgroundColor: '#1a1b1e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: 'white' }}>
                 {day.num}
               </span>
             ) : (
@@ -313,7 +314,7 @@ const [selectedBarId, setSelectedBarId] = useState<string | null>(null)
           <div style={{
             position: 'absolute',
             left: 0, width: '100%',
-            top: (dragTargetRow + (ghostRow ? 1 : 0)) * ROW_HEIGHT,
+            top: GRID_TOP_OFFSET + (dragTargetRow + (ghostRow ? 1 : 0)) * ROW_HEIGHT,
             height: ROW_HEIGHT,
             backgroundColor: '#F1F2F5',
             borderTop: 'none',
@@ -333,7 +334,7 @@ const [selectedBarId, setSelectedBarId] = useState<string | null>(null)
             style={{
               position: 'absolute',
               left: 0,
-              top: 0,
+              top: GRID_TOP_OFFSET,
               width: TOTAL_WIDTH,
               height: ROW_HEIGHT,
               zIndex: 20,
@@ -408,7 +409,7 @@ const [selectedBarId, setSelectedBarId] = useState<string | null>(null)
               style={{
                 position: 'absolute',
                 left: startOff * DAY_WIDTH,
-                top: rowIndex * ROW_HEIGHT + (ROW_HEIGHT - BAR_HEIGHT) / 2,
+                top: GRID_TOP_OFFSET + rowIndex * ROW_HEIGHT + (ROW_HEIGHT - BAR_HEIGHT) / 2,
                 width: len * DAY_WIDTH - 4,
                 height: BAR_HEIGHT,
                 backgroundColor: 'white',
@@ -474,7 +475,7 @@ const [selectedBarId, setSelectedBarId] = useState<string | null>(null)
           if (!selectedRow) return null
           const [sOff, sLen] = positions[selectedBarId]
           const sRowIndex = displayOrder.indexOf(selectedBarId) + (ghostRow ? 1 : 0)
-          const barTop = sRowIndex * ROW_HEIGHT + (ROW_HEIGHT - BAR_HEIGHT) / 2
+          const barTop = GRID_TOP_OFFSET + sRowIndex * ROW_HEIGHT + (ROW_HEIGHT - BAR_HEIGHT) / 2
           const barLeft = sOff * DAY_WIDTH
           const barWidth = sLen * DAY_WIDTH - 4
           return (
