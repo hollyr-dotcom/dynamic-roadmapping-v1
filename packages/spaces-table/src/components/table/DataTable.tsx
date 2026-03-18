@@ -32,6 +32,8 @@ interface DataTableProps {
 export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete }: DataTableProps) {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const tableRef = useRef<HTMLDivElement>(null)
+  const hasImportedRef = useRef(false)
+  if (isImporting) hasImportedRef.current = true
 
   // Deselect when clicking outside the table
   useEffect(() => {
@@ -79,7 +81,7 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
   }
 
   return (
-    <div ref={tableRef} className={`w-full shrink-0 ${!isImporting ? 'item-enter' : ''}`} style={!isImporting ? { animationDelay: '80ms' } : undefined} onClick={insightsAllDots ? onTableInteract : undefined}>
+    <div ref={tableRef} className={`w-full shrink-0 ${!isImporting && !hasImportedRef.current ? 'item-enter' : ''}`} style={!isImporting && !hasImportedRef.current ? { animationDelay: '80ms' } : undefined} onClick={insightsAllDots ? onTableInteract : undefined}>
       <table className="border-separate" style={{ borderSpacing: 0, minWidth: '100%' }}>
         <TableHeader fields={fields} className={isImporting ? 'import-header-enter' : undefined} />
         <tbody>
