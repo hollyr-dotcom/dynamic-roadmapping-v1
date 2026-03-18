@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FieldDefinition, SpaceRow } from '@spaces/shared'
-import { IconDotsSixVertical, IconChatPlus, DropdownMenu, IconSquaresTwoOverlap, IconTrash, Popover, Button } from '@mirohq/design-system'
+import { IconDotsSixVertical, IconChatPlus, IconCross, DropdownMenu, IconSquaresTwoOverlap, IconTrash, Popover, Button } from '@mirohq/design-system'
 import { CellRenderer } from './CellRenderer'
 import { MENU_WIDTH } from '../page/ViewTabsToolbar'
 
@@ -118,7 +118,7 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
                 borderRadius: 8,
                 width: 300,
                 minWidth: 300,
-                padding: '16px 32px 16px 16px',
+                padding: '16px 16px 16px 16px',
                 boxShadow: '0px 8px 32px rgba(5, 0, 56, 0.08)',
                 display: 'flex',
                 flexDirection: 'column',
@@ -137,6 +137,25 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
               >
                 <path d="M0 6 L6 0 L12 6Z" fill="#1A1B1E" />
               </svg>
+              {/* Close icon */}
+              <button
+                onClick={() => setOpenField(null)}
+                style={{
+                  position: 'absolute',
+                  top: 12,
+                  right: 12,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  color: '#AEB2C0',
+                }}
+              >
+                <IconCross css={{ width: 16, height: 16 }} />
+              </button>
               <p
                 style={{
                   fontSize: 14,
@@ -154,13 +173,6 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
                   onPress={() => { setOpenField(null); onRowClick?.(row) }}
                 >
                   View Insights
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="medium"
-                  onPress={() => setOpenField(null)}
-                >
-                  Close
                 </Button>
               </div>
             </Popover.Content>
