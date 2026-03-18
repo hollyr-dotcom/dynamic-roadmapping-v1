@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import type { FieldDefinition, SpaceRow } from '@spaces/shared'
-import { IconDotsSixVertical, IconChatPlus, DropdownMenu, IconSquaresTwoOverlap, IconTrash } from '@mirohq/design-system'
+import { IconDotsSixVertical, IconChatPlus, DropdownMenu, IconSquaresTwoOverlap, IconTrash, Popover, Button } from '@mirohq/design-system'
 import { CellRenderer } from './CellRenderer'
 import { MENU_WIDTH } from '../page/ViewTabsToolbar'
 
@@ -37,6 +38,8 @@ function RowContextMenu({ onDuplicate, onDelete }: { onDuplicate: () => void; on
 }
 
 export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDeselect, onRowClick, onCompanyClick, isUpdated, importDelay }: TableRowProps) {
+  const [openField, setOpenField] = useState<string | null>(null)
+
   const importStyle = importDelay !== undefined ? {
     opacity: 0,
     animation: `row-import-enter 300ms cubic-bezier(0.16, 1, 0.3, 1) ${importDelay}ms forwards, row-arrival-wash 600ms ease ${importDelay + 300}ms forwards`,
@@ -93,7 +96,88 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
           className="px-3 border-b border-[#F1F2F5]"
           style={field.id === 'description' ? { maxWidth: '320px' } : undefined}
         >
-          <CellRenderer field={field} row={row} onAvatarChipClick={onCompanyClick ? (name) => onCompanyClick(row, name) : undefined} />
+          <Popover
+            open={openField === field.id}
+            onOpen={() => {}}
+            onClose={() => setOpenField(null)}
+          >
+            <Popover.Trigger asChild>
+              <div
+                style={{ width: '100%' }}
+                onClick={(e) => { e.stopPropagation(); setOpenField(field.id) }}
+              >
+                <CellRenderer field={field} row={row} onAvatarChipClick={onCompanyClick ? (name) => onCompanyClick(row, name) : undefined} />
+              </div>
+            </Popover.Trigger>
+            <Popover.Content
+              side="bottom"
+              align="start"
+              sideOffset={9}
+              css={{
+                background: '#1A1B1E',
+                borderRadius: 8,
+                width: 300,
+                minWidth: 300,
+                padding: '16px 16px 16px 16px',
+                boxShadow: '0px 8px 32px rgba(5, 0, 56, 0.08)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 12,
+                border: 'none',
+                outline: 'none',
+                '&::before': { display: 'none' },
+                '&::after': { display: 'none' },
+                '& svg[aria-hidden="true"]': { display: 'none' },
+              }}
+            >
+              {/* Caret */}
+              <svg
+                width="12" height="6" viewBox="0 0 12 6"
+                style={{ position: 'absolute', top: -6, left: 16, display: 'block' }}
+              >
+                <path d="M0 6 L6 0 L12 6Z" fill="#1A1B1E" />
+              </svg>
+              {/* Close icon */}
+              <button
+                onClick={() => setOpenField(null)}
+                style={{
+                  position: 'absolute',
+                  top: 12,
+                  right: 12,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M12 4L4 12M4 4l8 8" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </button>
+              <p
+                style={{
+                  fontSize: 14,
+                  color: '#AEB2C0',
+                  lineHeight: 1.4,
+                  fontFamily: 'Open Sans, sans-serif',
+                }}
+              >
+                This field is read-only.
+              </p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <Button
+                  variant="primary"
+                  size="medium"
+                  onPress={() => { setOpenField(null); onRowClick?.(row) }}
+                >
+                  View Insights
+                </Button>
+              </div>
+            </Popover.Content>
+          </Popover>
         </td>
       ))}
 

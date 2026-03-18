@@ -129,7 +129,7 @@ export function InsightsChatPanel({ onClose }: InsightsChatPanelProps) {
           className="text-[16px] text-[#222428] leading-[1.4]"
           style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}
         >
-          Miro Insights
+          Customer Insights Agent
         </span>
         <span
           className="inline-flex items-center rounded-[4px] px-[6px] h-[20px] text-[11px] font-semibold text-[#3C3F4A] shrink-0"
