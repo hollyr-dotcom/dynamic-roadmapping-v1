@@ -751,17 +751,16 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             </div>
           )}
           <div
-            className="fixed bottom-6 left-6 z-[9999] flex items-center gap-3 rounded-lg"
+            className="fixed bottom-6 left-6 z-[9999] flex items-start overflow-visible rounded-[8px]"
             style={{
               backgroundColor: '#2B2D33',
               boxShadow: '0px 6px 16px rgba(34,36,40,0.12), 0px 0px 8px rgba(34,36,40,0.06)',
-              width: 280,
-              padding: '16px 40px 16px 16px',
-              overflow: 'visible',
+              width: 340,
+              padding: '16px 120px 16px 16px',
               animation: feedbackToastExiting ? 'toastSlideDownLeft 0.3s ease forwards' : 'toastSlideUpLeft 0.25s ease',
             }}
           >
-            <div className="reaction-pop absolute pointer-events-none" style={{ top: -84, right: -24, zIndex: 1 }}>
+            <div className="reaction-pop absolute pointer-events-none" style={{ top: -84, right: -44, zIndex: 1 }}>
               <img src="/amazing-reaction.png" alt="" style={{ width: 160, height: 160, pointerEvents: 'none' }} />
             </div>
             <div className="flex flex-col gap-0 flex-1 min-w-0">
