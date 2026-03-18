@@ -585,12 +585,12 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             <InsightSection label="Impact estimates">
               <div className="flex flex-col gap-0 w-full">
                 <div className="flex gap-3">
-                  <StatBox value={adjMentions} format={n => String(n)} label="Total Mentions" />
-                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Unique Customers" />
+                  <StatBox value={adjMentions} format={n => String(n)} label="Total Mentions" wow={12.1} />
+                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Unique Customers" wow={-3.2} />
                 </div>
                 <div className="flex gap-3">
-                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" />
-                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Potential Revenue at Risk" />
+                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" wow={8.7} />
+                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Potential Revenue at Risk" wow={21.4} />
                 </div>
               </div>
             </InsightSection>
@@ -1193,13 +1193,20 @@ function useAnimatedNumber(target: number, duration = 600): number {
   return displayed
 }
 
-function StatBox({ value, format, label }: { value: number; format: (n: number) => string; label: string }) {
+function StatBox({ value, format, label, wow }: { value: number; format: (n: number) => string; label: string; wow?: number }) {
   const animated = useAnimatedNumber(value)
   return (
     <div className="flex-1 flex flex-col gap-1 pb-3">
-      <span className="text-[32px] text-[#222428] leading-[1.2]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1", display: 'block' }}>
-        {format(animated)}
-      </span>
+      <div className="flex items-baseline gap-2">
+        <span className="text-[32px] text-[#222428] leading-[1.2]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1", display: 'block' }}>
+          {format(animated)}
+        </span>
+        {wow !== undefined && (
+          <span style={{ fontSize: 10, fontWeight: 400, color: '#656B81', lineHeight: 1 }}>
+            {wow >= 0 ? '+' : ''}{wow}% WoW
+          </span>
+        )}
+      </div>
       <span className="flex items-center gap-1 text-[14px] text-[#656B81] leading-[1.4]">
         {label}
         {label === 'Potential Revenue at Risk' && (
