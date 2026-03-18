@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { sampleData, fields, roadmapData, roadmapFields } from '@spaces/shared'
-import type { Priority, SpaceRow } from '@spaces/shared'
+import type { Priority, SpaceRow, Status } from '@spaces/shared'
 import { TopNavBar } from './components/page/TopNavBar'
 import { DatabaseTitle } from './components/page/DatabaseTitle'
 import { ViewTabsToolbar, type SidebarId, type TabConfig, type ViewType } from './components/page/ViewTabsToolbar'
@@ -22,6 +22,7 @@ import { CanvasOverlay } from './components/canvas/CanvasOverlay'
 import { CanvasTableWidget } from './components/canvas/CanvasTableWidget'
 import { CanvasNavPanels } from './components/canvas/CanvasNavPanels'
 import { CanvasFeedbackCard, type FeedbackCardData } from './components/canvas/CanvasFeedbackCard'
+import { MoveToRoadmapSnackbar } from './components/page/MoveToRoadmapSnackbar'
 
 type PageId = 'backlog' | 'roadmap'
 
@@ -74,6 +75,8 @@ export function App() {
   const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
   const [pendingImport, setPendingImport] = useState<'jira' | 'miro' | 'csv' | null>(null)
   const [hasData, setHasData] = useState(true)
+  const [backlogData, setBacklogData] = useState<SpaceRow[]>(sampleData)
+  const [roadmapItems, setRoadmapItems] = useState<SpaceRow[]>(roadmapData)
   const [activeTab, setActiveTab] = useState('all-items')
   const [pageTabs, setPageTabs] = useState<Record<PageId, TabConfig[]>>({
     backlog: PAGE_CONFIGS.backlog.tabs,
@@ -90,6 +93,7 @@ export function App() {
   const [newColumnMenuOpen, setNewColumnMenuOpen] = useState(false)
   const [canvasOpen, setCanvasOpen] = useState(false)
   const [navHovered, setNavHovered] = useState(false)
+  const [kanbanCardSelected, setKanbanCardSelected] = useState(false)
 
   // Canvas pan/zoom/selection state
   const [panX, setPanX] = useState(0)
@@ -103,6 +107,10 @@ export function App() {
   const [syncShimmering, setSyncShimmering] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
   const [pendingToast, setPendingToast] = useState(false)
+  const [movedRow, setMovedRow] = useState<SpaceRow | null>(null)
+  const [showMoveSnackbar, setShowMoveSnackbar] = useState(false)
+  const [pageTransitioning, setPageTransitioning] = useState(false)
+  const [ghostRowId, setGhostRowId] = useState<string | null>(null)
 
   const handleImportComplete = useCallback(() => {
     setIsImporting(false)
@@ -112,6 +120,21 @@ export function App() {
       setTimeout(() => setShowShareTooltip(true), 4000)
     }
   }, [pendingToast])
+
+  const handleMoveToRoadmap = useCallback((rowId: string) => {
+    setBacklogData(prev => {
+      const row = prev.find(r => r.id === rowId)
+      if (!row) return prev
+      const movedWithStatus = { ...row, status: 'planning' as Status }
+      setRoadmapItems(ri => [...ri, movedWithStatus])
+      setMovedRow(movedWithStatus)
+      setShowMoveSnackbar(true)
+      return prev.filter(r => r.id !== rowId)
+    })
+    // Close any open sidebar so the row detail doesn't linger
+    setActiveSidebar(null)
+    setSelectedRow(null)
+  }, [])
 
   const toggleSidebar = useCallback((id: SidebarId) =>
     setActiveSidebar((prev) => (prev === id ? null : id)), [])
@@ -221,6 +244,30 @@ export function App() {
       setScrollFade(0)
     }
   }, [activePage])
+
+  const handleOpenMovedRow = useCallback(() => {
+    setShowMoveSnackbar(false)
+    setPageTransitioning(true)
+    setTimeout(() => {
+      setActivePage('roadmap')
+      setActiveTab('roadmap')
+      setDatabaseTitle('Roadmap')
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = 0
+        setScrollFade(0)
+      }
+      setPageTransitioning(false)
+      // Open sidebar with the moved row after transition
+      if (movedRow) {
+        setSelectedRow(movedRow)
+        setSelectedRowDates({ startDate: '—', endDate: '—' })
+        setInitialCompany(undefined)
+        setActiveSidebar('row-detail')
+        setGhostRowId(movedRow.id)
+      }
+      setMovedRow(null)
+    }, 150)
+  }, [movedRow])
 
   const handleAddView = useCallback((type: ViewType) => {
     const currentTabs = pageTabs[activePage]
@@ -369,7 +416,7 @@ export function App() {
   // Dynamic view rendering
   const currentTabs = pageTabs[activePage]
   const activeTabConfig = currentTabs.find(t => t.id === activeTab)
-  const pageData = hasData ? (activePage === 'backlog' ? sampleData : roadmapData) : []
+  const pageData = hasData ? (activePage === 'backlog' ? backlogData : roadmapItems) : []
   const pageFields = activePage === 'backlog' ? fields : roadmapFields
   const viewData = activeTab === 'done' ? pageData.filter(r => r.status === 'done') : pageData
 
@@ -416,23 +463,23 @@ export function App() {
           />
         </div>
         {/* Scroll area — vertical + horizontal, table header sticks below toolbar */}
-        <div ref={scrollRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-auto page-scroll flex flex-col">
+        <div ref={scrollRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-auto page-scroll flex flex-col${pageTransitioning ? ' page-transitioning-out' : ''}`}>
           <div className="sticky left-0" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
             <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} />
           </div>
-          <div className="sticky top-0 left-0 z-20" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
+          <div className={`sticky top-0 left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
             <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} />
           </div>
 
           {/* Type-based view renderer */}
           {activeTabConfig?.type === 'table' && (
-              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail') }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} />
+              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail') }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} />
           )}
           {activeTabConfig?.type === 'kanban' && (
-            <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} />
+            <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onCardSelectedChange={setKanbanCardSelected} />
           )}
           {activeTabConfig?.type === 'timeline' && (
-            <TimelinePlaceholder key={activeTab} parentScrollRef={scrollRef} onRowClick={(row, dates) => { setSelectedRow(row); setSelectedRowDates(dates); setInitialCompany(undefined); setIsJiraDetailOpen(false); setActiveSidebar('row-detail') }} onJiraRowClick={(row) => { setSelectedJiraRow(row); setSelectedRow(row); setSelectedRowDates(undefined); setIsJiraDetailOpen(true); setActiveSidebar('row-detail') }} />
+            <TimelinePlaceholder key={activeTab} data={roadmapItems} parentScrollRef={scrollRef} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onBarSelectedChange={setKanbanCardSelected} ghostRowId={ghostRowId ?? undefined} onBarPlaced={(rowId, startDate, endDate) => { setSelectedRowDates({ startDate, endDate }); setGhostRowId(null) }} />
           )}
         </div>
       </div>
@@ -460,8 +507,8 @@ export function App() {
         )}
       </div>
 
-      {/* Right sidebar backdrop */}
-      {isRightOpen && (
+      {/* Right sidebar backdrop — suppressed during ghost bar placement so the timeline receives pointer events */}
+      {isRightOpen && !ghostRowId && (
         <div
           className="fixed inset-0 z-40"
           onClick={closeSidebar}
@@ -601,6 +648,13 @@ export function App() {
 
       {showInsightsToast && (
         <InsightsToast onDismiss={() => setShowInsightsToast(false)} />
+      )}
+
+      {showMoveSnackbar && (
+        <MoveToRoadmapSnackbar
+          onAction={handleOpenMovedRow}
+          onDismiss={() => { setShowMoveSnackbar(false); setMovedRow(null) }}
+        />
       )}
 
     </div>

@@ -1,10 +1,14 @@
 import type { SpaceRow, FieldDefinition } from '@spaces/shared'
+import { KanbanCardToolbar } from './KanbanCardToolbar'
 
 interface KanbanCardProps {
   row: SpaceRow
   fields: FieldDefinition[]
   borderColor: string
-  onRowClick?: (row: SpaceRow) => void
+  isSelected?: boolean
+  onSelect?: () => void
+  onOpenSidePanel?: () => void
+  onMoveToRoadmap?: () => void
 }
 
 const JIRA_LOGO = 'https://www.figma.com/api/mcp/asset/f169e443-27f1-401b-994d-4f720c63f0c7'
@@ -56,30 +60,44 @@ function FieldTag({ field, row }: { field: FieldDefinition; row: SpaceRow }) {
   )
 }
 
-export function KanbanCard({ row, fields, borderColor, onRowClick }: KanbanCardProps) {
+export function KanbanCard({ row, fields, borderColor, isSelected, onSelect, onOpenSidePanel, onMoveToRoadmap }: KanbanCardProps) {
   return (
     <div
-      className="rounded-lg bg-white overflow-hidden"
-      style={{
-        border: `1.5px solid ${borderColor}`,
-        borderBottomWidth: 6,
-        boxShadow: '0px 2px 4px rgba(34,36,40,0.08)',
-        cursor: onRowClick ? 'pointer' : undefined,
-      }}
-      onClick={() => onRowClick?.(row)}
+      className="relative"
+      style={{ zIndex: isSelected ? 50 : undefined, cursor: onSelect ? 'pointer' : undefined }}
+      onClick={onSelect}
     >
-      <div className="px-4 py-3">
-        <p
-          className="font-body text-sm font-normal text-[#222428] leading-snug m-0 overflow-hidden"
-          style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}
-        >
-          {row.title}
-        </p>
+      {isSelected && onOpenSidePanel && (
+        <KanbanCardToolbar
+          onOpenSidePanel={onOpenSidePanel}
+          onMoveToRoadmap={onMoveToRoadmap}
+        />
+      )}
+      <div
+        className="rounded-lg bg-white overflow-hidden"
+        style={{
+          border: `1.5px solid ${borderColor}`,
+          borderBottomWidth: 6,
+          boxShadow: '0px 2px 4px rgba(34,36,40,0.08)',
+          outline: isSelected ? '3px solid #3859FF' : 'none',
+          outlineOffset: isSelected ? 4 : 0,
+          borderRadius: 8,
+          transition: 'outline 150ms ease, outline-offset 150ms ease',
+        }}
+      >
+        <div className="px-4 py-3">
+          <p
+            className="font-body text-sm font-normal text-[#222428] leading-snug m-0 overflow-hidden"
+            style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}
+          >
+            {row.title}
+          </p>
 
-        <div className="flex flex-wrap gap-2 mt-2">
-          {fields.filter(field => field.id !== 'description').map(field => (
-            <FieldTag key={field.id} field={field} row={row} />
-          ))}
+          <div className="flex flex-wrap gap-2 mt-2">
+            {fields.filter(field => field.id !== 'description').map(field => (
+              <FieldTag key={field.id} field={field} row={row} />
+            ))}
+          </div>
         </div>
       </div>
     </div>

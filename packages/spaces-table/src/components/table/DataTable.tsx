@@ -27,9 +27,11 @@ interface DataTableProps {
   onTableInteract?: () => void
   isImporting?: boolean
   onImportComplete?: () => void
+  onMoveToRoadmap?: (rowId: string) => void
+  showMoveToRoadmap?: boolean
 }
 
-export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete }: DataTableProps) {
+export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete, onMoveToRoadmap, showMoveToRoadmap }: DataTableProps) {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const tableRef = useRef<HTMLDivElement>(null)
   const hasImportedRef = useRef(false)
@@ -98,6 +100,8 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
               onRowClick={onRowClick}
               onCompanyClick={onCompanyClick}
               importDelay={isImporting ? getRowDelay(idx, data.length) : undefined}
+              onMoveToRoadmap={onMoveToRoadmap}
+              showMoveToRoadmap={showMoveToRoadmap}
             />
           ))}
         </tbody>

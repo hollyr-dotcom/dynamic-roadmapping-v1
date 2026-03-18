@@ -1,9 +1,7 @@
-import { useState, useRef } from 'react'
-import { roadmapData } from '@spaces/shared'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import type { SpaceRow } from '@spaces/shared'
+import { KanbanCardToolbar } from '../kanban/KanbanCardToolbar'
 const JIRA_LOGO = 'https://www.figma.com/api/mcp/asset/f169e443-27f1-401b-994d-4f720c63f0c7'
-const JIRA_ITEMS = new Set(['r2', 'r3', 'r7', 'r8'])
-
 const DAY_WIDTH = 48
 const BAR_HEIGHT = 40
 const ROW_HEIGHT = 56
@@ -15,8 +13,9 @@ const STICKY_GAP_COVER = '0 -12px 0 0 white'
 
 // View: March 1 – April 15, 2026
 const VIEW_START = new Date(2026, 2, 1)
-const TODAY = new Date(2026, 2, 15)
+const TODAY = new Date()
 const TOTAL_DAYS = 46
+const GRID_TOP_OFFSET = (ROW_HEIGHT - BAR_HEIGHT) / 2  // extra top padding = gap between bars
 
 const PEOPLE: Record<string, { avatar: string }> = {
   r1:  { avatar: 'https://i.pravatar.cc/40?img=47' },
@@ -80,15 +79,16 @@ for (const day of days) {
 }
 
 const TODAY_OFFSET = Math.floor((TODAY.getTime() - VIEW_START.getTime()) / 86400000)
-const timelineItems = roadmapData.filter(r => INITIAL_POSITIONS[r.id])
-const GRID_HEIGHT = timelineItems.length * ROW_HEIGHT
 const TOTAL_WIDTH = TOTAL_DAYS * DAY_WIDTH
+const GHOST_LENGTH = 5
 
 function offsetToDate(offset: number): string {
   const d = new Date(VIEW_START)
   d.setDate(d.getDate() + offset)
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
+
+const DRAG_THRESHOLD = 3
 
 type DragState = {
   id: string
@@ -98,26 +98,51 @@ type DragState = {
   origStart: number
   origLen: number
   origRowIndex: number
+  captured: boolean
+  element: HTMLElement
+  pointerId: number
 }
 
 type PanState = { startX: number; startScrollLeft: number }
 
 interface TimelinePlaceholderProps {
+  data: SpaceRow[]
   parentScrollRef: React.RefObject<HTMLDivElement | null>
-  onRowClick?: (row: SpaceRow, dates: { startDate: string; endDate: string }) => void
-  onJiraRowClick?: (row: SpaceRow) => void
+  onRowClick?: (row: SpaceRow) => void
+  onMoveToRoadmap?: (rowId: string) => void
+  showMoveToRoadmap?: boolean
+  onBarSelectedChange?: (hasSelection: boolean) => void
+  ghostRowId?: string
+  onBarPlaced?: (rowId: string, startDate: string, endDate: string) => void
 }
 
-export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClick }: TimelinePlaceholderProps) {
+export function TimelinePlaceholder({ data, parentScrollRef, onRowClick, onMoveToRoadmap, showMoveToRoadmap, onBarSelectedChange, ghostRowId, onBarPlaced }: TimelinePlaceholderProps) {
   const [positions, setPositions] = useState<Record<string, [number, number]>>(INITIAL_POSITIONS)
-  const [rowOrder, setRowOrder] = useState<string[]>(() => timelineItems.map(r => r.id))
+  const timelineItems = useMemo(() => data.filter(r => positions[r.id]), [data, positions])
+  const ghostRow = ghostRowId ? data.find(r => r.id === ghostRowId && !positions[r.id]) : null
+  const [rowOrder, setRowOrder] = useState<string[]>(() => data.filter(r => INITIAL_POSITIONS[r.id]).map(r => r.id))
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dragTargetRow, setDragTargetRow] = useState<number | null>(null)
   const [isPanning, setIsPanning] = useState(false)
-  const [milestoneOffset, setMilestoneOffset] = useState(MILESTONE_OFFSET)
+const [selectedBarId, setSelectedBarId] = useState<string | null>(null)
+  const [ghostOffset, setGhostOffset] = useState<number | null>(null)
   const dragRef = useRef<DragState | null>(null)
   const panRef = useRef<PanState | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
+  const timelineRef = useRef<HTMLDivElement>(null)
+
+  // Deselect when clicking outside the timeline
+  useEffect(() => {
+    if (!selectedBarId) return
+    const handleClick = (e: MouseEvent) => {
+      if (timelineRef.current && !timelineRef.current.contains(e.target as Node)) {
+        setSelectedBarId(null)
+        onBarSelectedChange?.(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [selectedBarId, onBarSelectedChange])
 
   // Compute live display order while dragging (one card per row — swap preview)
   const displayOrder = (() => {
@@ -130,28 +155,35 @@ export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClic
     return result
   })()
 
-  const onGridMouseMove = (e: React.MouseEvent) => {
-    if (!gridRef.current || dragRef.current) return
-    const rect = gridRef.current.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const day = Math.max(0, Math.min(TOTAL_DAYS - 1, Math.floor(x / DAY_WIDTH)))
-    setMilestoneOffset(day)
-  }
-
   const startDrag = (e: React.PointerEvent, id: string, type: DragState['type']) => {
     e.preventDefault()
     e.stopPropagation()
     const [s, l] = positions[id]
     const origRowIndex = rowOrder.indexOf(id)
-    dragRef.current = { id, type, startX: e.clientX, startY: e.clientY, origStart: s, origLen: l, origRowIndex }
-    setDraggingId(id)
-    setDragTargetRow(origRowIndex)
-    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    dragRef.current = {
+      id, type, startX: e.clientX, startY: e.clientY,
+      origStart: s, origLen: l, origRowIndex,
+      captured: false,
+      element: e.currentTarget as HTMLElement,
+      pointerId: e.pointerId,
+    }
+    // Don't capture or set dragging state yet — wait for movement past threshold
   }
 
   const onPointerMove = (e: React.PointerEvent, id: string) => {
     if (!dragRef.current || dragRef.current.id !== id) return
     const dx = e.clientX - dragRef.current.startX
+    const dy = e.clientY - dragRef.current.startY
+
+    // Wait for movement past threshold before committing to drag
+    if (!dragRef.current.captured) {
+      if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return
+      dragRef.current.captured = true
+      dragRef.current.element.setPointerCapture(dragRef.current.pointerId)
+      setDraggingId(id)
+      setDragTargetRow(dragRef.current.origRowIndex)
+    }
+
     const dd = Math.round(dx / DAY_WIDTH)
     const { origStart, origLen, type, startY, origRowIndex } = dragRef.current
 
@@ -173,19 +205,18 @@ export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClic
 
     // Vertical row target (move only)
     if (type === 'move') {
-      const dy = e.clientY - startY
       const dr = Math.round(dy / ROW_HEIGHT)
       const target = Math.max(0, Math.min(rowOrder.length - 1, origRowIndex + dr))
       setDragTargetRow(target)
     }
   }
 
-  const endDrag = (e: React.PointerEvent, row?: SpaceRow) => {
+  const endDrag = (e: React.PointerEvent) => {
     const state = dragRef.current
-    const wasDrag = state && (Math.abs(e.clientX - state.startX) > 4 || Math.abs(e.clientY - state.startY) > 4)
+    if (!state) return
 
-    // Commit row reorder
-    if (state?.type === 'move' && dragTargetRow !== null && dragTargetRow !== state.origRowIndex) {
+    // Commit row reorder (only if drag actually happened)
+    if (state.captured && state.type === 'move' && dragTargetRow !== null && dragTargetRow !== state.origRowIndex) {
       setRowOrder(prev => {
         const from = prev.indexOf(state.id)
         if (from === dragTargetRow) return prev
@@ -196,18 +227,19 @@ export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClic
       })
     }
 
+    // Click (not drag) — toggle selection
+    if (!state.captured) {
+      const next = selectedBarId === state.id ? null : state.id
+      setSelectedBarId(next)
+      onBarSelectedChange?.(next !== null)
+
+    }
+
     dragRef.current = null
     setDraggingId(null)
     setDragTargetRow(null)
-    ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
-
-    if (!wasDrag && row) {
-      if (JIRA_ITEMS.has(row.id)) {
-        onJiraRowClick?.(row)
-      } else {
-        const [startOff, len] = positions[row.id]
-        onRowClick?.(row, { startDate: offsetToDate(startOff), endDate: offsetToDate(startOff + len) })
-      }
+    if (state.captured) {
+      ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
     }
   }
 
@@ -232,9 +264,16 @@ export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClic
 
   return (
     <div
+      ref={timelineRef}
       className="item-enter"
       style={{ animationDelay: '80ms', cursor: isPanning ? 'grabbing' : 'default', position: 'relative', width: TOTAL_WIDTH, display: 'flex', flexDirection: 'column', minHeight: `calc(100vh - ${STICKY_TOP}px)` }}
-      onPointerDown={onPanStart}
+      onPointerDown={(e) => {
+        const target = e.target as HTMLElement
+        if (target.closest('[data-card-toolbar]')) return
+        if (target.closest('[data-ghost-zone]')) return
+        onPanStart(e)
+        if (!dragRef.current) { setSelectedBarId(null); onBarSelectedChange?.(false) }
+      }}
       onPointerMove={onPanMove}
       onPointerUp={onPanEnd}
     >
@@ -249,28 +288,21 @@ export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClic
 
       {/* Day numbers — sticky below month */}
       <div style={{ position: 'sticky', top: STICKY_TOP + MONTH_H, zIndex: 10, background: 'white', display: 'flex', height: DAYS_H, borderBottom: '1px solid #E9EAEF' }}>
-        {days.map(day => {
-          const isMilestone = day.offset === milestoneOffset
-          return (
-            <div key={day.offset} style={{ width: DAY_WIDTH, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              {isMilestone ? (
-                <span style={{ width: 24, height: 24, borderRadius: '50%', backgroundColor: '#1a1b1e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: '#f7f7f7' }}>
-                  {day.num}
-                </span>
-              ) : day.isToday ? (
-                <span style={{ width: 24, height: 24, borderRadius: '50%', backgroundColor: '#EDEDED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#333' }}>
-                  {day.num}
-                </span>
-              ) : (
-                <span style={{ fontSize: 12, color: '#656b81' }}>{day.num}</span>
-              )}
-            </div>
-          )
-        })}
+        {days.map(day => (
+          <div key={day.offset} style={{ width: DAY_WIDTH, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            {day.isToday ? (
+              <span style={{ width: 24, height: 24, borderRadius: '50%', backgroundColor: '#1a1b1e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: 'white' }}>
+                {day.num}
+              </span>
+            ) : (
+              <span style={{ fontSize: 12, color: '#656b81' }}>{day.num}</span>
+            )}
+          </div>
+        ))}
       </div>
 
       {/* Grid area — fills viewport, background columns stretch full height */}
-      <div ref={gridRef} onMouseMove={onGridMouseMove} style={{ position: 'relative', flex: 1, width: TOTAL_WIDTH }}>
+      <div ref={gridRef} style={{ position: 'relative', flex: 1, width: TOTAL_WIDTH }}>
 
         {/* Background columns */}
         {days.map(day => (
@@ -282,7 +314,7 @@ export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClic
           <div style={{
             position: 'absolute',
             left: 0, width: '100%',
-            top: dragTargetRow * ROW_HEIGHT,
+            top: GRID_TOP_OFFSET + (dragTargetRow + (ghostRow ? 1 : 0)) * ROW_HEIGHT,
             height: ROW_HEIGHT,
             backgroundColor: '#F1F2F5',
             borderTop: 'none',
@@ -292,16 +324,84 @@ export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClic
           }} />
         )}
 
-        {/* Milestone line — tracks diamond */}
-        <div style={{ position: 'absolute', left: (milestoneOffset + 0.5) * DAY_WIDTH, top: 0, bottom: 0, width: 0, borderLeft: '1px dashed #C7CAD5', zIndex: 2, transition: 'left 0.1s ease' }} />
+        {/* Milestone line — tracks diamond (hidden for now, keeping date highlight) */}
+        {/* <div style={{ position: 'absolute', left: (milestoneOffset + 0.5) * DAY_WIDTH, top: 0, bottom: 0, width: 0, borderLeft: '1px dashed #C7CAD5', zIndex: 2, transition: 'left 0.1s ease' }} /> */}
+
+        {/* Ghost bar — unplaced item follows cursor */}
+        {ghostRow && (
+          <div
+            data-ghost-zone
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: GRID_TOP_OFFSET,
+              width: TOTAL_WIDTH,
+              height: ROW_HEIGHT,
+              zIndex: 20,
+              cursor: 'pointer',
+            }}
+            onMouseMove={(e) => {
+              if (!gridRef.current) return
+              const rect = gridRef.current.getBoundingClientRect()
+              const x = e.clientX - rect.left
+              const barWidthPx = GHOST_LENGTH * DAY_WIDTH
+              const centerOffset = Math.floor((x - barWidthPx / 2) / DAY_WIDTH)
+              setGhostOffset(Math.max(0, Math.min(TOTAL_DAYS - GHOST_LENGTH, centerOffset)))
+            }}
+            onClick={() => {
+              if (ghostOffset === null) return
+              setPositions(prev => ({ ...prev, [ghostRow.id]: [ghostOffset, GHOST_LENGTH] }))
+              setRowOrder(prev => [ghostRow.id, ...prev])
+              setGhostOffset(null)
+              onBarPlaced?.(ghostRow.id, offsetToDate(ghostOffset), offsetToDate(ghostOffset + GHOST_LENGTH))
+            }}
+          >
+            {/* Visual ghost bar */}
+            <div style={{
+              position: 'absolute',
+              left: (ghostOffset ?? Math.floor(TOTAL_DAYS / 2 - GHOST_LENGTH / 2)) * DAY_WIDTH,
+              top: (ROW_HEIGHT - BAR_HEIGHT) / 2,
+              width: GHOST_LENGTH * DAY_WIDTH - 4,
+              height: BAR_HEIGHT,
+              backgroundColor: 'white',
+              border: '1px dashed #C7CAD5',
+              borderRadius: 4,
+              opacity: 0.5,
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 12px',
+              pointerEvents: 'none',
+              transition: 'left 0.05s ease',
+            }}>
+              <span style={{ fontSize: 14, color: '#222428', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {ghostRow.title}
+              </span>
+            </div>
+            {/* Date tooltip above ghost */}
+            {ghostOffset !== null && (
+              <div style={{
+                position: 'absolute',
+                left: (ghostOffset + GHOST_LENGTH / 2) * DAY_WIDTH,
+                top: (ROW_HEIGHT - BAR_HEIGHT) / 2 - 6,
+                transform: 'translateX(-50%) translateY(-100%)',
+                backgroundColor: '#2B2D33', color: 'white', fontSize: 11, fontWeight: 500,
+                padding: '3px 8px', borderRadius: 4, whiteSpace: 'nowrap', pointerEvents: 'none',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+              }}>
+                {offsetToDate(ghostOffset)} – {offsetToDate(ghostOffset + GHOST_LENGTH)}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Timeline bars */}
         {timelineItems.map(row => {
-          const rowIndex = displayOrder.indexOf(row.id)
+          const rowIndex = displayOrder.indexOf(row.id) + (ghostRow ? 1 : 0)
           const [startOff, len] = positions[row.id]
           const person = PEOPLE[row.id] ?? { avatar: 'https://i.pravatar.cc/40?img=1' }
           const isDragging = draggingId === row.id
           const isMove = isDragging && dragRef.current?.type === 'move'
+          const isBarSelected = selectedBarId === row.id && !isDragging
 
           return (
             <div
@@ -309,26 +409,28 @@ export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClic
               style={{
                 position: 'absolute',
                 left: startOff * DAY_WIDTH,
-                top: rowIndex * ROW_HEIGHT + (ROW_HEIGHT - BAR_HEIGHT) / 2,
+                top: GRID_TOP_OFFSET + rowIndex * ROW_HEIGHT + (ROW_HEIGHT - BAR_HEIGHT) / 2,
                 width: len * DAY_WIDTH - 4,
                 height: BAR_HEIGHT,
                 backgroundColor: 'white',
                 border: '1px solid #C7CAD5',
                 borderRadius: 4,
                 boxShadow: isDragging ? '0px 8px 20px rgba(34,36,40,0.16)' : '0px 2px 4px rgba(34,36,40,0.08)',
+                outline: isBarSelected ? '3px solid #3859FF' : 'none',
+                outlineOffset: isBarSelected ? 4 : 0,
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
                 padding: `0 ${HANDLE_W + 4}px`,
                 overflow: 'hidden',
-                zIndex: isDragging ? 10 : 3,
+                zIndex: isDragging ? 10 : isBarSelected ? 50 : 3,
                 cursor: isMove ? 'grabbing' : 'grab',
                 userSelect: 'none',
-                transition: isDragging ? 'none' : 'top 0.15s ease, box-shadow 0.15s ease',
+                transition: isDragging ? 'none' : 'top 0.15s ease, box-shadow 0.15s ease, outline 150ms ease, outline-offset 150ms ease',
               }}
               onPointerDown={e => startDrag(e, row.id, 'move')}
               onPointerMove={e => onPointerMove(e, row.id)}
-              onPointerUp={e => endDrag(e, row)}
+              onPointerUp={e => endDrag(e)}
             >
               {/* Left resize handle */}
               <div
@@ -367,8 +469,39 @@ export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClic
           )
         })}
 
-        {/* Milestone diamond */}
-        <div style={{
+        {/* Contextual toolbar — rendered outside bar DOM to avoid pointer event conflicts */}
+        {selectedBarId && !draggingId && (() => {
+          const selectedRow = timelineItems.find(r => r.id === selectedBarId)
+          if (!selectedRow) return null
+          const [sOff, sLen] = positions[selectedBarId]
+          const sRowIndex = displayOrder.indexOf(selectedBarId) + (ghostRow ? 1 : 0)
+          const barTop = GRID_TOP_OFFSET + sRowIndex * ROW_HEIGHT + (ROW_HEIGHT - BAR_HEIGHT) / 2
+          const barLeft = sOff * DAY_WIDTH
+          const barWidth = sLen * DAY_WIDTH - 4
+          return (
+            <div
+              data-card-toolbar
+              style={{
+                position: 'absolute',
+                left: barLeft,
+                top: barTop,
+                width: barWidth,
+                height: BAR_HEIGHT,
+                zIndex: 100,
+                pointerEvents: 'none',
+              }}
+            >
+              <KanbanCardToolbar
+                onOpenSidePanel={() => onRowClick?.(selectedRow)}
+                onMoveToRoadmap={showMoveToRoadmap && onMoveToRoadmap ? () => { onMoveToRoadmap(selectedRow.id); setSelectedBarId(null); onBarSelectedChange?.(false) } : undefined}
+                cardColor="white"
+              />
+            </div>
+          )
+        })()}
+
+        {/* Milestone diamond (hidden for now, keeping date highlight) */}
+        {/* <div style={{
           position: 'absolute',
           left: milestoneOffset * DAY_WIDTH + DAY_WIDTH / 2 - 16,
           top: 3 * ROW_HEIGHT + ROW_HEIGHT / 2 - 16,
@@ -380,7 +513,7 @@ export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClic
           transition: 'left 0.1s ease',
         }}>
           <div style={{ width: 16, height: 16, borderRadius: 2, backgroundColor: '#4262FF' }} />
-        </div>
+        </div> */}
 
       </div>
     </div>
