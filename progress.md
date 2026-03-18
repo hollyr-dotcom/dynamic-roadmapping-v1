@@ -127,7 +127,7 @@ Full-screen space with **two pages** (Backlog, Roadmap) and **dynamic views** ac
 | File | Description |
 |------|-------------|
 | `index.ts` | Barrel export — single public surface (`TimelinePlaceholder`) |
-| `TimelinePlaceholder.tsx` | Interactive Gantt-style timeline — 14 roadmap items as draggable bars (move, resize-left, resize-right) with avatar + title + optional Jira icon; March 1 – April 15 date range; sticky month header (`top: 64px`) and day numbers (`top: 108px`) below tabs toolbar with gap-cover box-shadow; drag-to-pan via `parentScrollRef` (scrolls main page container); drag-to-reorder rows vertically with swap preview; dragging milestone diamond follows cursor column; date tooltip while dragging; alternating weekend column backgrounds; grid fills viewport height (`min-height: calc(100vh - 64px)` on outer, `flex: 1` on grid); `item-enter` animation |
+| `TimelinePlaceholder.tsx` | Interactive Gantt-style timeline — accepts `data: SpaceRow[]` prop (was static import); draggable bars (move, resize-left, resize-right) with avatar + title + optional Jira icon; March 1 – April 15 date range; sticky month header (`top: 64px`) and day numbers (`top: 108px`) below tabs toolbar with gap-cover box-shadow; drag-to-pan via `parentScrollRef` (scrolls main page container); drag-to-reorder rows vertically with swap preview; date tooltip while dragging; alternating weekend column backgrounds; grid fills viewport height; deferred pointer capture with 3px drag threshold; contextual toolbar rendered outside bar DOM; ghost bar placement flow via `ghostRowId`/`onBarPlaced` props; milestone line + diamond commented out (date highlight retained); `item-enter` animation |
 
 ### Pages & Views
 
@@ -306,12 +306,21 @@ docs/plans/
 - Expanded row context menu from 2 items to full Figma spec: Open in side panel, View comments, Move to roadmap (with separator), Add record above/below, Add sub-record, Duplicate, Delete — 9 items + 3 separators; inline SVG icons for `IconAddLineTop`, `IconAddLineBottom`, `IconFilledBottomBox` (not in MDS)
 - "Move to roadmap" functional on backlog page only — removes row from backlog, adds to roadmap with `status: 'planning'`
 - Selected row background changed to light blue `#F2F4FC` (was neutral `#F1F2F5`)
-- `MoveToRoadmapSnackbar` component — dark pill matching Figma design, checkmark + "Record moved to roadmap" + "Open roadmap" action button, blue progress bar shrinking over 6s, auto-dismiss with slide-down
-- "Open roadmap" action triggers page transition: content fades out (150ms, `page-transitioning-out` CSS class), switches to Roadmap "All items" tab, then opens row detail sidebar after 400ms delay showing the moved record
+- `MoveToRoadmapSnackbar` component — dark pill matching Figma design, checkmark + "Record moved to roadmap" + "Open roadmap" action button, blue progress bar filling left-to-right over 6s, auto-dismiss with slide-down
+- "Open roadmap" action triggers page transition: content fades out (150ms), switches to Roadmap timeline view
 - `handleMoveToRoadmap` closes any open sidebar to prevent stale row detail from lingering
+- Removed click-to-open-sidebar from table rows, kanban cards, and timeline — sidebar now opens only via "Open in side panel" in context menus
+- **Kanban contextual toolbar** (`KanbanCardToolbar.tsx`) — click a card to select (3px blue outline with 4px gap), floating toolbar appears 16px above card; medium ghost IconButtons with 4px padding/spacing, no borders, shadow only; MDS Tooltips on each button; 5 actions: Open in side panel, Open comments, Move to roadmap (backlog only), Card color, More; toolbar entrance animation (fade+scale 150ms); click-outside deselects; tabs z-index lowers when card selected so toolbar renders above sticky headers
+- **Timeline contextual toolbar** — same `KanbanCardToolbar` reused on timeline bars; click (not drag) selects bar with blue outline; white card color dot; "Move to roadmap" only on backlog page; `data-card-toolbar` attribute guards against event conflicts with pan/drag handlers
+- **Timeline toolbar pointer event fix** — toolbar moved outside bar DOM tree (rendered as sibling in grid area, positioned via bar coordinates) to avoid pointer capture conflicts; removed `onPointerUp` stopPropagation from `KanbanCardToolbar` (was blocking React Aria's document-level `pointerup` listener, preventing `onPress` from completing); added deferred pointer capture with 3px drag threshold (captures only after movement, not on initial press) to cleanly separate click-to-select from drag-to-move
+- **"Open roadmap" opens sidebar** — `handleOpenMovedRow` now sets `selectedRow` and `activeSidebar('row-detail')` after page transition, so the moved record's detail panel opens automatically on the roadmap timeline
+- **Milestone line + diamond hidden** — dashed vertical line and diamond marker commented out (available for later); date number highlight on hover retained; date hover disabled when a timeline bar is selected
+- **Ghost bar placement flow** — when an item is moved to roadmap and user clicks "Open roadmap", a ghost bar appears as the top row on the timeline; 50% opacity, dashed border, title only (no avatar/Jira logo), 7-day default length; bar follows cursor horizontally on hover with date tooltip; click to place commits position, converts to normal bar, and updates sidebar start/end date fields; `TimelinePlaceholder` now accepts `data` prop (was static import), plus `ghostRowId` and `onBarPlaced` callback; sidebar date fields show "—" placeholder before placement, real dates after
+- **Sidebar date fields** — `timelineDates` prop (already existed but was never populated) now receives `{ startDate: '—', endDate: '—' }` on ghost flow entry, updated to real dates on placement
 
 **In progress:**
-- Row detail sidebar still opens on row click before context menu appears — need to prevent sidebar opening when user intends to use the context menu (dots click → select → menu flow should not trigger `onRowClick`)
+- **Ghost bar click-to-place not working** — clicking to place the ghost bar doesn't commit the position; the click also closes the sidebar; likely the timeline root's `onPointerDown` handler is firing (deselects bar + starts pan), overriding the ghost hit zone's `onClick`
+- **Ghost date tooltip clipped** — the date tooltip above the ghost bar is being clipped by the sticky day numbers header (`position: sticky, top: 108px, zIndex: 10`); tooltip needs higher z-index or to render above the sticky header layer
 
 ### Other immediate
 - **Sync mode communication** — design how read-only vs two-way sync modes are communicated to users on canvas widgets (sync indicator, UI affordances, state differences)

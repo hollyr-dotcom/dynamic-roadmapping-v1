@@ -13,6 +13,10 @@ interface KanbanColumnProps {
   }
   rows: SpaceRow[]
   fields: FieldDefinition[]
+  selectedCardId?: string | null
+  onSelectCard?: (rowId: string) => void
+  onOpenSidePanel?: (row: SpaceRow) => void
+  onMoveToRoadmap?: (rowId: string) => void
 }
 
 function ColumnIconButton({ label, color, children }: { label: string; color: string; children: React.ReactNode }) {
@@ -27,7 +31,7 @@ function ColumnIconButton({ label, color, children }: { label: string; color: st
   )
 }
 
-export function KanbanColumn({ priority, config, rows, fields }: KanbanColumnProps) {
+export function KanbanColumn({ config, rows, fields, selectedCardId, onSelectCard, onOpenSidePanel, onMoveToRoadmap }: KanbanColumnProps) {
   return (
     <div
       className="group flex flex-col h-full"
@@ -83,6 +87,10 @@ export function KanbanColumn({ priority, config, rows, fields }: KanbanColumnPro
             row={row}
             fields={fields}
             borderColor={config.cardBorder}
+            isSelected={row.id === selectedCardId}
+            onSelect={onSelectCard ? () => onSelectCard(row.id) : undefined}
+            onOpenSidePanel={onOpenSidePanel ? () => onOpenSidePanel(row) : undefined}
+            onMoveToRoadmap={onMoveToRoadmap ? () => onMoveToRoadmap(row.id) : undefined}
           />
         ))}
       </div>
