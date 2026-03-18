@@ -79,7 +79,11 @@ for (const day of days) {
   }
 }
 
+// @ts-ignore
+const TODAY_OFFSET = Math.floor((TODAY.getTime() - VIEW_START.getTime()) / 86400000)
 const timelineItems = roadmapData.filter(r => INITIAL_POSITIONS[r.id])
+// @ts-ignore
+const GRID_HEIGHT = timelineItems.length * ROW_HEIGHT
 const TOTAL_WIDTH = TOTAL_DAYS * DAY_WIDTH
 
 function offsetToDate(offset: number): string {
@@ -337,7 +341,7 @@ export function TimelinePlaceholder({ parentScrollRef, onRowClick, onJiraRowClic
               />
 
               <img src={person.avatar} alt="" style={{ width: 24, height: 24, borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
-              {JIRA_ITEMS.has(row.id) && <img src={JIRA_LOGO} alt="Jira" style={{ width: 16, height: 16, flexShrink: 0, objectFit: 'contain', cursor: 'pointer' }} />}
+              <img src={JIRA_LOGO} alt="Jira" style={{ width: 16, height: 16, flexShrink: 0, objectFit: 'contain' }} />
               <span style={{ fontSize: 14, color: '#222428', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                 {row.title}
               </span>

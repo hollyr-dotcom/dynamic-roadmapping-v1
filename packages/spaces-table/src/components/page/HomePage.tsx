@@ -334,7 +334,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                           </div>
                         </button>
                       </Tooltip.Trigger>
-                      <Tooltip.Content side="top">{tooltip}</Tooltip.Content>
+                      <Tooltip.Content side="top" sideOffset={4}>{tooltip}</Tooltip.Content>
                     </Tooltip>
                   ))}
                 </div>

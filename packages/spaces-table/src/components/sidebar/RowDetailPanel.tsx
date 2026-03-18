@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import type { SpaceRow } from '@spaces/shared'
 import {
+  IconInformationMarkCircle,
   IconCross,
   IconDotsThreeVertical,
   IconWarning,
@@ -30,6 +31,9 @@ import {
   IconChevronLeft,
   IconMagnifyingGlass,
   Checkbox,
+  IconStackedCircles as _IconStackedCircles,
+  IconPlusBox as _IconPlusBox,
+  IconUser as _IconUser,
 } from '@mirohq/design-system'
 
 interface FeedbackCardData {
@@ -586,7 +590,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 </div>
                 <div className="flex gap-3">
                   <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" />
-                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Est. Revenue Impact" />
+                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Potential Revenue at Risk" />
                 </div>
               </div>
             </InsightSection>
@@ -600,7 +604,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 </span>
                 <div className="flex items-center gap-1">
                   <button className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#222428] hover:bg-[#F1F2F5] transition-colors">
-                    Latest
+                    Relevance
                     <IconChevronDown size="small" />
                   </button>
                   <button
@@ -711,7 +715,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             boxShadow: '0px 6px 16px rgba(34,36,40,0.12), 0px 0px 8px rgba(34,36,40,0.06)',
             width: 280,
             padding: '16px 40px 16px 16px',
-            animation: toastExiting ? 'toastSlideDown 0.3s ease forwards' : 'toastSlideUp 0.25s ease',
+            animation: toastExiting ? 'toastSlideDownLeft 0.3s ease forwards' : 'toastSlideUpLeft 0.25s ease',
           }}
         >
           <div className="flex flex-col gap-0 flex-1 min-w-0">
@@ -740,24 +744,23 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 bottom: 0, left: 0,
                 width: 520, height: 520,
                 zIndex: 9998,
-                animation: feedbackToastExiting ? 'toastSlideDown 0.3s ease forwards' : undefined,
+                animation: feedbackToastExiting ? 'toastSlideDownLeft 0.3s ease forwards' : undefined,
               }}
             >
               <DotLottieReact src="/confetti.json" autoplay loop={false} style={{ width: '100%', height: '100%' }} />
             </div>
           )}
           <div
-            className="fixed bottom-6 left-6 z-[9999] flex items-center gap-3 rounded-lg"
+            className="fixed bottom-6 left-6 z-[9999] flex items-start overflow-visible rounded-[8px]"
             style={{
               backgroundColor: '#2B2D33',
               boxShadow: '0px 6px 16px rgba(34,36,40,0.12), 0px 0px 8px rgba(34,36,40,0.06)',
-              width: 280,
-              padding: '16px 40px 16px 16px',
-              overflow: 'visible',
-              animation: feedbackToastExiting ? 'toastSlideDown 0.3s ease forwards' : 'toastSlideUp 0.25s ease',
+              width: 340,
+              padding: '16px 120px 16px 16px',
+              animation: feedbackToastExiting ? 'toastSlideDownLeft 0.3s ease forwards' : 'toastSlideUpLeft 0.25s ease',
             }}
           >
-            <div className="reaction-pop absolute pointer-events-none" style={{ top: -84, right: -24, zIndex: 1 }}>
+            <div className="reaction-pop absolute pointer-events-none" style={{ top: -84, right: -44, zIndex: 1 }}>
               <img src="/amazing-reaction.png" alt="" style={{ width: 160, height: 160, pointerEvents: 'none' }} />
             </div>
             <div className="flex flex-col gap-0 flex-1 min-w-0">
@@ -781,7 +784,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             <div
               className="fixed pointer-events-none"
               style={{ bottom: 0, left: 0, width: 520, height: 520, zIndex: 9998,
-                animation: saveToastExiting ? 'toastSlideDown 0.3s ease forwards' : undefined }}
+                animation: saveToastExiting ? 'toastSlideDownLeft 0.3s ease forwards' : undefined }}
             >
               <DotLottieReact src="/confetti.json" autoplay loop={false} style={{ width: '100%', height: '100%' }} />
             </div>
@@ -793,11 +796,11 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               boxShadow: '0px 6px 16px rgba(34,36,40,0.12), 0px 0px 8px rgba(34,36,40,0.06)',
               width: 280,
               padding: '16px 40px 16px 16px',
-              animation: saveToastExiting ? 'toastSlideDown 0.3s ease forwards' : 'toastSlideUp 0.25s ease',
+              animation: saveToastExiting ? 'toastSlideDownLeft 0.3s ease forwards' : 'toastSlideUpLeft 0.25s ease',
             }}
           >
             {savePhase === 'success' && (
-              <div className="reaction-pop absolute pointer-events-none" style={{ top: -84, right: -24, zIndex: 1 }}>
+              <div className="reaction-pop absolute pointer-events-none" style={{ top: -84, right: -44, zIndex: 1 }}>
                 <img src="/amazing-reaction.png" alt="" style={{ width: 160, height: 160, pointerEvents: 'none' }} />
               </div>
             )}
@@ -1161,8 +1164,8 @@ function InsightSection({ label, children }: { label: string; children: React.Re
 }
 
 function useAnimatedNumber(target: number, duration = 600): number {
-  const [displayed, setDisplayed] = useState(target)
-  const prevRef = useRef(target)
+  const [displayed, setDisplayed] = useState(0)
+  const prevRef = useRef(0)
   const rafRef = useRef<number | null>(null)
 
   useEffect(() => {
@@ -1174,7 +1177,9 @@ function useAnimatedNumber(target: number, duration = 600): number {
       if (!startTs) startTs = ts
       const progress = Math.min((ts - startTs) / duration, 1)
       const eased = 1 - Math.pow(1 - progress, 3) // ease-out cubic
-      setDisplayed(Math.round(from + (to - from) * eased))
+      const step = Math.max(1, Math.round(Math.abs(to - from) / 12))
+      const raw = from + (to - from) * eased
+      setDisplayed(Math.round(raw / step) * step)
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(animate)
       } else {
@@ -1188,14 +1193,26 @@ function useAnimatedNumber(target: number, duration = 600): number {
   return displayed
 }
 
-function StatBox({ value, format, label }: { value: number; format: (n: number) => string; label: string }) {
+function StatBox({ value, format, label, wow }: { value: number; format: (n: number) => string; label: string; wow?: number }) {
   const animated = useAnimatedNumber(value)
   return (
     <div className="flex-1 flex flex-col gap-1 pb-3">
-      <span className="text-[32px] text-[#222428] leading-[1.2]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1", display: 'block' }}>
-        {format(animated)}
+      <div className="flex items-baseline gap-2">
+        <span className="text-[32px] text-[#222428] leading-[1.2]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1", display: 'block' }}>
+          {format(animated)}
+        </span>
+        {wow !== undefined && (
+          <span style={{ fontSize: 10, fontWeight: 400, color: '#656B81', lineHeight: 1 }}>
+            {wow >= 0 ? '+' : ''}{wow}% WoW
+          </span>
+        )}
+      </div>
+      <span className="flex items-center gap-1 text-[14px] text-[#656B81] leading-[1.4]">
+        {label}
+        {label === 'Potential Revenue at Risk' && (
+          <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#656B81', marginLeft: 4 }} />
+        )}
       </span>
-      <span className="text-[14px] text-[#656B81] leading-[1.4]">{label}</span>
     </div>
   )
 }
@@ -1308,7 +1325,10 @@ function FeedbackCard({
       onClick={onSelect}
     >
       {/* Card header: icon + date (on hover) + actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-start gap-2">
+        {borderColor === '#d4bbff' && (
+          <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4262FF', flexShrink: 0, marginTop: 4 }} />
+        )}
         <Icon css={{ width: 25, height: 25 }} />
         <span
           className="text-[12px] text-[#959AAC] leading-[1.5] whitespace-nowrap overflow-hidden"
@@ -1747,7 +1767,7 @@ function FeedbackCardDetailView({
             backgroundColor: '#2B2D33',
             boxShadow: '0px 6px 16px rgba(34,36,40,0.12), 0px 0px 8px rgba(34,36,40,0.06)',
             padding: '12px 16px',
-            animation: 'toastSlideUp 0.25s ease',
+            animation: 'toastSlideUpLeft 0.25s ease',
             fontFamily: 'Open Sans, sans-serif',
           }}
         >
@@ -1771,7 +1791,12 @@ function FieldRow({
   return (
     <div className={`flex gap-2 min-h-[40px] py-1 ${alignStart ? 'items-start' : 'items-center'}`}>
       <div className="w-[100px] shrink-0 flex items-center">
-        <span className="text-[14px] text-[#656B81] leading-[1.4]">{label}</span>
+        <span className="flex items-center gap-1 text-[14px] text-[#656B81] leading-[1.4]">
+        {label}
+        {label === 'Potential Revenue at Risk' && (
+          <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#656B81', marginLeft: 4 }} />
+        )}
+      </span>
       </div>
       <div className="flex-1 min-w-0 flex items-center flex-wrap">
         {children}

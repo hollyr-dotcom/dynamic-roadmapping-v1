@@ -102,6 +102,7 @@ export function InsightsToast({ onDismiss }: InsightsToastProps) {
           </p>
         </div>
 
+        {/* Actions */}
         <div className="flex items-center gap-2 pt-1">
           <Button variant="primary" size="medium" onPress={dismiss}>Share with team</Button>
         </div>
