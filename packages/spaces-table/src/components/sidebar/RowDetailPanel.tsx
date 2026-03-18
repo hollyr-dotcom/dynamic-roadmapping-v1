@@ -585,12 +585,12 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             <InsightSection label="Impact estimates">
               <div className="flex flex-col gap-0 w-full">
                 <div className="flex gap-3">
-                  <StatBox value={adjMentions} format={n => String(n)} label="Total Mentions" wow={12.1} />
-                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Unique Customers" wow={-3.2} />
+                  <StatBox value={adjMentions} format={n => String(n)} label="Total Mentions" />
+                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Unique Customers" />
                 </div>
                 <div className="flex gap-3">
-                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" wow={8.7} />
-                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Potential Revenue at Risk" wow={21.4} />
+                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" />
+                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Potential Revenue at Risk" />
                 </div>
               </div>
             </InsightSection>
@@ -1791,7 +1791,12 @@ function FieldRow({
   return (
     <div className={`flex gap-2 min-h-[40px] py-1 ${alignStart ? 'items-start' : 'items-center'}`}>
       <div className="w-[100px] shrink-0 flex items-center">
-        <span className="text-[14px] text-[#656B81] leading-[1.4]">{label}</span>
+        <span className="flex items-center gap-1 text-[14px] text-[#656B81] leading-[1.4]">
+        {label}
+        {label === 'Potential Revenue at Risk' && (
+          <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#656B81', marginLeft: 4 }} />
+        )}
+      </span>
       </div>
       <div className="flex-1 min-w-0 flex items-center flex-wrap">
         {children}
