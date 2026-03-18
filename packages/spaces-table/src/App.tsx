@@ -69,6 +69,7 @@ export function App() {
   const [view, setView] = useState<'home' | 'app'>('home')
   const [showInsightsModal, setShowInsightsModal] = useState(false)
   const [showInsightsToast, setShowInsightsToast] = useState(false)
+  const [showShareTooltip, setShowShareTooltip] = useState(false)
   const [activePage, setActivePage] = useState<PageId>('backlog')
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
   const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
@@ -116,6 +117,7 @@ export function App() {
     if (pendingToast) {
       setPendingToast(false)
       setShowInsightsToast(true)
+      setTimeout(() => setShowShareTooltip(true), 4000)
     }
   }, [pendingToast])
 
@@ -426,9 +428,9 @@ export function App() {
       if (importSource) {
         setHasData(false)
         setPendingToast(true)
-        setTimeout(() => setPendingImport(importSource), 1500)
+        setTimeout(() => setPendingImport(importSource), 300)
       } else {
-        setTimeout(() => setShowInsightsToast(true), 600)
+        setTimeout(() => { setShowInsightsToast(true); setTimeout(() => setShowShareTooltip(true), 4000) }, 0)
       }
     }} />
   }
@@ -457,7 +459,7 @@ export function App() {
             databaseTitle={databaseTitle}
             isMenuOpen={isLeftOpen}
             onToggleMenu={() => toggleSidebar('space-menu')}
-            showShareTooltip={showInsightsToast}
+            showShareTooltip={showShareTooltip}
           />
         </div>
         {/* Scroll area — vertical + horizontal, table header sticks below toolbar */}
