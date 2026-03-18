@@ -30,7 +30,7 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
     setTooltipOpen(true)
     if (shareRef.current) {
       const rect = shareRef.current.getBoundingClientRect()
-      setTooltipPos({ top: rect.bottom + 8, left: rect.left + rect.width / 2 })
+      setTooltipPos({ top: rect.top + rect.height / 2, left: rect.left - 8 })
     }
     if (tooltipTimer.current) clearTimeout(tooltipTimer.current)
     tooltipTimer.current = setTimeout(() => setTooltipOpen(false), 6000)
@@ -114,7 +114,7 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
             position: 'fixed',
             top: tooltipPos.top,
             left: tooltipPos.left,
-            transform: 'translateX(-50%)',
+            transform: 'translate(-100%, -50%)',
             padding: '6px 12px',
             backgroundColor: '#050038',
             color: 'white',
