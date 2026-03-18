@@ -13,6 +13,7 @@ import {
   IconBoard,
   IconSquaresTwoOverlap,
   IconDocFormat,
+  IconInformationMarkCircle,
   Chip,
 } from '@mirohq/design-system'
 import type { SpaceRow } from '@spaces/shared'
@@ -86,7 +87,7 @@ function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-const TABS = ['Details', 'Comments']
+const TABS = ['Details', 'Insights', 'Comments']
 
 export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
@@ -255,76 +256,78 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
               </div>
             </JiraFieldRow>
 
-            {/* ── Insights section ── */}
-            <div className="flex flex-col gap-8 pt-4 pb-6">
+          </>
+        )}
 
-              <InsightSection label="Summary">
-                <p className="text-[14px] text-[#656B81] leading-[1.4]">
-                  {INSIGHT_SUMMARIES[row.id] ?? row.description ?? row.title}
-                </p>
-              </InsightSection>
+        {activeTab === 'Insights' && (
+          <div className="flex flex-col gap-8 pt-4 pb-6">
 
-              <InsightSection label="Top impacted customers">
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {row.companies.map(name => (
-                    <Chip key={name} removable={false} css={{ fontSize: 13 }}>{name}</Chip>
-                  ))}
+            <InsightSection label="Summary">
+              <p className="text-[14px] text-[#656B81] leading-[1.4]">
+                {INSIGHT_SUMMARIES[row.id] ?? row.description ?? row.title}
+              </p>
+            </InsightSection>
+
+            <InsightSection label="Top impacted customers">
+              <div className="flex flex-wrap gap-2 mt-2">
+                {row.companies.map(name => (
+                  <Chip key={name} removable={false} css={{ fontSize: 13 }}>{name}</Chip>
+                ))}
+              </div>
+            </InsightSection>
+
+            <InsightSection label="Impact estimates">
+              <div className="flex flex-col gap-0 w-full">
+                <div className="flex gap-3">
+                  <StatBox value={adjMentions} format={n => String(n)} label="Total Mentions" />
+                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Unique Customers" />
                 </div>
-              </InsightSection>
-
-              <InsightSection label="Impact estimates">
-                <div className="flex flex-col gap-0 w-full">
-                  <div className="flex gap-3">
-                    <StatBox value={adjMentions} format={n => String(n)} label="Total Mentions" />
-                    <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Unique Customers" />
-                  </div>
-                  <div className="flex gap-3">
-                    <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" />
-                    <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Est. Revenue Impact" />
-                  </div>
-                </div>
-              </InsightSection>
-
-              {/* Feedback */}
-              <div className="flex flex-col gap-3 -mt-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-[14px] font-semibold text-[#222428] leading-[1]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>
-                    Feedback
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <button className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#222428] hover:bg-[#F1F2F5] transition-colors">
-                      Latest
-                      <IconChevronDown size="small" />
-                    </button>
-                    <button className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors" style={{ color: '#222428' }}>
-                      <IconSlidersY size="small" />
-                    </button>
-                  </div>
-                </div>
-
-                <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
-                  {generateFeedbackCards(row).map((card, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        maxHeight: dismissedCards.has(i) ? 0 : 800,
-                        opacity: dismissedCards.has(i) ? 0 : 1,
-                        marginBottom: dismissedCards.has(i) ? 0 : 12,
-                        overflow: 'hidden',
-                        transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease',
-                      }}
-                    >
-                      <FeedbackCard
-                        {...card}
-                        onDismiss={() => setDismissedCards(prev => new Set([...prev, i]))}
-                        onSelect={() => {}}
-                      />
-                    </div>
-                  ))}
+                <div className="flex gap-3">
+                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" />
+                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Est. Revenue Impact" />
                 </div>
               </div>
+            </InsightSection>
+
+            {/* Feedback */}
+            <div className="flex flex-col gap-3 -mt-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[14px] font-semibold text-[#222428] leading-[1]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>
+                  Feedback
+                </span>
+                <div className="flex items-center gap-1">
+                  <button className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#222428] hover:bg-[#F1F2F5] transition-colors">
+                    Relevance
+                    <IconChevronDown size="small" />
+                  </button>
+                  <button className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors" style={{ color: '#222428' }}>
+                    <IconSlidersY size="small" />
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
+                {generateFeedbackCards(row).map((card, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      maxHeight: dismissedCards.has(i) ? 0 : 800,
+                      opacity: dismissedCards.has(i) ? 0 : 1,
+                      marginBottom: dismissedCards.has(i) ? 0 : 12,
+                      overflow: 'hidden',
+                      transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease',
+                    }}
+                  >
+                    <FeedbackCard
+                      {...card}
+                      onDismiss={() => setDismissedCards(prev => new Set([...prev, i]))}
+                      onSelect={() => {}}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
-          </>
+          </div>
         )}
 
         {activeTab === 'Comments' && (
@@ -362,8 +365,8 @@ function InsightSection({ label, children }: { label: string; children: React.Re
 }
 
 function useAnimatedNumber(target: number, duration = 600): number {
-  const [displayed, setDisplayed] = useState(target)
-  const prevRef = useRef(target)
+  const [displayed, setDisplayed] = useState(0)
+  const prevRef = useRef(0)
   const rafRef = useRef<number | null>(null)
 
   useEffect(() => {
@@ -375,7 +378,9 @@ function useAnimatedNumber(target: number, duration = 600): number {
       if (!startTs) startTs = ts
       const progress = Math.min((ts - startTs) / duration, 1)
       const eased = 1 - Math.pow(1 - progress, 3)
-      setDisplayed(Math.round(from + (to - from) * eased))
+      const step = Math.max(1, Math.round(Math.abs(to - from) / 12))
+      const raw = from + (to - from) * eased
+      setDisplayed(Math.round(raw / step) * step)
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(animate)
       } else {
@@ -396,7 +401,12 @@ function StatBox({ value, format, label }: { value: number; format: (n: number) 
       <span className="text-[32px] text-[#222428] leading-[1.2]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1", display: 'block' }}>
         {format(animated)}
       </span>
-      <span className="text-[14px] text-[#656B81] leading-[1.4]">{label}</span>
+      <span className="flex items-center gap-1 text-[14px] text-[#656B81] leading-[1.4]">
+        {label}
+        {label === 'Est. Revenue Impact' && (
+          <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#656B81', marginLeft: 4 }} />
+        )}
+      </span>
     </div>
   )
 }

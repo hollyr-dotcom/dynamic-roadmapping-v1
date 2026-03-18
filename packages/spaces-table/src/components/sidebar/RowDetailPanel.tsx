@@ -604,7 +604,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 </span>
                 <div className="flex items-center gap-1">
                   <button className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#222428] hover:bg-[#F1F2F5] transition-colors">
-                    Latest
+                    Relevance
                     <IconChevronDown size="small" />
                   </button>
                   <button
@@ -1319,7 +1319,10 @@ function FeedbackCard({
       onClick={onSelect}
     >
       {/* Card header: icon + date (on hover) + actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-start gap-2">
+        {borderColor === '#d4bbff' && (
+          <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4262FF', flexShrink: 0, marginTop: 4 }} />
+        )}
         <Icon css={{ width: 25, height: 25 }} />
         <span
           className="text-[12px] text-[#959AAC] leading-[1.5] whitespace-nowrap overflow-hidden"
