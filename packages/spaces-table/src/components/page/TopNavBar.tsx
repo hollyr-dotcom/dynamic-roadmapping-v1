@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { createPortal } from 'react-dom'
 import {
   Button,
   IconButton,
@@ -22,16 +21,10 @@ interface TopNavBarProps {
 export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen, onToggleMenu, showShareTooltip = false }: TopNavBarProps) {
   const [tooltipOpen, setTooltipOpen] = useState(false)
   const tooltipTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const shareRef = useRef<HTMLDivElement>(null)
-  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null)
 
   useEffect(() => {
     if (!showShareTooltip) return
     setTooltipOpen(true)
-    if (shareRef.current) {
-      const rect = shareRef.current.getBoundingClientRect()
-      setTooltipPos({ top: rect.top + rect.height / 2, left: rect.left - 8 })
-    }
     if (tooltipTimer.current) clearTimeout(tooltipTimer.current)
     tooltipTimer.current = setTimeout(() => setTooltipOpen(false), 6000)
   }, [showShareTooltip])
@@ -101,34 +94,13 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
           style={{ width: 32, height: 32, borderRadius: 999, border: '3px solid #FFFFFF', objectFit: 'cover', marginRight: '8px' }}
         />
 
-        <div ref={shareRef}>
-          <Tooltip>
-            <Tooltip.Trigger asChild>
-              <Button size="medium">Share</Button>
-            </Tooltip.Trigger>
-            <Tooltip.Content side="left">Share space with your team</Tooltip.Content>
-          </Tooltip>
-        </div>
-        {tooltipOpen && tooltipPos && createPortal(
-          <div style={{
-            position: 'fixed',
-            top: tooltipPos.top,
-            left: tooltipPos.left,
-            transform: 'translate(-100%, -50%)',
-            padding: '6px 12px',
-            backgroundColor: '#050038',
-            color: 'white',
-            borderRadius: 6,
-            fontSize: 13,
-            fontFamily: 'Open Sans, sans-serif',
-            whiteSpace: 'nowrap',
-            zIndex: 9999,
-            pointerEvents: 'none',
-          }}>
-            Share space with your team
-          </div>,
-          document.body
-        )}
+        {/* @ts-ignore - Tooltip open/onOpenChange props work at runtime */}
+        <Tooltip open={tooltipOpen} onOpenChange={setTooltipOpen}>
+          <Tooltip.Trigger asChild>
+            <Button size="medium">Share</Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content side="left">Share space with your team</Tooltip.Content>
+        </Tooltip>
       </div>
     </div>
   )
