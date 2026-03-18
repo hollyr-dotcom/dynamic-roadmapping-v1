@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FieldDefinition, SpaceRow } from '@spaces/shared'
-import { IconDotsSixVertical, IconChatPlus, IconCross, DropdownMenu, IconSquaresTwoOverlap, IconTrash, Popover, Button } from '@mirohq/design-system'
+import { IconDotsSixVertical, IconChatPlus, DropdownMenu, IconSquaresTwoOverlap, IconTrash, Popover, Button } from '@mirohq/design-system'
 import { CellRenderer } from './CellRenderer'
 import { MENU_WIDTH } from '../page/ViewTabsToolbar'
 
@@ -151,10 +151,11 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
                   border: 'none',
                   cursor: 'pointer',
                   padding: 0,
-                  color: '#AEB2C0',
                 }}
               >
-                <IconCross css={{ width: 16, height: 16 }} />
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M12 4L4 12M4 4l8 8" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
               </button>
               <p
                 style={{
