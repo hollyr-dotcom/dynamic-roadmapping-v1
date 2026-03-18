@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
+import { Button } from '@mirohq/design-system'
 
 interface InsightsToastProps {
   onDismiss: () => void
@@ -99,6 +100,10 @@ export function InsightsToast({ onDismiss }: InsightsToastProps) {
           <p className="text-[14px] text-[#aeb2c0] leading-[1.4]">
             Skipped 6 duplicates and 5 with special characters
           </p>
+        </div>
+
+        <div className="flex items-center gap-2 pt-1">
+          <Button variant="primary" size="medium" onPress={dismiss}>Share with team</Button>
         </div>
 
       </div>
