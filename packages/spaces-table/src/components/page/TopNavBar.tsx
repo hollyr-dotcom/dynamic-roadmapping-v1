@@ -33,7 +33,7 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
       setTooltipPos({ top: rect.bottom + 8, left: rect.left + rect.width / 2 })
     }
     if (tooltipTimer.current) clearTimeout(tooltipTimer.current)
-    tooltipTimer.current = setTimeout(() => setTooltipOpen(false), 2000)
+    tooltipTimer.current = setTimeout(() => setTooltipOpen(false), 6000)
   }, [showShareTooltip])
 
   return (
@@ -95,43 +95,18 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
           <IconBell />
         </IconButton>
 
-        <div className="flex items-center mr-1">
-          {([
-            { bg: '#FFF0C2', fg: '#A07800' },
-            { bg: '#EDE0FF', fg: '#7C3AED' },
-            { bg: '#D1FAE5', fg: '#059669' },
-          ]).map(({ bg, fg }, i) => (
-            <div
-              key={i}
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 999,
-                border: '3px solid #FFFFFF',
-                marginLeft: i > 0 ? '-8px' : 0,
-                zIndex: 3 - i,
-                position: 'relative',
-                background: bg,
-                display: 'flex',
-                alignItems: 'flex-end',
-                justifyContent: 'center',
-                overflow: 'hidden',
-              }}
-            >
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                <circle cx="11" cy="8" r="4" fill={fg} />
-                <path d="M3 21c0-4.418 3.582-8 8-8s8 3.582 8 8" fill={fg} />
-              </svg>
-            </div>
-          ))}
-        </div>
+        <img
+          src="/james-rodriguez.png"
+          alt="James Rodriguez"
+          style={{ width: 32, height: 32, borderRadius: 999, border: '3px solid #FFFFFF', objectFit: 'cover', marginRight: '8px' }}
+        />
 
         <div ref={shareRef}>
           <Tooltip>
             <Tooltip.Trigger asChild>
               <Button size="medium">Share</Button>
             </Tooltip.Trigger>
-            <Tooltip.Content side="bottom">Share space with your team</Tooltip.Content>
+            <Tooltip.Content side="left">Share space with your team</Tooltip.Content>
           </Tooltip>
         </div>
         {tooltipOpen && tooltipPos && createPortal(
