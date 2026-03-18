@@ -284,7 +284,7 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
                 </div>
                 <div className="flex gap-3">
                   <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" />
-                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Est. Revenue Impact" />
+                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Potential Revenue at Risk" />
                 </div>
               </div>
             </InsightSection>
@@ -403,7 +403,7 @@ function StatBox({ value, format, label }: { value: number; format: (n: number) 
       </span>
       <span className="flex items-center gap-1 text-[14px] text-[#656B81] leading-[1.4]">
         {label}
-        {label === 'Est. Revenue Impact' && (
+        {label === 'Potential Revenue at Risk' && (
           <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#656B81', marginLeft: 4 }} />
         )}
       </span>
