@@ -32,7 +32,7 @@ export function AvatarStackCell({ values, onChipClick }: AvatarStackCellProps) {
   const overflow = values.length - 2
 
   return (
-    <div className="flex items-center gap-1 flex-nowrap">
+    <div className="flex items-center gap-2 flex-nowrap">
       {visible.map((name) => (
         <button
           key={name}
