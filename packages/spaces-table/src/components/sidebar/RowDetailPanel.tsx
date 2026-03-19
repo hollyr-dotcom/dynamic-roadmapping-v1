@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import type { SpaceRow } from '@spaces/shared'
+import { CompanyLogo } from '../CompanyLogo'
 import {
   IconInformationMarkCircle,
   IconCross,
@@ -499,9 +500,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   <div className="flex flex-col gap-0 py-1 w-full">
                     <div className="flex flex-wrap gap-2">
                       {allCompanies.slice(0, MAX_VISIBLE).map(name => (
-                        <span key={name} onClick={() => setSelectedCompany(name)} style={{ cursor: 'pointer' }}>
-                          <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
-                        </span>
+                        <CompanyLogo key={name} name={name} size={32} onClick={() => setSelectedCompany(name)} />
                       ))}
                       {overflow > 0 && !companiesExpanded && (
                         <button
@@ -517,9 +516,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     <div style={{ maxHeight: companiesExpanded ? 200 : 0, overflow: 'hidden', transition: 'max-height 0.3s cubic-bezier(0.16,1,0.3,1)' }}>
                       <div className="flex flex-wrap gap-2 pt-2">
                         {allCompanies.slice(MAX_VISIBLE).map(name => (
-                          <span key={name} onClick={() => setSelectedCompany(name)} style={{ cursor: 'pointer' }}>
-                            <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
-                          </span>
+                          <CompanyLogo key={name} name={name} size={32} onClick={() => setSelectedCompany(name)} />
                         ))}
                         <button
                           onClick={() => setCompaniesExpanded(false)}
@@ -574,9 +571,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             <InsightSection label="Top impacted customers">
               <div className="flex flex-wrap gap-2 mt-2">
                 {row.companies.map(name => (
-                  <span key={name} onClick={() => setSelectedCompany(name)} style={{ cursor: 'pointer' }}>
-                    <Chip removable={false} css={{ fontSize: 13, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
-                  </span>
+                  <CompanyLogo key={name} name={name} size={32} onClick={() => setSelectedCompany(name)} />
                 ))}
               </div>
             </InsightSection>
@@ -1409,7 +1404,7 @@ function FeedbackCard({
               <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{source}</Chip>
             )}
             {companies[0] && (
-              <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{companies[0]}</Chip>
+              <CompanyLogo name={companies[0]} size={24} />
             )}
           </div>
         </div>

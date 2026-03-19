@@ -17,6 +17,7 @@ import {
   Chip,
 } from '@mirohq/design-system'
 import type { SpaceRow } from '@spaces/shared'
+import { CompanyLogo } from '../CompanyLogo'
 
 interface JiraDetailPanelProps {
   row: SpaceRow
@@ -219,7 +220,7 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
               <div className="flex flex-col gap-0 py-1 w-full">
                 <div className="flex flex-wrap gap-2">
                   {allCompanies.slice(0, MAX_VISIBLE).map(name => (
-                    <Chip key={name} removable={false} css={{ fontSize: 14 }}>{name}</Chip>
+                    <CompanyLogo key={name} name={name} size={32} />
                   ))}
                   {overflow > 0 && !companiesExpanded && (
                     <button
@@ -234,7 +235,7 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
                 <div style={{ maxHeight: companiesExpanded ? 200 : 0, overflow: 'hidden', transition: 'max-height 0.3s cubic-bezier(0.16,1,0.3,1)' }}>
                   <div className="flex flex-wrap gap-2 pt-2">
                     {allCompanies.slice(MAX_VISIBLE).map(name => (
-                      <Chip key={name} removable={false} css={{ fontSize: 14 }}>{name}</Chip>
+                      <CompanyLogo key={name} name={name} size={32} />
                     ))}
                     <button
                       onClick={() => setCompaniesExpanded(false)}
@@ -271,7 +272,7 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
             <InsightSection label="Top impacted customers">
               <div className="flex flex-wrap gap-2 mt-2">
                 {row.companies.map(name => (
-                  <Chip key={name} removable={false} css={{ fontSize: 13 }}>{name}</Chip>
+                  <CompanyLogo key={name} name={name} size={32} />
                 ))}
               </div>
             </InsightSection>
@@ -564,7 +565,7 @@ function FeedbackCard({
               <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{source}</Chip>
             )}
             {companies[0] && (
-              <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{companies[0]}</Chip>
+              <CompanyLogo name={companies[0]} size={24} />
             )}
           </div>
         </div>
