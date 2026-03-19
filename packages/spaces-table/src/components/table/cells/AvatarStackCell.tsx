@@ -43,8 +43,8 @@ export function AvatarStackCell({ values, onChipClick }: AvatarStackCellProps) {
             alignItems: 'center',
             justifyContent: 'center',
             padding: '0px 6.5px',
-            width: 28,
-            height: 28,
+            width: 36,
+            height: 36,
             borderRadius: 6,
             background: '#EEEDFF',
             border: 'none',
@@ -55,8 +55,8 @@ export function AvatarStackCell({ values, onChipClick }: AvatarStackCellProps) {
           <img
             src={faviconUrl(name)}
             alt={name}
-            width={15}
-            height={15}
+            width={20}
+            height={20}
             style={{ display: 'block', objectFit: 'contain' }}
           />
         </button>
