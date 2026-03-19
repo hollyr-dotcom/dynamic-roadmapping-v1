@@ -36,34 +36,29 @@ export function AvatarStackCell({ values, onChipClick }: AvatarStackCellProps) {
       {visible.map((name) => (
         <button
           key={name}
+          title={name}
           onClick={(e: React.MouseEvent) => { e.stopPropagation(); onChipClick?.(name) }}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: 5,
-            padding: '3px 8px 3px 4px',
+            justifyContent: 'center',
+            padding: '0px 6.5px',
+            width: 28,
+            height: 28,
             borderRadius: 6,
-            border: '1px solid #E9EAEF',
-            background: '#fff',
+            background: '#EEEDFF',
+            border: 'none',
             cursor: 'pointer',
-            fontFamily: 'Open Sans, sans-serif',
-            fontSize: 13,
-            color: '#1A1B1E',
-            fontWeight: 400,
-            lineHeight: 1,
-            whiteSpace: 'nowrap',
+            flexShrink: 0,
           }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F1F2F5' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff' }}
         >
           <img
             src={faviconUrl(name)}
-            alt=""
-            width={14}
-            height={14}
-            style={{ borderRadius: 2, display: 'block', flexShrink: 0 }}
+            alt={name}
+            width={15}
+            height={15}
+            style={{ display: 'block', objectFit: 'contain' }}
           />
-          {name}
         </button>
       ))}
       {overflow > 0 && (
