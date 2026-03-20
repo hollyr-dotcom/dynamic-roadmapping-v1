@@ -25,3 +25,4 @@ dist-ssr
 
 # Local progress notes
 progress.md
+bun.lock
