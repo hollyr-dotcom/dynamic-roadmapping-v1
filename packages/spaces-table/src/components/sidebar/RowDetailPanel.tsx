@@ -1372,13 +1372,14 @@ function FeedbackCard({
             fontSize: 14,
             fontWeight: 600,
             padding: '4px 10px',
-            borderRadius: 6,
+            borderRadius: hovered ? 6 : 999,
             backgroundColor: categoryColor.bg,
             color: categoryColor.text,
             lineHeight: 1.4,
             whiteSpace: 'nowrap',
+            transition: 'border-radius 0.25s ease',
           }}>
-            <Icon css={{ width: 16, height: 16, flexShrink: 0, color: categoryColor.text }} />
+            <Icon css={{ width: 20, height: 20, flexShrink: 0, color: categoryColor.text }} />
             <span style={{
               maxWidth: hovered ? 120 : 0,
               opacity: hovered ? 1 : 0,
