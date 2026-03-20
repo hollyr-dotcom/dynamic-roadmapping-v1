@@ -1358,17 +1358,17 @@ function FeedbackCard({
         {borderColor === '#d4bbff' && (
           <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4262FF', flexShrink: 0, marginTop: 4 }} />
         )}
-        <Icon css={{ width: 25, height: 25 }} />
         <div
           className="whitespace-nowrap overflow-hidden"
           style={{
-            maxWidth: hovered ? 120 : 0,
-            opacity: hovered ? 1 : 0,
-            transition: 'max-width 0.25s ease, opacity 0.2s ease',
+            maxWidth: hovered ? 160 : 36,
+            transition: 'max-width 0.25s ease',
           }}
         >
           <span style={{
-            display: 'inline-block',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 5,
             fontSize: 14,
             fontWeight: 600,
             padding: '4px 10px',
@@ -1376,8 +1376,16 @@ function FeedbackCard({
             backgroundColor: categoryColor.bg,
             color: categoryColor.text,
             lineHeight: 1.4,
+            whiteSpace: 'nowrap',
           }}>
-            {category}
+            <Icon css={{ width: 16, height: 16, flexShrink: 0, color: categoryColor.text }} />
+            <span style={{
+              maxWidth: hovered ? 120 : 0,
+              opacity: hovered ? 1 : 0,
+              overflow: 'hidden',
+              display: 'inline-block',
+              transition: 'max-width 0.25s ease, opacity 0.2s ease',
+            }}>{category}</span>
           </span>
         </div>
         <div className="flex-1" />
