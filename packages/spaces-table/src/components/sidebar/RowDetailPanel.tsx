@@ -1337,7 +1337,7 @@ function FeedbackCard({
 
   return (
     <div
-      className="w-full rounded-xl flex flex-col gap-2 p-5 transition-all duration-200 cursor-pointer"
+      className="w-full rounded-xl flex flex-col gap-2 p-5 cursor-pointer"
       style={{ border: `2px solid ${borderColor}`, borderBottomWidth: 6 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
