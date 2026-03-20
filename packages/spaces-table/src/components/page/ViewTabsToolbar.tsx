@@ -241,7 +241,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
 
   return (
     <div
-      className={`group sticky top-0 left-0 z-20 bg-white flex items-center gap-4 shrink-0 ${variant === 'widget' ? 'pl-0 pr-0 pt-2 pb-4' : 'pl-14 pt-4 pb-6'}`}
+      className={`group sticky top-0 left-0 z-30 bg-white flex items-center gap-4 shrink-0 ${variant === 'widget' ? 'pl-0 pr-0 pt-2 pb-4' : 'pl-14 pt-4 pb-6'}`}
       style={variant === 'page' ? {
         paddingRight: activeSidebar === 'row-detail' ? 500 + 12 : activeSidebar === 'ai-sidekick' ? 456 + 12 : (activeSidebar && activeSidebar !== 'space-menu') ? 320 + 12 : 48,
         transition: 'padding-right 300ms cubic-bezier(0.16,1,0.3,1)',
