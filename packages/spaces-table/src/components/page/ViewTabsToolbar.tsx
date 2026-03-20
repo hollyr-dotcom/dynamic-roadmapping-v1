@@ -565,16 +565,21 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
                 background: '#F1F2F5',
               }}
             >
-              <CompanyLogo name={name} size={20} />
-              <button
-                onClick={() => onClearCompanyFilter?.(name)}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginLeft: 2 }}
-                aria-label={`Clear ${name} filter`}
-              >
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M9 3L3 9M3 3l6 6" stroke="#3C3F4A" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              </button>
+              <CompanyLogo name={name} size={28} />
+              <Tooltip>
+                <Tooltip.Trigger asChild>
+                  <button
+                    onClick={() => onClearCompanyFilter?.(name)}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginLeft: 2 }}
+                    aria-label={`Clear ${name} filter`}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M9 3L3 9M3 3l6 6" stroke="#3C3F4A" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                  </button>
+                </Tooltip.Trigger>
+                <Tooltip.Content side="top" sideOffset={4}>Remove</Tooltip.Content>
+              </Tooltip>
             </div>
           ))}
         </div>
