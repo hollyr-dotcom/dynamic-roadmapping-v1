@@ -6,7 +6,7 @@ import {
   IconCross,
   IconHeart,
   IconFlag,
-  IconExclamationPointCircle,
+
   IconStarFilled,
   IconChevronDown,
   IconSlidersY,
@@ -18,6 +18,17 @@ import {
 } from '@mirohq/design-system'
 import type { SpaceRow } from '@spaces/shared'
 import { CompanyLogo } from '../CompanyLogo'
+
+function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
+  const size = ((props as { width?: number }).width ?? 24) + 4
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-block', flexShrink: 0 }}>
+      <circle cx="12" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M5 19c0-3.314 3.134-6 7-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M15 15l4 4M19 15l-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  )
+}
 
 interface JiraDetailPanelProps {
   row: SpaceRow
@@ -50,7 +61,7 @@ const INSIGHT_SUMMARIES: Record<string, string> = {
 const CARD_STYLES = [
   { borderColor: '#BADEB1', Icon: IconHeart,                  stars: 3, date: 'Aug 02', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag,                              date: 'Jul 18', source: 'Gong' },
-  { borderColor: '#ffd4b2', Icon: IconExclamationPointCircle,            date: 'Jun 30', source: 'SurveyMonkey' },
+  { borderColor: '#ffd4b2', Icon: IconUserTickDown,            date: 'Jun 30', source: 'SurveyMonkey' },
   { borderColor: '#BADEB1', Icon: IconHeart,                  stars: 5, date: 'Jun 12', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag,                              date: 'May 28', source: 'Play Store' },
 ]

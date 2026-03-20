@@ -2,12 +2,21 @@ import { useState, useRef, useCallback } from 'react'
 import {
   IconHeart,
   IconFlag,
-  IconExclamationPointCircle,
   IconStarFilled,
   IconHeadphones,
   IconCalendarBlank,
   Chip,
 } from '@mirohq/design-system'
+
+function IconUserTickDown({ size = 28 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M5 19c0-3.314 3.134-6 7-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M15 15l4 4M19 15l-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  )
+}
 
 export interface FeedbackCardData {
   title: string
@@ -39,7 +48,7 @@ const DRAG_THRESHOLD = 3
 
 function CardIcon({ borderColor }: { borderColor: string }) {
   if (borderColor === '#d4bbff') return <IconFlag css={{ width: 25, height: 25 }} />
-  if (borderColor === '#ffd4b2') return <IconExclamationPointCircle css={{ width: 25, height: 25 }} />
+  if (borderColor === '#ffd4b2') return <IconUserTickDown size={29} />
   return <IconHeart css={{ width: 25, height: 25 }} />
 }
 
@@ -156,7 +165,7 @@ export function CanvasFeedbackCard({
               <div className="flex flex-col gap-2" style={{ paddingLeft: 16, paddingRight: 20, paddingTop: 16, paddingBottom: 8 }}>
                 <span style={{ color: data.cardType === 'request' ? '#5E4DB2' : data.cardType === 'problem' ? '#FF8F00' : '#de350b', display: 'flex' }}>
                   {data.cardType === 'request' ? <IconFlag css={{ width: 20, height: 20 }} />
-                    : data.cardType === 'problem' ? <IconExclamationPointCircle css={{ width: 20, height: 20 }} />
+                    : data.cardType === 'problem' ? <IconUserTickDown size={24} />
                     : <IconHeart css={{ width: 20, height: 20 }} />}
                 </span>
                 <p
@@ -198,7 +207,10 @@ export function CanvasFeedbackCard({
             className="bg-white rounded-xl flex flex-col gap-2 p-5"
             style={{ border: `2px solid ${data.borderColor}`, borderBottomWidth: 6, fontFamily: 'Open Sans, sans-serif' }}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-start gap-2">
+              {data.borderColor === '#d4bbff' && (
+                <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4262FF', flexShrink: 0, marginTop: 4 }} />
+              )}
               <CardIcon borderColor={data.borderColor} />
               <span className="text-[12px] text-[#959AAC] leading-[1.5]">{data.date}</span>
             </div>
