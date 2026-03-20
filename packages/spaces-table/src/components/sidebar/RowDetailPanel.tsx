@@ -1381,7 +1381,8 @@ function FeedbackCard({
             opacity: hovered ? 1 : 0,
             overflow: 'hidden',
             display: 'inline-block',
-            fontSize: 14,
+            fontSize: 12,
+            fontWeight: 700,
             transition: 'max-width 0.25s ease, opacity 0.2s ease',
           }}>{category}</span>
         </span>
