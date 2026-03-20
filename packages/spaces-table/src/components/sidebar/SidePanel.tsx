@@ -57,6 +57,7 @@ const FIELD_TYPE_ICONS: Record<FieldType, MiroIcon> = {
   person:   IconTextT,
   date:     IconTextT,
   jiraId:   IconTextT,
+  priority: IconTextT,
 }
 
 
