@@ -573,14 +573,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     The title or description may be too brief to reliably match to customer feedback. Improving context will increase matching accuracy.
                   </p>
                 </div>
-                <button
-                  onClick={() => setInsightDismissed(true)}
-                  className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded transition-colors"
-                  style={{ color: '#656B81' }}
-                  aria-label="Dismiss"
-                >
-                  <IconCross css={{ width: 14, height: 14 }} />
-                </button>
               </div>
             )}
 
