@@ -1382,7 +1382,7 @@ function FeedbackCard({
             overflow: 'hidden',
             display: 'inline-block',
             fontSize: 12,
-            fontWeight: 700,
+            fontWeight: 600,
             transition: 'max-width 0.25s ease, opacity 0.2s ease',
           }}>{category}</span>
         </span>
