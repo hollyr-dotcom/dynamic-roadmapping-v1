@@ -1374,9 +1374,7 @@ function FeedbackCard({
           flexShrink: 0,
           transition: 'width 0.25s ease, padding 0.25s ease, gap 0.25s ease',
         }}>
-          {borderColor === '#d4bbff' && (
-            <div style={{ position: 'absolute', top: -4, right: -4, width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4262FF' }} />
-          )}
+
           <Icon css={{ width: 20, height: 20, flexShrink: 0 }} />
           <span style={{
             maxWidth: hovered ? 120 : 0,
