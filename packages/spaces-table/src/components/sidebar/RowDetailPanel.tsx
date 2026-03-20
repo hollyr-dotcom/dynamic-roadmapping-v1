@@ -1342,9 +1342,9 @@ function FeedbackCard({
           borderColor === '#d4bbff' ? 'User Request' :
           'User Problem'
         const categoryColor =
-          borderColor === '#BADEB1' ? { bg: '#EAFAEA', text: '#2D7A35' } :
-          borderColor === '#d4bbff' ? { bg: '#EFE9FF', text: '#5B3DB5' } :
-          { bg: '#FFF0E0', text: '#A85A10' }
+          borderColor === '#BADEB1' ? { bg: '#EAFAEA', text: '#3C3F4A' } :
+          borderColor === '#d4bbff' ? { bg: '#EFE9FF', text: '#3C3F4A' } :
+          { bg: '#FFF0E0', text: '#3C3F4A' }
         return (
       <div className="flex items-start gap-2">
         <span style={{
