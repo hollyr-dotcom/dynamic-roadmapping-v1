@@ -1295,8 +1295,7 @@ function FeedbackCard({
   onAddToBoard,
 }: {
   borderColor: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Icon: React.ComponentType<any>
+  Icon: typeof IconHeart | typeof IconUserTickDown
   stars?: number
   text: string
   author: string
