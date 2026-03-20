@@ -11,7 +11,7 @@ import {
   Chip,
   IconHeart,
   IconFlag,
-  IconExclamationPointCircle,
+
   IconStarFilled,
   IconChevronDown,
   IconSlidersY,
@@ -36,6 +36,17 @@ import {
   IconPlusBox,
   IconUser,
 } from '@mirohq/design-system'
+
+function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
+  const size = ((props as { width?: number }).width ?? 24) + 4
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-block', flexShrink: 0 }}>
+      <circle cx="12" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M5 19c0-3.314 3.134-6 7-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M15 15l4 4M19 15l-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  )
+}
 
 interface FeedbackCardData {
   title: string
@@ -124,15 +135,15 @@ const CARD_WEIGHTS = [0.13, 0.12, 0.10, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06, 0.05
 const CARD_STYLES = [
   { borderColor: '#BADEB1', Icon: IconHeart, stars: 3, date: 'Aug 02', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Jul 18', source: 'Gong' },
-  { borderColor: '#ffd4b2', Icon: IconExclamationPointCircle, date: 'Jun 30', source: 'SurveyMonkey' },
+  { borderColor: '#ffd4b2', Icon: IconUserTickDown, date: 'Jun 30', source: 'SurveyMonkey' },
   { borderColor: '#BADEB1', Icon: IconHeart, stars: 5, date: 'Jun 12', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'May 28', source: 'Play Store' },
   { borderColor: '#BADEB1', Icon: IconHeart, stars: 4, date: 'May 14', source: 'Gong' },
-  { borderColor: '#ffd4b2', Icon: IconExclamationPointCircle, date: 'Apr 29', source: 'SurveyMonkey' },
+  { borderColor: '#ffd4b2', Icon: IconUserTickDown, date: 'Apr 29', source: 'SurveyMonkey' },
   { borderColor: '#BADEB1', Icon: IconHeart, stars: 5, date: 'Apr 11', source: 'Play Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Mar 27', source: 'Gong' },
   { borderColor: '#BADEB1', Icon: IconHeart, stars: 2, date: 'Mar 10', source: 'App Store' },
-  { borderColor: '#ffd4b2', Icon: IconExclamationPointCircle, date: 'Feb 22', source: 'SurveyMonkey' },
+  { borderColor: '#ffd4b2', Icon: IconUserTickDown, date: 'Feb 22', source: 'SurveyMonkey' },
   { borderColor: '#BADEB1', Icon: IconHeart, stars: 4, date: 'Feb 05', source: 'Play Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Jan 20', source: 'Gong' },
   { borderColor: '#BADEB1', Icon: IconHeart, stars: 5, date: 'Jan 08', source: 'App Store' },
@@ -1332,22 +1343,43 @@ function FeedbackCard({
       onMouseLeave={() => setHovered(false)}
       onClick={onSelect}
     >
-      {/* Card header: icon + date (on hover) + actions */}
+      {/* Card header: icon + category (on hover) + actions */}
+      {(() => {
+        const category =
+          borderColor === '#BADEB1' ? 'User Praise' :
+          borderColor === '#d4bbff' ? 'User Request' :
+          'User Problem'
+        const categoryColor =
+          borderColor === '#BADEB1' ? { bg: '#EAFAEA', text: '#2D7A35' } :
+          borderColor === '#d4bbff' ? { bg: '#EFE9FF', text: '#5B3DB5' } :
+          { bg: '#FFF0E0', text: '#A85A10' }
+        return (
       <div className="flex items-start gap-2">
         {borderColor === '#d4bbff' && (
           <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4262FF', flexShrink: 0, marginTop: 4 }} />
         )}
         <Icon css={{ width: 25, height: 25 }} />
-        <span
-          className="text-[12px] text-[#959AAC] leading-[1.5] whitespace-nowrap overflow-hidden"
+        <div
+          className="whitespace-nowrap overflow-hidden"
           style={{
             maxWidth: hovered ? 120 : 0,
             opacity: hovered ? 1 : 0,
             transition: 'max-width 0.25s ease, opacity 0.2s ease',
           }}
         >
-          {date}
-        </span>
+          <span style={{
+            display: 'inline-block',
+            fontSize: 11,
+            fontWeight: 600,
+            padding: '2px 6px',
+            borderRadius: 6,
+            backgroundColor: categoryColor.bg,
+            color: categoryColor.text,
+            lineHeight: 1.5,
+          }}>
+            {category}
+          </span>
+        </div>
         <div className="flex-1" />
         <div className="flex items-center gap-1">
           <button
@@ -1371,6 +1403,8 @@ function FeedbackCard({
           </div>
         </div>
       </div>
+        )
+      })()}
 
       {/* Stars (optional) */}
       {stars && (
@@ -1416,6 +1450,7 @@ function FeedbackCard({
             {source && (
               <Chip removable={false} css={{ fontSize: 14, borderRadius: '6px', '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{source}</Chip>
             )}
+            <Chip removable={false} css={{ fontSize: 14, borderRadius: '6px' }}>{date}</Chip>
             {companies[0] && (
               <CompanyLogo name={companies[0]} size={24} />
             )}
