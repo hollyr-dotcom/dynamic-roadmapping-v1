@@ -9,6 +9,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@spaces/shared": "workspace:*"
+    "@spaces/shared": "workspace:*",
+    "simple-icons": "^16.12.0"
   }
 }
