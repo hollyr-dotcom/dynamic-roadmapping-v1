@@ -541,24 +541,35 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             {/* Low-confidence Insights callout */}
             {!insightDismissed && (
               <div
-                className="w-full rounded-lg p-4 flex flex-col gap-2 relative"
-                style={{ backgroundColor: '#EFF6FF', border: '1px solid #93C5FD' }}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  padding: 16,
+                  gap: 12,
+                  background: '#F2F4FC',
+                  border: '1.5px solid #C7D0FD',
+                  borderRadius: 8,
+                  position: 'relative',
+                }}
               >
+                <IconInformationMarkCircle size="medium" color="icon-info" css={{ flexShrink: 0, marginTop: 1 }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, paddingRight: 20 }}>
+                  <p className="text-[16px] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1", color: '#1a1b1e', margin: 0 }}>
+                    Low-confidence Insights
+                  </p>
+                  <p style={{ fontSize: 14, color: '#656B81', lineHeight: 1.5, margin: 0 }}>
+                    The title or description may be too brief to reliably match to customer feedback. Improving context will increase matching accuracy.
+                  </p>
+                </div>
                 <button
                   onClick={() => setInsightDismissed(true)}
                   className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded transition-colors"
-                  style={{ color: '#3B82F6' }}
+                  style={{ color: '#656B81' }}
                   aria-label="Dismiss"
                 >
                   <IconCross css={{ width: 14, height: 14 }} />
                 </button>
-                <IconInformationMarkCircle size="medium" color="icon-info" />
-                <p className="text-[16px] text-[#1E3A5F] leading-[1.4] pr-7" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
-                  Low-confidence Insights
-                </p>
-                <p className="text-[14px] text-[#1E3A5F] leading-[1.5] w-full">
-                  The title or description may be too brief to reliably match to customer feedback. Improving context will increase matching accuracy.
-                </p>
               </div>
             )}
 
