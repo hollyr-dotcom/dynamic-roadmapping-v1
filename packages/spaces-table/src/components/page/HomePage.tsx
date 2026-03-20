@@ -33,14 +33,14 @@ const imgFlowchart = '/images/template-flowchart.svg'
 const imgMindMap = '/images/template-mindmap.svg'
 const imgAvatar = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=48&h=48&fit=crop&crop=face'
 const imgAvatar1 = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=48&h=48&fit=crop&crop=face'
-const imgTeamLogo = '/images/team-logo.svg'
+const imgTeamLogo = '/images/team-logo.png'
 const imgIconPlant = '/images/icon-plant.svg'
 const imgIconPaper = '/images/icon-paper.svg'
 const imgIconCursor = '/images/icon-cursor.svg'
 const imgIconUser = '/images/icon-user.svg'
 const imgIconOrgChart = '/images/icon-orgchart.svg'
 const imgShareAvatar = 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop&crop=face'
-const imgMiroTeamLogo = '/images/miro-team-logo.svg'
+const imgMiroTeamLogo = '/images/team-logo.png'
 
 interface HomePageProps {
   onOpenApp: (importSource?: 'jira' | 'miro' | 'csv') => void
