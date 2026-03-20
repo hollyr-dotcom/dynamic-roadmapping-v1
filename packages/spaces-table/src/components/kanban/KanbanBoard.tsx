@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useRef, useEffect } from 'react'
 import type { Priority, SpaceRow, FieldDefinition } from '@spaces/shared'
 import { KanbanColumn } from './KanbanColumn'
 
@@ -47,10 +47,28 @@ interface KanbanBoardProps {
   fields: FieldDefinition[]
   columns?: Priority[]
   onRowClick?: (row: SpaceRow) => void
+  onMoveToRoadmap?: (rowId: string) => void
+  showMoveToRoadmap?: boolean
+  onCardSelectedChange?: (hasSelection: boolean) => void
 }
 
-export function KanbanBoard({ data, fields, columns, onRowClick }: KanbanBoardProps) {
+export function KanbanBoard({ data, fields, columns, onRowClick, onMoveToRoadmap, showMoveToRoadmap, onCardSelectedChange }: KanbanBoardProps) {
   const columnOrder = columns ?? DEFAULT_COLUMNS
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
+  const boardRef = useRef<HTMLDivElement>(null)
+
+  // Deselect when clicking outside the board
+  useEffect(() => {
+    if (!selectedCardId) return
+    const handleClick = (e: MouseEvent) => {
+      if (boardRef.current && !boardRef.current.contains(e.target as Node)) {
+        setSelectedCardId(null)
+        onCardSelectedChange?.(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [selectedCardId])
 
   const grouped = useMemo(() => {
     const map: Partial<Record<Priority, SpaceRow[]>> = {}
@@ -63,8 +81,20 @@ export function KanbanBoard({ data, fields, columns, onRowClick }: KanbanBoardPr
 
   const tagFields = fields.filter(f => !f.isPrimary)
 
+  const handleSelectCard = (rowId: string) => {
+    setSelectedCardId(prev => {
+      const next = prev === rowId ? null : rowId
+      onCardSelectedChange?.(next !== null)
+      return next
+    })
+  }
+
+  const handleMoveToRoadmap = showMoveToRoadmap && onMoveToRoadmap
+    ? (rowId: string) => { onMoveToRoadmap(rowId); setSelectedCardId(null); onCardSelectedChange?.(false) }
+    : undefined
+
   return (
-    <div className="flex items-stretch gap-4 pl-14 pt-3 pb-10">
+    <div ref={boardRef} className="flex items-stretch gap-4 pl-14 pt-3 pb-10">
       {columnOrder.map((priority, i) => (
         <div
           key={priority}
@@ -76,7 +106,10 @@ export function KanbanBoard({ data, fields, columns, onRowClick }: KanbanBoardPr
             config={PRIORITY_CONFIG[priority]}
             rows={grouped[priority] ?? []}
             fields={tagFields}
-            onRowClick={onRowClick}
+            selectedCardId={selectedCardId}
+            onSelectCard={handleSelectCard}
+            onOpenSidePanel={onRowClick}
+            onMoveToRoadmap={handleMoveToRoadmap}
           />
         </div>
       ))}

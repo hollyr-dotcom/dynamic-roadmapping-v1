@@ -63,6 +63,7 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
             Project Galaxy
           </span>
 
+          {/* Breadcrumb: chevron + database title — fades in on scroll */}
           <span
             className="flex items-center transition-opacity duration-200"
             style={{ opacity: scrollFade, gap: '2px', color: '#B3B9C4' }}
@@ -80,6 +81,7 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
 
       {/* Right: notifications + avatars */}
       <div className="flex items-center gap-2">
+        {/* Notifications */}
         <IconButton
           aria-label="Notifications"
           variant="ghost"
@@ -88,6 +90,7 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
           <IconBell />
         </IconButton>
 
+        {/* Presence avatar */}
         <img
           src="/james-rodriguez.png"
           alt="James Rodriguez"

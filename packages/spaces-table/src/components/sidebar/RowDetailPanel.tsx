@@ -590,7 +590,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 </div>
                 <div className="flex gap-3">
                   <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" />
-                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Potential Revenue at Risk" />
+                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Est. Revenue Impact" />
                 </div>
               </div>
             </InsightSection>
@@ -1108,7 +1108,7 @@ function PromptChatView({ prompt, company, onBack, onClose }: { prompt: string; 
   )
 }
 
-function CompanyDetailView({ company, rowTitle: _rowTitle, onBack, onPromptSelect }: { company: string; rowTitle: string; onBack: () => void; onPromptSelect: (prompt: string) => void }) {
+function CompanyDetailView({ company, rowTitle: _rowTitle, onBack, onPromptSelect }: { company: string; rowTitle?: string; onBack: () => void; onPromptSelect: (prompt: string) => void }) {
   const info = COMPANY_INFO[company] ?? { domain: `${company.toLowerCase()}.com`, stage: 'N/A', dealValue: 'N/A', source: 'N/A' }
   return (
     <div className="flex flex-col pb-6">
@@ -1209,7 +1209,7 @@ function StatBox({ value, format, label, wow }: { value: number; format: (n: num
       </div>
       <span className="flex items-center gap-1 text-[14px] text-[#656B81] leading-[1.4]">
         {label}
-        {label === 'Potential Revenue at Risk' && (
+        {label === 'Est. Revenue Impact' && (
           <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#656B81', marginLeft: 4 }} />
         )}
       </span>
@@ -1793,7 +1793,7 @@ function FieldRow({
       <div className="w-[100px] shrink-0 flex items-center">
         <span className="flex items-center gap-1 text-[14px] text-[#656B81] leading-[1.4]">
         {label}
-        {label === 'Potential Revenue at Risk' && (
+        {label === 'Est. Revenue Impact' && (
           <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#656B81', marginLeft: 4 }} />
         )}
       </span>
