@@ -1,4 +1,5 @@
 import type { SpaceRow, FieldDefinition } from '@spaces/shared'
+import { Tooltip } from '@mirohq/design-system'
 import { KanbanCardToolbar } from './KanbanCardToolbar'
 import { CompanyLogo } from '../CompanyLogo'
 
@@ -98,16 +99,27 @@ export function KanbanCard({ row, fields, borderColor, isSelected, onSelect, onO
             {fields.filter(field => field.id !== 'description').map(field => (
               <FieldTag key={field.id} field={field} row={row} />
             ))}
-            {row.companies.slice(0, 3).map(name => (
-              <CompanyLogo key={name} name={name} size={26} />
-            ))}
-            {row.companies.length > 3 && (
-              <span
-                className="inline-flex items-center font-body text-[#656B81] rounded whitespace-nowrap"
-                style={{ fontSize: 12, height: 26, padding: '4px 8px', backgroundColor: '#F1F2F5' }}
-              >
-                +{row.companies.length - 3}
-              </span>
+            {row.companies.length > 0 && (
+              <Tooltip>
+                <Tooltip.Trigger asChild>
+                  <span
+                    className="inline-flex items-center rounded whitespace-nowrap"
+                    style={{ height: 26, padding: '0 8px', backgroundColor: '#F1F2F5', gap: 6 }}
+                  >
+                    {row.companies.slice(0, 3).map(name => (
+                      <CompanyLogo key={name} name={name} size={12} inline />
+                    ))}
+                    {row.companies.length > 3 && (
+                      <span className="font-body text-[#656B81]" style={{ fontSize: 12, marginLeft: 2 }}>
+                        +{row.companies.length - 3}
+                      </span>
+                    )}
+                  </span>
+                </Tooltip.Trigger>
+                <Tooltip.Content side="top" sideOffset={4}>
+                  {row.companies.length} {row.companies.length === 1 ? 'company' : 'companies'}
+                </Tooltip.Content>
+              </Tooltip>
             )}
           </div>
         </div>
