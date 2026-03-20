@@ -112,24 +112,29 @@ interface CompanyLogoProps {
   showName?: boolean
   onClick?: () => void
   hovered?: boolean
+  /** Render just the icon with no background pill or tooltip — for use inside grouped containers */
+  inline?: boolean
 }
 
-export function CompanyLogo({ name, size = 32, showName, onClick, hovered }: CompanyLogoProps) {
+export function CompanyLogo({ name, size = 32, showName, onClick, hovered, inline }: CompanyLogoProps) {
   const [tagHovered, setTagHovered] = useState(false)
   const brand = COMPANY_DATA[name]
   const iconColor = brand?.color ?? FALLBACK_COLOR
   const svgPath = brand?.svgPath ?? FALLBACK_SHAPES[hashName(name) % FALLBACK_SHAPES.length]
   const iconSize = Math.min(Math.round(size * 0.5), 20)
 
-  const bg = tagHovered ? BG_TAG_HOVER : hovered ? BG_ROW_HOVER : BG_DEFAULT
-
-  const Tag = onClick ? 'button' : 'span'
-
   const icon = (
-    <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill={iconColor} style={{ display: 'block', flexShrink: 0 }}>
+    <svg width={inline ? size : iconSize} height={inline ? size : iconSize} viewBox="0 0 24 24" fill={iconColor} style={{ display: 'block', flexShrink: 0 }}>
       <path d={svgPath} />
     </svg>
   )
+
+  // Inline mode: bare icon, no background, no tooltip
+  if (inline) return icon
+
+  const bg = tagHovered ? BG_TAG_HOVER : hovered ? BG_ROW_HOVER : BG_DEFAULT
+
+  const Tag = onClick ? 'button' : 'span'
 
   const content = (
     <Tag
