@@ -12,7 +12,7 @@ export function AvatarStackCell({ values, onChipClick }: AvatarStackCellProps) {
   return (
     <div className="flex items-center gap-2 flex-nowrap">
       {visible.map((name) => (
-        <CompanyLogo key={name} name={name} size={36} onClick={onChipClick ? () => onChipClick(name) : undefined} />
+        <CompanyLogo key={name} name={name} size={28} onClick={onChipClick ? () => onChipClick(name) : undefined} />
       ))}
       {overflow > 0 && (
         <span className="text-[#656B81] font-body font-medium" style={{ fontSize: '14px' }}>
