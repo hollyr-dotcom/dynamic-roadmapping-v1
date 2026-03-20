@@ -231,7 +231,7 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
               <div className="flex flex-col gap-0 py-1 w-full">
                 <div className="flex flex-wrap gap-2">
                   {allCompanies.slice(0, MAX_VISIBLE).map(name => (
-                    <CompanyLogo key={name} name={name} size={32} />
+                    <CompanyLogo key={name} name={name} size={32} showName />
                   ))}
                   {overflow > 0 && !companiesExpanded && (
                     <button
@@ -246,7 +246,7 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
                 <div style={{ maxHeight: companiesExpanded ? 200 : 0, overflow: 'hidden', transition: 'max-height 0.3s cubic-bezier(0.16,1,0.3,1)' }}>
                   <div className="flex flex-wrap gap-2 pt-2">
                     {allCompanies.slice(MAX_VISIBLE).map(name => (
-                      <CompanyLogo key={name} name={name} size={32} />
+                      <CompanyLogo key={name} name={name} size={32} showName />
                     ))}
                     <button
                       onClick={() => setCompaniesExpanded(false)}
@@ -355,7 +355,7 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
 function JiraFieldRow({ label, children, alignStart }: { label: string; children: React.ReactNode; alignStart?: boolean }) {
   return (
     <div className={`flex gap-2 min-h-[40px] py-1 ${alignStart ? 'items-start' : 'items-center'}`}>
-      <div className="w-[100px] shrink-0 flex items-center">
+      <div className={`w-[100px] shrink-0 flex ${alignStart ? 'h-[32px] items-end pb-[5px]' : 'items-center'}`}>
         <span className="flex items-center gap-1 text-[14px] text-[#656B81] leading-[1.4]">
         {label}
         {label === 'Est. Revenue Impact' && (

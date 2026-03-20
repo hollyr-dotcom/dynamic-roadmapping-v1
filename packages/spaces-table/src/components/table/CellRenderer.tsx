@@ -1,9 +1,10 @@
-import type { FieldDefinition, SpaceRow, Status } from '@spaces/shared'
+import type { FieldDefinition, SpaceRow, Status, Priority } from '@spaces/shared'
 import { TextCell } from './cells/TextCell'
 import { NumberCell } from './cells/NumberCell'
 import { CurrencyCell } from './cells/CurrencyCell'
 import { AvatarStackCell } from './cells/AvatarStackCell'
 import { StatusCell } from './cells/StatusCell'
+import { PriorityCell } from './cells/PriorityCell'
 import { JiraIdCell } from './cells/JiraIdCell'
 
 interface CellRendererProps {
@@ -27,6 +28,8 @@ export function CellRenderer({ field, row, onAvatarChipClick, isUpdated }: CellR
       return <AvatarStackCell values={value as string[]} onChipClick={onAvatarChipClick} />
     case 'status':
       return <StatusCell value={value as Status | undefined} />
+    case 'priority':
+      return <PriorityCell value={value as Priority | undefined} />
     case 'jiraId':
       return <JiraIdCell value={value as string} />
     default:

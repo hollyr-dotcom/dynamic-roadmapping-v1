@@ -25,7 +25,7 @@ import {
   IconArrowUpRight,
   Tooltip,
 } from '@mirohq/design-system'
-import { faviconUrl } from '../CompanyLogo'
+import { CompanyLogo } from '../CompanyLogo'
 
 export const MENU_WIDTH = 220
 
@@ -565,13 +565,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
                 background: '#F1F2F5',
               }}
             >
-              <img
-                src={faviconUrl(name)}
-                alt={name}
-                width={16}
-                height={16}
-                style={{ display: 'block', objectFit: 'contain', borderRadius: 2 }}
-              />
+              <CompanyLogo name={name} size={20} />
               <button
                 onClick={() => onClearCompanyFilter?.(name)}
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginLeft: 2 }}
