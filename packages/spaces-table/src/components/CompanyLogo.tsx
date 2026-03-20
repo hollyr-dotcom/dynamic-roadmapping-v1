@@ -114,9 +114,11 @@ interface CompanyLogoProps {
   hovered?: boolean
   /** Render just the icon with no background pill or tooltip — for use inside grouped containers */
   inline?: boolean
+  /** Suppress the tooltip — for use when the parent provides its own tooltip */
+  noTooltip?: boolean
 }
 
-export function CompanyLogo({ name, size = 32, showName, onClick, hovered, inline }: CompanyLogoProps) {
+export function CompanyLogo({ name, size = 32, showName, onClick, hovered, inline, noTooltip }: CompanyLogoProps) {
   const [tagHovered, setTagHovered] = useState(false)
   const brand = COMPANY_DATA[name]
   const iconColor = brand?.color ?? FALLBACK_COLOR
@@ -150,7 +152,7 @@ export function CompanyLogo({ name, size = 32, showName, onClick, hovered, inlin
         width: showName ? undefined : size,
         padding: showName ? `0 ${size * 0.3}px 0 ${size * 0.2}px` : 0,
         borderRadius: 8,
-        background: bg,
+        background: noTooltip ? 'transparent' : bg,
         border: 'none',
         cursor: onClick ? 'pointer' : 'default',
         flexShrink: 0,
@@ -165,6 +167,8 @@ export function CompanyLogo({ name, size = 32, showName, onClick, hovered, inlin
       )}
     </Tag>
   )
+
+  if (noTooltip) return content
 
   return (
     <Tooltip>
