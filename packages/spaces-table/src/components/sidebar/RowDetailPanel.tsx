@@ -38,7 +38,7 @@ import {
 } from '@mirohq/design-system'
 
 function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
-  const size = ((props as { width?: number }).width ?? 24) + 4
+  const size = (props as { width?: number }).width ?? 20
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-block', flexShrink: 0 }}>
       <circle cx="12" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5"/>
@@ -1357,9 +1357,9 @@ function FeedbackCard({
           gap: hovered ? 6 : 0,
           fontSize: 14,
           fontWeight: 400,
-          width: hovered ? 'auto' : 36,
-          height: 36,
-          padding: hovered ? '0 12px' : '0',
+          width: hovered ? 'auto' : 28,
+          height: 28,
+          padding: hovered ? '0 10px' : '0',
           borderRadius: 6,
           backgroundColor: categoryColor.bg,
           color: categoryColor.text,
@@ -1369,7 +1369,7 @@ function FeedbackCard({
           transition: 'width 0.25s ease, padding 0.25s ease, gap 0.25s ease',
         }}>
 
-          <Icon css={{ width: 20, height: 20, flexShrink: 0, color: '#3C3F4A' }} />
+          <Icon css={{ width: 16, height: 16, flexShrink: 0, color: '#3C3F4A' }} />
           <span style={{
             maxWidth: hovered ? 120 : 0,
             opacity: hovered ? 1 : 0,
