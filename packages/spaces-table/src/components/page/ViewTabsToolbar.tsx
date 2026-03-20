@@ -25,6 +25,7 @@ import {
   IconArrowUpRight,
   Tooltip,
 } from '@mirohq/design-system'
+import { faviconUrl } from '../CompanyLogo'
 
 export const MENU_WIDTH = 220
 
@@ -60,9 +61,11 @@ interface ViewTabsToolbarProps {
   onNewColumnMenuOpenChange: (open: boolean) => void
   onDuplicateWidget?: (newTabId: string) => void
   variant?: 'page' | 'widget'
+  companyFilter?: string[]
+  onClearCompanyFilter?: (name: string) => void
 }
 
-export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange, onDuplicateWidget, variant = 'page' }: ViewTabsToolbarProps) {
+export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange, onDuplicateWidget, variant = 'page', companyFilter, onClearCompanyFilter }: ViewTabsToolbarProps) {
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
   const [pendingTabId, setPendingTabId] = useState<string | null>(null)
   const [editingTabId, setEditingTabId] = useState<string | null>(null)
@@ -547,6 +550,41 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
           </Tooltip>
         </div>
       </div>
+
+      {/* Company filter chips */}
+      {companyFilter && companyFilter.length > 0 && (
+        <div className="flex items-center gap-1.5 shrink-0 self-center">
+          {companyFilter.map(name => (
+            <div
+              key={name}
+              className="flex items-center gap-1.5"
+              style={{
+                height: 32,
+                padding: '0 8px 0 6px',
+                borderRadius: 8,
+                background: '#F1F2F5',
+              }}
+            >
+              <img
+                src={faviconUrl(name)}
+                alt={name}
+                width={16}
+                height={16}
+                style={{ display: 'block', objectFit: 'contain', borderRadius: 2 }}
+              />
+              <button
+                onClick={() => onClearCompanyFilter?.(name)}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginLeft: 2 }}
+                aria-label={`Clear ${name} filter`}
+              >
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M9 3L3 9M3 3l6 6" stroke="#3C3F4A" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Right: actions — disabled (no handlers) on canvas widget */}
       <div className="flex items-center gap-1 shrink-0 self-center">
