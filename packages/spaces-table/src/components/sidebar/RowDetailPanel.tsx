@@ -1372,7 +1372,7 @@ function FeedbackCard({
             fontSize: 14,
             fontWeight: 600,
             padding: '4px 10px',
-            borderRadius: hovered ? 6 : 999,
+            borderRadius: hovered ? 12 : 999,
             backgroundColor: categoryColor.bg,
             color: categoryColor.text,
             lineHeight: 1.4,
