@@ -1369,13 +1369,13 @@ function FeedbackCard({
         >
           <span style={{
             display: 'inline-block',
-            fontSize: 11,
+            fontSize: 14,
             fontWeight: 600,
-            padding: '2px 6px',
+            padding: '4px 10px',
             borderRadius: 6,
             backgroundColor: categoryColor.bg,
             color: categoryColor.text,
-            lineHeight: 1.5,
+            lineHeight: 1.4,
           }}>
             {category}
           </span>
