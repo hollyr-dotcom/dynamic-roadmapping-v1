@@ -513,7 +513,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   <div className="flex flex-col gap-0 py-1 w-full">
                     <div className="flex flex-wrap gap-2">
                       {allCompanies.slice(0, MAX_VISIBLE).map(name => (
-                        <CompanyLogo key={name} name={name} size={32} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
+                        <CompanyLogo key={name} name={name} size={28} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
                       ))}
                       {overflow > 0 && !companiesExpanded && (
                         <button
@@ -529,7 +529,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     <div style={{ maxHeight: companiesExpanded ? 200 : 0, overflow: 'hidden', transition: 'max-height 0.3s cubic-bezier(0.16,1,0.3,1)' }}>
                       <div className="flex flex-wrap gap-2 pt-2">
                         {allCompanies.slice(MAX_VISIBLE).map(name => (
-                          <CompanyLogo key={name} name={name} size={32} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
+                          <CompanyLogo key={name} name={name} size={28} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
                         ))}
                         <button
                           onClick={() => setCompaniesExpanded(false)}
@@ -589,7 +589,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             <InsightSection label="Top impacted customers">
               <div className="flex flex-wrap gap-2 mt-2">
                 {row.companies.map(name => (
-                  <CompanyLogo key={name} name={name} size={32} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
+                  <CompanyLogo key={name} name={name} size={28} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
                 ))}
               </div>
             </InsightSection>
