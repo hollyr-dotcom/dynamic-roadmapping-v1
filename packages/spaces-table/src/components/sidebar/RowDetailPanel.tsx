@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import type { SpaceRow } from '@spaces/shared'
+import { CompanyLogo } from '../CompanyLogo'
 import {
   IconInformationMarkCircle,
   IconCross,
@@ -10,7 +11,7 @@ import {
   Chip,
   IconHeart,
   IconFlag,
-  IconExclamationPointCircle,
+
   IconStarFilled,
   IconChevronDown,
   IconSlidersY,
@@ -36,6 +37,17 @@ import {
   IconUser as _IconUser,
 } from '@mirohq/design-system'
 
+function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
+  const size = ((props as { width?: number }).width ?? 24) + 4
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-block', flexShrink: 0 }}>
+      <circle cx="12" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M5 19c0-3.314 3.134-6 7-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M15 15l4 4M19 15l-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
 interface FeedbackCardData {
   title: string
   text: string
@@ -54,6 +66,8 @@ interface RowDetailPanelProps {
   onAddToBoard?: (data: FeedbackCardData) => void
   onRowUpdated?: (id: string) => void
   timelineDates?: { startDate: string; endDate: string }
+  onCompanyFilter?: (name: string) => void
+  activeCompanyFilter?: string[] | null
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -123,15 +137,15 @@ const CARD_WEIGHTS = [0.13, 0.12, 0.10, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06, 0.05
 const CARD_STYLES = [
   { borderColor: '#BADEB1', Icon: IconHeart, stars: 3, date: 'Aug 02', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Jul 18', source: 'Gong' },
-  { borderColor: '#ffd4b2', Icon: IconExclamationPointCircle, date: 'Jun 30', source: 'SurveyMonkey' },
+  { borderColor: '#ffd4b2', Icon: IconUserTickDown, date: 'Jun 30', source: 'SurveyMonkey' },
   { borderColor: '#BADEB1', Icon: IconHeart, stars: 5, date: 'Jun 12', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'May 28', source: 'Play Store' },
   { borderColor: '#BADEB1', Icon: IconHeart, stars: 4, date: 'May 14', source: 'Gong' },
-  { borderColor: '#ffd4b2', Icon: IconExclamationPointCircle, date: 'Apr 29', source: 'SurveyMonkey' },
+  { borderColor: '#ffd4b2', Icon: IconUserTickDown, date: 'Apr 29', source: 'SurveyMonkey' },
   { borderColor: '#BADEB1', Icon: IconHeart, stars: 5, date: 'Apr 11', source: 'Play Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Mar 27', source: 'Gong' },
   { borderColor: '#BADEB1', Icon: IconHeart, stars: 2, date: 'Mar 10', source: 'App Store' },
-  { borderColor: '#ffd4b2', Icon: IconExclamationPointCircle, date: 'Feb 22', source: 'SurveyMonkey' },
+  { borderColor: '#ffd4b2', Icon: IconUserTickDown, date: 'Feb 22', source: 'SurveyMonkey' },
   { borderColor: '#BADEB1', Icon: IconHeart, stars: 4, date: 'Feb 05', source: 'Play Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Jan 20', source: 'Gong' },
   { borderColor: '#BADEB1', Icon: IconHeart, stars: 5, date: 'Jan 08', source: 'App Store' },
@@ -205,7 +219,7 @@ function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates }: RowDetailPanelProps) {
+export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
@@ -499,9 +513,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   <div className="flex flex-col gap-0 py-1 w-full">
                     <div className="flex flex-wrap gap-2">
                       {allCompanies.slice(0, MAX_VISIBLE).map(name => (
-                        <span key={name} onClick={() => setSelectedCompany(name)} style={{ cursor: 'pointer' }}>
-                          <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
-                        </span>
+                        <CompanyLogo key={name} name={name} size={28} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
                       ))}
                       {overflow > 0 && !companiesExpanded && (
                         <button
@@ -517,9 +529,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     <div style={{ maxHeight: companiesExpanded ? 200 : 0, overflow: 'hidden', transition: 'max-height 0.3s cubic-bezier(0.16,1,0.3,1)' }}>
                       <div className="flex flex-wrap gap-2 pt-2">
                         {allCompanies.slice(MAX_VISIBLE).map(name => (
-                          <span key={name} onClick={() => setSelectedCompany(name)} style={{ cursor: 'pointer' }}>
-                            <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
-                          </span>
+                          <CompanyLogo key={name} name={name} size={28} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
                         ))}
                         <button
                           onClick={() => setCompaniesExpanded(false)}
@@ -535,33 +545,38 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               )
             })()}
 
-            {/* Low-confidence Insights callout */}
-            {!insightDismissed && (
-              <div
-                className="mt-2 mb-4 w-full rounded-lg p-4 flex flex-col gap-2 relative"
-                style={{ backgroundColor: '#FFFBEB', border: '1px solid #F59E0B' }}
-              >
-                <button
-                  onClick={() => setInsightDismissed(true)}
-                  className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded text-[#92400E] hover:bg-[#FEF3C7] transition-colors"
-                  aria-label="Dismiss"
-                >
-                  <IconCross css={{ width: 14, height: 14 }} />
-                </button>
-                <IconWarning size="medium" color="icon-neutrals-dark" />
-                <p className="text-[16px] text-[#3C3F4A] leading-[1.4] pr-7" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
-                  Low-confidence Insights
-                </p>
-                <p className="text-[14px] text-[#3C3F4A] leading-[1.5] w-full">
-                  The title or description may be too brief to reliably match to customer feedback. Improving context will increase matching accuracy.
-                </p>
-              </div>
-            )}
           </>
         )}
 
         {activeTab === 'Insights' && (
           <div className="flex flex-col gap-8 pb-6">
+
+            {/* Low-confidence Insights callout */}
+            {!insightDismissed && (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  padding: 16,
+                  gap: 12,
+                  background: '#F2F4FC',
+                  border: '1.5px solid #C7D0FD',
+                  borderRadius: 8,
+                  position: 'relative',
+                }}
+              >
+                <IconInformationMarkCircle size="medium" css={{ flexShrink: 0, marginTop: 1, color: '#4262FF' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, paddingRight: 20 }}>
+                  <p className="text-[16px] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1", color: '#1a1b1e', margin: 0 }}>
+                    Low-confidence Insights
+                  </p>
+                  <p style={{ fontSize: 14, color: '#656B81', lineHeight: 1.5, margin: 0 }}>
+                    The title or description may be too brief to reliably match to customer feedback. Improving context will increase matching accuracy.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Summary */}
             <InsightSection label="Summary">
@@ -574,9 +589,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             <InsightSection label="Top impacted customers">
               <div className="flex flex-wrap gap-2 mt-2">
                 {row.companies.map(name => (
-                  <span key={name} onClick={() => setSelectedCompany(name)} style={{ cursor: 'pointer' }}>
-                    <Chip removable={false} css={{ fontSize: 13, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{name}</Chip>
-                  </span>
+                  <CompanyLogo key={name} name={name} size={28} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
                 ))}
               </div>
             </InsightSection>
@@ -1318,27 +1331,54 @@ function FeedbackCard({
 
   return (
     <div
-      className="w-full rounded-xl flex flex-col gap-2 p-5 transition-all duration-200 cursor-pointer"
+      className="w-full rounded-xl flex flex-col gap-2 p-5 cursor-pointer"
       style={{ border: `2px solid ${borderColor}`, borderBottomWidth: 6 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={onSelect}
     >
-      {/* Card header: icon + date (on hover) + actions */}
+      {/* Card header: icon + category (on hover) + actions */}
+      {(() => {
+        const category =
+          borderColor === '#BADEB1' ? 'User Praise' :
+          borderColor === '#d4bbff' ? 'User Request' :
+          'User Problem'
+        const categoryColor =
+          borderColor === '#BADEB1' ? { bg: '#EAFAEA', text: '#3C3F4A' } :
+          borderColor === '#d4bbff' ? { bg: '#EFE9FF', text: '#3C3F4A' } :
+          { bg: '#FFF0E0', text: '#3C3F4A' }
+        return (
       <div className="flex items-start gap-2">
-        {borderColor === '#d4bbff' && (
-          <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4262FF', flexShrink: 0, marginTop: 4 }} />
-        )}
-        <Icon css={{ width: 25, height: 25 }} />
-        <span
-          className="text-[12px] text-[#959AAC] leading-[1.5] whitespace-nowrap overflow-hidden"
-          style={{
+        <span style={{
+          position: 'relative',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: hovered ? 6 : 0,
+          fontSize: 14,
+          fontWeight: 400,
+          width: hovered ? 'auto' : 36,
+          height: 36,
+          padding: hovered ? '0 12px' : '0',
+          borderRadius: 6,
+          backgroundColor: categoryColor.bg,
+          color: categoryColor.text,
+          lineHeight: 1.4,
+          whiteSpace: 'nowrap',
+          flexShrink: 0,
+          transition: 'width 0.25s ease, padding 0.25s ease, gap 0.25s ease',
+        }}>
+
+          <Icon css={{ width: 20, height: 20, flexShrink: 0, color: '#3C3F4A' }} />
+          <span style={{
             maxWidth: hovered ? 120 : 0,
             opacity: hovered ? 1 : 0,
+            overflow: 'hidden',
+            display: 'inline-block',
+            fontSize: 12,
+            fontWeight: 600,
             transition: 'max-width 0.25s ease, opacity 0.2s ease',
-          }}
-        >
-          {date}
+          }}>{category}</span>
         </span>
         <div className="flex-1" />
         <div className="flex items-center gap-1">
@@ -1363,6 +1403,8 @@ function FeedbackCard({
           </div>
         </div>
       </div>
+        )
+      })()}
 
       {/* Stars (optional) */}
       {stars && (
@@ -1406,10 +1448,11 @@ function FeedbackCard({
         <div style={{ overflow: 'hidden' }}>
           <div className="flex items-center gap-2 pt-1">
             {source && (
-              <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{source}</Chip>
+              <Chip removable={false} css={{ fontSize: 14, borderRadius: '6px', '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{source}</Chip>
             )}
+            <Chip removable={false} css={{ fontSize: 14, borderRadius: '6px' }}>{date}</Chip>
             {companies[0] && (
-              <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{companies[0]}</Chip>
+              <CompanyLogo name={companies[0]} size={24} />
             )}
           </div>
         </div>

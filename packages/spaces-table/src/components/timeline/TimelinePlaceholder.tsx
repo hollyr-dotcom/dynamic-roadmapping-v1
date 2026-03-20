@@ -1,6 +1,15 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
-import type { SpaceRow } from '@spaces/shared'
+import type { SpaceRow, Priority } from '@spaces/shared'
 import { KanbanCardToolbar } from '../kanban/KanbanCardToolbar'
+
+const PRIORITY_BAR_COLORS: Record<Priority, { bg: string; border: string; text: string }> = {
+  triage: { bg: '#fff0f0', border: '#ffc6c6', text: '#600000' },
+  now:    { bg: '#e4f9ff', border: '#b5ecff', text: '#003d54' },
+  next:   { bg: '#ffeede', border: '#ffc795', text: '#5c3200' },
+  later:  { bg: '#f3eeff', border: '#d4bbff', text: '#2d0066' },
+  icebox: { bg: '#f7f7f7', border: '#dad8d8', text: '#222428' },
+}
+const DEFAULT_BAR_COLOR = PRIORITY_BAR_COLORS.icebox
 const JIRA_LOGO = 'https://www.figma.com/api/mcp/asset/f169e443-27f1-401b-994d-4f720c63f0c7'
 const DAY_WIDTH = 48
 const BAR_HEIGHT = 40
@@ -128,6 +137,7 @@ export function TimelinePlaceholder({ data, parentScrollRef, onRowClick, onMoveT
   const [isPanning, setIsPanning] = useState(false)
 const [selectedBarId, setSelectedBarId] = useState<string | null>(null)
   const [ghostOffset, setGhostOffset] = useState<number | null>(null)
+  const [hoveredBarId, setHoveredBarId] = useState<string | null>(null)
   const dragRef = useRef<DragState | null>(null)
   const panRef = useRef<PanState | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
@@ -414,9 +424,9 @@ const [selectedBarId, setSelectedBarId] = useState<string | null>(null)
                 top: GRID_TOP_OFFSET + rowIndex * ROW_HEIGHT + (ROW_HEIGHT - BAR_HEIGHT) / 2,
                 width: len * DAY_WIDTH - 4,
                 height: BAR_HEIGHT,
-                backgroundColor: 'white',
-                border: '1px solid #C7CAD5',
-                borderRadius: 4,
+                backgroundColor: (PRIORITY_BAR_COLORS[row.priority] ?? DEFAULT_BAR_COLOR).bg,
+                border: `1px solid ${(PRIORITY_BAR_COLORS[row.priority] ?? DEFAULT_BAR_COLOR).border}`,
+                borderRadius: 8,
                 boxShadow: isDragging ? '0px 8px 20px rgba(34,36,40,0.16)' : '0px 2px 4px rgba(34,36,40,0.08)',
                 outline: isBarSelected ? '3px solid #3859FF' : 'none',
                 outlineOffset: isBarSelected ? 4 : 0,
@@ -433,18 +443,30 @@ const [selectedBarId, setSelectedBarId] = useState<string | null>(null)
               onPointerDown={e => startDrag(e, row.id, 'move')}
               onPointerMove={e => onPointerMove(e, row.id)}
               onPointerUp={e => endDrag(e)}
+              onMouseEnter={() => setHoveredBarId(row.id)}
+              onMouseLeave={() => setHoveredBarId(prev => prev === row.id ? null : prev)}
             >
               {/* Left resize handle */}
               <div
-                style={{ position: 'absolute', left: 0, top: 0, width: HANDLE_W, height: '100%', cursor: 'ew-resize', zIndex: 1 }}
+                style={{ position: 'absolute', left: 0, top: 0, width: HANDLE_W + 4, height: '100%', cursor: 'ew-resize', zIndex: 1 }}
                 onPointerDown={e => startDrag(e, row.id, 'resize-left')}
                 onPointerMove={e => onPointerMove(e, row.id)}
                 onPointerUp={e => endDrag(e)}
-              />
+              >
+                <div style={{
+                  position: 'absolute', left: 4, top: 8, bottom: 8, width: 4, borderRadius: 9999,
+                  backgroundColor: (PRIORITY_BAR_COLORS[row.priority] ?? DEFAULT_BAR_COLOR).border,
+                  opacity: (hoveredBarId === row.id || isBarSelected) ? 1 : 0,
+                  transform: (hoveredBarId === row.id || isBarSelected) ? 'scaleY(1)' : 'scaleY(0.3)',
+                  transition: (hoveredBarId === row.id || isBarSelected)
+                    ? 'opacity 120ms ease-out, transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1)'
+                    : 'opacity 200ms ease-in, transform 200ms ease-in',
+                }} />
+              </div>
 
               <img src={person.avatar} alt="" style={{ width: 24, height: 24, borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
               <img src={JIRA_LOGO} alt="Jira" style={{ width: 16, height: 16, flexShrink: 0, objectFit: 'contain' }} />
-              <span style={{ fontSize: 14, color: '#222428', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+              <span style={{ fontSize: 14, color: (PRIORITY_BAR_COLORS[row.priority] ?? DEFAULT_BAR_COLOR).text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                 {row.title}
               </span>
 
@@ -462,11 +484,21 @@ const [selectedBarId, setSelectedBarId] = useState<string | null>(null)
 
               {/* Right resize handle */}
               <div
-                style={{ position: 'absolute', right: 0, top: 0, width: HANDLE_W, height: '100%', cursor: 'ew-resize', zIndex: 1 }}
+                style={{ position: 'absolute', right: 0, top: 0, width: HANDLE_W + 4, height: '100%', cursor: 'ew-resize', zIndex: 1 }}
                 onPointerDown={e => startDrag(e, row.id, 'resize-right')}
                 onPointerMove={e => onPointerMove(e, row.id)}
                 onPointerUp={e => endDrag(e)}
-              />
+              >
+                <div style={{
+                  position: 'absolute', right: 4, top: 8, bottom: 8, width: 4, borderRadius: 9999,
+                  backgroundColor: (PRIORITY_BAR_COLORS[row.priority] ?? DEFAULT_BAR_COLOR).border,
+                  opacity: (hoveredBarId === row.id || isBarSelected) ? 1 : 0,
+                  transform: (hoveredBarId === row.id || isBarSelected) ? 'scaleY(1)' : 'scaleY(0.3)',
+                  transition: (hoveredBarId === row.id || isBarSelected)
+                    ? 'opacity 120ms ease-out, transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1)'
+                    : 'opacity 200ms ease-in, transform 200ms ease-in',
+                }} />
+              </div>
             </div>
           )
         })}
@@ -496,7 +528,7 @@ const [selectedBarId, setSelectedBarId] = useState<string | null>(null)
               <KanbanCardToolbar
                 onOpenSidePanel={() => onRowClick?.(selectedRow)}
                 onMoveToRoadmap={showMoveToRoadmap && onMoveToRoadmap ? () => { onMoveToRoadmap(selectedRow.id); setSelectedBarId(null); onBarSelectedChange?.(false) } : undefined}
-                cardColor="white"
+                cardColor={(PRIORITY_BAR_COLORS[selectedRow.priority] ?? DEFAULT_BAR_COLOR).bg}
               />
             </div>
           )

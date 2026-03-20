@@ -112,6 +112,11 @@ export function App() {
   const [showMoveSnackbar, setShowMoveSnackbar] = useState(false)
   const [pageTransitioning, setPageTransitioning] = useState(false)
   const [ghostRowId, setGhostRowId] = useState<string | null>(null)
+  const [companyFilter, setCompanyFilter] = useState<string[]>([])
+
+  const handleCompanyFilter = useCallback((name: string) => {
+    setCompanyFilter(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name])
+  }, [])
 
   const handleImportComplete = useCallback(() => {
     setIsImporting(false)
@@ -419,7 +424,8 @@ export function App() {
   const activeTabConfig = currentTabs.find(t => t.id === activeTab)
   const pageData = hasData ? (activePage === 'backlog' ? backlogData : roadmapItems) : []
   const pageFields = activePage === 'backlog' ? fields : roadmapFields
-  const viewData = activeTab === 'done' ? pageData.filter(r => r.status === 'done') : pageData
+  const baseViewData = activeTab === 'done' ? pageData.filter(r => r.status === 'done') : pageData
+  const viewData = companyFilter.length > 0 ? baseViewData.filter(r => companyFilter.some(f => r.companies?.includes(f))) : baseViewData
 
   if (view === 'home') {
     return <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv') => {
@@ -470,12 +476,12 @@ export function App() {
             <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} />
           </div>
           <div className={`sticky top-0 left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
-            <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} />
+            <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} />
           </div>
 
           {/* Type-based view renderer */}
           {activeTabConfig?.type === 'table' && (
-              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail') }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} />
+              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} />
           )}
           {activeTabConfig?.type === 'kanban' && (
             <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onCardSelectedChange={setKanbanCardSelected} />
@@ -533,7 +539,7 @@ export function App() {
             >
               {isJiraDetailOpen && selectedJiraRow
                 ? <JiraDetailPanel row={selectedJiraRow} onClose={() => { setIsJiraDetailOpen(false); closeSidebar() }} />
-                : selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} initialCompany={initialCompany} onAddToBoard={handleAddToBoard} onRowUpdated={handleRowUpdated} timelineDates={selectedRowDates} />
+                : selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} initialCompany={initialCompany} onAddToBoard={handleAddToBoard} onRowUpdated={handleRowUpdated} timelineDates={selectedRowDates} onCompanyFilter={handleCompanyFilter} activeCompanyFilter={companyFilter.length > 0 ? companyFilter : null} />
               }
             </div>
           </div>

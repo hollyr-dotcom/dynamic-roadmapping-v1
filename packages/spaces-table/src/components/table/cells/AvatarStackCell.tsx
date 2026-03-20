@@ -1,4 +1,4 @@
-import { Chip } from '@mirohq/design-system'
+import { CompanyLogo } from '../../CompanyLogo'
 
 interface AvatarStackCellProps {
   values: string[]
@@ -10,16 +10,9 @@ export function AvatarStackCell({ values, onChipClick }: AvatarStackCellProps) {
   const overflow = values.length - 2
 
   return (
-    <div className="flex items-center gap-1 flex-nowrap">
+    <div className="flex items-center gap-2 flex-nowrap">
       {visible.map((name) => (
-        <Chip
-          key={name}
-          removable={false}
-          css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}
-          onClick={(e: React.MouseEvent) => { e.stopPropagation(); onChipClick?.(name) }}
-        >
-          {name}
-        </Chip>
+        <CompanyLogo key={name} name={name} size={28} onClick={onChipClick ? () => onChipClick(name) : undefined} />
       ))}
       {overflow > 0 && (
         <span className="text-[#656B81] font-body font-medium" style={{ fontSize: '14px' }}>

@@ -6,7 +6,7 @@ import {
   IconCross,
   IconHeart,
   IconFlag,
-  IconExclamationPointCircle,
+
   IconStarFilled,
   IconChevronDown,
   IconSlidersY,
@@ -17,6 +17,18 @@ import {
   Chip,
 } from '@mirohq/design-system'
 import type { SpaceRow } from '@spaces/shared'
+import { CompanyLogo } from '../CompanyLogo'
+
+function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
+  const size = ((props as { width?: number }).width ?? 24) + 4
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-block', flexShrink: 0 }}>
+      <circle cx="12" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M5 19c0-3.314 3.134-6 7-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M15 15l4 4M19 15l-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  )
+}
 
 interface JiraDetailPanelProps {
   row: SpaceRow
@@ -49,7 +61,7 @@ const INSIGHT_SUMMARIES: Record<string, string> = {
 const CARD_STYLES = [
   { borderColor: '#BADEB1', Icon: IconHeart,                  stars: 3, date: 'Aug 02', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag,                              date: 'Jul 18', source: 'Gong' },
-  { borderColor: '#ffd4b2', Icon: IconExclamationPointCircle,            date: 'Jun 30', source: 'SurveyMonkey' },
+  { borderColor: '#ffd4b2', Icon: IconUserTickDown,            date: 'Jun 30', source: 'SurveyMonkey' },
   { borderColor: '#BADEB1', Icon: IconHeart,                  stars: 5, date: 'Jun 12', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag,                              date: 'May 28', source: 'Play Store' },
 ]
@@ -219,7 +231,7 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
               <div className="flex flex-col gap-0 py-1 w-full">
                 <div className="flex flex-wrap gap-2">
                   {allCompanies.slice(0, MAX_VISIBLE).map(name => (
-                    <Chip key={name} removable={false} css={{ fontSize: 14 }}>{name}</Chip>
+                    <CompanyLogo key={name} name={name} size={28} />
                   ))}
                   {overflow > 0 && !companiesExpanded && (
                     <button
@@ -234,7 +246,7 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
                 <div style={{ maxHeight: companiesExpanded ? 200 : 0, overflow: 'hidden', transition: 'max-height 0.3s cubic-bezier(0.16,1,0.3,1)' }}>
                   <div className="flex flex-wrap gap-2 pt-2">
                     {allCompanies.slice(MAX_VISIBLE).map(name => (
-                      <Chip key={name} removable={false} css={{ fontSize: 14 }}>{name}</Chip>
+                      <CompanyLogo key={name} name={name} size={28} />
                     ))}
                     <button
                       onClick={() => setCompaniesExpanded(false)}
@@ -271,7 +283,7 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
             <InsightSection label="Top impacted customers">
               <div className="flex flex-wrap gap-2 mt-2">
                 {row.companies.map(name => (
-                  <Chip key={name} removable={false} css={{ fontSize: 13 }}>{name}</Chip>
+                  <CompanyLogo key={name} name={name} size={28} />
                 ))}
               </div>
             </InsightSection>
@@ -561,10 +573,10 @@ function FeedbackCard({
         <div style={{ overflow: 'hidden' }}>
           <div className="flex items-center gap-2 pt-1">
             {source && (
-              <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{source}</Chip>
+              <Chip removable={false} css={{ fontSize: 14, borderRadius: '6px', '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{source}</Chip>
             )}
             {companies[0] && (
-              <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{companies[0]}</Chip>
+              <CompanyLogo name={companies[0]} size={24} />
             )}
           </div>
         </div>
