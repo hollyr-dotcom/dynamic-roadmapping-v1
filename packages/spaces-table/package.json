@@ -9,6 +9,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@spaces/shared": "file:../shared"
+    "@spaces/shared": "file:../shared",
+    "simple-icons": "^16.12.0"
   }
 }

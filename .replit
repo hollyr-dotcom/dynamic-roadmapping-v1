@@ -51,5 +51,5 @@ externalPort = 3001
 
 [deployment]
 deploymentTarget = "static"
-build = ["bash", "-c", "npm install --legacy-peer-deps && bun install && bun run --filter @spaces/spaces-table build"]
+build = ["bash", "-c", "export PATH=$HOME/.bun/bin:$PATH && bun install && bun run --filter @spaces/spaces-table build"]
 publicDir = "packages/spaces-table/dist"
