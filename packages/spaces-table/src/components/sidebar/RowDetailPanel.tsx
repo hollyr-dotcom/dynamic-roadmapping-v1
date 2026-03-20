@@ -532,33 +532,35 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               )
             })()}
 
-            {/* Low-confidence Insights callout */}
-            {!insightDismissed && (
-              <div
-                className="mt-2 mb-4 w-full rounded-lg p-4 flex flex-col gap-2 relative"
-                style={{ backgroundColor: '#FFFBEB', border: '1px solid #F59E0B' }}
-              >
-                <button
-                  onClick={() => setInsightDismissed(true)}
-                  className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded text-[#92400E] hover:bg-[#FEF3C7] transition-colors"
-                  aria-label="Dismiss"
-                >
-                  <IconCross css={{ width: 14, height: 14 }} />
-                </button>
-                <IconWarning size="medium" color="icon-neutrals-dark" />
-                <p className="text-[16px] text-[#3C3F4A] leading-[1.4] pr-7" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
-                  Low-confidence Insights
-                </p>
-                <p className="text-[14px] text-[#3C3F4A] leading-[1.5] w-full">
-                  The title or description may be too brief to reliably match to customer feedback. Improving context will increase matching accuracy.
-                </p>
-              </div>
-            )}
           </>
         )}
 
         {activeTab === 'Insights' && (
           <div className="flex flex-col gap-8 pb-6">
+
+            {/* Low-confidence Insights callout */}
+            {!insightDismissed && (
+              <div
+                className="w-full rounded-lg p-4 flex flex-col gap-2 relative"
+                style={{ backgroundColor: '#EFF6FF', border: '1px solid #93C5FD' }}
+              >
+                <button
+                  onClick={() => setInsightDismissed(true)}
+                  className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded transition-colors"
+                  style={{ color: '#3B82F6' }}
+                  aria-label="Dismiss"
+                >
+                  <IconCross css={{ width: 14, height: 14 }} />
+                </button>
+                <IconInformationMarkCircle size="medium" color="icon-info" />
+                <p className="text-[16px] text-[#1E3A5F] leading-[1.4] pr-7" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
+                  Low-confidence Insights
+                </p>
+                <p className="text-[14px] text-[#1E3A5F] leading-[1.5] w-full">
+                  The title or description may be too brief to reliably match to customer feedback. Improving context will increase matching accuracy.
+                </p>
+              </div>
+            )}
 
             {/* Summary */}
             <InsightSection label="Summary">
