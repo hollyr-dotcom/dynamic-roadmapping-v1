@@ -1,6 +1,6 @@
 import { Button } from '@mirohq/design-system'
 
-const insightsIconSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48' fill='none'%3E%3Crect x='4' y='28' width='8' height='16' rx='2' fill='%23C5CDFA'/%3E%3Crect x='16' y='20' width='8' height='24' rx='2' fill='%23879BF7'/%3E%3Crect x='28' y='12' width='8' height='32' rx='2' fill='%234262FF'/%3E%3Ccircle cx='36' cy='8' r='4' fill='%23FFD02F'/%3E%3Cpath d='M8 24l10-8 12 4 8-10' stroke='%234262FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+const insightsIconSvg = '/images/insights-icon.svg'
 
 interface InsightsModalProps {
   onEnable: () => void
