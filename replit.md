@@ -35,7 +35,8 @@ Current image files:
 - `board-icon-table.svg` — Table board type icon
 - `template-flowchart.svg`, `template-mindmap.svg` — Template thumbnails
 - `team-logo.svg`, `miro-team-logo.svg` — Team logos
-- `icon-plant.svg`, `icon-paper.svg`, `icon-cursor.svg`, `icon-people.svg`, `icon-orgchart.svg` — Category icons
+- `icon-plant.svg`, `icon-paper.svg`, `icon-cursor.svg`, `icon-user.svg`, `icon-orgchart.svg` — Board row icons (exported from Figma)
+- `icon-people.svg` — People icon (unused, available for future use)
 - `insights-icon.svg` — Insights modal icon
 
 ## GitHub Pull Workflow

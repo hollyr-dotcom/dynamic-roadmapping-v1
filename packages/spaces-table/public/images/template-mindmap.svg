@@ -1,9 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="200" height="140" viewBox="0 0 200 140" fill="none">
-  <rect width="200" height="140" rx="8" fill="#F0F7FF"/>
-  <circle cx="100" cy="70" r="20" fill="#4262FF"/>
-  <circle cx="40" cy="36" r="12" fill="#FFD02F"/>
-  <circle cx="160" cy="36" r="12" fill="#65BA43"/>
-  <circle cx="40" cy="104" r="12" fill="#FF6B6B"/>
-  <circle cx="160" cy="104" r="12" fill="#D4BBFF"/>
-  <path d="M84 58L52 42M116 58l32-16M84 82L52 98M116 82l32 16" stroke="#AEB2C0" stroke-width="1.5"/>
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 138.94 36.3451" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Mind map">
+<path id="Vector 2310" d="M128.358 1.3802H137.559" stroke="var(--stroke-0, #1A1B1E)" stroke-opacity="0.3" stroke-width="2.76039" stroke-linecap="round"/>
+<path id="Vector 2312" d="M10.5815 1.3802H1.3802" stroke="var(--stroke-0, #1A1B1E)" stroke-opacity="0.3" stroke-width="2.76039" stroke-linecap="round"/>
+<path id="Vector 2311" d="M128.358 34.5049H137.559" stroke="var(--stroke-0, #1A1B1E)" stroke-opacity="0.3" stroke-width="2.76039" stroke-linecap="round"/>
+<path id="Vector 2313" d="M10.5815 34.5049H1.3802" stroke="var(--stroke-0, #1A1B1E)" stroke-opacity="0.3" stroke-width="2.76039" stroke-linecap="round"/>
+<path id="Vector 2307" d="M85.112 17.9425C86.4922 17.9425 94.4062 16.7807 101.214 13.3419C111.796 7.99712 113.066 1.84026 122.377 1.84026" stroke="var(--stroke-0, #867AFF)" stroke-width="2.76039" stroke-linecap="round"/>
+<path id="Vector 2314" d="M53.8276 17.9425C52.4474 17.9425 44.5334 16.7807 37.7253 13.3419C27.1438 7.99712 25.8736 1.84026 16.5623 1.84026" stroke="var(--stroke-0, #867AFF)" stroke-width="2.76039" stroke-linecap="round"/>
+<path id="Vector 2309" d="M85.112 18.8627C86.4922 18.8627 94.4062 20.0245 101.214 23.4633C111.796 28.8081 113.066 34.9649 122.377 34.9649" stroke="var(--stroke-0, #80D6F3)" stroke-width="2.76039" stroke-linecap="round"/>
+<path id="Vector 2315" d="M53.8276 18.8627C52.4474 18.8627 44.5334 20.0245 37.7253 23.4633C27.1438 28.8081 25.8736 34.9649 16.5623 34.9649" stroke="var(--stroke-0, #80D6F3)" stroke-width="2.76039" stroke-linecap="round"/>
+<rect id="Title" x="55.2078" y="11.0416" width="29.4442" height="14.7221" rx="7.36104" stroke="var(--stroke-0, #E87EF1)" stroke-width="2.76039"/>
+</g>
 </svg>
