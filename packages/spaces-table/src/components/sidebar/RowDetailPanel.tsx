@@ -1358,33 +1358,45 @@ function FeedbackCard({
         {borderColor === '#d4bbff' && (
           <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4262FF', flexShrink: 0, marginTop: 4 }} />
         )}
-        <div
-          className="whitespace-nowrap"
-        >
+        <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: hovered ? 6 : 0,
+          fontSize: 14,
+          fontWeight: 600,
+          width: hovered ? 'auto' : 36,
+          height: 36,
+          padding: hovered ? '0 12px' : '0',
+          borderRadius: 6,
+          backgroundColor: categoryColor.bg,
+          color: categoryColor.text,
+          lineHeight: 1.4,
+          whiteSpace: 'nowrap',
+          flexShrink: 0,
+          transition: 'width 0.25s ease, padding 0.25s ease, gap 0.25s ease',
+        }}>
+          {borderColor === '#BADEB1' ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 20.703l-.343.667a1 1 0 0 0 .686 0L12 20.703zm0 0l.343.667L12 20.703zm9-10.7c0 4.5-7.343 9.44-9 10.7C10.343 19.44 3 14.5 3 10.003c0-3.5 2.5-6 5.5-6 1.616 0 3.116.784 4 2 .884-1.216 2.384-2 4-2 3 0 5.5 2.5 5.5 6z"/>
+            </svg>
+          ) : borderColor === '#d4bbff' ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M5 3h14a1 1 0 0 1 .707 1.707L14.414 10l5.293 5.293A1 1 0 0 1 19 17H6v4H4V4a1 1 0 0 1 1-1z"/>
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8.667 6.667V9.333H11.334V10.667H8.667V13.333H7.334V10.667H4.667V9.333H7.334V6.667H8.667ZM14.667 2.667V4H1.334V2.667H14.667Z"/>
+            </svg>
+          )}
           <span style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 5,
-            fontSize: 14,
-            fontWeight: 600,
-            padding: '4px 10px',
-            borderRadius: 6,
-            backgroundColor: categoryColor.bg,
-            color: categoryColor.text,
-            lineHeight: 1.4,
-            whiteSpace: 'nowrap',
-            transition: 'border-radius 0.25s ease',
-          }}>
-            <Icon css={{ width: 20, height: 20, flexShrink: 0, color: categoryColor.text }} />
-            <span style={{
-              maxWidth: hovered ? 120 : 0,
-              opacity: hovered ? 1 : 0,
-              overflow: 'hidden',
-              display: 'inline-block',
-              transition: 'max-width 0.25s ease, opacity 0.2s ease',
-            }}>{category}</span>
-          </span>
-        </div>
+            maxWidth: hovered ? 120 : 0,
+            opacity: hovered ? 1 : 0,
+            overflow: 'hidden',
+            display: 'inline-block',
+            transition: 'max-width 0.25s ease, opacity 0.2s ease',
+          }}>{category}</span>
+        </span>
         <div className="flex-1" />
         <div className="flex items-center gap-1">
           <button
