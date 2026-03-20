@@ -7,7 +7,7 @@ import {
   IconInformationMarkCircle,
   IconCross,
   IconDotsThreeVertical,
-  IconWarning,
+  IconWarning as _IconWarning,
   Chip,
   IconHeart,
   IconFlag,
@@ -219,7 +219,7 @@ function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter }: RowDetailPanelProps) {
+export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter: _activeCompanyFilter }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
