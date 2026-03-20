@@ -1367,7 +1367,7 @@ function FeedbackCard({
           transition: 'width 0.25s ease, padding 0.25s ease, gap 0.25s ease',
         }}>
 
-          <Icon css={{ width: 20, height: 20, flexShrink: 0 }} />
+          <Icon css={{ width: 20, height: 20, flexShrink: 0, color: '#3C3F4A' }} />
           <span style={{
             maxWidth: hovered ? 120 : 0,
             opacity: hovered ? 1 : 0,
