@@ -553,7 +553,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   position: 'relative',
                 }}
               >
-                <IconInformationMarkCircle size="medium" color="icon-info" css={{ flexShrink: 0, marginTop: 1 }} />
+                <IconInformationMarkCircle size="medium" css={{ flexShrink: 0, marginTop: 1, color: '#4262FF' }} />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, paddingRight: 20 }}>
                   <p className="text-[16px] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1", color: '#1a1b1e', margin: 0 }}>
                     Low-confidence Insights
