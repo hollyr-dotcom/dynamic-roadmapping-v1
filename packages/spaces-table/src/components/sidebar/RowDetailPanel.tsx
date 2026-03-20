@@ -1362,7 +1362,7 @@ function FeedbackCard({
           justifyContent: 'center',
           gap: hovered ? 6 : 0,
           fontSize: 14,
-          fontWeight: 600,
+          fontWeight: 400,
           width: hovered ? 'auto' : 36,
           height: 36,
           padding: hovered ? '0 12px' : '0',
