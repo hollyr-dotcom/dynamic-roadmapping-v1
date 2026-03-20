@@ -562,7 +562,7 @@ function FeedbackCard({
         <div style={{ overflow: 'hidden' }}>
           <div className="flex items-center gap-2 pt-1">
             {source && (
-              <Chip removable={false} css={{ fontSize: 14, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{source}</Chip>
+              <Chip removable={false} css={{ fontSize: 14, borderRadius: '6px', '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{source}</Chip>
             )}
             {companies[0] && (
               <CompanyLogo name={companies[0]} size={24} />
