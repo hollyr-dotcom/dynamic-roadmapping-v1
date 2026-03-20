@@ -1359,11 +1359,7 @@ function FeedbackCard({
           <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4262FF', flexShrink: 0, marginTop: 4 }} />
         )}
         <div
-          className="whitespace-nowrap overflow-hidden"
-          style={{
-            maxWidth: hovered ? 160 : 36,
-            transition: 'max-width 0.25s ease',
-          }}
+          className="whitespace-nowrap"
         >
           <span style={{
             display: 'inline-flex',
