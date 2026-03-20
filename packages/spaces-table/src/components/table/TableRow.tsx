@@ -155,11 +155,6 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
           className="px-3 border-b border-[#F1F2F5]"
           style={field.id === 'description' ? { maxWidth: '320px' } : undefined}
         >
-          {field.id === 'title' || field.id === 'description' ? (
-            <div style={{ width: '100%' }}>
-              <CellRenderer field={field} row={row} onAvatarChipClick={onCompanyClick ? (name) => onCompanyClick(row, name) : undefined} />
-            </div>
-          ) : (
           <Popover
             open={openField === field.id}
             onOpen={() => {}}
@@ -242,7 +237,6 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
               </div>
             </Popover.Content>
           </Popover>
-          )}
         </td>
       ))}
 

@@ -120,14 +120,14 @@ tbody tr:has(+ tr.row-selected) td.table-fill::after { background: transparent; 
 
 
 /* ── Hover background ─────────────────────────────────── */
-tbody tr:hover td { background-color: #F1F2F5; }
+tbody tr:hover td { background-color: #F7F8FA; }
 tbody tr:hover td.divider-first { background: transparent; }
 tbody tr:hover td.divider-first::before {
   content: '';
   position: absolute;
   top: 0; bottom: 0;
   left: 56px; right: 0;
-  background: #F1F2F5;
+  background: #F7F8FA;
   border-radius: 8px 0 0 8px;
   z-index: -1;
 }

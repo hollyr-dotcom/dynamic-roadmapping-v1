@@ -1,4 +1,4 @@
-export type FieldType = "text" | "number" | "currency" | "avatars" | "status" | "person" | "date" | "jiraId"
+export type FieldType = "text" | "number" | "currency" | "avatars" | "status" | "priority" | "person" | "date" | "jiraId"
 
 export interface FieldDefinition {
   id: string
