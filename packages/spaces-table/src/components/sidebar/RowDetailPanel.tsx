@@ -642,7 +642,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
             {/* Summary */}
             <InsightSection label="Summary">
-              <p className="text-[14px] text-[#656B81] leading-[1.4]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
+              <p className="text-[14px] text-[#222428] leading-[1.4]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
                 {INSIGHT_SUMMARIES[row.id] ?? row.description ?? row.title}
               </p>
             </InsightSection>
