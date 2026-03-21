@@ -1591,7 +1591,7 @@ function AppStoreReviewDetail({
         </div>
         <div>
           <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
-          {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
+          {authorRole && <p style={{ fontSize: 14, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
         </div>
       </div>
 
@@ -2057,7 +2057,7 @@ function SurveyFeedbackDetail({
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
-          {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
+          {authorRole && <p style={{ fontSize: 14, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
         </div>
       </div>
 
@@ -2233,7 +2233,7 @@ function FeedbackCardDetailView({
         </div>
         <div>
           <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
-          {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
+          {authorRole && <p style={{ fontSize: 14, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
         </div>
       </div>
 
