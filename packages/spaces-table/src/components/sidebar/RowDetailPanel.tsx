@@ -163,52 +163,50 @@ const CARD_STYLES = [
 // Transcripts for Gong-sourced cards (indices 1, 5, 8, 12 in CARD_STYLES)
 const GONG_TRANSCRIPT_MAP: Record<number, TranscriptLine[]> = {
   1: [
-    { speaker: 'John Byrnes', timestamp: '00:01', text: 'I manage multiple teams, and I\'m constantly double-checking where things are supposed to go. It shouldn\'t take this much effort just to stay organized.', highlighted: true, section: 'box' },
-    { speaker: 'Dave Gertner', timestamp: '00:05', text: 'I spent ten minutes this morning just trying to remember which sub-account our client project lives in.', section: 'box' },
-    { speaker: 'John Byrnes', timestamp: '00:05', text: 'Oh my god, same. I always feel like I\'m in the wrong place.', section: 'box' },
-    { speaker: 'David Gertner', timestamp: '00:05', text: 'Yeah. I\'m not sure.', section: 'box' },
-    { speaker: 'John Byrnes', timestamp: '00:05', text: 'We have a sync next week. Maybe we could loop in the design team at that point.', section: 'box' },
-    { speaker: 'David Gertner', timestamp: '00:05', text: 'Yeah. I\'m not sure.', section: 'dim' },
-    { speaker: 'John Byrnes', timestamp: '00:05', text: 'We have a. In person. I kind of feel like I recognize your face. Maybe from slack maybe.', section: 'dim' },
-    { speaker: 'John Byrnes', timestamp: '00:18', text: 'We have a. In person. I kind of feel like I recognize your face. Maybe from slack maybe.', section: 'dim' },
-    { speaker: 'David Gertner', timestamp: '00:05', text: 'Yeah. I\'m not sure.', section: 'dim' },
-    { speaker: 'Guy Gertner', timestamp: '', text: 'Where are you joining from today?\nI\'m in Amsterdam.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
-    { speaker: 'John Byrnes', timestamp: '00:18', text: 'We have a. In person. I kind of feel like I recognize your face. Maybe from slack maybe.', section: 'dim' },
-    { speaker: 'Richard Byrnes', timestamp: '', text: 'Where are you joining from today?\nI\'m in Amsterdam.', section: 'bubble-user', timeLabel: '2 days ago' },
-    { speaker: 'Guy Gertner', timestamp: '', text: 'Where are you joining from today?\nI\'m in Amsterdam.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
+    { speaker: 'Marcus Osei', timestamp: '00:01', text: 'This has come up every quarter for the past year. We keep pushing it to next cycle because something more urgent takes over — but the downstream cost is starting to compound in ways we can\'t ignore.', highlighted: true, section: 'box' },
+    { speaker: 'Emma Clarke', timestamp: '00:03', text: 'Which initiatives are directly blocked right now?', section: 'box' },
+    { speaker: 'Marcus Osei', timestamp: '00:05', text: 'At least three. Our growth attribution model, the new segmentation workflow, and the cross-team reporting layer. All of them are waiting on this being in place.', section: 'box' },
+    { speaker: 'Emma Clarke', timestamp: '00:07', text: 'And what does the current workaround look like?', section: 'box' },
+    { speaker: 'Marcus Osei', timestamp: '00:09', text: 'It\'s a manual export process we stitched together about eight months ago. It was never meant to be permanent. Every major update breaks it and we spend a day or two recovering.', section: 'box' },
+    { speaker: 'Emma Clarke', timestamp: '00:11', text: 'That\'s a significant hidden cost.', section: 'dim' },
+    { speaker: 'Marcus Osei', timestamp: '00:12', text: 'It\'s quiet, but it adds up. I\'ve stopped tracking the hours — it\'s too demoralising.', section: 'dim' },
+    { speaker: 'Emma Clarke', timestamp: '00:14', text: 'Understood. I\'ll make sure this is on the agenda for the next planning session.', section: 'dim' },
+    { speaker: 'Gong AI', timestamp: '', text: 'How many teams are currently affected by the workaround?\nI\'d estimate four or five directly — more feel it indirectly.', section: 'bubble-operator', timeLabel: '3 days ago', botLabel: 'Bot・1 min' },
+    { speaker: 'Marcus Osei', timestamp: '', text: 'How many teams are currently affected by the workaround?\nI\'d estimate four or five directly — more feel it indirectly.', section: 'bubble-user', timeLabel: '3 days ago' },
+    { speaker: 'Gong AI', timestamp: '', text: 'Got it — I\'ve flagged this as high priority for the product review.\nThanks for the detail, Marcus.', section: 'bubble-operator', timeLabel: '3 days ago', botLabel: 'Bot・1 min' },
   ],
   5: [
-    { speaker: 'James Whitfield', timestamp: '00:01', text: 'We ran a trial with about 40 enterprise accounts last month and the reception was genuinely enthusiastic.', highlighted: true, section: 'box' },
-    { speaker: 'Nina Patel', timestamp: '00:03', text: 'What were the standout pieces of feedback?', section: 'box' },
-    { speaker: 'James Whitfield', timestamp: '00:05', text: 'Speed and reliability mostly. Several customers called it the most impactful update we\'ve shipped this year.', section: 'box' },
-    { speaker: 'Nina Patel', timestamp: '00:07', text: 'Good signal. Any blockers before full rollout?', section: 'box' },
-    { speaker: 'James Whitfield', timestamp: '00:09', text: 'Edge cases around data freshness. Otherwise we\'d be ready to push to GA next sprint.', section: 'dim' },
-    { speaker: 'Nina Patel', timestamp: '00:11', text: 'Let\'s schedule a review session with the infra team.', section: 'dim' },
-    { speaker: 'Guy Gertner', timestamp: '', text: 'Can you share the trial results doc?\nHappy to pull it up now.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
-    { speaker: 'James Whitfield', timestamp: '', text: 'Can you share the trial results doc?\nHappy to pull it up now.', section: 'bubble-user', timeLabel: '2 days ago' },
-    { speaker: 'Guy Gertner', timestamp: '', text: 'Thanks — I\'ll loop in the team.\nGreat session.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
+    { speaker: 'James Whitfield', timestamp: '00:01', text: 'We ran the trial with about 35 enterprise accounts over four weeks. Honestly, the feedback was stronger than we anticipated — customers were sharing it internally before we\'d even asked for input.', highlighted: true, section: 'box' },
+    { speaker: 'Sarah Kim', timestamp: '00:04', text: 'What were the standout themes in the feedback?', section: 'box' },
+    { speaker: 'James Whitfield', timestamp: '00:05', text: 'Speed and reliability came up constantly. Several customers described it as the most impactful thing we\'d shipped all year. A few mentioned it unprompted in their QBRs.', section: 'box' },
+    { speaker: 'Sarah Kim', timestamp: '00:07', text: 'Good signal. Any critical gaps before we commit to a GA date?', section: 'box' },
+    { speaker: 'James Whitfield', timestamp: '00:09', text: 'One recurring edge case around data freshness when records are updated mid-session. It\'s reproducible — we\'ve documented the steps. Everything else looks solid.', section: 'dim' },
+    { speaker: 'Sarah Kim', timestamp: '00:11', text: 'Let\'s get a deep-dive scheduled with the infra team before we lock in a date.', section: 'dim' },
+    { speaker: 'Gong AI', timestamp: '', text: 'Can you share the trial feedback summary?\nHappy to — I\'ll drop the link in chat now.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
+    { speaker: 'James Whitfield', timestamp: '', text: 'Can you share the trial feedback summary?\nHappy to — I\'ll drop the link in chat now.', section: 'bubble-user', timeLabel: '2 days ago' },
+    { speaker: 'Gong AI', timestamp: '', text: 'Thanks — I\'ll share this with the team ahead of Thursday\'s review.\nGreat session.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
   ],
   8: [
-    { speaker: 'Nina Patel', timestamp: '00:01', text: 'We raised this in our last business review as a critical gap. Two mid-market accounts have tied their renewal decisions to progress here.', highlighted: true, section: 'box' },
-    { speaker: 'Rafi Goldstein', timestamp: '00:03', text: 'That\'s significant. What\'s the combined ARR at risk?', section: 'box' },
-    { speaker: 'Nina Patel', timestamp: '00:04', text: 'Around $280K. Both accounts are up for renewal in Q3.', section: 'box' },
-    { speaker: 'Rafi Goldstein', timestamp: '00:06', text: 'We need to reprioritize this. I\'ll flag it for the next planning session.', section: 'box' },
-    { speaker: 'Nina Patel', timestamp: '00:08', text: 'Appreciate it. I can send over the full account notes if that\'s useful.', section: 'dim' },
-    { speaker: 'Rafi Goldstein', timestamp: '00:10', text: 'Please do. Let\'s get ahead of Q3 renewals.', section: 'dim' },
-    { speaker: 'Guy Gertner', timestamp: '', text: 'Should I create a tracker for these accounts?\nYes, please flag them as at-risk.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
-    { speaker: 'Nina Patel', timestamp: '', text: 'Should I create a tracker for these accounts?\nYes, please flag them as at-risk.', section: 'bubble-user', timeLabel: '2 days ago' },
-    { speaker: 'Guy Gertner', timestamp: '', text: 'Done — tracker created and shared.\nLet me know if anything else is needed.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
+    { speaker: 'Nina Patel', timestamp: '00:01', text: 'We raised this as a critical gap in last month\'s business review. It\'s moved beyond a feature request — two mid-market accounts have explicitly conditioned their renewals on seeing meaningful progress here.', highlighted: true, section: 'box' },
+    { speaker: 'Rafi Goldstein', timestamp: '00:03', text: 'What\'s the combined ARR at risk?', section: 'box' },
+    { speaker: 'Nina Patel', timestamp: '00:04', text: 'Around $280K. Both contracts are up for renewal in Q3, so the window is tighter than it looks.', section: 'box' },
+    { speaker: 'Rafi Goldstein', timestamp: '00:06', text: 'We need to get ahead of this. I\'ll flag it for the planning session — it has to be front of queue.', section: 'box' },
+    { speaker: 'Nina Patel', timestamp: '00:08', text: 'I appreciate it. I can send over the full account notes today — the renewal owners for both are already in the loop on our end.', section: 'dim' },
+    { speaker: 'Rafi Goldstein', timestamp: '00:10', text: 'Please do. Let\'s set up a joint review before end of next week.', section: 'dim' },
+    { speaker: 'Gong AI', timestamp: '', text: 'Should I flag these accounts as at-risk in the tracker?\nYes — both are Q3, please mark them at-risk and cc the account owners.', section: 'bubble-operator', timeLabel: '5 days ago', botLabel: 'Bot・1 min' },
+    { speaker: 'Nina Patel', timestamp: '', text: 'Should I flag these accounts as at-risk in the tracker?\nYes — both are Q3, please mark them at-risk and cc the account owners.', section: 'bubble-user', timeLabel: '5 days ago' },
+    { speaker: 'Gong AI', timestamp: '', text: 'Done — both accounts flagged and owners notified.\nLet me know if anything else needs actioning.', section: 'bubble-operator', timeLabel: '5 days ago', botLabel: 'Bot・1 min' },
   ],
   12: [
-    { speaker: 'Rafi Goldstein', timestamp: '00:01', text: 'Without this, we\'re asking teams to do manually what should be automated. It\'s eroding trust in the platform over time.', highlighted: true, section: 'box' },
-    { speaker: 'Tom Hauser', timestamp: '00:03', text: 'We\'ve heard similar things. How widespread is it across your teams?', section: 'box' },
-    { speaker: 'Rafi Goldstein', timestamp: '00:05', text: 'Our ops team estimates about four hours per sprint per team. It\'s a quiet but growing tax.', section: 'box' },
-    { speaker: 'Tom Hauser', timestamp: '00:07', text: 'That\'s significant at scale. What\'s your ideal timeline?', section: 'box' },
-    { speaker: 'Rafi Goldstein', timestamp: '00:08', text: 'Before end of Q2. Every sprint we push it, the debt compounds.', section: 'dim' },
-    { speaker: 'Tom Hauser', timestamp: '00:10', text: 'Noted. I\'ll bring it to the prioritization meeting on Thursday.', section: 'dim' },
-    { speaker: 'Guy Gertner', timestamp: '', text: 'Want me to document the manual steps?\nThat would be really helpful, yes.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
-    { speaker: 'Rafi Goldstein', timestamp: '', text: 'Want me to document the manual steps?\nThat would be really helpful, yes.', section: 'bubble-user', timeLabel: '2 days ago' },
-    { speaker: 'Guy Gertner', timestamp: '', text: 'Documentation added to the shared drive.\nThanks for the context today.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
+    { speaker: 'Rafi Goldstein', timestamp: '00:01', text: 'Without this in place, we\'re asking teams to do manually what should be automated. The trust erosion is gradual — but once teams start building their own workarounds, they stop believing the platform will ever catch up.', highlighted: true, section: 'box' },
+    { speaker: 'Tom Hauser', timestamp: '00:03', text: 'How widespread is this across your organisation right now?', section: 'box' },
+    { speaker: 'Rafi Goldstein', timestamp: '00:05', text: 'Our ops team alone is spending roughly four hours per sprint compensating for it. Multiply that across three product teams and it\'s a significant hidden tax every cycle.', section: 'box' },
+    { speaker: 'Tom Hauser', timestamp: '00:07', text: 'That\'s meaningful at scale. What does your ideal timeline look like?', section: 'box' },
+    { speaker: 'Rafi Goldstein', timestamp: '00:09', text: 'Before end of Q2. Every sprint we don\'t ship this, the technical debt compounds — and so does the trust debt. Those are harder to recover from.', section: 'dim' },
+    { speaker: 'Tom Hauser', timestamp: '00:11', text: 'Noted. I\'ll get it in front of the right people at Thursday\'s prioritisation meeting.', section: 'dim' },
+    { speaker: 'Gong AI', timestamp: '', text: 'Can you walk me through the manual steps your team is doing?\nHappy to — I can share our internal doc as well.', section: 'bubble-operator', timeLabel: '1 week ago', botLabel: 'Bot・1 min' },
+    { speaker: 'Rafi Goldstein', timestamp: '', text: 'Can you walk me through the manual steps your team is doing?\nHappy to — I can share our internal doc as well.', section: 'bubble-user', timeLabel: '1 week ago' },
+    { speaker: 'Gong AI', timestamp: '', text: 'Documentation added to the shared drive — really useful context.\nThanks for your time today, Rafi.', section: 'bubble-operator', timeLabel: '1 week ago', botLabel: 'Bot・1 min' },
   ],
 }
 
@@ -866,12 +864,19 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       {/* ── Feedback card detail overlay (non-App Store only) ─── */}
       {selectedFeedbackCard && selectedFeedbackCard.source !== 'App Store' && (
         <div className="absolute inset-0 z-10 bg-white flex flex-col">
-          <FeedbackCardDetailView
-            card={selectedFeedbackCard}
-            onBack={() => setSelectedFeedbackCard(null)}
-            onClose={onClose}
-            onAddToBoard={onAddToBoard}
-          />
+          {selectedFeedbackCard.source === 'SurveyMonkey' ? (
+            <SurveyFeedbackDetail
+              card={selectedFeedbackCard}
+              onBack={() => setSelectedFeedbackCard(null)}
+            />
+          ) : (
+            <FeedbackCardDetailView
+              card={selectedFeedbackCard}
+              onBack={() => setSelectedFeedbackCard(null)}
+              onClose={onClose}
+              onAddToBoard={onAddToBoard}
+            />
+          )}
         </div>
       )}
 
@@ -1332,53 +1337,7 @@ function CompanyFieldRow({ icon, label, children }: { icon: React.ReactNode; lab
   )
 }
 
-const GONG_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAppJREFUeAHVU1tIFFEYPmfmzF7GHMc1ArPLYisV9iBS6EKrq1kg9RAhQRckkHywJ4tKK0wIAo3Ey4MIGZgR9KrYg1AJWkEU9OCLBC5Wgqm7M3uZnd2dmXM6u66yLruLPfrBwJxz/u8/3//9/wFgt4NJXQzU+w2HrVHYMSEVw2ekQFfVz8HNuMF6VZdUH3PZ8WSIrmE2XtaDnhqvomoB3ooKMAuJEtQkKwtNrAUJYH5tsrUkv7zp/XL/ta/Lr7w7Uoggy0HIYggZNRST80QT/1LRVgbCmg8etTWMcIx5iiaTcirsrP74iMGiy4wKigngyvNNBfD2jMCc3He19NvqmyW73c09LHunji3csc39Gg5QipErIWw+NlZ9pLB2lgDC8sgGiqwCaJmGqTGIfnqSR0AGpHvIPqtZ/qDEoi4Lxz3vmD14P0lMJTPu/a02HYW21BnYCr/8GZXpL87YlKen/1KRBI8ttIoL6xPB9PM+d4gEY764GsJzeVDTV153fipvjl+M0hUP1SvYq65iM2u5R5OpmaoKRD1TAOw5rxjSaNfnQzfBRnMTVWzr8ui5sH89vIITtUPuQc3htrIMCcnk0tANek4EU1EV2LANb/mRGtkyzYuewNwlxJhIWA/YokSNBzNn7XcrkkR2pEEjVxw9izqJYTPDnwBpzcnkIex1rcscywrtM4Wwv072ShGvmIfIhEawHjPgxXzTXhTVI0DHEfI7+P3Wi/mm4U0yylQSHWbBH5Vwj2sNRzSVGi+qYU2+AAGHRHNxtH3GwtGZtBTF7PZSvjLr40jAXdJW0e1cJI+rPQZtkOE84LTSba6vTu7tq5X1+H3gf9Bx6sd4t9Nj0Hl8C7Z7jByORnOWqrJjoE5Rrh8frwQ53vnuxj/GfQLocTFXKgAAAABJRU5ErkJggg=='
-
-const SOURCE_DATA: Record<string, { color: string; path: string; label: string } | null> = {
-  'App Store': {
-    color: '#0D96F6',
-    label: 'App Store',
-    path: 'M8.8086 14.9194l6.1107-11.0368c.0837-.1513.1682-.302.2437-.4584.0685-.142.1267-.2854.1646-.4403.0803-.3259.0588-.6656-.066-.9767-.1238-.3095-.3417-.5678-.6201-.7355a1.4175 1.4175 0 0 0-.921-.1924c-.3207.043-.6135.1935-.8443.4288-.1094.1118-.1996.2361-.2832.369-.092.1463-.175.2979-.259.4492l-.3864.6979-.3865-.6979c-.0837-.1515-.1667-.303-.2587-.4492-.0837-.1329-.1739-.2572-.2835-.369-.2305-.2353-.5233-.3857-.844-.429a1.4181 1.4181 0 0 0-.921.1926c-.2784.1677-.4964.426-.6203.7355-.1246.311-.1461.6508-.066.9767.038.155.0962.2984.1648.4403.0753.1564.1598.307.2437.4584l1.248 2.2543-4.8625 8.7825H2.0295c-.1676 0-.3351-.0007-.5026.0092-.1522.009-.3004.0284-.448.0714-.3108.0906-.5822.2798-.7783.548-.195.2665-.3006.5929-.3006.9279 0 .3352.1057.6612.3006.9277.196.2683.4675.4575.7782.548.1477.043.296.0623.4481.0715.1675.01.335.009.5026.009h13.0974c.0171-.0357.059-.1294.1-.2697.415-1.4151-.6156-2.843-2.0347-2.843zM3.113 18.5418l-.7922 1.5008c-.0818.1553-.1644.31-.2384.4705-.067.1458-.124.293-.1611.452-.0785.3346-.0576.6834.0645 1.0029.1212.3175.3346.583.607.7549.2727.172.5891.2416.9013.1975.3139-.044.6005-.1986.8263-.4402.1072-.1148.1954-.2424.2772-.3787.0902-.1503.1714-.3059.2535-.4612L6 19.4636c-.0896-.149-.9473-1.4704-2.887-.9218m20.5861-3.0056a1.4707 1.4707 0 0 0-.779-.5407c-.1476-.0425-.2961-.0616-.4483-.0705-.1678-.0099-.3352-.0091-.503-.0091H18.648l-4.3891-7.817c-.6655.7005-.9632 1.485-1.0773 2.1976-.1655 1.0333.0367 2.0934.546 3.0004l5.2741 9.3933c.084.1494.167.299.2591.4435.0837.131.1739.2537.2836.364.231.2323.5238.3809.8449.4232.3192.0424.643-.0244.9217-.1899.2784-.1653.4968-.4204.621-.7257.1246-.3072.146-.6425.0658-.9641-.0381-.1529-.0962-.2945-.165-.4346-.0753-.1543-.1598-.303-.2438-.4524l-1.216-2.1662h1.596c.1677 0 .3351.0009.5029-.009.1522-.009.3007-.028.4483-.0705a1.4707 1.4707 0 0 0 .779-.5407A1.5386 1.5386 0 0 0 24 16.452a1.539 1.539 0 0 0-.3009-.9158Z',
-  },
-  'Play Store': {
-    color: '#414141',
-    label: 'Play Store',
-    path: 'M22.018 13.298l-3.919 2.218-3.515-3.493 3.543-3.521 3.891 2.202a1.49 1.49 0 0 1 0 2.594zM1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.045.419.124.6l11.155-11.087L1.337.924zm12.207 10.065l3.258-3.238L3.45.195a1.466 1.466 0 0 0-.946-.179l11.04 10.973zm0 2.067l-11 10.933c.298.036.612-.016.906-.183l13.324-7.54-3.23-3.21z',
-  },
-  'SurveyMonkey': {
-    color: '#00BF6F',
-    label: 'SurveyMonkey',
-    path: 'M21.1627 13.1843a2.8517 2.8517 0 0 0-.6778.0841c-.8438-3.3181-3.5478-5.8376-6.9172-6.4452a8.3933 8.3933 0 0 0-.4407-.0668c.0259-.8255.0636-1.7791 1.2781-2.6369l-.1918-.4838s-2.3708.7349-2.6391 2.7598c-.1175-.5507-1.2209-1.2403-1.7673-1.3707l-.2717.4384s.7242.3621.9009 1.361c-3.3691.6056-6.0743 3.1229-6.9204 6.4398-1.5194-.376-3.056.5508-3.432 2.0703-.376 1.5194.5508 3.056 2.0703 3.432a2.8346 2.8346 0 0 0 1.7195-.1142 8.6821 8.6821 0 0 0 .9203 1.7123l2.3524-1.5852c-.6381-.8071-1.0206-1.9884-1.0873-3.1736-.07-1.2931.2446-2.5755 1.0701-3.3298 1.7016-1.4483 3.5561-.7877 4.7135.6002h.3114c1.1606-1.388 3.0173-2.0475 4.7135-.6002.8244.7543 1.1401 2.0378 1.0701 3.3298-.0656 1.1853-.4481 2.3664-1.0873 3.1736l2.3524 1.5852a8.6854 8.6854 0 0 0 .9224-1.7123c1.4551.5751 3.1009-.1384 3.676-1.5935s-.1384-3.1009-1.5935-3.676a2.8349 2.8349 0 0 0-1.0448-.1983zM2.7861 16.8482a.8362.8362 0 0 1 0-1.6724.8442.8442 0 0 1 .4688.1444c.0071.4391.0369.8776.0894 1.3136-.1472.1346-.3738.2329-.5582.2144zm18.4273 0a.8361.8361 0 0 1-.5582-.2155 12.679 12.679 0 0 0 .0894-1.3136.8352.8352 0 0 1 1.304.6929c.0078.4574-.3823.8581-.8352.8362z',
-  },
-  'Gong': null,
-}
-
-export function SourceLogoChip({ source }: { source: string }) {
-  const [hovered, setHovered] = useState(false)
-  const data = SOURCE_DATA[source]
-  const bg = hovered ? '#E0E1E6' : '#F1F2F5'
-
-  const icon = source === 'Gong'
-    ? <img src={GONG_PNG} width="14" height="14" alt="" style={{ display: 'block' }} />
-    : data
-      ? <svg viewBox="0 0 24 24" width="14" height="14" fill={data.color} aria-hidden="true"><path d={data.path} /></svg>
-      : <span style={{ fontSize: 12, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif' }}>{source}</span>
-
-  return (
-    <Tooltip>
-      <Tooltip.Trigger asChild>
-        <span
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-          style={{ background: bg, borderRadius: 6, padding: '0 6px', height: 24, display: 'inline-flex', alignItems: 'center', transition: 'background 150ms ease', cursor: 'default' }}
-        >
-          {icon}
-        </span>
-      </Tooltip.Trigger>
-      <Tooltip.Content side="top" sideOffset={4}>{source}</Tooltip.Content>
-    </Tooltip>
-  )
-}
+export { SourceLogoChip } from './SourceLogoChip'
 
 function JiraFormField({ label, hint, charMax, lines, children }: { label: string; hint?: string; charMax?: number; lines?: number; children: React.ReactNode }) {
   return (
@@ -1594,7 +1553,7 @@ function AppStoreReviewDetail({
   card,
   onBack,
 }: {
-  card: { title: string; text: string; author: string; date: string; companies: string[]; stars?: number }
+  card: { title: string; text: string; author: string; date: string; companies: string[]; stars?: number; borderColor?: string }
   onBack: () => void
 }) {
   const authorParts = card.author.split(',')
@@ -1631,11 +1590,11 @@ function AppStoreReviewDetail({
 
       {/* Author */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#f1f2f5', position: 'relative', flexShrink: 0 }}>
-          <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%', borderRadius: '50%' }} src={AVATAR_NO_PHOTO} />
-          <div style={{ position: 'absolute', inset: '18.75% 14.44% 0 14.44%' }}>
-            <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%' }} src={AVATAR_VECTOR} />
-          </div>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: card.borderColor ?? '#f1f2f5', flexShrink: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden' }}>
+          <svg width="26" height="26" viewBox="0 0 26 28" fill="none" style={{ marginBottom: -2 }}>
+            <ellipse cx="13" cy="9" rx="5.5" ry="5.5" fill="rgba(0,0,0,0.25)" />
+            <path d="M2 27c0-6.075 4.925-11 11-11s11 4.925 11 11" fill="rgba(0,0,0,0.25)" />
+          </svg>
         </div>
         <div>
           <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
@@ -1943,6 +1902,221 @@ function generateTranscript(card: { title: string; text: string; author: string 
     { speaker: firstName, time: '00:09', text: s2, bold: '' },
     { speaker: interviewer, time: '00:12', text: 'What would a complete solution look like from your perspective?', bold: '' },
   ]
+}
+
+type SurveyQA = {
+  question: string
+  answer: string
+  highlighted?: boolean
+  type?: 'text' | 'nps' | 'rating'
+  score?: number
+}
+
+function generateSurveyContent(card: { title: string; text: string; author: string }): SurveyQA[] {
+  const sentences = card.text
+    .split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(s => s.length > 10)
+
+  const s0 = sentences[0] ?? card.text
+  const s1 = sentences[1] ?? s0
+  const rest = sentences.slice(2).join(' ') || ''
+
+  const isPositive = /positive|exceeds|exceeded|adoption|enthusiastic|great|excellent/i.test(card.text)
+  const isNegative = /risk|churn|alternative|competitive|blocking|workaround|erode|trust|critical/i.test(card.text)
+
+  const satRating = isPositive ? 4 : isNegative ? 2 : 3
+  const npsScore = isPositive ? 9 : isNegative ? 4 : 6
+
+  const mainQuestion = isPositive
+    ? 'What has been the most impactful change or feature for your team?'
+    : isNegative
+    ? 'What is the primary challenge or blocker your team is facing?'
+    : 'How would you describe your current experience with this area of the product?'
+
+  const followUpQuestion = isPositive
+    ? 'Were there any gaps or friction points that still need to be addressed?'
+    : 'How long has this been affecting your workflows?'
+
+  return [
+    { question: mainQuestion, answer: s0, highlighted: true },
+    { question: 'Overall, how satisfied are you with the current solution?', answer: '', type: 'rating', score: satRating },
+    { question: followUpQuestion, answer: s1 },
+    { question: 'How likely are you to recommend this product to a colleague?', answer: '', type: 'nps', score: npsScore },
+    ...(rest ? [{ question: 'Any additional context or comments?', answer: rest }] : []),
+  ]
+}
+
+function SurveyFeedbackDetail({
+  card,
+  onBack,
+}: {
+  card: { title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string }
+  onBack: () => void
+}) {
+  const [search, setSearch] = useState('')
+
+  const authorParts = card.author.split(',')
+  const authorName = authorParts[0].trim()
+  const authorRole = authorParts.slice(1).join(',').trim()
+  const nameWords = authorName.split(' ')
+  const authorInitials = (nameWords.length >= 2
+    ? nameWords[0][0] + nameWords[nameWords.length - 1][0]
+    : authorName.slice(0, 2)).toUpperCase()
+  const AVATAR_COLORS = ['#de350b', '#4262FF', '#00C7A8', '#3C3F4A', '#7E57C2']
+  const avatarBg = AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]
+
+  const surveyContent = generateSurveyContent(card)
+  const highlighted = surveyContent.find(q => q.highlighted)!
+  const rest = surveyContent.filter(q => !q.highlighted)
+
+  const LABEL: React.CSSProperties = {
+    fontSize: 14,
+    color: '#656b81',
+    width: 140,
+    flexShrink: 0,
+    fontFamily: "'Open Sans', sans-serif",
+    lineHeight: 1.4,
+  }
+  const CHIP: React.CSSProperties = {
+    backgroundColor: '#f1f2f5',
+    borderRadius: 6,
+    padding: '0 8px',
+    height: 28,
+    display: 'inline-flex',
+    alignItems: 'center',
+    fontSize: 14,
+    color: '#222428',
+    fontFamily: "'Open Sans', sans-serif",
+  }
+
+  return (
+    <div
+      className="panel-scroll"
+      style={{ height: '100%', overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+    >
+      {/* ← Feedback */}
+      <button
+        onClick={onBack}
+        className="hover:bg-[#F1F2F5] transition-colors"
+        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        Feedback
+      </button>
+
+      {/* Author */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'white', fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
+        </div>
+        <div>
+          <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
+          {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
+        </div>
+      </div>
+
+      {/* Metadata fields */}
+      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Source</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <SourceLogoChip source="SurveyMonkey" />
+            <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#aeb2c0' }} />
+          </div>
+        </div>
+        {card.companies[0] && (
+          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+            <span style={LABEL}>Company</span>
+            <CompanyLogo name={card.companies[0]} size={24} />
+          </div>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Feedback date</span>
+          <div style={CHIP}>{card.date}</div>
+        </div>
+      </div>
+
+      {/* Keyword search */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 32, padding: '0 12px', borderRadius: 8, backgroundColor: '#f1f2f5' }}>
+          <IconMagnifyingGlass css={{ width: 14, height: 14, color: '#7D8297', flexShrink: 0 }} />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search keywords..."
+            style={{ flex: 1, background: 'transparent', fontSize: 13, color: '#222428', outline: 'none', border: 'none', fontFamily: 'Open Sans, sans-serif' }}
+          />
+        </div>
+      </div>
+
+      {/* Grey box — highlighted Q&A */}
+      <div style={{ backgroundColor: '#f1f2f5', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+          <span style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1" }}>{authorName}</span>
+          <span style={{ fontSize: 13, color: '#656b81' }}>Q1</span>
+          <span style={{ marginLeft: 'auto' }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="2" y="5" width="8" height="9" rx="1.5" stroke="#aeb2c0" strokeWidth="1.3" />
+              <path d="M5 5V3.5A1.5 1.5 0 016.5 2H12A1.5 1.5 0 0113.5 3.5V9A1.5 1.5 0 0112 10.5h-1.5" stroke="#aeb2c0" strokeWidth="1.3" strokeLinecap="round" />
+            </svg>
+          </span>
+        </div>
+        <p style={{ margin: 0, fontSize: 11, color: '#aeb2c0', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.4 }}>{highlighted.question}</p>
+        <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{highlighted.answer}</p>
+      </div>
+
+      {/* Rest of Q&As */}
+      {rest.map((qa, i) => (
+        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+            <span style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1" }}>{authorName}</span>
+            <span style={{ fontSize: 13, color: '#aeb2c0' }}>Q{i + 2}</span>
+          </div>
+          <p style={{ margin: '0 0 4px', fontSize: 11, color: '#aeb2c0', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.4 }}>{qa.question}</p>
+          {qa.type === 'rating' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+              {Array.from({ length: 5 }).map((_, idx) => (
+                <IconStarFilled key={idx} css={{ width: 14, height: 14, color: idx < (qa.score ?? 3) ? '#3C3F4A' : '#D1D4DC' }} />
+              ))}
+              <span style={{ fontSize: 12, color: '#656b81', marginLeft: 6, fontFamily: "'Open Sans', sans-serif" }}>{qa.score} / 5</span>
+            </div>
+          )}
+          {qa.type === 'nps' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ display: 'flex', gap: 3 }}>
+                {Array.from({ length: 11 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      flex: 1,
+                      height: 24,
+                      borderRadius: 4,
+                      backgroundColor: idx === qa.score ? '#3C3F4A' : '#e4e5ea',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <span style={{ fontSize: 11, color: idx === qa.score ? 'white' : '#aeb2c0', fontFamily: "'Open Sans', sans-serif", fontWeight: idx === qa.score ? 600 : 400 }}>{idx}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 11, color: '#aeb2c0', fontFamily: "'Open Sans', sans-serif" }}>Not likely</span>
+                <span style={{ fontSize: 11, color: '#aeb2c0', fontFamily: "'Open Sans', sans-serif" }}>Very likely</span>
+              </div>
+            </div>
+          )}
+          {!qa.type && qa.answer && (
+            <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#656b81', fontFamily: "'Open Sans', sans-serif" }}>{qa.answer}</p>
+          )}
+        </div>
+      ))}
+    </div>
+  )
 }
 
 function classifyEntry(text: string, borderColor: string): 'praise' | 'request' | 'problem' {

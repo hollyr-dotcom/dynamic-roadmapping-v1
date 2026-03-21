@@ -10,7 +10,7 @@ const PRIORITY_BAR_COLORS: Record<Priority, { bg: string; border: string; text: 
   icebox: { bg: '#f7f7f7', border: '#dad8d8', text: '#222428' },
 }
 const DEFAULT_BAR_COLOR = PRIORITY_BAR_COLORS.icebox
-const JIRA_LOGO = 'https://www.figma.com/api/mcp/asset/f169e443-27f1-401b-994d-4f720c63f0c7'
+const JIRA_LOGO = 'https://www.figma.com/api/mcp/asset/4209f456-a892-4952-b21a-077b917e1d3d'
 const DAY_WIDTH = 48
 const BAR_HEIGHT = 40
 const ROW_HEIGHT = 56

@@ -1,4 +1,4 @@
-const JIRA_LOGO = 'https://www.figma.com/api/mcp/asset/f169e443-27f1-401b-994d-4f720c63f0c7'
+const JIRA_LOGO = 'https://www.figma.com/api/mcp/asset/4209f456-a892-4952-b21a-077b917e1d3d'
 
 interface JiraIdCellProps {
   value: string
