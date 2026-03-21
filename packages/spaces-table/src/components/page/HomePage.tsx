@@ -26,20 +26,20 @@ import {
   Input,
 } from '@mirohq/design-system'
 
-// Figma asset URLs (valid for 7 days)
+// Figma asset URLs (valid for 7 days — refreshed 2026-03-21)
 const imgJiraLogo = 'https://www.figma.com/api/mcp/asset/f169e443-27f1-401b-994d-4f720c63f0c7'
 const imgBoardIconTable = 'https://www.figma.com/api/mcp/asset/dde5c8f2-a0b4-4648-ad27-3260ba6cc12a'
-const imgLogotype = 'https://www.figma.com/api/mcp/asset/57392f00-4031-499f-ad53-d04ee453643d'
-const imgFlowchart = 'https://www.figma.com/api/mcp/asset/6ba42a08-630f-4ccc-9f62-54f93def85ef'
-const imgMindMap = 'https://www.figma.com/api/mcp/asset/201f5647-1b17-4e83-8646-bc7e0544bd32'
-const imgAvatar = 'https://www.figma.com/api/mcp/asset/b370e17e-6122-4788-961b-d00586142da4'
-const imgAvatar1 = 'https://www.figma.com/api/mcp/asset/4c1913ee-d711-45dc-b293-e715ee8b3508'
-const imgTeamLogo = 'https://www.figma.com/api/mcp/asset/c3fad6a0-37fd-4eac-8e4d-2698a45aefd3'
-const imgIconPlant = 'https://www.figma.com/api/mcp/asset/1cd116ab-e909-4070-b937-7a070fcb1ea3'
-const imgIconPaper = 'https://www.figma.com/api/mcp/asset/1467b22c-49ed-46cf-b117-776d83ab0082'
-const imgIconCursor = 'https://www.figma.com/api/mcp/asset/c3051db5-997e-4176-857f-f4065c8db8c3'
-const imgIconPeople = 'https://www.figma.com/api/mcp/asset/961b4609-835a-47d3-9ddf-d8b100f0d272'
-const imgIconOrgChart = 'https://www.figma.com/api/mcp/asset/5aaa8449-64b2-43d8-985c-55d185b34e98'
+const imgLogotype = 'https://www.figma.com/api/mcp/asset/13fc18ee-abe4-4f8c-ae2c-b473e9fb392d'
+const imgFlowchart = 'https://www.figma.com/api/mcp/asset/f3d79f17-613a-4662-8d28-2d67d0f40146'
+const imgMindMap = 'https://www.figma.com/api/mcp/asset/cb003b3b-b273-4dc1-ad1b-404ee6b44df8'
+const imgAvatar = 'https://www.figma.com/api/mcp/asset/4aebee5a-42dc-4f4d-9e43-e0e315fb0035'
+const imgAvatar1 = 'https://www.figma.com/api/mcp/asset/9a2f7c37-1414-4ff1-aff1-8f2f668285cf'
+const imgTeamLogo = 'https://www.figma.com/api/mcp/asset/9710fd69-947b-4333-9c38-9e9337a1112e'
+const imgIconPlant = 'https://www.figma.com/api/mcp/asset/2431a494-ca14-4210-bc6f-cf5f84930feb'
+const imgIconPaper = 'https://www.figma.com/api/mcp/asset/e3e8922e-2d55-4c3b-a635-5d19d08bcee6'
+const imgIconCursor = 'https://www.figma.com/api/mcp/asset/f241ef27-ee88-4e59-9960-7abe28aef225'
+const imgIconPeople = 'https://www.figma.com/api/mcp/asset/0b830109-be5e-4dc2-b7c9-fa71c933a4fb'
+const imgIconOrgChart = 'https://www.figma.com/api/mcp/asset/c805810d-db02-4af2-bd96-45be61ccce9a'
 const imgShareAvatar = 'https://www.figma.com/api/mcp/asset/33cf113b-9e21-4dfe-882a-5d61c2dd67ff'
 const imgMiroTeamLogo = 'https://www.figma.com/api/mcp/asset/c9119d54-1298-4f33-a414-9b1ce85ffd9c'
 

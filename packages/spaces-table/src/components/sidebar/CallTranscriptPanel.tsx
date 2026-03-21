@@ -16,9 +16,11 @@ interface CallTranscriptPanelProps {
   company: string
   date: string
   transcript: TranscriptLine[]
-  borderColor: string
   onBack: () => void
 }
+
+const AVATAR_NO_PHOTO = 'https://www.figma.com/api/mcp/asset/4d11fed8-3b68-4a90-b907-9999522076d0'
+const AVATAR_VECTOR = 'https://www.figma.com/api/mcp/asset/2e063fe9-0a1a-4f85-a78f-1882b257cad9'
 
 const GONG_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAppJREFUeAHVU1tIFFEYPmfmzF7GHMc1ArPLYisV9iBS6EKrq1kg9RAhQRckkHywJ4tKK0wIAo3Ey4MIGZgR9KrYg1AJWkEU9OCLBC5Wgqm7M3uZnd2dmXM6u66yLruLPfrBwJxz/u8/3//9/wFgt4NJXQzU+w2HrVHYMSEVw2ekQFfVz8HNuMF6VZdUH3PZ8WSIrmE2XtaDnhqvomoB3ooKMAuJEtQkKwtNrAUJYH5tsrUkv7zp/XL/ta/Lr7w7Uoggy0HIYggZNRST80QT/1LRVgbCmg8etTWMcIx5iiaTcirsrP74iMGiy4wKigngyvNNBfD2jMCc3He19NvqmyW73c09LHunji3csc39Gg5QipErIWw+NlZ9pLB2lgDC8sgGiqwCaJmGqTGIfnqSR0AGpHvIPqtZ/qDEoi4Lxz3vmD14P0lMJTPu/a02HYW21BnYCr/8GZXpL87YlKen/1KRBI8ttIoL6xPB9PM+d4gEY764GsJzeVDTV153fipvjl+M0hUP1SvYq65iM2u5R5OpmaoKRD1TAOw5rxjSaNfnQzfBRnMTVWzr8ui5sH89vIITtUPuQc3htrIMCcnk0tANek4EU1EV2LANb/mRGtkyzYuewNwlxJhIWA/YokSNBzNn7XcrkkR2pEEjVxw9izqJYTPDnwBpzcnkIex1rcscywrtM4Wwv072ShGvmIfIhEawHjPgxXzTXhTVI0DHEfI7+P3Wi/mm4U0yylQSHWbBH5Vwj2sNRzSVGi+qYU2+AAGHRHNxtH3GwtGZtBTF7PZSvjLr40jAXdJW0e1cJI+rPQZtkOE84LTSba6vTu7tq5X1+H3gf9Bx6sd4t9Nj0Hl8C7Z7jByORnOWqrJjoE5Rrh8frwQ53vnuxj/GfQLocTFXKgAAAABJRU5ErkJggg=='
 
@@ -43,11 +45,9 @@ const CHIP: React.CSSProperties = {
   fontFamily: "'Open Sans', sans-serif",
 }
 
-export function CallTranscriptPanel({ author, company, date, transcript, borderColor, onBack }: CallTranscriptPanelProps) {
+export function CallTranscriptPanel({ author, company, date, transcript, onBack }: CallTranscriptPanelProps) {
   const [search, setSearch] = useState('')
   const [authorName, authorRole] = author.split(',').map(s => s.trim())
-  const words = authorName.split(' ')
-  const initials = (words.length >= 2 ? words[0][0] + words[words.length - 1][0] : authorName.slice(0, 2)).toUpperCase()
 
   const boxLines = transcript.filter(l => !l.section || l.section === 'box')
   const dimLines = transcript.filter(l => l.section === 'dim')
@@ -72,10 +72,11 @@ export function CallTranscriptPanel({ author, company, date, transcript, borderC
 
       {/* Caller info */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: borderColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#222428', fontFamily: "'Open Sans', sans-serif", lineHeight: 1 }}>
-            {initials}
-          </span>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#f1f2f5', position: 'relative', flexShrink: 0 }}>
+          <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%', borderRadius: '50%' }} src={AVATAR_NO_PHOTO} />
+          <div style={{ position: 'absolute', inset: '18.75% 14.44% 0 14.44%' }}>
+            <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%' }} src={AVATAR_VECTOR} />
+          </div>
         </div>
         <div>
           <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>

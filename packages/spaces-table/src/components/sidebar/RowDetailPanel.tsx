@@ -285,7 +285,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   }, [initialCompany])
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null)
   const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[] } | null>(null)
-  const [callCard, setCallCard] = useState<{ title: string; author: string; company: string; date: string; transcript: TranscriptLine[]; borderColor: string } | null>(null)
+  const [callCard, setCallCard] = useState<{ title: string; author: string; company: string; date: string; transcript: TranscriptLine[] } | null>(null)
   const [dismissedCards, setDismissedCards] = useState<Set<number>>(new Set())
   const [promptCards, setPromptCards] = useState<Set<number>>(new Set())
   const [showToast, setShowToast] = useState(false)
@@ -710,7 +710,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   >
                     {promptCards.has(i)
                       ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
-                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies })} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
+                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies })} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i] }) : undefined} />
                     }
                   </div>
                 ))}
@@ -844,7 +844,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             company={callCard.company}
             date={callCard.date}
             transcript={callCard.transcript}
-            borderColor={callCard.borderColor}
             onBack={() => setCallCard(null)}
           />
         )}
