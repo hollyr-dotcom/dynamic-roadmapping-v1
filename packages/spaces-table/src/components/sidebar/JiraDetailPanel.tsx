@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { JiraForm, SourceLogoChip } from './RowDetailPanel'
 import {
   IconSocialJira,
   IconDotsThreeVertical,
@@ -99,7 +100,7 @@ function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-const TABS = ['Details', 'Insights', 'Comments']
+const TABS = ['Details', 'Jira', 'Insights', 'Comments']
 
 export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
@@ -270,6 +271,8 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
 
           </>
         )}
+
+        {activeTab === 'Jira' && <JiraForm row={row} />}
 
         {activeTab === 'Insights' && (
           <div className="flex flex-col gap-8 pt-4 pb-6">
@@ -572,9 +575,7 @@ function FeedbackCard({
       >
         <div style={{ overflow: 'hidden' }}>
           <div className="flex items-center gap-2 pt-1">
-            {source && (
-              <Chip removable={false} css={{ fontSize: 14, borderRadius: '6px', '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{source}</Chip>
-            )}
+            {source && <SourceLogoChip source={source} />}
             {companies[0] && (
               <CompanyLogo name={companies[0]} size={24} />
             )}

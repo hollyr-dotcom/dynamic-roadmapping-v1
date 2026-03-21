@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import type { SpaceRow } from '@spaces/shared'
 import { CompanyLogo } from '../CompanyLogo'
+import { CallTranscriptPanel, type TranscriptLine } from './CallTranscriptPanel'
 import {
   IconInformationMarkCircle,
   IconCross,
@@ -37,6 +38,7 @@ import {
   IconUser,
   IconSmileyPlus,
   IconPaperPlaneFilledRight,
+  IconSocialJira,
 } from '@mirohq/design-system'
 
 function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
@@ -89,7 +91,7 @@ const PRIORITY_CHIP: Record<string, { bg: string; color: string }> = {
   icebox: { bg: '#dad8d8', color: '#222428' },
 }
 
-const TABS = ['Details', 'Insights', 'Comments']
+const TABS = ['Details', 'Insights', 'Comments', 'Jira']
 
 const FEEDBACK_FILTER_SUB_OPTIONS: Record<string, string[]> = {
   'Company':   ['Spotify', 'Stripe', 'Linear', 'Atlassian', 'Notion', 'Shopify', 'Dropbox', 'Google', 'Apple'],
@@ -153,6 +155,58 @@ const CARD_STYLES = [
   { borderColor: '#BADEB1', Icon: IconHeart, stars: 5, date: 'Jan 08', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Dec 19', source: 'Play Store' },
 ]
+
+// Transcripts for Gong-sourced cards (indices 1, 5, 8, 12 in CARD_STYLES)
+const GONG_TRANSCRIPT_MAP: Record<number, TranscriptLine[]> = {
+  1: [
+    { speaker: 'John Byrnes', timestamp: '00:01', text: 'I manage multiple teams, and I\'m constantly double-checking where things are supposed to go. It shouldn\'t take this much effort just to stay organized.', highlighted: true, section: 'box' },
+    { speaker: 'Dave Gertner', timestamp: '00:05', text: 'I spent ten minutes this morning just trying to remember which sub-account our client project lives in.', section: 'box' },
+    { speaker: 'John Byrnes', timestamp: '00:05', text: 'Oh my god, same. I always feel like I\'m in the wrong place.', section: 'box' },
+    { speaker: 'David Gertner', timestamp: '00:05', text: 'Yeah. I\'m not sure.', section: 'box' },
+    { speaker: 'John Byrnes', timestamp: '00:05', text: 'We have a sync next week. Maybe we could loop in the design team at that point.', section: 'box' },
+    { speaker: 'David Gertner', timestamp: '00:05', text: 'Yeah. I\'m not sure.', section: 'dim' },
+    { speaker: 'John Byrnes', timestamp: '00:05', text: 'We have a. In person. I kind of feel like I recognize your face. Maybe from slack maybe.', section: 'dim' },
+    { speaker: 'John Byrnes', timestamp: '00:18', text: 'We have a. In person. I kind of feel like I recognize your face. Maybe from slack maybe.', section: 'dim' },
+    { speaker: 'David Gertner', timestamp: '00:05', text: 'Yeah. I\'m not sure.', section: 'dim' },
+    { speaker: 'Guy Gertner', timestamp: '', text: 'Where are you joining from today?\nI\'m in Amsterdam.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
+    { speaker: 'John Byrnes', timestamp: '00:18', text: 'We have a. In person. I kind of feel like I recognize your face. Maybe from slack maybe.', section: 'dim' },
+    { speaker: 'Richard Byrnes', timestamp: '', text: 'Where are you joining from today?\nI\'m in Amsterdam.', section: 'bubble-user', timeLabel: '2 days ago' },
+    { speaker: 'Guy Gertner', timestamp: '', text: 'Where are you joining from today?\nI\'m in Amsterdam.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
+  ],
+  5: [
+    { speaker: 'James Whitfield', timestamp: '00:01', text: 'We ran a trial with about 40 enterprise accounts last month and the reception was genuinely enthusiastic.', highlighted: true, section: 'box' },
+    { speaker: 'Nina Patel', timestamp: '00:03', text: 'What were the standout pieces of feedback?', section: 'box' },
+    { speaker: 'James Whitfield', timestamp: '00:05', text: 'Speed and reliability mostly. Several customers called it the most impactful update we\'ve shipped this year.', section: 'box' },
+    { speaker: 'Nina Patel', timestamp: '00:07', text: 'Good signal. Any blockers before full rollout?', section: 'box' },
+    { speaker: 'James Whitfield', timestamp: '00:09', text: 'Edge cases around data freshness. Otherwise we\'d be ready to push to GA next sprint.', section: 'dim' },
+    { speaker: 'Nina Patel', timestamp: '00:11', text: 'Let\'s schedule a review session with the infra team.', section: 'dim' },
+    { speaker: 'Guy Gertner', timestamp: '', text: 'Can you share the trial results doc?\nHappy to pull it up now.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
+    { speaker: 'James Whitfield', timestamp: '', text: 'Can you share the trial results doc?\nHappy to pull it up now.', section: 'bubble-user', timeLabel: '2 days ago' },
+    { speaker: 'Guy Gertner', timestamp: '', text: 'Thanks — I\'ll loop in the team.\nGreat session.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
+  ],
+  8: [
+    { speaker: 'Nina Patel', timestamp: '00:01', text: 'We raised this in our last business review as a critical gap. Two mid-market accounts have tied their renewal decisions to progress here.', highlighted: true, section: 'box' },
+    { speaker: 'Rafi Goldstein', timestamp: '00:03', text: 'That\'s significant. What\'s the combined ARR at risk?', section: 'box' },
+    { speaker: 'Nina Patel', timestamp: '00:04', text: 'Around $280K. Both accounts are up for renewal in Q3.', section: 'box' },
+    { speaker: 'Rafi Goldstein', timestamp: '00:06', text: 'We need to reprioritize this. I\'ll flag it for the next planning session.', section: 'box' },
+    { speaker: 'Nina Patel', timestamp: '00:08', text: 'Appreciate it. I can send over the full account notes if that\'s useful.', section: 'dim' },
+    { speaker: 'Rafi Goldstein', timestamp: '00:10', text: 'Please do. Let\'s get ahead of Q3 renewals.', section: 'dim' },
+    { speaker: 'Guy Gertner', timestamp: '', text: 'Should I create a tracker for these accounts?\nYes, please flag them as at-risk.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
+    { speaker: 'Nina Patel', timestamp: '', text: 'Should I create a tracker for these accounts?\nYes, please flag them as at-risk.', section: 'bubble-user', timeLabel: '2 days ago' },
+    { speaker: 'Guy Gertner', timestamp: '', text: 'Done — tracker created and shared.\nLet me know if anything else is needed.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
+  ],
+  12: [
+    { speaker: 'Rafi Goldstein', timestamp: '00:01', text: 'Without this, we\'re asking teams to do manually what should be automated. It\'s eroding trust in the platform over time.', highlighted: true, section: 'box' },
+    { speaker: 'Tom Hauser', timestamp: '00:03', text: 'We\'ve heard similar things. How widespread is it across your teams?', section: 'box' },
+    { speaker: 'Rafi Goldstein', timestamp: '00:05', text: 'Our ops team estimates about four hours per sprint per team. It\'s a quiet but growing tax.', section: 'box' },
+    { speaker: 'Tom Hauser', timestamp: '00:07', text: 'That\'s significant at scale. What\'s your ideal timeline?', section: 'box' },
+    { speaker: 'Rafi Goldstein', timestamp: '00:08', text: 'Before end of Q2. Every sprint we push it, the debt compounds.', section: 'dim' },
+    { speaker: 'Tom Hauser', timestamp: '00:10', text: 'Noted. I\'ll bring it to the prioritization meeting on Thursday.', section: 'dim' },
+    { speaker: 'Guy Gertner', timestamp: '', text: 'Want me to document the manual steps?\nThat would be really helpful, yes.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
+    { speaker: 'Rafi Goldstein', timestamp: '', text: 'Want me to document the manual steps?\nThat would be really helpful, yes.', section: 'bubble-user', timeLabel: '2 days ago' },
+    { speaker: 'Guy Gertner', timestamp: '', text: 'Documentation added to the shared drive.\nThanks for the context today.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
+  ],
+}
 
 function generateFeedbackCards(row: SpaceRow) {
   const t = row.title
@@ -231,6 +285,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   }, [initialCompany])
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null)
   const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[] } | null>(null)
+  const [callCard, setCallCard] = useState<{ title: string; author: string; company: string; date: string; transcript: TranscriptLine[] } | null>(null)
   const [dismissedCards, setDismissedCards] = useState<Set<number>>(new Set())
   const [promptCards, setPromptCards] = useState<Set<number>>(new Set())
   const [showToast, setShowToast] = useState(false)
@@ -373,20 +428,33 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden relative" style={{ width: 476, fontFamily: 'Open Sans, sans-serif' }}>
 
+      {/* Call transcript overlay */}
+      {callCard && (
+        <div className="absolute inset-0 z-10 bg-white">
+          <CallTranscriptPanel
+            title={callCard.title}
+            author={callCard.author}
+            company={callCard.company}
+            date={callCard.date}
+            transcript={callCard.transcript}
+            onBack={() => setCallCard(null)}
+            onClose={onClose}
+          />
+        </div>
+      )}
+
       {/* ── Header ──────────────────────────────────────── */}
       <div className="flex items-center gap-2 h-12 pl-4 pr-3 shrink-0">
-        <p
-          className="flex-1 min-w-0 truncate text-[#222428] leading-[1.5]"
-          style={{
-            fontFamily: "'Roobert PRO', sans-serif",
-            fontWeight: 600,
-            fontSize: '16px',
-            fontFeatureSettings: "'ss01' 1",
-          }}
-          title={row.title}
-        >
-          {row.title}
-        </p>
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <IconSocialJira css={{ width: 18, height: 18, flexShrink: 0 }} />
+          <p
+            className="flex-1 min-w-0 truncate text-[#222428] leading-[1.5]"
+            style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: '16px', fontFeatureSettings: "'ss01' 1" }}
+            title={row.jiraKey ?? row.title}
+          >
+            {row.jiraKey ?? row.title}
+          </p>
+        </div>
         <div className="flex items-center shrink-0">
           <button
             aria-label="More options"
@@ -656,7 +724,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   >
                     {promptCards.has(i)
                       ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
-                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies })} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} />
+                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies })} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i] }) : undefined} />
                     }
                   </div>
                 ))}
@@ -768,6 +836,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             </div>
           </div>
         )}
+
+        {activeTab === 'Jira' && <JiraForm row={row} />}
       </div>
       {/* ── Company panel ─── */}
       <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-3 flex flex-col shrink-0" style={{ width: 476 }}>
@@ -1252,6 +1322,143 @@ function CompanyFieldRow({ icon, label, children }: { icon: React.ReactNode; lab
   )
 }
 
+const SOURCE_DATA: Record<string, { color: string; path: string; label: string }> = {
+  'App Store': {
+    color: '#0D96F6',
+    label: 'App Store',
+    path: 'M8.8086 14.9194l6.1107-11.0368c.0837-.1513.1682-.302.2437-.4584.0685-.142.1267-.2854.1646-.4403.0803-.3259.0588-.6656-.066-.9767-.1238-.3095-.3417-.5678-.6201-.7355a1.4175 1.4175 0 0 0-.921-.1924c-.3207.043-.6135.1935-.8443.4288-.1094.1118-.1996.2361-.2832.369-.092.1463-.175.2979-.259.4492l-.3864.6979-.3865-.6979c-.0837-.1515-.1667-.303-.2587-.4492-.0837-.1329-.1739-.2572-.2835-.369-.2305-.2353-.5233-.3857-.844-.429a1.4181 1.4181 0 0 0-.921.1926c-.2784.1677-.4964.426-.6203.7355-.1246.311-.1461.6508-.066.9767.038.155.0962.2984.1648.4403.0753.1564.1598.307.2437.4584l1.248 2.2543-4.8625 8.7825H2.0295c-.1676 0-.3351-.0007-.5026.0092-.1522.009-.3004.0284-.448.0714-.3108.0906-.5822.2798-.7783.548-.195.2665-.3006.5929-.3006.9279 0 .3352.1057.6612.3006.9277.196.2683.4675.4575.7782.548.1477.043.296.0623.4481.0715.1675.01.335.009.5026.009h13.0974c.0171-.0357.059-.1294.1-.2697.415-1.4151-.6156-2.843-2.0347-2.843zM3.113 18.5418l-.7922 1.5008c-.0818.1553-.1644.31-.2384.4705-.067.1458-.124.293-.1611.452-.0785.3346-.0576.6834.0645 1.0029.1212.3175.3346.583.607.7549.2727.172.5891.2416.9013.1975.3139-.044.6005-.1986.8263-.4402.1072-.1148.1954-.2424.2772-.3787.0902-.1503.1714-.3059.2535-.4612L6 19.4636c-.0896-.149-.9473-1.4704-2.887-.9218m20.5861-3.0056a1.4707 1.4707 0 0 0-.779-.5407c-.1476-.0425-.2961-.0616-.4483-.0705-.1678-.0099-.3352-.0091-.503-.0091H18.648l-4.3891-7.817c-.6655.7005-.9632 1.485-1.0773 2.1976-.1655 1.0333.0367 2.0934.546 3.0004l5.2741 9.3933c.084.1494.167.299.2591.4435.0837.131.1739.2537.2836.364.231.2323.5238.3809.8449.4232.3192.0424.643-.0244.9217-.1899.2784-.1653.4968-.4204.621-.7257.1246-.3072.146-.6425.0658-.9641-.0381-.1529-.0962-.2945-.165-.4346-.0753-.1543-.1598-.303-.2438-.4524l-1.216-2.1662h1.596c.1677 0 .3351.0009.5029-.009.1522-.009.3007-.028.4483-.0705a1.4707 1.4707 0 0 0 .779-.5407A1.5386 1.5386 0 0 0 24 16.452a1.539 1.539 0 0 0-.3009-.9158Z',
+  },
+  'Play Store': {
+    color: '#414141',
+    label: 'Play Store',
+    path: 'M22.018 13.298l-3.919 2.218-3.515-3.493 3.543-3.521 3.891 2.202a1.49 1.49 0 0 1 0 2.594zM1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.045.419.124.6l11.155-11.087L1.337.924zm12.207 10.065l3.258-3.238L3.45.195a1.466 1.466 0 0 0-.946-.179l11.04 10.973zm0 2.067l-11 10.933c.298.036.612-.016.906-.183l13.324-7.54-3.23-3.21z',
+  },
+  'SurveyMonkey': {
+    color: '#00BF6F',
+    label: 'SurveyMonkey',
+    path: 'M21.1627 13.1843a2.8517 2.8517 0 0 0-.6778.0841c-.8438-3.3181-3.5478-5.8376-6.9172-6.4452a8.3933 8.3933 0 0 0-.4407-.0668c.0259-.8255.0636-1.7791 1.2781-2.6369l-.1918-.4838s-2.3708.7349-2.6391 2.7598c-.1175-.5507-1.2209-1.2403-1.7673-1.3707l-.2717.4384s.7242.3621.9009 1.361c-3.3691.6056-6.0743 3.1229-6.9204 6.4398-1.5194-.376-3.056.5508-3.432 2.0703-.376 1.5194.5508 3.056 2.0703 3.432a2.8346 2.8346 0 0 0 1.7195-.1142 8.6821 8.6821 0 0 0 .9203 1.7123l2.3524-1.5852c-.6381-.8071-1.0206-1.9884-1.0873-3.1736-.07-1.2931.2446-2.5755 1.0701-3.3298 1.7016-1.4483 3.5561-.7877 4.7135.6002h.3114c1.1606-1.388 3.0173-2.0475 4.7135-.6002.8244.7543 1.1401 2.0378 1.0701 3.3298-.0656 1.1853-.4481 2.3664-1.0873 3.1736l2.3524 1.5852a8.6854 8.6854 0 0 0 .9224-1.7123c1.4551.5751 3.1009-.1384 3.676-1.5935s-.1384-3.1009-1.5935-3.676a2.8349 2.8349 0 0 0-1.0448-.1983zM2.7861 16.8482a.8362.8362 0 0 1 0-1.6724.8442.8442 0 0 1 .4688.1444c.0071.4391.0369.8776.0894 1.3136-.1472.1346-.3738.2329-.5582.2144zm18.4273 0a.8361.8361 0 0 1-.5582-.2155 12.679 12.679 0 0 0 .0894-1.3136.8352.8352 0 0 1 1.304.6929c.0078.4574-.3823.8581-.8352.8362z',
+  },
+  'Gong': {
+    color: '#FF4D00',
+    label: 'Gong',
+    // Microphone icon representing Gong (sales call recording)
+    path: 'M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm-6 9a6 6 0 0 0 12 0h2a8 8 0 0 1-7 7.93V21h3v2H8v-2h3v-3.07A8 8 0 0 1 4 10h2z',
+  },
+}
+
+export function SourceLogoChip({ source }: { source: string }) {
+  const data = SOURCE_DATA[source]
+  if (!data) {
+    return (
+      <span style={{ fontSize: 12, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>
+        {source}
+      </span>
+    )
+  }
+  return (
+    <span style={{ fontSize: 12, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 6px', height: 24, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+      <svg viewBox="0 0 24 24" width="14" height="14" fill={data.color} aria-hidden="true">
+        <path d={data.path} />
+      </svg>
+      {data.label}
+    </span>
+  )
+}
+
+function JiraFormField({ label, hint, charMax, lines, children }: { label: string; hint?: string; charMax?: number; lines?: number; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center justify-between">
+        <div className="flex items-baseline gap-1">
+          <span className="text-[14px] font-semibold text-[#222428]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{label}</span>
+          <span className="text-[12px] text-[#656B81]" style={{ fontFamily: 'Open Sans, sans-serif' }}>(optional)</span>
+        </div>
+        {(charMax || lines) && (
+          <div className="flex items-center gap-1.5">
+            {charMax && <span className="text-[12px] text-[#AEB2C0]">{charMax}</span>}
+            {lines && <span className="text-[12px] text-[#AEB2C0]">{lines}</span>}
+          </div>
+        )}
+      </div>
+      {children}
+      {hint && <span className="text-[12px] text-[#AEB2C0]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{hint}</span>}
+    </div>
+  )
+}
+
+function JiraSelect({ value, onChange, placeholder, options }: { value: string; onChange: (v: string) => void; placeholder: string; options: string[] }) {
+  return (
+    <select
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      className="w-full border border-[#E0E2E8] rounded-[6px] px-3 h-9 outline-none bg-white transition-colors"
+      style={{ fontFamily: 'Open Sans, sans-serif', fontSize: 14, color: value ? '#222428' : '#AEB2C0' }}
+    >
+      <option value="" disabled style={{ color: '#AEB2C0' }}>{placeholder}</option>
+      {options.map(o => <option key={o} value={o} style={{ color: '#222428' }}>{o}</option>)}
+    </select>
+  )
+}
+
+export function JiraForm({ row }: { row: SpaceRow }) {
+  const [summary, setSummary] = useState(row.title)
+  const [description, setDescription] = useState(row.description ?? '')
+  const [assignee, setAssignee] = useState('Alex Kim')
+  const [reporter, setReporter] = useState('Sarah Park')
+  const [epic, setEpic] = useState('')
+  const [issueType, setIssueType] = useState('Story')
+  const [priority, setPriority] = useState(row.priority === 'now' ? 'High' : row.priority === 'next' ? 'Medium' : 'Low')
+  const [teams, setTeams] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const inputClass = 'w-full border border-[#E0E2E8] rounded-[6px] px-3 h-9 outline-none bg-white transition-colors text-[14px] text-[#222428] focus:border-[#4262FF]'
+  const inputStyle = { fontFamily: 'Open Sans, sans-serif' }
+
+  return (
+    <div className="flex flex-col gap-4 pb-8">
+      <JiraFormField label="Issue type" hint="This is helpful text like req. or formats">
+        <JiraSelect value={issueType} onChange={setIssueType} placeholder="Select an option" options={['Story', 'Bug', 'Task', 'Epic', 'Sub-task']} />
+      </JiraFormField>
+
+      <JiraFormField label="Priority" hint="This is helpful text like req. or formats">
+        <JiraSelect value={priority} onChange={setPriority} placeholder="Select an option" options={['Highest', 'High', 'Medium', 'Low', 'Lowest']} />
+      </JiraFormField>
+
+      <JiraFormField label="Summary" hint="This is helpful text like req. or formats" charMax={255} lines={1}>
+        <input value={summary} onChange={e => setSummary(e.target.value.slice(0, 255))} className={inputClass} style={inputStyle} placeholder="Placeholder Text" />
+      </JiraFormField>
+
+      <JiraFormField label="Description" hint="This is helpful text like req. or formats" charMax={255} lines={2}>
+        <textarea value={description} onChange={e => setDescription(e.target.value.slice(0, 255))} rows={3} className="w-full border border-[#E0E2E8] rounded-[6px] px-3 py-2 outline-none bg-white transition-colors text-[14px] text-[#222428] focus:border-[#4262FF] resize-none" style={inputStyle} placeholder="Placeholder Text" />
+      </JiraFormField>
+
+      <JiraFormField label="Assignee" hint="This is helpful text like req. or formats" charMax={255} lines={1}>
+        <input value={assignee} onChange={e => setAssignee(e.target.value.slice(0, 255))} className={inputClass} style={inputStyle} placeholder="Placeholder Text" />
+      </JiraFormField>
+
+      <JiraFormField label="Reporter" hint="This is helpful text like req. or formats" charMax={255} lines={1}>
+        <input value={reporter} onChange={e => setReporter(e.target.value.slice(0, 255))} className={inputClass} style={inputStyle} placeholder="Placeholder Text" />
+      </JiraFormField>
+
+      <JiraFormField label="Epic" hint="This is helpful text like req. or formats" charMax={255} lines={1}>
+        <input value={epic} onChange={e => setEpic(e.target.value.slice(0, 255))} className={inputClass} style={inputStyle} placeholder="Placeholder Text" />
+      </JiraFormField>
+
+      <JiraFormField label="Teams" hint="This is helpful text like req. or formats">
+        <JiraSelect value={teams} onChange={setTeams} placeholder="Select an option" options={['Engineering', 'Design', 'Product', 'Data']} />
+      </JiraFormField>
+
+      <JiraFormField label="Start date" hint="This is helpful text like req. or formats">
+        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className={inputClass} style={{ ...inputStyle, color: startDate ? '#222428' : '#AEB2C0' }} />
+      </JiraFormField>
+
+      <div className="flex gap-2 pt-1">
+        <button className="px-4 h-9 rounded-[6px] text-[14px] font-semibold text-white bg-[#4262FF] hover:bg-[#3451D1] transition-colors" style={{ fontFamily: 'Open Sans, sans-serif', border: 'none', cursor: 'pointer' }}>Update</button>
+        <button className="px-4 h-9 rounded-[6px] text-[14px] font-semibold text-[#222428] bg-white border border-[#E0E2E8] hover:bg-[#F1F2F5] transition-colors" style={{ fontFamily: 'Open Sans, sans-serif', cursor: 'pointer' }}>Cancel</button>
+      </div>
+    </div>
+  )
+}
+
 function InsightSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2">
@@ -1380,6 +1587,7 @@ function FeedbackCard({
   onDismiss,
   onSelect,
   onAddToBoard,
+  onViewCall,
 }: {
   borderColor: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1393,6 +1601,7 @@ function FeedbackCard({
   onDismiss: () => void
   onSelect: () => void
   onAddToBoard?: () => void
+  onViewCall?: () => void
 }) {
   const [expanded, setExpanded] = useState(false)
   const [hovered, setHovered] = useState(false)
@@ -1535,12 +1744,18 @@ function FeedbackCard({
       >
         <div style={{ overflow: 'hidden' }}>
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: 0, gap: 8, height: 24 }}>
-            {source && (
-              <span style={{ fontSize: 12, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{source}</span>
-            )}
+            {source && <SourceLogoChip source={source} />}
             <span style={{ fontSize: 12, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{date}</span>
             {companies[0] && (
               <CompanyLogo name={companies[0]} size={24} />
+            )}
+            {source === 'Gong' && onViewCall && (
+              <button
+                onClick={e => { e.stopPropagation(); onViewCall() }}
+                style={{ fontSize: 12, fontWeight: 600, color: '#4262FF', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'Open Sans, sans-serif', marginLeft: 4 }}
+              >
+                View call →
+              </button>
             )}
           </div>
         </div>
