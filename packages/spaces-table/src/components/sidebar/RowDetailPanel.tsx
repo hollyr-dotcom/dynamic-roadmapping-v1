@@ -1628,7 +1628,7 @@ function AppStoreReviewDetail({
           {card.title}
         </p>
         {/* Body */}
-        <p style={{ fontSize: 12, color: '#222428', margin: 0, lineHeight: 1.5, fontFamily: "'Open Sans', sans-serif" }}>
+        <p style={{ fontSize: 14, color: '#222428', margin: 0, lineHeight: 1.5, fontFamily: "'Open Sans', sans-serif" }}>
           {card.text}
         </p>
       </div>
