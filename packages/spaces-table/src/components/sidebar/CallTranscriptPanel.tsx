@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { InputSearch } from '@mirohq/design-system'
 import { CompanyLogo } from '../CompanyLogo'
+import { SourceLogoChip } from './SourceLogoChip'
 
 export interface TranscriptLine {
   speaker: string
@@ -22,8 +23,6 @@ interface CallTranscriptPanelProps {
 
 const AVATAR_NO_PHOTO = 'https://www.figma.com/api/mcp/asset/4d11fed8-3b68-4a90-b907-9999522076d0'
 const AVATAR_VECTOR = 'https://www.figma.com/api/mcp/asset/2e063fe9-0a1a-4f85-a78f-1882b257cad9'
-
-const GONG_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAppJREFUeAHVU1tIFFEYPmfmzF7GHMc1ArPLYisV9iBS6EKrq1kg9RAhQRckkHywJ4tKK0wIAo3Ey4MIGZgR9KrYg1AJWkEU9OCLBC5Wgqm7M3uZnd2dmXM6u66yLruLPfrBwJxz/u8/3//9/wFgt4NJXQzU+w2HrVHYMSEVw2ekQFfVz8HNuMF6VZdUH3PZ8WSIrmE2XtaDnhqvomoB3ooKMAuJEtQkKwtNrAUJYH5tsrUkv7zp/XL/ta/Lr7w7Uoggy0HIYggZNRST80QT/1LRVgbCmg8etTWMcIx5iiaTcirsrP74iMGiy4wKigngyvNNBfD2jMCc3He19NvqmyW73c09LHunji3csc39Gg5QipErIWw+NlZ9pLB2lgDC8sgGiqwCaJmGqTGIfnqSR0AGpHvIPqtZ/qDEoi4Lxz3vmD14P0lMJTPu/a02HYW21BnYCr/8GZXpL87YlKen/1KRBI8ttIoL6xPB9PM+d4gEY764GsJzeVDTV153fipvjl+M0hUP1SvYq65iM2u5R5OpmaoKRD1TAOw5rxjSaNfnQzfBRnMTVWzr8ui5sH89vIITtUPuQc3htrIMCcnk0tANek4EU1EV2LANb/mRGtkyzYuewNwlxJhIWA/YokSNBzNn7XcrkkR2pEEjVxw9izqJYTPDnwBpzcnkIex1rcscywrtM4Wwv072ShGvmIfIhEawHjPgxXzTXhTVI0DHEfI7+P3Wi/mm4U0yylQSHWbBH5Vwj2sNRzSVGi+qYU2+AAGHRHNxtH3GwtGZtBTF7PZSvjLr40jAXdJW0e1cJI+rPQZtkOE84LTSba6vTu7tq5X1+H3gf9Bx6sd4t9Nj0Hl8C7Z7jByORnOWqrJjoE5Rrh8frwQ53vnuxj/GfQLocTFXKgAAAABJRU5ErkJggg=='
 
 const LABEL: React.CSSProperties = {
   fontSize: 14,
@@ -96,9 +95,7 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack 
         {/* Source */}
         <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
           <span style={LABEL}>Source</span>
-          <div style={{ ...CHIP, padding: '0 6px' }}>
-            <img src={GONG_PNG} width="14" height="14" alt="Gong" style={{ display: 'block' }} />
-          </div>
+          <SourceLogoChip source="Gong" />
         </div>
 
         {/* Company */}
