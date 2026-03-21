@@ -1356,11 +1356,10 @@ export function SourceLogoChip({ source }: { source: string }) {
     )
   }
   return (
-    <span style={{ fontSize: 12, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 6px', height: 24, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+    <span style={{ background: '#F1F2F5', borderRadius: 6, padding: '0 6px', height: 24, display: 'inline-flex', alignItems: 'center' }}>
       <svg viewBox="0 0 24 24" width="14" height="14" fill={data.color} aria-hidden="true">
         <path d={data.path} />
       </svg>
-      {data.label}
     </span>
   )
 }
