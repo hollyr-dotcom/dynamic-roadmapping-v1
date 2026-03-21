@@ -428,20 +428,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden relative" style={{ width: 476, fontFamily: 'Open Sans, sans-serif' }}>
 
-      {/* Call transcript overlay */}
-      {callCard && (
-        <div className="absolute inset-0 z-10 bg-white">
-          <CallTranscriptPanel
-            title={callCard.title}
-            author={callCard.author}
-            company={callCard.company}
-            date={callCard.date}
-            transcript={callCard.transcript}
-            onBack={() => setCallCard(null)}
-            onClose={onClose}
-          />
-        </div>
-      )}
 
       {/* ── Header ──────────────────────────────────────── */}
       <div className="flex items-center gap-2 h-12 pl-4 pr-3 shrink-0">
@@ -497,8 +483,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div
         className="flex absolute inset-y-0 left-0"
         style={{
-          width: 952,
-          transform: selectedCompany ? 'translateX(-476px)' : 'translateX(0)',
+          width: 1428,
+          transform: callCard ? 'translateX(-952px)' : selectedCompany ? 'translateX(-476px)' : 'translateX(0)',
           transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
@@ -847,6 +833,18 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             rowTitle={row.title}
             onBack={() => setSelectedCompany(null)}
             onPromptSelect={(prompt) => setSelectedPrompt(prompt)}
+          />
+        )}
+      </div>
+      {/* ── Call transcript panel ─── */}
+      <div className="h-full shrink-0" style={{ width: 476 }}>
+        {callCard && (
+          <CallTranscriptPanel
+            author={callCard.author}
+            company={callCard.company}
+            date={callCard.date}
+            transcript={callCard.transcript}
+            onBack={() => setCallCard(null)}
           />
         )}
       </div>
@@ -1635,7 +1633,7 @@ function FeedbackCard({
       style={{ border: `2px solid ${borderColor}`, borderBottomWidth: 6 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={onSelect}
+      onClick={onViewCall ?? onSelect}
     >
       {/* Card header: icon + category (on hover) + actions */}
       {(() => {
