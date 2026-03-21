@@ -1934,7 +1934,7 @@ function FeedbackCardDetailView({
   }
 
   return (
-    <div
+    <><div
       className="panel-scroll"
       style={{ height: '100%', overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
@@ -2085,7 +2085,7 @@ function FeedbackCardDetailView({
         </div>,
         document.body
       )}
-    </div>
+    </>
   )
 }
 
