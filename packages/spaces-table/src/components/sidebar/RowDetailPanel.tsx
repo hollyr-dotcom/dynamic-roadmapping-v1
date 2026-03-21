@@ -624,7 +624,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   padding: 16,
                   gap: 12,
                   background: '#F2F4FC',
-                  border: '1.5px solid #C7D0FD',
+                  border: 'none',
                   borderRadius: 8,
                   position: 'relative',
                 }}
