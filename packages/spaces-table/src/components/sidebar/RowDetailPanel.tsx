@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import type { SpaceRow } from '@spaces/shared'
 import { CompanyLogo } from '../CompanyLogo'
+import { SourceLogoChip } from './SourceLogoChip'
+import { CallTranscriptPanel, type TranscriptLine } from './CallTranscriptPanel'
 import {
   IconInformationMarkCircle,
   IconCross,
@@ -35,6 +37,9 @@ import {
   IconStackedCircles as _IconStackedCircles,
   IconPlusBox as _IconPlusBox,
   IconUser as _IconUser,
+  IconSmileyPlus,
+  IconPaperPlaneFilledRight,
+  IconSocialJira,
 } from '@mirohq/design-system'
 
 function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
@@ -80,14 +85,14 @@ const PRIORITY_LABELS: Record<string, string> = {
 
 // Colors matched to KanbanBoard column tags
 const PRIORITY_CHIP: Record<string, { bg: string; color: string }> = {
-  triage: { bg: '#BADEB1', color: '#600000' },
+  triage: { bg: '#D1F09F', color: '#600000' },
   now:    { bg: '#b5ecff', color: '#003d54' },
   next:   { bg: '#ffc795', color: '#5c3200' },
   later:  { bg: '#d4bbff', color: '#2d0066' },
   icebox: { bg: '#dad8d8', color: '#222428' },
 }
 
-const TABS = ['Details', 'Insights', 'Comments']
+const TABS = ['Details', 'Insights', 'Comments', 'Jira']
 
 const FEEDBACK_FILTER_SUB_OPTIONS: Record<string, string[]> = {
   'Company':   ['Spotify', 'Stripe', 'Linear', 'Atlassian', 'Notion', 'Shopify', 'Dropbox', 'Google', 'Apple'],
@@ -97,60 +102,111 @@ const FEEDBACK_FILTER_SUB_OPTIONS: Record<string, string[]> = {
 }
 
 const INSIGHT_SUMMARIES: Record<string, string> = {
-  '1':  'Customer feedback strongly signals demand for personalised portfolio guidance, with 142 mentions across 4,853 accounts. Users report that generic recommendations erode trust and lead to disengagement — AI-driven risk-adjusted suggestions are cited as a key driver of retention and upsell potential, with an estimated $425K revenue impact.',
-  'r1': 'Customer feedback strongly signals demand for personalised portfolio guidance, with 142 mentions across 4,853 accounts. Users report that generic recommendations erode trust and lead to disengagement — AI-driven risk-adjusted suggestions are cited as a key driver of retention and upsell potential, with an estimated $425K revenue impact.',
-  '2':  'With 118 mentions from 9,873 customers, automatic transaction categorisation ranks among the highest-impact requests in the backlog. Feedback highlights frustration with manual tagging errors and time spent correcting misclassified entries. Delivering accurate ML-based categorisation is projected to drive $917K in retained and expanded revenue.',
-  'r2': 'With 118 mentions from 9,873 customers, automatic transaction categorisation ranks among the highest-impact requests in the backlog. Feedback highlights frustration with manual tagging errors and time spent correcting misclassified entries. Delivering accurate ML-based categorisation is projected to drive $917K in retained and expanded revenue.',
-  '3':  'Customers consistently raise the lack of forward-looking budget intelligence as a gap that limits their financial confidence. 105 mentions across 2,957 accounts point to a clear need for predictive spending forecasts. Teams at Dropbox and Asana have specifically flagged this as a blocker to broader adoption, representing $235K in at-risk revenue.',
-  'r3': 'Customers consistently raise the lack of forward-looking budget intelligence as a gap that limits their financial confidence. 105 mentions across 2,957 accounts point to a clear need for predictive spending forecasts. Teams at Dropbox and Asana have specifically flagged this as a blocker to broader adoption, representing $235K in at-risk revenue.',
-  '4':  'International customers report significant friction around currency management, with 98 mentions spanning 8,532 accounts. Feedback from Atlassian and Notion highlights that delayed FX conversion and hidden fees are the top reasons users switch to competitor products. Solving this unlocks an estimated $843K in expansion revenue.',
-  'r4': 'International customers report significant friction around currency management, with 98 mentions spanning 8,532 accounts. Feedback from Atlassian and Notion highlights that delayed FX conversion and hidden fees are the top reasons users switch to competitor products. Solving this unlocks an estimated $843K in expansion revenue.',
-  '5':  'Automated savings rules surface frequently in feedback from users who want the app to work proactively on their behalf. 64 mentions across 6,394 customers reflect strong interest in set-and-forget financial automation. Shopify and Linear accounts indicate this feature would directly influence renewal decisions, with $629K in projected impact.',
-  'r5': 'Automated savings rules surface frequently in feedback from users who want the app to work proactively on their behalf. 64 mentions across 6,394 customers reflect strong interest in set-and-forget financial automation. Shopify and Linear accounts indicate this feature would directly influence renewal decisions, with $629K in projected impact.',
-  '6':  'Natural language search is one of the most-requested power-user features, with 48 mentions across 7,583 accounts. Customers at Apple, Google, and Slack describe current search as a friction point that slows down reconciliation workflows. Enabling plain-English queries is estimated to contribute $748K in retained revenue by reducing churn among high-value users.',
-  'r10': 'Natural language search is one of the most-requested power-user features, with 48 mentions across 7,583 accounts. Customers at Apple, Google, and Slack describe current search as a friction point that slows down reconciliation workflows. Enabling plain-English queries is estimated to contribute $748K in retained revenue by reducing churn among high-value users.',
-  '7':  'Recurring investment automation is gaining traction with customers focused on long-term wealth building, appearing in 45 mentions across 3,578 accounts. Feedback from Asana and Linear teams points to dollar-cost averaging as a missing capability that drives users to third-party investment apps. Closing this gap is valued at $317K in incremental revenue.',
-  'r6': 'Recurring investment automation is gaining traction with customers focused on long-term wealth building, appearing in 45 mentions across 3,578 accounts. Feedback from Asana and Linear teams points to dollar-cost averaging as a missing capability that drives users to third-party investment apps. Closing this gap is valued at $317K in incremental revenue.',
-  '8':  'Fraud detection improvements are cited in 23 mentions from 5,789 accounts, with enterprise customers at Apple and Google raising concerns about high-value transfer risk. Feedback highlights that the current anomaly model generates too many false positives, eroding confidence. Upgrading to v2 scoring is tied to $538K in at-risk contracts pending security review.',
-  'r11': 'Fraud detection improvements are cited in 23 mentions from 5,789 accounts, with enterprise customers at Apple and Google raising concerns about high-value transfer risk. Feedback highlights that the current anomaly model generates too many false positives, eroding confidence. Upgrading to v2 scoring is tied to $538K in at-risk contracts pending security review.',
-  '9':  'Social investing features generate 21 mentions across 1,039 accounts, primarily from younger, engagement-driven users. Feedback centres on wanting to learn from top performers rather than rely solely on personal research. While the revenue impact ($101K) is modest, this feature is a key differentiator for driving organic growth and word-of-mouth referrals.',
-  '10': 'Tax-loss harvesting is a high-stakes feature with only 16 mentions but an outsized $921K revenue impact across 9,283 accounts. Enterprise customers at Spotify and Stripe have flagged the absence of end-of-year optimisation tools as a direct factor in delayed renewals. This feature disproportionately resonates with premium-tier users managing large portfolios.',
-  'r7': 'Tax-loss harvesting is a high-stakes feature with only 16 mentions but an outsized $921K revenue impact across 9,283 accounts. Enterprise customers at Spotify and Stripe have flagged the absence of end-of-year optimisation tools as a direct factor in delayed renewals. This feature disproportionately resonates with premium-tier users managing large portfolios.',
-  '11': "Open Banking integration appears in 16 mentions from 4,759 accounts, particularly from users who manage finances across multiple institutions. Atlassian and Jira teams report that the inability to aggregate external accounts limits the app's utility as a single source of financial truth. API connectivity is estimated to unlock $415K in expansion opportunities.",
-  'r8': "Open Banking integration appears in 16 mentions from 4,759 accounts, particularly from users who manage finances across multiple institutions. Atlassian and Jira teams report that the inability to aggregate external accounts limits the app's utility as a single source of financial truth. API connectivity is estimated to unlock $415K in expansion opportunities.",
-  '12': 'The financial literacy hub surfaces in 12 mentions across 8,531 accounts, with feedback pointing to a gap between product capability and user confidence. Customers at Figma and Airbnb describe onboarding drop-off as closely tied to users not understanding core financial concepts. An in-app learning centre is projected to improve activation rates and contribute $823K in retained revenue.',
-  'r14': 'The financial literacy hub surfaces in 12 mentions across 8,531 accounts, with feedback pointing to a gap between product capability and user confidence. Customers at Figma and Airbnb describe onboarding drop-off as closely tied to users not understanding core financial concepts. An in-app learning centre is projected to improve activation rates and contribute $823K in retained revenue.',
-  '13': 'Accessibility gaps are flagged in 10 mentions across 2,649 accounts, often escalated by enterprise procurement and legal teams at Notion and Asana. Feedback indicates that non-compliance with WCAG 2.2 AA is a contractual blocker in several renewal negotiations. Resolving these issues is directly tied to $214K in contracts that are currently at risk.',
-  'r13': 'Accessibility gaps are flagged in 10 mentions across 2,649 accounts, often escalated by enterprise procurement and legal teams at Notion and Asana. Feedback indicates that non-compliance with WCAG 2.2 AA is a contractual blocker in several renewal negotiations. Resolving these issues is directly tied to $214K in contracts that are currently at risk.',
-  '14': 'Push notifications for price alerts appear in 10 mentions from 7,582 accounts, with strong signal from goal-oriented users at Asana and Google. Feedback highlights that without timely alerts, users miss key market moments and feel the app is passive rather than proactive. A well-executed notification engine is estimated to improve DAU by 18% and contribute $738K in retained revenue.',
-  'r9': 'Push notifications for price alerts appear in 10 mentions from 7,582 accounts, with strong signal from goal-oriented users at Asana and Google. Feedback highlights that without timely alerts, users miss key market moments and feel the app is passive rather than proactive. A well-executed notification engine is estimated to improve DAU by 18% and contribute $738K in retained revenue.',
-  '15': 'Crypto support generates 8 mentions across 3,214 accounts, primarily from digitally native users at Stripe. While feedback volume is low, sentiment is high-intensity — users who want crypto describe it as a dealbreaker for full adoption. The $156K revenue estimate is conservative; analyst feedback suggests crypto unlocks a new segment with 3–5x growth potential.',
-  '16': 'The advisor marketplace is mentioned across 5,621 customer accounts, with demand coming from users who want personalised guidance beyond what the app provides autonomously. Figma and Slack teams describe this as a trust-building feature that would increase willingness to pay for premium tiers, representing $490K in estimated revenue impact.',
-  '17': 'Dark mode surfaces in 6 mentions from 1,847 accounts — lower volume but consistent sentiment across Apple, Google, and Atlassian users. Feedback frames it as a quality-of-life expectation rather than a nice-to-have, with its absence noted as a signal of product immaturity. NPS data correlates dark mode delivery with a 12-point satisfaction improvement.',
-  'r12': 'Dark mode surfaces in 6 mentions from 1,847 accounts — lower volume but consistent sentiment across Apple, Google, and Atlassian users. Feedback frames it as a quality-of-life expectation rather than a nice-to-have, with its absence noted as a signal of product immaturity. NPS data correlates dark mode delivery with a 12-point satisfaction improvement.',
-  '18': 'Gamified savings challenges appear in 5 mentions from 982 accounts, driven by younger users at Shopify and Airbnb. Feedback describes the current savings experience as transactional and uninspiring — badges, streaks, and challenges are seen as motivators that could meaningfully improve goal completion rates, with $130K in projected revenue impact.',
+  '1':  'Customer feedback strongly signals demand for personalised portfolio guidance, with 142 mentions across 134 accounts. Users report that generic recommendations erode trust and lead to disengagement — AI-driven risk-adjusted suggestions are cited as a key driver of retention and upsell potential, with an estimated $425K revenue impact.',
+  'r1': 'Customer feedback strongly signals demand for personalised portfolio guidance, with 142 mentions across 134 accounts. Users report that generic recommendations erode trust and lead to disengagement — AI-driven risk-adjusted suggestions are cited as a key driver of retention and upsell potential, with an estimated $425K revenue impact.',
+  '2':  'With 118 mentions from 97 customers, automatic transaction categorisation ranks among the highest-impact requests in the backlog. Feedback highlights frustration with manual tagging errors and time spent correcting misclassified entries. Delivering accurate ML-based categorisation is projected to drive $340K in retained and expanded revenue.',
+  'r2': 'With 118 mentions from 97 customers, automatic transaction categorisation ranks among the highest-impact requests in the backlog. Feedback highlights frustration with manual tagging errors and time spent correcting misclassified entries. Delivering accurate ML-based categorisation is projected to drive $340K in retained and expanded revenue.',
+  '3':  'Customers consistently raise the lack of forward-looking budget intelligence as a gap that limits their financial confidence. 105 mentions across 89 accounts point to a clear need for predictive spending forecasts. Teams at Dropbox and Asana have specifically flagged this as a blocker to broader adoption, representing $235K in at-risk revenue.',
+  'r3': 'Customers consistently raise the lack of forward-looking budget intelligence as a gap that limits their financial confidence. 105 mentions across 89 accounts point to a clear need for predictive spending forecasts. Teams at Dropbox and Asana have specifically flagged this as a blocker to broader adoption, representing $235K in at-risk revenue.',
+  '4':  'International customers report significant friction around currency management, with 98 mentions spanning 112 accounts. Feedback from Atlassian and Notion highlights that delayed FX conversion and hidden fees are the top reasons users switch to competitor products. Solving this unlocks an estimated $390K in expansion revenue.',
+  'r4': 'International customers report significant friction around currency management, with 98 mentions spanning 112 accounts. Feedback from Atlassian and Notion highlights that delayed FX conversion and hidden fees are the top reasons users switch to competitor products. Solving this unlocks an estimated $390K in expansion revenue.',
+  '5':  'Automated savings rules surface frequently in feedback from users who want the app to work proactively on their behalf. 64 mentions across 71 customers reflect strong interest in set-and-forget financial automation. Shopify and Linear accounts indicate this feature would directly influence renewal decisions, with $250K in projected impact.',
+  'r5': 'Automated savings rules surface frequently in feedback from users who want the app to work proactively on their behalf. 64 mentions across 71 customers reflect strong interest in set-and-forget financial automation. Shopify and Linear accounts indicate this feature would directly influence renewal decisions, with $250K in projected impact.',
+  '6':  'Natural language search is one of the most-requested power-user features, with 48 mentions across 53 accounts. Customers at Apple, Google, and Slack describe current search as a friction point that slows down reconciliation workflows. Enabling plain-English queries is estimated to contribute $190K in retained revenue by reducing churn among high-value users.',
+  'r10': 'Natural language search is one of the most-requested power-user features, with 48 mentions across 53 accounts. Customers at Apple, Google, and Slack describe current search as a friction point that slows down reconciliation workflows. Enabling plain-English queries is estimated to contribute $190K in retained revenue by reducing churn among high-value users.',
+  '7':  'Recurring investment automation is gaining traction with customers focused on long-term wealth building, appearing in 45 mentions across 38 accounts. Feedback from Asana and Linear teams points to dollar-cost averaging as a missing capability that drives users to third-party investment apps. Closing this gap is valued at $160K in incremental revenue.',
+  'r6': 'Recurring investment automation is gaining traction with customers focused on long-term wealth building, appearing in 45 mentions across 38 accounts. Feedback from Asana and Linear teams points to dollar-cost averaging as a missing capability that drives users to third-party investment apps. Closing this gap is valued at $160K in incremental revenue.',
+  '8':  'Fraud detection improvements are cited in 23 mentions from 19 accounts, with enterprise customers at Apple and Google raising concerns about high-value transfer risk. Feedback highlights that the current anomaly model generates too many false positives, eroding confidence. Upgrading to v2 scoring is tied to $85K in at-risk contracts pending security review.',
+  'r11': 'Fraud detection improvements are cited in 23 mentions from 19 accounts, with enterprise customers at Apple and Google raising concerns about high-value transfer risk. Feedback highlights that the current anomaly model generates too many false positives, eroding confidence. Upgrading to v2 scoring is tied to $85K in at-risk contracts pending security review.',
+  '9':  'Social investing features generate 21 mentions across 24 accounts, primarily from younger, engagement-driven users. Feedback centres on wanting to learn from top performers rather than rely solely on personal research. While the revenue impact ($100K) is modest, this feature is a key differentiator for driving organic growth and word-of-mouth referrals.',
+  '10': 'Tax-loss harvesting is a niche but high-intent feature, with 16 mentions across 14 accounts. Enterprise customers at Spotify and Stripe have flagged the absence of end-of-year optimisation tools as a direct factor in delayed renewals. This feature disproportionately resonates with premium-tier users managing large portfolios, representing $70K in projected revenue.',
+  'r7': 'Tax-loss harvesting is a niche but high-intent feature, with 16 mentions across 14 accounts. Enterprise customers at Spotify and Stripe have flagged the absence of end-of-year optimisation tools as a direct factor in delayed renewals. This feature disproportionately resonates with premium-tier users managing large portfolios, representing $70K in projected revenue.',
+  '11': "Open Banking integration appears in 16 mentions from 18 accounts, particularly from users who manage finances across multiple institutions. Atlassian and Jira teams report that the inability to aggregate external accounts limits the app's utility as a single source of financial truth. API connectivity is estimated to unlock $80K in expansion opportunities.",
+  'r8': "Open Banking integration appears in 16 mentions from 18 accounts, particularly from users who manage finances across multiple institutions. Atlassian and Jira teams report that the inability to aggregate external accounts limits the app's utility as a single source of financial truth. API connectivity is estimated to unlock $80K in expansion opportunities.",
+  '12': 'The financial literacy hub surfaces in 12 mentions across 9 accounts, with feedback pointing to a gap between product capability and user confidence. Customers at Figma and Airbnb describe onboarding drop-off as closely tied to users not understanding core financial concepts. An in-app learning centre is projected to improve activation rates and contribute $45K in retained revenue.',
+  'r14': 'The financial literacy hub surfaces in 12 mentions across 9 accounts, with feedback pointing to a gap between product capability and user confidence. Customers at Figma and Airbnb describe onboarding drop-off as closely tied to users not understanding core financial concepts. An in-app learning centre is projected to improve activation rates and contribute $45K in retained revenue.',
+  '13': 'Accessibility gaps are flagged in 10 mentions across 11 accounts, often escalated by enterprise procurement and legal teams at Notion and Asana. Feedback indicates that non-compliance with WCAG 2.2 AA is a contractual blocker in several renewal negotiations. Resolving these issues is directly tied to $50K in contracts that are currently at risk.',
+  'r13': 'Accessibility gaps are flagged in 10 mentions across 11 accounts, often escalated by enterprise procurement and legal teams at Notion and Asana. Feedback indicates that non-compliance with WCAG 2.2 AA is a contractual blocker in several renewal negotiations. Resolving these issues is directly tied to $50K in contracts that are currently at risk.',
+  '14': 'Push notifications for price alerts appear in 10 mentions from 8 accounts, with strong signal from goal-oriented users at Asana and Google. Feedback highlights that without timely alerts, users miss key market moments and feel the app is passive rather than proactive. A well-executed notification engine is estimated to improve DAU by 18% and contribute $35K in retained revenue.',
+  'r9': 'Push notifications for price alerts appear in 10 mentions from 8 accounts, with strong signal from goal-oriented users at Asana and Google. Feedback highlights that without timely alerts, users miss key market moments and feel the app is passive rather than proactive. A well-executed notification engine is estimated to improve DAU by 18% and contribute $35K in retained revenue.',
+  '15': 'Crypto support generates 8 mentions across 6 accounts, primarily from digitally native users at Stripe. While feedback volume is low, sentiment is high-intensity — users who want crypto describe it as a dealbreaker for full adoption. The $25K revenue estimate is conservative; analyst feedback suggests crypto unlocks a new segment with 3–5x growth potential.',
+  '16': 'The advisor marketplace is mentioned across 9 customer accounts, with demand coming from users who want personalised guidance beyond what the app provides autonomously. Figma and Slack teams describe this as a trust-building feature that would increase willingness to pay for premium tiers, representing $40K in estimated revenue impact.',
+  '17': 'Dark mode surfaces in 6 mentions from 5 accounts — lower volume but consistent sentiment across Apple, Google, and Atlassian users. Feedback frames it as a quality-of-life expectation rather than a nice-to-have, with its absence noted as a signal of product immaturity. NPS data correlates dark mode delivery with a 12-point satisfaction improvement.',
+  'r12': 'Dark mode surfaces in 6 mentions from 5 accounts — lower volume but consistent sentiment across Apple, Google, and Atlassian users. Feedback frames it as a quality-of-life expectation rather than a nice-to-have, with its absence noted as a signal of product immaturity. NPS data correlates dark mode delivery with a 12-point satisfaction improvement.',
+  '18': 'Gamified savings challenges appear in 5 mentions from 7 accounts, driven by younger users at Shopify and Airbnb. Feedback describes the current savings experience as transactional and uninspiring — badges, streaks, and challenges are seen as motivators that could meaningfully improve goal completion rates, with $30K in projected revenue impact.',
 }
 
 // Per-card impact weights — must sum to 1.0
 const CARD_WEIGHTS = [0.13, 0.12, 0.10, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06, 0.05, 0.05, 0.04, 0.03, 0.02, 0.01]
+const isStoreReview = (source?: string) => source === 'App Store' || source === 'Play Store'
 
 const CARD_STYLES = [
-  { borderColor: '#BADEB1', Icon: IconHeart, stars: 3, date: 'Aug 02', source: 'App Store' },
+  { borderColor: '#D1F09F', Icon: IconHeart, stars: 3, date: 'Aug 02', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Jul 18', source: 'Gong' },
   { borderColor: '#ffd4b2', Icon: IconUserTickDown, date: 'Jun 30', source: 'SurveyMonkey' },
-  { borderColor: '#BADEB1', Icon: IconHeart, stars: 5, date: 'Jun 12', source: 'App Store' },
+  { borderColor: '#D1F09F', Icon: IconHeart, stars: 5, date: 'Jun 12', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'May 28', source: 'Play Store' },
-  { borderColor: '#BADEB1', Icon: IconHeart, stars: 4, date: 'May 14', source: 'Gong' },
+  { borderColor: '#D1F09F', Icon: IconHeart, stars: 4, date: 'May 14', source: 'Gong' },
   { borderColor: '#ffd4b2', Icon: IconUserTickDown, date: 'Apr 29', source: 'SurveyMonkey' },
-  { borderColor: '#BADEB1', Icon: IconHeart, stars: 5, date: 'Apr 11', source: 'Play Store' },
+  { borderColor: '#D1F09F', Icon: IconHeart, stars: 5, date: 'Apr 11', source: 'Play Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Mar 27', source: 'Gong' },
-  { borderColor: '#BADEB1', Icon: IconHeart, stars: 2, date: 'Mar 10', source: 'App Store' },
+  { borderColor: '#D1F09F', Icon: IconHeart, stars: 2, date: 'Mar 10', source: 'App Store' },
   { borderColor: '#ffd4b2', Icon: IconUserTickDown, date: 'Feb 22', source: 'SurveyMonkey' },
-  { borderColor: '#BADEB1', Icon: IconHeart, stars: 4, date: 'Feb 05', source: 'Play Store' },
+  { borderColor: '#D1F09F', Icon: IconHeart, stars: 4, date: 'Feb 05', source: 'Play Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Jan 20', source: 'Gong' },
-  { borderColor: '#BADEB1', Icon: IconHeart, stars: 5, date: 'Jan 08', source: 'App Store' },
+  { borderColor: '#D1F09F', Icon: IconHeart, stars: 5, date: 'Jan 08', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Dec 19', source: 'Play Store' },
 ]
+
+// Transcripts for Gong-sourced cards (indices 1, 5, 8, 12 in CARD_STYLES)
+const GONG_TRANSCRIPT_MAP: Record<number, TranscriptLine[]> = {
+  1: [
+    { speaker: 'Marcus Osei', timestamp: '00:01', text: 'This has come up every quarter for the past year. We keep pushing it to next cycle because something more urgent takes over — but the downstream cost is starting to compound in ways we can\'t ignore.', highlighted: true, section: 'box' },
+    { speaker: 'Emma Clarke', timestamp: '00:03', text: 'Which initiatives are directly blocked right now?', section: 'box' },
+    { speaker: 'Marcus Osei', timestamp: '00:05', text: 'At least three. Our growth attribution model, the new segmentation workflow, and the cross-team reporting layer. All of them are waiting on this being in place.', section: 'box' },
+    { speaker: 'Emma Clarke', timestamp: '00:07', text: 'And what does the current workaround look like?', section: 'box' },
+    { speaker: 'Marcus Osei', timestamp: '00:09', text: 'It\'s a manual export process we stitched together about eight months ago. It was never meant to be permanent. Every major update breaks it and we spend a day or two recovering.', section: 'box' },
+    { speaker: 'Emma Clarke', timestamp: '00:11', text: 'That\'s a significant hidden cost.', section: 'dim' },
+    { speaker: 'Marcus Osei', timestamp: '00:12', text: 'It\'s quiet, but it adds up. I\'ve stopped tracking the hours — it\'s too demoralising.', section: 'dim' },
+    { speaker: 'Emma Clarke', timestamp: '00:14', text: 'Understood. I\'ll make sure this is on the agenda for the next planning session.', section: 'dim' },
+    { speaker: 'Gong AI', timestamp: '', text: 'How many teams are currently affected by the workaround?\nI\'d estimate four or five directly — more feel it indirectly.', section: 'bubble-operator', timeLabel: '3 days ago', botLabel: 'Bot・1 min' },
+    { speaker: 'Marcus Osei', timestamp: '', text: 'How many teams are currently affected by the workaround?\nI\'d estimate four or five directly — more feel it indirectly.', section: 'bubble-user', timeLabel: '3 days ago' },
+    { speaker: 'Gong AI', timestamp: '', text: 'Got it — I\'ve flagged this as high priority for the product review.\nThanks for the detail, Marcus.', section: 'bubble-operator', timeLabel: '3 days ago', botLabel: 'Bot・1 min' },
+  ],
+  5: [
+    { speaker: 'James Whitfield', timestamp: '00:01', text: 'We ran the trial with about 35 enterprise accounts over four weeks. Honestly, the feedback was stronger than we anticipated — customers were sharing it internally before we\'d even asked for input.', highlighted: true, section: 'box' },
+    { speaker: 'Sarah Kim', timestamp: '00:04', text: 'What were the standout themes in the feedback?', section: 'box' },
+    { speaker: 'James Whitfield', timestamp: '00:05', text: 'Speed and reliability came up constantly. Several customers described it as the most impactful thing we\'d shipped all year. A few mentioned it unprompted in their QBRs.', section: 'box' },
+    { speaker: 'Sarah Kim', timestamp: '00:07', text: 'Good signal. Any critical gaps before we commit to a GA date?', section: 'box' },
+    { speaker: 'James Whitfield', timestamp: '00:09', text: 'One recurring edge case around data freshness when records are updated mid-session. It\'s reproducible — we\'ve documented the steps. Everything else looks solid.', section: 'dim' },
+    { speaker: 'Sarah Kim', timestamp: '00:11', text: 'Let\'s get a deep-dive scheduled with the infra team before we lock in a date.', section: 'dim' },
+    { speaker: 'Gong AI', timestamp: '', text: 'Can you share the trial feedback summary?\nHappy to — I\'ll drop the link in chat now.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
+    { speaker: 'James Whitfield', timestamp: '', text: 'Can you share the trial feedback summary?\nHappy to — I\'ll drop the link in chat now.', section: 'bubble-user', timeLabel: '2 days ago' },
+    { speaker: 'Gong AI', timestamp: '', text: 'Thanks — I\'ll share this with the team ahead of Thursday\'s review.\nGreat session.', section: 'bubble-operator', timeLabel: '2 days ago', botLabel: 'Bot・1 min' },
+  ],
+  8: [
+    { speaker: 'Nina Patel', timestamp: '00:01', text: 'We raised this as a critical gap in last month\'s business review. It\'s moved beyond a feature request — two mid-market accounts have explicitly conditioned their renewals on seeing meaningful progress here.', highlighted: true, section: 'box' },
+    { speaker: 'Rafi Goldstein', timestamp: '00:03', text: 'What\'s the combined ARR at risk?', section: 'box' },
+    { speaker: 'Nina Patel', timestamp: '00:04', text: 'Around $280K. Both contracts are up for renewal in Q3, so the window is tighter than it looks.', section: 'box' },
+    { speaker: 'Rafi Goldstein', timestamp: '00:06', text: 'We need to get ahead of this. I\'ll flag it for the planning session — it has to be front of queue.', section: 'box' },
+    { speaker: 'Nina Patel', timestamp: '00:08', text: 'I appreciate it. I can send over the full account notes today — the renewal owners for both are already in the loop on our end.', section: 'dim' },
+    { speaker: 'Rafi Goldstein', timestamp: '00:10', text: 'Please do. Let\'s set up a joint review before end of next week.', section: 'dim' },
+    { speaker: 'Gong AI', timestamp: '', text: 'Should I flag these accounts as at-risk in the tracker?\nYes — both are Q3, please mark them at-risk and cc the account owners.', section: 'bubble-operator', timeLabel: '5 days ago', botLabel: 'Bot・1 min' },
+    { speaker: 'Nina Patel', timestamp: '', text: 'Should I flag these accounts as at-risk in the tracker?\nYes — both are Q3, please mark them at-risk and cc the account owners.', section: 'bubble-user', timeLabel: '5 days ago' },
+    { speaker: 'Gong AI', timestamp: '', text: 'Done — both accounts flagged and owners notified.\nLet me know if anything else needs actioning.', section: 'bubble-operator', timeLabel: '5 days ago', botLabel: 'Bot・1 min' },
+  ],
+  12: [
+    { speaker: 'Rafi Goldstein', timestamp: '00:01', text: 'Without this in place, we\'re asking teams to do manually what should be automated. The trust erosion is gradual — but once teams start building their own workarounds, they stop believing the platform will ever catch up.', highlighted: true, section: 'box' },
+    { speaker: 'Tom Hauser', timestamp: '00:03', text: 'How widespread is this across your organisation right now?', section: 'box' },
+    { speaker: 'Rafi Goldstein', timestamp: '00:05', text: 'Our ops team alone is spending roughly four hours per sprint compensating for it. Multiply that across three product teams and it\'s a significant hidden tax every cycle.', section: 'box' },
+    { speaker: 'Tom Hauser', timestamp: '00:07', text: 'That\'s meaningful at scale. What does your ideal timeline look like?', section: 'box' },
+    { speaker: 'Rafi Goldstein', timestamp: '00:09', text: 'Before end of Q2. Every sprint we don\'t ship this, the technical debt compounds — and so does the trust debt. Those are harder to recover from.', section: 'dim' },
+    { speaker: 'Tom Hauser', timestamp: '00:11', text: 'Noted. I\'ll get it in front of the right people at Thursday\'s prioritisation meeting.', section: 'dim' },
+    { speaker: 'Gong AI', timestamp: '', text: 'Can you walk me through the manual steps your team is doing?\nHappy to — I can share our internal doc as well.', section: 'bubble-operator', timeLabel: '1 week ago', botLabel: 'Bot・1 min' },
+    { speaker: 'Rafi Goldstein', timestamp: '', text: 'Can you walk me through the manual steps your team is doing?\nHappy to — I can share our internal doc as well.', section: 'bubble-user', timeLabel: '1 week ago' },
+    { speaker: 'Gong AI', timestamp: '', text: 'Documentation added to the shared drive — really useful context.\nThanks for your time today, Rafi.', section: 'bubble-operator', timeLabel: '1 week ago', botLabel: 'Bot・1 min' },
+  ],
+}
 
 function generateFeedbackCards(row: SpaceRow) {
   const t = row.title
@@ -228,7 +284,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     if (initialCompany) setSelectedCompany(initialCompany)
   }, [initialCompany])
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null)
-  const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string } | null>(null)
+  const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string; source?: string; stars?: number } | null>(null)
+  const [callCard, setCallCard] = useState<{ title: string; author: string; company: string; date: string; transcript: TranscriptLine[]; borderColor?: string } | null>(null)
   const [dismissedCards, setDismissedCards] = useState<Set<number>>(new Set())
   const [promptCards, setPromptCards] = useState<Set<number>>(new Set())
   const [showToast, setShowToast] = useState(false)
@@ -239,6 +296,14 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const [showFeedbackConfetti, setShowFeedbackConfetti] = useState(false)
   const [editingField, setEditingField] = useState<'title' | 'description' | null>(null)
   const [editValue, setEditValue] = useState('')
+  const [commentText, setCommentText] = useState('')
+  const [comments, setComments] = useState([
+    { name: 'Liam Johnson', time: 'Today, 12:30 PM', text: 'Adding rounded edges could create a friendlier look.', avatarImg: 10 },
+    { name: 'Sarah Kim', time: 'Today, 11:14 AM', text: 'Agreed — also worth checking how this lands on mobile viewports.', avatarImg: 47 },
+    { name: 'Marcus T.', time: 'Yesterday, 4:02 PM', text: 'Should we tie this to the existing design token for border radius?', avatarImg: 32 },
+  ])
+  const [resolved, setResolved] = useState(false)
+  const commentsEndRef = useRef<HTMLDivElement>(null)
   const [savePhase, setSavePhase] = useState<'refreshing' | 'success' | null>(null)
   const [saveProgress, setSaveProgress] = useState(0)
   const [saveToastExiting, setSaveToastExiting] = useState(false)
@@ -363,20 +428,19 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden relative" style={{ width: 476, fontFamily: 'Open Sans, sans-serif' }}>
 
+
       {/* ── Header ──────────────────────────────────────── */}
-      <div className="flex items-center gap-2 h-12 pl-4 pr-3 shrink-0">
-        <p
-          className="flex-1 min-w-0 truncate text-[#222428] leading-[1.5]"
-          style={{
-            fontFamily: "'Roobert PRO', sans-serif",
-            fontWeight: 600,
-            fontSize: '16px',
-            fontFeatureSettings: "'ss01' 1",
-          }}
-          title={row.title}
-        >
-          {row.title}
-        </p>
+      <div className="flex items-center gap-2 h-12 pl-4 pr-3 shrink-0 relative z-20 bg-white">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <IconSocialJira css={{ width: 18, height: 18, flexShrink: 0 }} />
+          <p
+            className="flex-1 min-w-0 truncate text-[#222428] leading-[1.5]"
+            style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: '16px', fontFeatureSettings: "'ss01' 1" }}
+            title={row.jiraKey ?? row.title}
+          >
+            {row.jiraKey ?? row.title}
+          </p>
+        </div>
         <div className="flex items-center shrink-0">
           <button
             aria-label="More options"
@@ -394,11 +458,11 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div className="h-1 shrink-0" />
 
       {/* ── Tabs ────────────────────────────────────────── */}
-      <div className="flex pl-3 pr-4 shrink-0 pb-5 pt-4">
+      <div className="flex pl-3 pr-4 shrink-0 pb-5 pt-4 relative z-20 bg-white">
         {TABS.map((tab) => (
           <button
             key={tab}
-            onClick={() => { setActiveTab(tab); if (selectedCompany) setSelectedCompany(null) }}
+            onClick={() => { setActiveTab(tab); if (selectedCompany) setSelectedCompany(null); if (selectedFeedbackCard) setSelectedFeedbackCard(null); if (callCard) setCallCard(null) }}
             className="mr-1 px-2 py-1 rounded-lg text-[14px] font-semibold transition-colors"
             style={{
               fontFamily: 'Open Sans, sans-serif',
@@ -419,13 +483,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div
         className="flex absolute inset-y-0 left-0"
         style={{
-          width: 952,
-          transform: selectedCompany ? 'translateX(-476px)' : 'translateX(0)',
+          width: 1428,
+          transform: (callCard || selectedFeedbackCard) ? 'translateX(-952px)' : selectedCompany ? 'translateX(-476px)' : 'translateX(0)',
           transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
       {/* ── Main panel ─── */}
-      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2 shrink-0" style={{ width: 476, overflowAnchor: 'none' }}>
+      <div key={activeTab} className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: 476, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -551,8 +615,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         {activeTab === 'Insights' && (
           <div className="flex flex-col gap-8 pb-6">
 
-            {/* Low-confidence Insights callout */}
-            {!insightDismissed && (
+            {/* Low-confidence Insights callout — only for AI portfolio advisor row */}
+            {!insightDismissed && (row.id === '1' || row.id === 'r1') && (
               <div
                 style={{
                   display: 'flex',
@@ -602,14 +666,14 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Unique Customers" />
                 </div>
                 <div className="flex gap-3">
-                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" />
-                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Est. Revenue Impact" />
+                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" noPadding />
+                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Est. Revenue Impact" noPadding />
                 </div>
               </div>
             </InsightSection>
 
             {/* Feedback */}
-            <div className="flex flex-col gap-3 -mt-1">
+            <div className="flex flex-col gap-3">
               {/* Feedback header row */}
               <div className="flex items-center justify-between">
                 <span className="text-[14px] font-semibold text-[#222428] leading-[1]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>
@@ -646,7 +710,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   >
                     {promptCards.has(i)
                       ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
-                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor })} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} />
+                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
                     }
                   </div>
                 ))}
@@ -677,19 +741,133 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         )}
 
         {activeTab === 'Comments' && (
-          <div className="flex-1 flex items-center justify-center py-16">
-            <p className="text-[14px] text-[#AEB2C0]">Comments coming soon</p>
+          <div className="flex flex-col" style={{ minHeight: '100%' }}>
+            {/* Resolve toggle */}
+            <div className="flex items-center gap-2 px-2 pb-3">
+              <button
+                onClick={() => setResolved(r => !r)}
+                className="relative shrink-0"
+                style={{ width: 32, height: 18, borderRadius: 999, background: resolved ? '#4262FF' : '#E0E2E8', border: 'none', cursor: 'pointer', padding: 0, transition: 'background 150ms ease' }}
+              >
+                <span style={{ position: 'absolute', top: 2, left: resolved ? 16 : 2, width: 14, height: 14, borderRadius: '50%', background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', transition: 'left 150ms ease' }} />
+              </button>
+              <span className="text-[14px] text-[#222428]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Resolve</span>
+            </div>
+
+            {/* Comment list */}
+            <div className="flex flex-col flex-1 px-2">
+              {comments.map((comment, i) => (
+                <div key={i} className="flex gap-[9px] items-start py-2">
+                  <img
+                    src={`https://i.pravatar.cc/48?img=${comment.avatarImg}`}
+                    alt={comment.name}
+                    className="shrink-0 w-6 h-6 rounded-full object-cover"
+                  />
+                  <div className="flex flex-col gap-[4px] flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[14px] font-semibold text-[#050038] whitespace-nowrap" style={{ fontFamily: 'Open Sans, sans-serif' }}>{comment.name}</span>
+                      <span className="text-[12px] text-[#656B81]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{comment.time}</span>
+                    </div>
+                    <p className="text-[14px] text-[#222428] leading-[1.4] m-0" style={{ fontFamily: 'Open Sans, sans-serif' }}>{comment.text}</p>
+                  </div>
+                </div>
+              ))}
+              <div ref={commentsEndRef} />
+            </div>
+
+            {/* Compose box — sticky at bottom */}
+            <div className="sticky bottom-0 bg-white pt-2 pb-4 px-0" style={{ marginTop: 'auto' }}>
+              <div
+                className="flex flex-col rounded-[6px] px-2 py-2"
+                style={{ border: `1px solid ${commentText ? '#4262FF' : '#E0E2E8'}`, transition: 'border-color 150ms ease' }}
+              >
+                <textarea
+                  value={commentText}
+                  onChange={e => setCommentText(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && !e.shiftKey && commentText.trim()) {
+                      e.preventDefault()
+                      const now = new Date()
+                      const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                      setComments(prev => [...prev, { name: 'You', time: `Today, ${time}`, text: commentText.trim(), avatarImg: 1 }])
+                      setCommentText('')
+                      setTimeout(() => commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+                    }
+                  }}
+                  placeholder="Leave a comment. Use @ to mention."
+                  rows={3}
+                  className="w-full resize-none text-[14px] text-[#222428] leading-[1.4] px-2 outline-none bg-transparent placeholder-[#7D8297]"
+                  style={{ fontFamily: 'Open Sans, sans-serif', border: 'none', minHeight: 60 }}
+                />
+                <div className="flex items-center justify-end gap-1 pt-1">
+                  <button className="w-10 h-10 flex items-center justify-center rounded-lg text-[#AEB2C0]" style={{ border: 'none', background: 'none', cursor: 'default' }}>
+                    <IconSmileyPlus size="medium" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!commentText.trim()) return
+                      const now = new Date()
+                      const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                      setComments(prev => [...prev, { name: 'You', time: `Today, ${time}`, text: commentText.trim(), avatarImg: 1 }])
+                      setCommentText('')
+                      setTimeout(() => commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+                    }}
+                    className="w-10 h-10 flex items-center justify-center rounded-lg transition-colors"
+                    style={{ border: 'none', background: 'none', color: commentText.trim() ? '#4262FF' : '#AEB2C0', cursor: commentText.trim() ? 'pointer' : 'default' }}
+                  >
+                    <IconPaperPlaneFilledRight size="medium" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
+
+        {activeTab === 'Jira' && <JiraForm row={row} />}
       </div>
       {/* ── Company panel ─── */}
       <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-3 flex flex-col shrink-0" style={{ width: 476 }}>
         {selectedCompany && (
           <CompanyDetailView
             company={selectedCompany}
-            rowTitle={row.title}
             onBack={() => setSelectedCompany(null)}
             onPromptSelect={(prompt) => setSelectedPrompt(prompt)}
+          />
+        )}
+      </div>
+      {/* ── Detail panel (call transcript + all feedback card details) ─── */}
+      <div className="h-full shrink-0" style={{ width: 476 }}>
+        {callCard && (
+          <CallTranscriptPanel
+            author={callCard.author}
+            company={callCard.company}
+            date={callCard.date}
+            transcript={callCard.transcript}
+            onBack={() => setCallCard(null)}
+            highlightColor={callCard.borderColor === '#d4bbff' ? '#EFEDFD' : '#f1f2f5'}
+          />
+        )}
+        {selectedFeedbackCard && isStoreReview(selectedFeedbackCard.source) && (
+          <AppStoreReviewDetail
+            card={selectedFeedbackCard}
+            onBack={() => setSelectedFeedbackCard(null)}
+            highlightColor={selectedFeedbackCard.borderColor === '#D1F09F' ? '#F1FECF' : '#f1f2f5'}
+          />
+        )}
+        {selectedFeedbackCard?.source === 'SurveyMonkey' && (
+          <SurveyFeedbackDetail
+            card={selectedFeedbackCard}
+            onBack={() => setSelectedFeedbackCard(null)}
+            highlightColor={selectedFeedbackCard.borderColor === '#ffd4b2' ? '#FFEEDE' : '#f1f2f5'}
+          />
+        )}
+        {selectedFeedbackCard && !isStoreReview(selectedFeedbackCard.source) && selectedFeedbackCard.source !== 'SurveyMonkey' && (
+          <FeedbackCardDetailView
+            card={selectedFeedbackCard}
+            onBack={() => setSelectedFeedbackCard(null)}
+            onClose={onClose}
+            onAddToBoard={onAddToBoard}
+            highlightColor={selectedFeedbackCard.borderColor === '#d4bbff' ? '#EFEDFD' : '#f1f2f5'}
           />
         )}
       </div>
@@ -704,18 +882,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             company={selectedCompany ?? ''}
             onBack={() => setSelectedPrompt(null)}
             onClose={onClose}
-          />
-        </div>
-      )}
-
-      {/* ── Feedback card detail overlay ─── */}
-      {selectedFeedbackCard && (
-        <div className="absolute inset-0 z-10 bg-white flex flex-col">
-          <FeedbackCardDetailView
-            card={selectedFeedbackCard}
-            onBack={() => setSelectedFeedbackCard(null)}
-            onClose={onClose}
-            onAddToBoard={onAddToBoard}
           />
         </div>
       )}
@@ -1165,6 +1331,102 @@ function CompanyFieldRow({ icon, label, children }: { icon: React.ReactNode; lab
   )
 }
 
+export { SourceLogoChip } from './SourceLogoChip'
+
+function JiraFormField({ label, hint, charMax, lines, children }: { label: string; hint?: string; charMax?: number; lines?: number; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center justify-between">
+        <div className="flex items-baseline gap-1">
+          <span className="text-[14px] font-semibold text-[#222428]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{label}</span>
+          <span className="text-[12px] text-[#656B81]" style={{ fontFamily: 'Open Sans, sans-serif' }}>(optional)</span>
+        </div>
+        {(charMax || lines) && (
+          <div className="flex items-center gap-1.5">
+            {charMax && <span className="text-[12px] text-[#AEB2C0]">{charMax}</span>}
+            {lines && <span className="text-[12px] text-[#AEB2C0]">{lines}</span>}
+          </div>
+        )}
+      </div>
+      {children}
+      {hint && <span className="text-[12px] text-[#AEB2C0]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{hint}</span>}
+    </div>
+  )
+}
+
+function JiraSelect({ value, onChange, placeholder, options }: { value: string; onChange: (v: string) => void; placeholder: string; options: string[] }) {
+  return (
+    <select
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      className="w-full border border-[#E0E2E8] rounded-[6px] px-3 h-9 outline-none bg-white transition-colors"
+      style={{ fontFamily: 'Open Sans, sans-serif', fontSize: 14, color: value ? '#222428' : '#AEB2C0' }}
+    >
+      <option value="" disabled style={{ color: '#AEB2C0' }}>{placeholder}</option>
+      {options.map(o => <option key={o} value={o} style={{ color: '#222428' }}>{o}</option>)}
+    </select>
+  )
+}
+
+export function JiraForm({ row }: { row: SpaceRow }) {
+  const [summary, setSummary] = useState(row.title)
+  const [description, setDescription] = useState(row.description ?? '')
+  const [assignee, setAssignee] = useState('Alex Kim')
+  const [reporter, setReporter] = useState('Sarah Park')
+  const [epic, setEpic] = useState('')
+  const [issueType, setIssueType] = useState('Story')
+  const [priority, setPriority] = useState(row.priority === 'now' ? 'High' : row.priority === 'next' ? 'Medium' : 'Low')
+  const [teams, setTeams] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const inputClass = 'w-full border border-[#E0E2E8] rounded-[6px] px-3 h-9 outline-none bg-white transition-colors text-[14px] text-[#222428] focus:border-[#4262FF]'
+  const inputStyle = { fontFamily: 'Open Sans, sans-serif' }
+
+  return (
+    <div className="flex flex-col gap-4 pb-8">
+      <JiraFormField label="Issue type" hint="This is helpful text like req. or formats">
+        <JiraSelect value={issueType} onChange={setIssueType} placeholder="Select an option" options={['Story', 'Bug', 'Task', 'Epic', 'Sub-task']} />
+      </JiraFormField>
+
+      <JiraFormField label="Priority" hint="This is helpful text like req. or formats">
+        <JiraSelect value={priority} onChange={setPriority} placeholder="Select an option" options={['Highest', 'High', 'Medium', 'Low', 'Lowest']} />
+      </JiraFormField>
+
+      <JiraFormField label="Summary" hint="This is helpful text like req. or formats" charMax={255} lines={1}>
+        <input value={summary} onChange={e => setSummary(e.target.value.slice(0, 255))} className={inputClass} style={inputStyle} placeholder="Placeholder Text" />
+      </JiraFormField>
+
+      <JiraFormField label="Description" hint="This is helpful text like req. or formats" charMax={255} lines={2}>
+        <textarea value={description} onChange={e => setDescription(e.target.value.slice(0, 255))} rows={3} className="w-full border border-[#E0E2E8] rounded-[6px] px-3 py-2 outline-none bg-white transition-colors text-[14px] text-[#222428] focus:border-[#4262FF] resize-none" style={inputStyle} placeholder="Placeholder Text" />
+      </JiraFormField>
+
+      <JiraFormField label="Assignee" hint="This is helpful text like req. or formats" charMax={255} lines={1}>
+        <input value={assignee} onChange={e => setAssignee(e.target.value.slice(0, 255))} className={inputClass} style={inputStyle} placeholder="Placeholder Text" />
+      </JiraFormField>
+
+      <JiraFormField label="Reporter" hint="This is helpful text like req. or formats" charMax={255} lines={1}>
+        <input value={reporter} onChange={e => setReporter(e.target.value.slice(0, 255))} className={inputClass} style={inputStyle} placeholder="Placeholder Text" />
+      </JiraFormField>
+
+      <JiraFormField label="Epic" hint="This is helpful text like req. or formats" charMax={255} lines={1}>
+        <input value={epic} onChange={e => setEpic(e.target.value.slice(0, 255))} className={inputClass} style={inputStyle} placeholder="Placeholder Text" />
+      </JiraFormField>
+
+      <JiraFormField label="Teams" hint="This is helpful text like req. or formats">
+        <JiraSelect value={teams} onChange={setTeams} placeholder="Select an option" options={['Engineering', 'Design', 'Product', 'Data']} />
+      </JiraFormField>
+
+      <JiraFormField label="Start date" hint="This is helpful text like req. or formats">
+        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className={inputClass} style={{ ...inputStyle, color: startDate ? '#222428' : '#AEB2C0' }} />
+      </JiraFormField>
+
+      <div className="flex gap-2 pt-1">
+        <button className="px-4 h-9 rounded-[6px] text-[14px] font-semibold text-white bg-[#4262FF] hover:bg-[#3451D1] transition-colors" style={{ fontFamily: 'Open Sans, sans-serif', border: 'none', cursor: 'pointer' }}>Update</button>
+        <button className="px-4 h-9 rounded-[6px] text-[14px] font-semibold text-[#222428] bg-white border border-[#E0E2E8] hover:bg-[#F1F2F5] transition-colors" style={{ fontFamily: 'Open Sans, sans-serif', cursor: 'pointer' }}>Cancel</button>
+      </div>
+    </div>
+  )
+}
+
 function InsightSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2">
@@ -1206,10 +1468,10 @@ function useAnimatedNumber(target: number, duration = 600): number {
   return displayed
 }
 
-function StatBox({ value, format, label, wow }: { value: number; format: (n: number) => string; label: string; wow?: number }) {
+function StatBox({ value, format, label, wow, noPadding }: { value: number; format: (n: number) => string; label: string; wow?: number; noPadding?: boolean }) {
   const animated = useAnimatedNumber(value)
   return (
-    <div className="flex-1 flex flex-col gap-1 pb-3">
+    <div className={`flex-1 flex flex-col gap-1 ${noPadding ? '' : 'pb-3'}`}>
       <div className="flex items-baseline gap-2">
         <span className="text-[32px] text-[#222428] leading-[1.2]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1", display: 'block' }}>
           {format(animated)}
@@ -1281,6 +1543,100 @@ function FeedbackPrompt({ onSubmit, onClose }: { onSubmit: () => void; onClose: 
   )
 }
 
+function AppStoreReviewDetail({
+  card,
+  onBack,
+  highlightColor = '#f1f2f5',
+}: {
+  card: { title: string; text: string; author: string; date: string; companies: string[]; stars?: number; borderColor?: string; source?: string }
+  onBack: () => void
+  highlightColor?: string
+}) {
+  const authorParts = card.author.split(',')
+  const authorName = authorParts[0].trim()
+  const authorRole = authorParts.slice(1).join(',').trim()
+  const stars = card.stars ?? 3
+
+
+  const LABEL: React.CSSProperties = {
+    fontSize: 14,
+    color: '#656b81',
+    width: 140,
+    flexShrink: 0,
+    fontFamily: "'Open Sans', sans-serif",
+    lineHeight: 1.4,
+  }
+
+  return (
+    <div
+      className="panel-scroll"
+      style={{ flex: 1, overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+    >
+      {/* ← Feedback */}
+      <button
+        onClick={onBack}
+        className="hover:bg-[#F1F2F5] transition-colors"
+        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        Feedback
+      </button>
+
+      {/* Author */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: card.borderColor ?? '#f1f2f5', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <_IconUser css={{ width: 20, height: 20, color: 'rgba(0,0,0,0.35)' }} />
+        </div>
+        <div>
+          <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
+          {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
+        </div>
+      </div>
+
+      {/* Metadata fields */}
+      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Source</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <SourceLogoChip source={card.source ?? 'App Store'} />
+            <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#aeb2c0' }} />
+          </div>
+        </div>
+        {card.companies[0] && (
+          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+            <span style={LABEL}>Company</span>
+            <CompanyLogo name={card.companies[0]} size={24} />
+          </div>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Feedback date</span>
+          <div style={{ backgroundColor: '#f1f2f5', borderRadius: 6, padding: '0 8px', height: 28, display: 'inline-flex', alignItems: 'center', fontSize: 14, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{card.date}</div>
+        </div>
+      </div>
+
+      {/* Review card */}
+      <div style={{ backgroundColor: highlightColor, borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {/* Stars */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <IconStarFilled key={i} css={{ width: 12, height: 12, color: i < stars ? '#3C3F4A' : '#D1D4DC' }} />
+          ))}
+        </div>
+        {/* Title */}
+        <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.4 }}>
+          {card.title.length > 60 ? card.title.slice(0, 60) + '…' : card.title}
+        </p>
+        {/* Body */}
+        <p style={{ fontSize: 14, color: '#656b81', margin: 0, lineHeight: 1.5, fontFamily: "'Open Sans', sans-serif" }}>
+          {card.text}
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function FeedbackCard({
   borderColor,
   Icon,
@@ -1293,6 +1649,7 @@ function FeedbackCard({
   onDismiss,
   onSelect,
   onAddToBoard,
+  onViewCall,
 }: {
   borderColor: string
   Icon: typeof IconHeart | typeof IconUserTickDown
@@ -1305,6 +1662,7 @@ function FeedbackCard({
   onDismiss: () => void
   onSelect: () => void
   onAddToBoard?: () => void
+  onViewCall?: () => void
 }) {
   const [expanded, setExpanded] = useState(false)
   const [hovered, setHovered] = useState(false)
@@ -1334,16 +1692,16 @@ function FeedbackCard({
       style={{ border: `2px solid ${borderColor}`, borderBottomWidth: 6 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={onSelect}
+      onClick={onViewCall ?? onSelect}
     >
       {/* Card header: icon + category (on hover) + actions */}
       {(() => {
         const category =
-          borderColor === '#BADEB1' ? 'User Praise' :
+          borderColor === '#D1F09F' ? 'User Praise' :
           borderColor === '#d4bbff' ? 'User Request' :
           'User Problem'
         const categoryColor =
-          borderColor === '#BADEB1' ? { bg: '#EAFAEA', text: '#3C3F4A' } :
+          borderColor === '#D1F09F' ? { bg: '#EAFAEA', text: '#3C3F4A' } :
           borderColor === '#d4bbff' ? { bg: '#EFE9FF', text: '#3C3F4A' } :
           { bg: '#FFF0E0', text: '#3C3F4A' }
         const iconSize = category === 'User Problem' ? 24 : 20
@@ -1447,10 +1805,8 @@ function FeedbackCard({
       >
         <div style={{ overflow: 'hidden' }}>
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: 0, gap: 8, height: 24 }}>
-            {source && (
-              <span style={{ fontSize: 12, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{source}</span>
-            )}
             <span style={{ fontSize: 12, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{date}</span>
+            {source && <SourceLogoChip source={source} />}
             {companies[0] && (
               <CompanyLogo name={companies[0]} size={24} />
             )}
@@ -1540,6 +1896,222 @@ function generateTranscript(card: { title: string; text: string; author: string 
   ]
 }
 
+function generateSurveyResponses(card: { title: string; text: string; author: string }) {
+  const sentences = card.text
+    .split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(s => s.length > 10)
+
+  const isPositive = /positive|exceeds|exceeded|adoption|enthusiastic|great|excellent|love|really helps/i.test(card.text)
+  const isNegative = /risk|churn|alternative|competitive|blocking|workaround|erode|trust|critical|evaluating/i.test(card.text)
+
+  // Q1: Overall rating mapped to sentiment
+  const overallRating = isPositive ? 'Excellent' : isNegative ? 'Poor' : 'Average'
+
+  // Q2: Frequency — note friction for negative cards
+  const frequency = isNegative
+    ? "Daily, though the missing functionality forces us to rely on workarounds that slow us down."
+    : 'Almost every day as part of our planning and review workflow.'
+
+  // Q3: Main use case — strip complaint framing from the title to get the capability name
+  const capability = card.title
+    .replace(/^(Quarterly Demand for |Churn Risk:\s*|Exec-Level\s+|Competitive Gap\s+|Fragile Workaround\s+|Hidden Ops Tax\s+|Platform Trust\s+|Power User\s+|Mid-Market\s+|Beta Exceeded.*?,\s*|Implementation Depth\s+|Onboarding Gap\s+|Positive Pilot Signal,?\s*|Enterprise Trial:\s*)/i, '')
+    .split(/[,:]|Blocking|Surfacing|Creating|Growing|Eroding/i)[0]
+    .trim()
+    .toLowerCase()
+  const mainUse = `Primarily for ${capability}, as part of our core planning and product operations workflow.`
+
+  // Q4: Ease of use — pick the sentence most about friction or difficulty
+  const frictionSentence = sentences.find(s =>
+    /workaround|fragile|breaks|slow|hard|difficult|manual|noise|friction|evaluate|gap|missing|lack|can't|cannot/i.test(s)
+  )
+  const easeAnswer = isPositive
+    ? "Pretty intuitive overall — onboarding took a little time but once familiar it's straightforward."
+    : frictionSentence ?? sentences[1] ?? sentences[0] ?? card.text
+
+  // Q5: Working well — use the positive opening sentence for positive cards, or a generic fallback for problem cards
+  const workingWell = isPositive
+    ? sentences[0] ?? card.text
+    : 'The core navigation and basic search work well. The reporting dashboard gives a useful high-level view.'
+
+  // Q6: What to change — the sentence carrying the core complaint
+  const changeSentence = sentences.find(s =>
+    /evaluat|churn|risk|compet|alternative|workaround|fragile|noise|escalat|lack|missing|can't|cannot|tax|erode/i.test(s)
+  ) ?? sentences[sentences.length - 1] ?? card.text
+
+  return [
+    { question: 'How would you rate your overall experience with the product?', answer: overallRating },
+    { question: 'How often do you use the product?', answer: frequency },
+    { question: 'What do you mainly use it for?', answer: mainUse },
+    { question: 'How easy is the product to use?', answer: easeAnswer },
+    { question: 'Which features are working well for you?', answer: workingWell },
+    { question: 'What, if anything, would you change?', answer: changeSentence },
+  ]
+}
+
+function makeResponseId(seed: string) {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
+  let h = 0
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0
+  let id = ''
+  for (let i = 0; i < 24; i++) {
+    h = (h * 1664525 + 1013904223) >>> 0
+    id += chars[h % chars.length]
+  }
+  return id
+}
+
+function SurveyFeedbackDetail({
+  card,
+  onBack,
+  highlightColor = '#f1f2f5',
+}: {
+  card: { title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string }
+  onBack: () => void
+  highlightColor?: string
+}) {
+  const authorParts = card.author.split(',')
+  const authorName = authorParts[0].trim()
+  const authorRole = authorParts.slice(1).join(',').trim()
+  const nameWords = authorName.split(' ')
+  const authorInitials = (nameWords.length >= 2
+    ? nameWords[0][0] + nameWords[nameWords.length - 1][0]
+    : authorName.slice(0, 2)).toUpperCase()
+  const AVATAR_COLORS = ['#de350b', '#4262FF', '#00C7A8', '#3C3F4A', '#7E57C2']
+  const avatarBg = card.borderColor ?? AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]
+
+  const responses = generateSurveyResponses(card)
+  const responseId = makeResponseId(card.author)
+  const surveyId = 'sm-' + makeResponseId(card.title).slice(0, 6)
+  const summary = card.text
+    .replace(/\bwe've\b/gi, 'the team has')
+    .replace(/\bwe're\b/gi, 'the team is')
+    .replace(/\bwe\b/gi, 'the team')
+    .replace(/\bour\b/gi, 'their')
+    .replace(/\bi've\b/gi, 'the user has')
+    .replace(/\bi'm\b/gi, 'the user is')
+    .replace(/\bi\b/gi, 'the user')
+    .replace(/\bmy\b/gi, 'their')
+    .replace(/\bus\b/gi, 'the team')
+    .replace(/^./, c => c.toUpperCase())
+
+  const LABEL: React.CSSProperties = {
+    fontSize: 14,
+    color: '#656b81',
+    width: 140,
+    flexShrink: 0,
+    fontFamily: "'Open Sans', sans-serif",
+    lineHeight: 1.4,
+  }
+  const CHIP: React.CSSProperties = {
+    backgroundColor: '#f1f2f5',
+    borderRadius: 6,
+    padding: '0 8px',
+    height: 28,
+    display: 'inline-flex',
+    alignItems: 'center',
+    fontSize: 13,
+    color: '#222428',
+    fontFamily: 'monospace',
+    maxWidth: 180,
+    overflow: 'hidden',
+    whiteSpace: 'nowrap' as const,
+    textOverflow: 'ellipsis',
+  }
+  const DATE_CHIP: React.CSSProperties = {
+    backgroundColor: '#f1f2f5',
+    borderRadius: 6,
+    padding: '0 8px',
+    height: 28,
+    display: 'inline-flex',
+    alignItems: 'center',
+    fontSize: 14,
+    color: '#222428',
+    fontFamily: "'Open Sans', sans-serif",
+  }
+
+  return (
+    <div
+      className="panel-scroll"
+      style={{ height: '100%', overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+    >
+      {/* ← Feedback */}
+      <button
+        onClick={onBack}
+        className="hover:bg-[#F1F2F5] transition-colors"
+        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        Feedback
+      </button>
+
+      {/* Author row: avatar + name/role + action icons */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: card.borderColor ? '#222428' : 'white', fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
+          {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
+        </div>
+      </div>
+
+      {/* Metadata fields */}
+      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Response ID</span>
+          <div style={CHIP}>{responseId.slice(0, 20) + '…'}</div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Survey ID</span>
+          <div style={CHIP}>{surveyId}</div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Source</span>
+          <SourceLogoChip source="SurveyMonkey" />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Survey started</span>
+          <div style={DATE_CHIP}>{card.date}</div>
+        </div>
+        {card.companies[0] && (
+          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+            <span style={LABEL}>Company</span>
+            <CompanyLogo name={card.companies[0]} size={24} />
+          </div>
+        )}
+      </div>
+
+      {/* Summary bubble */}
+      <div style={{ backgroundColor: highlightColor, borderRadius: 10, padding: 16, marginBottom: 20 }}>
+        <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{summary}</p>
+      </div>
+
+      {/* Survey Q&A pairs */}
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {responses.map((qa, i) => (
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 4,
+              paddingBottom: 16,
+              borderBottom: 'none',
+              marginBottom: i < responses.length - 1 ? 16 : 0,
+            }}
+          >
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#222428', fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1", lineHeight: 1.4 }}>{qa.question}</p>
+            <p style={{ margin: 0, fontSize: 13, color: '#656b81', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.5 }}>{qa.answer}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function classifyEntry(text: string, borderColor: string): 'praise' | 'request' | 'problem' {
   const t = text.toLowerCase()
   const count = (pattern: RegExp) => (t.match(pattern) || []).length
@@ -1561,15 +2133,17 @@ function classifyEntry(text: string, borderColor: string): 'praise' | 'request' 
 function FeedbackCardDetailView({
   card,
   onBack,
-  onClose,
+  onClose: _onClose,
   onAddToBoard,
+  highlightColor = '#f1f2f5',
 }: {
-  card: { title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string }
+  card: { title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string; source?: string; stars?: number }
   onBack: () => void
   onClose: () => void
   onAddToBoard?: (data: import('../canvas/CanvasFeedbackCard').FeedbackCardData) => void
+  highlightColor?: string
 }) {
-  const [activeTab, setActiveTab] = useState('Conversation')
+  const [_activeTab, _setActiveTab] = useState('Conversation')
   const [search, setSearch] = useState('')
   const [showCopyToast, setShowCopyToast] = useState(false)
   const copyToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -1587,12 +2161,7 @@ function FeedbackCardDetailView({
     return () => document.removeEventListener('mousedown', handler)
   }, [convMenuIndex])
 
-  const openConvMenu = (index: number, btn: HTMLButtonElement) => {
-    if (convMenuIndex === index) { setConvMenuIndex(null); return }
-    const rect = btn.getBoundingClientRect()
-    setConvMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
-    setConvMenuIndex(index)
-  }
+  void convMenuIndex; void setConvMenuIndex; void convMenuPos; void setConvMenuPos;
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -1610,147 +2179,114 @@ function FeedbackCardDetailView({
   const authorInitials = (nameWords.length >= 2
     ? nameWords[0][0] + nameWords[nameWords.length - 1][0]
     : authorName.slice(0, 2)).toUpperCase()
-  const AVATAR_COLORS = ['#de350b', '#4262FF', '#00C7A8', '#F5A623', '#7E57C2']
-  const avatarBg = AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]
+  const AVATAR_COLORS = ['#de350b', '#4262FF', '#00C7A8', '#3C3F4A', '#7E57C2']
+  const avatarBg = card.borderColor ?? AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]
+
+  const LABEL: React.CSSProperties = {
+    fontSize: 14,
+    color: '#656b81',
+    width: 140,
+    flexShrink: 0,
+    fontFamily: "'Open Sans', sans-serif",
+    lineHeight: 1.4,
+  }
+  const CHIP: React.CSSProperties = {
+    backgroundColor: '#f1f2f5',
+    borderRadius: 6,
+    padding: '0 8px',
+    height: 28,
+    display: 'inline-flex',
+    alignItems: 'center',
+    fontSize: 14,
+    color: '#222428',
+    fontFamily: "'Open Sans', sans-serif",
+  }
 
   return (
-    <div className="flex flex-col h-full bg-white" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+    <><div
+      className="panel-scroll"
+      style={{ height: '100%', overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+    >
+      {/* ← Feedback back button */}
+      <button
+        onClick={onBack}
+        className="hover:bg-[#F1F2F5] transition-colors"
+        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        Feedback
+      </button>
 
-      {/* Header */}
-      <div className="flex items-center gap-1 h-12 px-4 shrink-0">
-        <button
-          onClick={onBack}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors shrink-0"
-          aria-label="Go back"
-        >
-          <IconChevronLeft css={{ width: 16, height: 16 }} />
-        </button>
-        <p
-          className="flex-1 min-w-0 truncate text-[#222428] leading-[1.5]"
-          style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, fontFeatureSettings: "'ss01' 1" }}
-          title={card.title}
-        >
-          {card.title}
-        </p>
-        <div className="flex items-center shrink-0">
-          <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
-            <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
-          </button>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
-            <IconCross css={{ width: 16, height: 16 }} />
-          </button>
+      {/* Author info */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: card.borderColor ? '#222428' : 'white', fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
+        </div>
+        <div>
+          <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
+          {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex px-4 shrink-0 pb-4 pt-3 gap-1">
-        {['Summary', 'Conversation'].map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className="px-2 py-1 rounded-lg text-[14px] font-semibold transition-colors"
-            style={{
-              fontFamily: 'Open Sans, sans-serif',
-              color: activeTab === tab ? '#4262FF' : '#656B81',
-              backgroundColor: activeTab === tab ? '#F2F4FC' : 'transparent',
-            }}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {/* Search — only shown on Conversation tab */}
-      {activeTab === 'Conversation' && (
-        <div className="px-6 shrink-0 pb-7">
-          <div className="flex items-center gap-2 h-8 px-3 rounded-lg bg-[#F1F2F5]">
-            <IconMagnifyingGlass css={{ width: 14, height: 14, color: '#7D8297', flexShrink: 0 }} />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search keywords..."
-              className="flex-1 bg-transparent text-[13px] text-[#222428] outline-none placeholder:text-[#7D8297]"
-              style={{ fontFamily: 'Open Sans, sans-serif' }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto panel-scroll pb-6">
-        {activeTab === 'Conversation' ? (
-          <div className="flex flex-col gap-4 px-6">
-            <div className="group relative rounded-lg p-4" style={{ backgroundColor: '#F1F2F5' }}>
-              <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-[14px] font-semibold text-[#222428]" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>{transcript[0].speaker}</span>
-                <span className="text-[13px] text-[#656B81]">{transcript[0].time}</span>
-              </div>
-              <p className="text-[14px] text-[#222428] leading-[1.5]">
-                {transcript[0].text}
-                {transcript[0].bold && <strong>{transcript[0].bold}</strong>}
-              </p>
-              <button
-                onClick={e => openConvMenu(0, e.currentTarget)}
-                className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:text-[#222428] hover:bg-white/60 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
-              </button>
-            </div>
-            {transcript.slice(1).map((msg, i) => (
-              <div key={i} className="group relative rounded-lg px-2 py-1 -mx-2 hover:bg-[#F1F2F5] transition-colors">
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-[14px] font-semibold text-[#222428]" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>{msg.speaker}</span>
-                  <span className="text-[13px] text-[#656B81]">{msg.time}</span>
-                </div>
-                <p className="text-[14px] text-[#656B81] leading-[1.5]">{msg.text}</p>
-                <button
-                  onClick={e => openConvMenu(i + 1, e.currentTarget)}
-                  className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:text-[#222428] hover:bg-[#E9EAEF] opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
-                </button>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col px-6 pt-5 pb-6 gap-6">
-            {/* Speaker */}
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: avatarBg }}>
-                <span className="text-[8px] font-semibold text-white leading-none" style={{ fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
-              </div>
-              <div className="flex flex-col min-w-0">
-                <p className="text-[14px] font-bold text-[#222428] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>{authorName}</p>
-                {authorRole && <p className="text-[12px] text-[#656B81] leading-[1.5]">{authorRole}</p>}
-              </div>
-            </div>
-
-            {/* Summary text */}
-            <p className="text-[14px] text-[#656B81] leading-[1.4]">{card.text}</p>
-
-            {/* Fields */}
-            <div className="flex flex-col gap-3">
-              <FieldRow label="Source">
-                <Chip removable={false} css={{ fontSize: 14 }}>Customer Interview</Chip>
-              </FieldRow>
-              <FieldRow label="State">
-                <div className="inline-flex items-center rounded-[6px] px-2" style={{ backgroundColor: '#c3faf5', color: '#0e4343', height: 28 }}>
-                  <span className="text-[14px] leading-[20px]">Open</span>
-                </div>
-              </FieldRow>
-              <FieldRow label="Provided">
-                <Chip removable={false} css={{ fontSize: 14 }}>{card.date}</Chip>
-              </FieldRow>
-              <FieldRow label="Created">
-                <Chip removable={false} css={{ fontSize: 14 }}>{card.date}</Chip>
-              </FieldRow>
-              <FieldRow label="Owner">
-                <span className="text-[14px] text-[#222428] leading-[1.4] px-2">—</span>
-              </FieldRow>
-            </div>
+      {/* Metadata fields */}
+      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
+        {card.companies[0] && (
+          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+            <span style={LABEL}>Company</span>
+            <CompanyLogo name={card.companies[0]} size={24} />
           </div>
         )}
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Feedback date</span>
+          <div style={CHIP}>{card.date}</div>
+        </div>
       </div>
+
+      {/* Keyword search */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 32, padding: '0 12px', borderRadius: 8, backgroundColor: '#f1f2f5' }}>
+          <IconMagnifyingGlass css={{ width: 14, height: 14, color: '#7D8297', flexShrink: 0 }} />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search keywords..."
+            style={{ flex: 1, background: 'transparent', fontSize: 13, color: '#222428', outline: 'none', border: 'none', fontFamily: 'Open Sans, sans-serif' }}
+          />
+        </div>
+      </div>
+
+      {/* Grey box — highlighted excerpt */}
+      <div style={{ backgroundColor: highlightColor, borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 16 }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <span style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1" }}>{transcript[0].speaker}</span>
+            <span style={{ fontSize: 13, color: '#656b81' }}>{transcript[0].time}</span>
+            <span style={{ marginLeft: 'auto' }}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="5" width="8" height="9" rx="1.5" stroke="#aeb2c0" strokeWidth="1.3" />
+                <path d="M5 5V3.5A1.5 1.5 0 016.5 2H12A1.5 1.5 0 0113.5 3.5V9A1.5 1.5 0 0112 10.5h-1.5" stroke="#aeb2c0" strokeWidth="1.3" strokeLinecap="round" />
+              </svg>
+            </span>
+          </div>
+          <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>
+            {transcript[0].text}{transcript[0].bold && <strong>{transcript[0].bold}</strong>}
+          </p>
+        </div>
+      </div>
+
+      {/* Remaining transcript entries */}
+      {transcript.slice(1).map((msg, i) => (
+        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+            <span style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1" }}>{msg.speaker}</span>
+            <span style={{ fontSize: 13, color: '#aeb2c0' }}>{msg.time}</span>
+          </div>
+          <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#656b81', fontFamily: "'Open Sans', sans-serif" }}>{msg.text}</p>
+        </div>
+      ))}
+    </div>
 
       {/* Conversation entry menu */}
       {convMenuIndex !== null && createPortal(
@@ -1770,7 +2306,7 @@ function FeedbackCardDetailView({
               const entry = convMenuIndex === 0 ? transcript[0] : transcript[convMenuIndex ?? 0]
               const text = entry ? (entry.text + (entry.bold ?? '')) : ''
               const cardType = classifyEntry(text, card.borderColor ?? '')
-              const borderColor = cardType === 'request' ? '#d4bbff' : cardType === 'problem' ? '#ffd4b2' : '#BADEB1'
+              const borderColor = cardType === 'request' ? '#d4bbff' : cardType === 'problem' ? '#ffd4b2' : '#D1F09F'
               onAddToBoard?.({
                 title: card.title,
                 text,
@@ -1818,7 +2354,7 @@ function FeedbackCardDetailView({
         </div>,
         document.body
       )}
-    </div>
+    </>
   )
 }
 

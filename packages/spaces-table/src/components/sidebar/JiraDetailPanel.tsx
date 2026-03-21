@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { JiraForm, SourceLogoChip } from './RowDetailPanel'
 import {
   IconSocialJira,
   IconDotsThreeVertical,
@@ -40,7 +41,7 @@ const JIRA_KEY_MAP: Record<string, string> = {
 }
 
 const PRIORITY_CHIP: Record<string, { bg: string; color: string }> = {
-  triage: { bg: '#BADEB1', color: '#600000' },
+  triage: { bg: '#D1F09F', color: '#600000' },
   now:    { bg: '#b5ecff', color: '#003d54' },
   next:   { bg: '#ffc795', color: '#5c3200' },
   later:  { bg: '#d4bbff', color: '#2d0066' },
@@ -59,10 +60,10 @@ const INSIGHT_SUMMARIES: Record<string, string> = {
 }
 
 const CARD_STYLES = [
-  { borderColor: '#BADEB1', Icon: IconHeart,                  stars: 3, date: 'Aug 02', source: 'App Store' },
+  { borderColor: '#D1F09F', Icon: IconHeart,                  stars: 3, date: 'Aug 02', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag,                              date: 'Jul 18', source: 'Gong' },
   { borderColor: '#ffd4b2', Icon: IconUserTickDown,            date: 'Jun 30', source: 'SurveyMonkey' },
-  { borderColor: '#BADEB1', Icon: IconHeart,                  stars: 5, date: 'Jun 12', source: 'App Store' },
+  { borderColor: '#D1F09F', Icon: IconHeart,                  stars: 5, date: 'Jun 12', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag,                              date: 'May 28', source: 'Play Store' },
 ]
 
@@ -99,7 +100,7 @@ function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-const TABS = ['Details', 'Insights', 'Comments']
+const TABS = ['Details', 'Jira', 'Insights', 'Comments']
 
 export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
@@ -270,6 +271,8 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
 
           </>
         )}
+
+        {activeTab === 'Jira' && <JiraForm row={row} />}
 
         {activeTab === 'Insights' && (
           <div className="flex flex-col gap-8 pt-4 pb-6">
@@ -572,9 +575,8 @@ function FeedbackCard({
       >
         <div style={{ overflow: 'hidden' }}>
           <div className="flex items-center gap-2 pt-1">
-            {source && (
-              <Chip removable={false} css={{ fontSize: 14, borderRadius: '6px', '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{source}</Chip>
-            )}
+            {date && <span style={{ fontSize: 12, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{date}</span>}
+            {source && <SourceLogoChip source={source} />}
             {companies[0] && (
               <CompanyLogo name={companies[0]} size={24} />
             )}

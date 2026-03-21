@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FieldDefinition, SpaceRow } from '@spaces/shared'
-import { IconDotsSixVertical, IconChatPlus, DropdownMenu, IconSquaresTwoOverlap, IconTrash, IconArrowsOutSimple, IconMap, IconChatLinesTwo, Popover, Button } from '@mirohq/design-system'
+import { IconDotsSixVertical, IconChatPlus, DropdownMenu, IconSquaresTwoOverlap, IconTrash, IconArrowsOutSimple, IconMap, IconChatLinesTwo, Popover, Button as _Button, IconInsights } from '@mirohq/design-system'
 
 function IconAddLineTop() {
   return (
@@ -181,70 +181,45 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
             <Popover.Content
               side="bottom"
               align="start"
-              sideOffset={9}
+              sideOffset={4}
               css={{
-                background: '#1A1B1E',
+                background: 'white',
                 borderRadius: 8,
-                width: 300,
-                minWidth: 300,
-                padding: '16px 16px 16px 16px',
-                boxShadow: '0px 8px 32px rgba(5, 0, 56, 0.08)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 12,
+                width: 'fit-content',
+                minWidth: 160,
+                padding: 0,
+                boxShadow: '0px 0px 12px rgba(34,36,40,0.04), 0px 2px 8px rgba(34,36,40,0.12)',
                 border: 'none',
                 outline: 'none',
+                overflow: 'hidden',
                 '&::before': { display: 'none' },
                 '&::after': { display: 'none' },
-                '& svg[aria-hidden="true"]': { display: 'none' },
+                '& svg[aria-hidden="true"][viewBox="0 0 6 50"]': { display: 'none' },
               }}
             >
-              {/* Caret */}
-              <svg
-                width="12" height="6" viewBox="0 0 12 6"
-                style={{ position: 'absolute', top: -6, left: 16, display: 'block' }}
-              >
-                <path d="M0 6 L6 0 L12 6Z" fill="#1A1B1E" />
-              </svg>
-              {/* Close icon */}
               <button
-                onClick={() => setOpenField(null)}
+                onClick={() => { setOpenField(null); onRowClick?.(row) }}
                 style={{
-                  position: 'absolute',
-                  top: 12,
-                  right: 12,
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
+                  gap: 8,
+                  width: '100%',
+                  height: 48,
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
-                  padding: 0,
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M12 4L4 12M4 4l8 8" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              </button>
-              <p
-                style={{
+                  padding: '0 12px',
                   fontSize: 14,
-                  color: '#AEB2C0',
-                  lineHeight: 1.4,
+                  color: '#222428',
                   fontFamily: 'Open Sans, sans-serif',
+                  whiteSpace: 'nowrap',
                 }}
+                onMouseEnter={e => (e.currentTarget.style.background = '#F1F2F5')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'none')}
               >
-                This field is read-only.
-              </p>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <Button
-                  variant="primary"
-                  size="medium"
-                  onPress={() => { setOpenField(null); onRowClick?.(row) }}
-                >
-                  View Insights
-                </Button>
-              </div>
+                <IconInsights css={{ width: 16, height: 16, color: '#222428', flexShrink: 0 }} />
+                View Insights
+              </button>
             </Popover.Content>
           </Popover>
           )}
