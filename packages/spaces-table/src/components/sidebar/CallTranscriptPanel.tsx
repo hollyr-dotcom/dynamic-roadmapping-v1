@@ -60,22 +60,23 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack,
       className="panel-scroll"
       style={{ height: '100%', overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
-      {/* ── Sticky header: back button + caller info + metadata + search ── */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 12px' }}>
+      {/* ── Sticky header: back button only ── */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 8px' }}>
         {/* ← Feedback back button */}
         <button
           onClick={onBack}
           className="hover:bg-[#F1F2F5] transition-colors"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0 8px 4px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0 8px 4px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 0, marginLeft: -8, marginTop: 0, fontWeight: 600 }}
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           Feedback
         </button>
+      </div>
 
-        {/* Caller info */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
+      {/* Caller info */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 15, paddingBottom: 20, marginTop: 12 }}>
           <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarColor ?? '#f1f2f5', position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {avatarColor
               ? <IconUser css={{ width: 20, height: 20, color: 'rgba(0,0,0,0.35)' }} />
@@ -99,44 +100,45 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack,
           </div>
         </div>
 
-        {/* Metadata fields */}
-        <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
-          {/* Source */}
-          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-            <span style={LABEL}>Source</span>
-            <SourceLogoChip source="Gong" />
-          </div>
+      {/* Metadata fields */}
+      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
+        {/* Source */}
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Source</span>
+          <SourceLogoChip source="Gong" />
+        </div>
 
-          {/* Company */}
-          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-            <span style={LABEL}>Company</span>
-            <CompanyLogo name={company} size={24} />
-          </div>
+        {/* Company */}
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Company</span>
+          <CompanyLogo name={company} size={24} />
+        </div>
 
-          {/* Participants */}
-          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-            <span style={LABEL}>Participants</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, backgroundColor: '#f1f2f5', borderRadius: 6, padding: '0 8px 0 5px', height: 28 }}>
-                <img
-                  src="https://i.pravatar.cc/32?img=15"
-                  alt="James Watson"
-                  style={{ width: 16, height: 16, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-                />
-                <span style={{ fontSize: 14, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>James Watson</span>
-              </div>
-              <div style={CHIP}>+2</div>
+        {/* Participants */}
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Participants</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, backgroundColor: '#f1f2f5', borderRadius: 6, padding: '0 8px 0 5px', height: 28 }}>
+              <img
+                src="https://i.pravatar.cc/32?img=15"
+                alt="James Watson"
+                style={{ width: 16, height: 16, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+              />
+              <span style={{ fontSize: 14, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>James Watson</span>
             </div>
-          </div>
-
-          {/* Feedback date */}
-          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-            <span style={LABEL}>Feedback date</span>
-            <div style={CHIP}>{date}</div>
+            <div style={CHIP}>+2</div>
           </div>
         </div>
 
-        {/* Keyword search */}
+        {/* Feedback date */}
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Feedback date</span>
+          <div style={CHIP}>{date}</div>
+        </div>
+      </div>
+
+      {/* Keyword search */}
+      <div style={{ marginBottom: 12 }}>
         <InputSearch
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -145,9 +147,6 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack,
           css={{ width: '100%' }}
         />
       </div>
-
-      {/* Spacer between sticky header and transcript content */}
-      <div style={{ height: 12 }} />
 
       {/* Grey box: highlighted conversation */}
       {boxLines.length > 0 && (
