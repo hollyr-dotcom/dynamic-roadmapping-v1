@@ -2117,7 +2117,7 @@ function SurveyFeedbackDetail({
             }}
           >
             <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#222428', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.4 }}>{qa.question}</p>
-            <p style={{ margin: 0, fontSize: 13, color: '#222428', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.5 }}>{qa.answer}</p>
+            <p style={{ margin: 0, fontSize: 14, color: '#222428', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.5 }}>{qa.answer}</p>
           </div>
         ))}
       </div>
