@@ -1634,7 +1634,7 @@ function AppStoreReviewDetail({
           {card.title.length > 60 ? card.title.slice(0, 60) + '…' : card.title}
         </p>
         {/* Body */}
-        <p style={{ fontSize: 14, color: '#656b81', margin: 0, lineHeight: 1.5, fontFamily: "'Open Sans', sans-serif" }}>
+        <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.5, fontFamily: "'Open Sans', sans-serif" }}>
           {card.text}
         </p>
       </div>
