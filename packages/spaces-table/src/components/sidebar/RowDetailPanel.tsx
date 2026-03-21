@@ -1322,7 +1322,9 @@ function CompanyFieldRow({ icon, label, children }: { icon: React.ReactNode; lab
   )
 }
 
-const SOURCE_DATA: Record<string, { color: string; path: string; label: string }> = {
+const GONG_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAppJREFUeAHVU1tIFFEYPmfmzF7GHMc1ArPLYisV9iBS6EKrq1kg9RAhQRckkHywJ4tKK0wIAo3Ey4MIGZgR9KrYg1AJWkEU9OCLBC5Wgqm7M3uZnd2dmXM6u66yLruLPfrBwJxz/u8/3//9/wFgt4NJXQzU+w2HrVHYMSEVw2ekQFfVz8HNuMF6VZdUH3PZ8WSIrmE2XtaDnhqvomoB3ooKMAuJEtQkKwtNrAUJYH5tsrUkv7zp/XL/ta/Lr7w7Uoggy0HIYggZNRST80QT/1LRVgbCmg8etTWMcIx5iiaTcirsrP74iMGiy4wKigngyvNNBfD2jMCc3He19NvqmyW73c09LHunji3csc39Gg5QipErIWw+NlZ9pLB2lgDC8sgGiqwCaJmGqTGIfnqSR0AGpHvIPqtZ/qDEoi4Lxz3vmD14P0lMJTPu/a02HYW21BnYCr/8GZXpL87YlKen/1KRBI8ttIoL6xPB9PM+d4gEY764GsJzeVDTV153fipvjl+M0hUP1SvYq65iM2u5R5OpmaoKRD1TAOw5rxjSaNfnQzfBRnMTVWzr8ui5sH89vIITtUPuQc3htrIMCcnk0tANek4EU1EV2LANb/mRGtkyzYuewNwlxJhIWA/YokSNBzNn7XcrkkR2pEEjVxw9izqJYTPDnwBpzcnkIex1rcscywrtM4Wwv072ShGvmIfIhEawHjPgxXzTXhTVI0DHEfI7+P3Wi/mm4U0yylQSHWbBH5Vwj2sNRzSVGi+qYU2+AAGHRHNxtH3GwtGZtBTF7PZSvjLr40jAXdJW0e1cJI+rPQZtkOE84LTSba6vTu7tq5X1+H3gf9Bx6sd4t9Nj0Hl8C7Z7jByORnOWqrJjoE5Rrh8frwQ53vnuxj/GfQLocTFXKgAAAABJRU5ErkJggg=='
+
+const SOURCE_DATA: Record<string, { color: string; path: string; label: string } | null> = {
   'App Store': {
     color: '#0D96F6',
     label: 'App Store',
@@ -1338,16 +1340,19 @@ const SOURCE_DATA: Record<string, { color: string; path: string; label: string }
     label: 'SurveyMonkey',
     path: 'M21.1627 13.1843a2.8517 2.8517 0 0 0-.6778.0841c-.8438-3.3181-3.5478-5.8376-6.9172-6.4452a8.3933 8.3933 0 0 0-.4407-.0668c.0259-.8255.0636-1.7791 1.2781-2.6369l-.1918-.4838s-2.3708.7349-2.6391 2.7598c-.1175-.5507-1.2209-1.2403-1.7673-1.3707l-.2717.4384s.7242.3621.9009 1.361c-3.3691.6056-6.0743 3.1229-6.9204 6.4398-1.5194-.376-3.056.5508-3.432 2.0703-.376 1.5194.5508 3.056 2.0703 3.432a2.8346 2.8346 0 0 0 1.7195-.1142 8.6821 8.6821 0 0 0 .9203 1.7123l2.3524-1.5852c-.6381-.8071-1.0206-1.9884-1.0873-3.1736-.07-1.2931.2446-2.5755 1.0701-3.3298 1.7016-1.4483 3.5561-.7877 4.7135.6002h.3114c1.1606-1.388 3.0173-2.0475 4.7135-.6002.8244.7543 1.1401 2.0378 1.0701 3.3298-.0656 1.1853-.4481 2.3664-1.0873 3.1736l2.3524 1.5852a8.6854 8.6854 0 0 0 .9224-1.7123c1.4551.5751 3.1009-.1384 3.676-1.5935s-.1384-3.1009-1.5935-3.676a2.8349 2.8349 0 0 0-1.0448-.1983zM2.7861 16.8482a.8362.8362 0 0 1 0-1.6724.8442.8442 0 0 1 .4688.1444c.0071.4391.0369.8776.0894 1.3136-.1472.1346-.3738.2329-.5582.2144zm18.4273 0a.8361.8361 0 0 1-.5582-.2155 12.679 12.679 0 0 0 .0894-1.3136.8352.8352 0 0 1 1.304.6929c.0078.4574-.3823.8581-.8352.8362z',
   },
-  'Gong': {
-    color: '#7C3AED',
-    label: 'Gong',
-    // Sparkle / 4-pointed star
-    path: 'M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z',
-  },
+  'Gong': null,
 }
 
 export function SourceLogoChip({ source }: { source: string }) {
   const data = SOURCE_DATA[source]
+  // PNG-based logo (e.g. Gong)
+  if (source === 'Gong') {
+    return (
+      <span style={{ background: '#F1F2F5', borderRadius: 6, padding: '0 6px', height: 24, display: 'inline-flex', alignItems: 'center' }}>
+        <img src={GONG_PNG} width="14" height="14" alt="Gong" style={{ display: 'block' }} />
+      </span>
+    )
+  }
   if (!data) {
     return (
       <span style={{ fontSize: 12, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>
