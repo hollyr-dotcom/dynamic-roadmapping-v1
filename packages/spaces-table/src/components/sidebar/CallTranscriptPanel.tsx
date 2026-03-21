@@ -16,6 +16,7 @@ interface CallTranscriptPanelProps {
   company: string
   date: string
   transcript: TranscriptLine[]
+  borderColor: string
   onBack: () => void
 }
 
@@ -42,9 +43,11 @@ const CHIP: React.CSSProperties = {
   fontFamily: "'Open Sans', sans-serif",
 }
 
-export function CallTranscriptPanel({ author, company, date, transcript, onBack }: CallTranscriptPanelProps) {
+export function CallTranscriptPanel({ author, company, date, transcript, borderColor, onBack }: CallTranscriptPanelProps) {
   const [search, setSearch] = useState('')
   const [authorName, authorRole] = author.split(',').map(s => s.trim())
+  const words = authorName.split(' ')
+  const initials = (words.length >= 2 ? words[0][0] + words[words.length - 1][0] : authorName.slice(0, 2)).toUpperCase()
 
   const boxLines = transcript.filter(l => !l.section || l.section === 'box')
   const dimLines = transcript.filter(l => l.section === 'dim')
@@ -69,12 +72,10 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack 
 
       {/* Caller info */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#f1f2f5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
-          {/* Generic person silhouette matching Figma avatar */}
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ position: 'absolute', bottom: 0 }}>
-            <circle cx="12" cy="8" r="5" fill="#aeb2c0" />
-            <path d="M2 22c0-5.523 4.477-10 10-10s10 4.477 10 10" fill="#aeb2c0" />
-          </svg>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: borderColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#222428', fontFamily: "'Open Sans', sans-serif", lineHeight: 1 }}>
+            {initials}
+          </span>
         </div>
         <div>
           <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>
