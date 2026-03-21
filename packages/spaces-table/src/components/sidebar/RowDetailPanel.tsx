@@ -431,7 +431,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
 
       {/* ── Header ──────────────────────────────────────── */}
-      <div className="flex items-center gap-2 h-12 pl-4 pr-3 shrink-0">
+      <div className="flex items-center gap-2 h-12 pl-4 pr-3 shrink-0 relative z-20 bg-white">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <IconSocialJira css={{ width: 18, height: 18, flexShrink: 0 }} />
           <p
@@ -459,11 +459,11 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div className="h-1 shrink-0" />
 
       {/* ── Tabs ────────────────────────────────────────── */}
-      <div className="flex pl-3 pr-4 shrink-0 pb-5 pt-4">
+      <div className="flex pl-3 pr-4 shrink-0 pb-5 pt-4 relative z-20 bg-white">
         {TABS.map((tab) => (
           <button
             key={tab}
-            onClick={() => { setActiveTab(tab); if (selectedCompany) setSelectedCompany(null) }}
+            onClick={() => { setActiveTab(tab); if (selectedCompany) setSelectedCompany(null); if (selectedFeedbackCard) setSelectedFeedbackCard(null) }}
             className="mr-1 px-2 py-1 rounded-lg text-[14px] font-semibold transition-colors"
             style={{
               fontFamily: 'Open Sans, sans-serif',
