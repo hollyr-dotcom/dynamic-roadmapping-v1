@@ -463,7 +463,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         {TABS.map((tab) => (
           <button
             key={tab}
-            onClick={() => { setActiveTab(tab); if (selectedCompany) setSelectedCompany(null); if (selectedFeedbackCard) setSelectedFeedbackCard(null) }}
+            onClick={() => { setActiveTab(tab); if (selectedCompany) setSelectedCompany(null); if (selectedFeedbackCard) setSelectedFeedbackCard(null); if (callCard) setCallCard(null) }}
             className="mr-1 px-2 py-1 rounded-lg text-[14px] font-semibold transition-colors"
             style={{
               fontFamily: 'Open Sans, sans-serif',
