@@ -2141,7 +2141,7 @@ function FeedbackCardDetailView({
   onAddToBoard,
   highlightColor = '#f1f2f5',
 }: {
-  card: { title: string; text: string; author: string; date: string; companies: string[] }
+  card: { title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string }
   onBack: () => void
   onClose: () => void
   onAddToBoard?: (data: import('../canvas/CanvasFeedbackCard').FeedbackCardData) => void
@@ -2189,7 +2189,7 @@ function FeedbackCardDetailView({
     ? nameWords[0][0] + nameWords[nameWords.length - 1][0]
     : authorName.slice(0, 2)).toUpperCase()
   const AVATAR_COLORS = ['#de350b', '#4262FF', '#00C7A8', '#3C3F4A', '#7E57C2']
-  const avatarBg = AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]
+  const avatarBg = card.borderColor ?? AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]
 
   const LABEL: React.CSSProperties = {
     fontSize: 14,
