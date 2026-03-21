@@ -1753,14 +1753,6 @@ function FeedbackCard({
             {companies[0] && (
               <CompanyLogo name={companies[0]} size={24} />
             )}
-            {source === 'Gong' && onViewCall && (
-              <button
-                onClick={e => { e.stopPropagation(); onViewCall() }}
-                style={{ fontSize: 12, fontWeight: 600, color: '#4262FF', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'Open Sans, sans-serif', marginLeft: 4 }}
-              >
-                View call →
-              </button>
-            )}
           </div>
         </div>
       </div>
