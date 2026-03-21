@@ -630,7 +630,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 }}
               >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, paddingRight: 20 }}>
-                  <p className="text-[16px] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1", color: '#1a1b1e', margin: 0 }}>
+                  <p className="text-[14px] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1", color: '#1a1b1e', margin: 0 }}>
                     Low-confidence Insights
                   </p>
                   <p style={{ fontSize: 14, color: '#656B81', lineHeight: 1.5, margin: 0 }}>
