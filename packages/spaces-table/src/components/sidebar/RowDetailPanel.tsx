@@ -633,7 +633,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   <p className="text-[14px] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1", color: '#1a1b1e', margin: 0 }}>
                     Low-confidence Insights
                   </p>
-                  <p style={{ fontSize: 14, color: '#656B81', lineHeight: 1.5, margin: 0 }}>
+                  <p style={{ fontSize: 14, color: '#222428', lineHeight: 1.5, margin: 0 }}>
                     The title or description may be too brief to reliably match to customer feedback. Improving context will increase matching accuracy.
                   </p>
                 </div>
