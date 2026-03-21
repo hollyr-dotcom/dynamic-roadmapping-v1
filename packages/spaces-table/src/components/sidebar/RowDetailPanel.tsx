@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import type { SpaceRow } from '@spaces/shared'
 import { CompanyLogo } from '../CompanyLogo'
+import { SourceLogoChip } from './SourceLogoChip'
 import { CallTranscriptPanel, type TranscriptLine } from './CallTranscriptPanel'
 import {
   IconInformationMarkCircle,
@@ -39,7 +40,6 @@ import {
   IconSmileyPlus,
   IconPaperPlaneFilledRight,
   IconSocialJira,
-  Tooltip,
 } from '@mirohq/design-system'
 
 function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
@@ -285,7 +285,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     if (initialCompany) setSelectedCompany(initialCompany)
   }, [initialCompany])
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null)
-  const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[] } | null>(null)
+  const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string } | null>(null)
   const [callCard, setCallCard] = useState<{ title: string; author: string; company: string; date: string; transcript: TranscriptLine[] } | null>(null)
   const [dismissedCards, setDismissedCards] = useState<Set<number>>(new Set())
   const [promptCards, setPromptCards] = useState<Set<number>>(new Set())
@@ -711,7 +711,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   >
                     {promptCards.has(i)
                       ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
-                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies })} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i] }) : undefined} />
+                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor })} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i] }) : undefined} />
                     }
                   </div>
                 ))}
@@ -831,7 +831,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         {selectedCompany && (
           <CompanyDetailView
             company={selectedCompany}
-            rowTitle={row.title}
             onBack={() => setSelectedCompany(null)}
             onPromptSelect={(prompt) => setSelectedPrompt(prompt)}
           />
