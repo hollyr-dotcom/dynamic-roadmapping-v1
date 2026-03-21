@@ -1,4 +1,4 @@
-const JIRA_LOGO = 'https://www.figma.com/api/mcp/asset/4209f456-a892-4952-b21a-077b917e1d3d'
+import { IconSocialJira } from '@mirohq/design-system'
 
 interface JiraIdCellProps {
   value: string
@@ -7,7 +7,7 @@ interface JiraIdCellProps {
 export function JiraIdCell({ value }: JiraIdCellProps) {
   return (
     <span className="flex items-center font-body text-[#222428] whitespace-nowrap" style={{ fontSize: '14px', gap: 8 }}>
-      <img src={JIRA_LOGO} alt="Jira" style={{ width: 20, height: 20, flexShrink: 0, objectFit: 'contain' }} />
+      <IconSocialJira css={{ width: 18, height: 18, flexShrink: 0 }} />
       {value}
     </span>
   )
