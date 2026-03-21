@@ -39,6 +39,7 @@ import {
   IconSmileyPlus,
   IconPaperPlaneFilledRight,
   IconSocialJira,
+  Tooltip,
 } from '@mirohq/design-system'
 
 function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
@@ -1342,28 +1343,29 @@ const SOURCE_DATA: Record<string, { color: string; path: string; label: string }
 }
 
 export function SourceLogoChip({ source }: { source: string }) {
+  const [hovered, setHovered] = useState(false)
   const data = SOURCE_DATA[source]
-  // PNG-based logo (e.g. Gong)
-  if (source === 'Gong') {
-    return (
-      <span style={{ background: '#F1F2F5', borderRadius: 6, padding: '0 6px', height: 24, display: 'inline-flex', alignItems: 'center' }}>
-        <img src={GONG_PNG} width="14" height="14" alt="Gong" style={{ display: 'block' }} />
-      </span>
-    )
-  }
-  if (!data) {
-    return (
-      <span style={{ fontSize: 12, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>
-        {source}
-      </span>
-    )
-  }
+  const bg = hovered ? '#E0E1E6' : '#F1F2F5'
+
+  const icon = source === 'Gong'
+    ? <img src={GONG_PNG} width="14" height="14" alt="" style={{ display: 'block' }} />
+    : data
+      ? <svg viewBox="0 0 24 24" width="14" height="14" fill={data.color} aria-hidden="true"><path d={data.path} /></svg>
+      : <span style={{ fontSize: 12, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif' }}>{source}</span>
+
   return (
-    <span style={{ background: '#F1F2F5', borderRadius: 6, padding: '0 6px', height: 24, display: 'inline-flex', alignItems: 'center' }}>
-      <svg viewBox="0 0 24 24" width="14" height="14" fill={data.color} aria-hidden="true">
-        <path d={data.path} />
-      </svg>
-    </span>
+    <Tooltip>
+      <Tooltip.Trigger asChild>
+        <span
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          style={{ background: bg, borderRadius: 6, padding: '0 6px', height: 24, display: 'inline-flex', alignItems: 'center', transition: 'background 150ms ease', cursor: 'default' }}
+        >
+          {icon}
+        </span>
+      </Tooltip.Trigger>
+      <Tooltip.Content side="top" sideOffset={4}>{source}</Tooltip.Content>
+    </Tooltip>
   )
 }
 
