@@ -138,7 +138,7 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack,
       </div>
 
       {/* Keyword search */}
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: 28 }}>
         <InputSearch
           value={search}
           onChange={e => setSearch(e.target.value)}
