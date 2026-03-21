@@ -670,7 +670,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 </div>
                 <div className="flex gap-3">
                   <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" noPadding />
-                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Est. Revenue Impact" noPadding />
+                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Impacted Customer ARR" noPadding />
                 </div>
               </div>
             </InsightSection>
@@ -1488,7 +1488,7 @@ function StatBox({ value, format, label, wow, noPadding }: { value: number; form
       </div>
       <span className="flex items-center gap-1 text-[14px] text-[#656B81] leading-[1.4]">
         {label}
-        {label === 'Est. Revenue Impact' && (
+        {label === 'Impacted Customer ARR' && (
           <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#656B81', marginLeft: 4 }} />
         )}
       </span>
@@ -1633,11 +1633,11 @@ function AppStoreReviewDetail({
           ))}
         </div>
         {/* Title */}
-        <p style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 400, fontSize: 12, color: '#222428', margin: 0, lineHeight: 1.4 }}>
+        <p style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 600, fontSize: 12, color: '#222428', margin: 0, lineHeight: 1.4 }}>
           {card.title}
         </p>
         {/* Body */}
-        <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.5, fontFamily: "'Open Sans', sans-serif" }}>
+        <p style={{ fontSize: 12, color: '#222428', margin: 0, lineHeight: 1.5, fontFamily: "'Open Sans', sans-serif" }}>
           {card.text}
         </p>
       </div>
@@ -2116,8 +2116,8 @@ function SurveyFeedbackDetail({
               marginBottom: i < responses.length - 1 ? 16 : 0,
             }}
           >
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#222428', fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1", lineHeight: 1.4 }}>{qa.question}</p>
-            <p style={{ margin: 0, fontSize: 13, color: '#656b81', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.5 }}>{qa.answer}</p>
+            <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#222428', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.5 }}>{qa.question}</p>
+            <p style={{ margin: 0, fontSize: 13, color: '#222428', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.5 }}>{qa.answer}</p>
           </div>
         ))}
       </div>
@@ -2305,7 +2305,7 @@ function FeedbackCardDetailView({
             <span style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1" }}>{msg.speaker}</span>
             <span style={{ fontSize: 13, color: '#aeb2c0' }}>{msg.time}</span>
           </div>
-          <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#656b81', fontFamily: "'Open Sans', sans-serif" }}>{msg.text}</p>
+          <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{msg.text}</p>
         </div>
       ))}
     </div>
@@ -2394,7 +2394,7 @@ function FieldRow({
       <div className={`w-[100px] shrink-0 flex ${alignStart ? 'h-[32px] items-end pb-[5px]' : 'items-center'}`}>
         <span className="flex items-center gap-1 text-[14px] text-[#656B81] leading-[1.4]">
         {label}
-        {label === 'Est. Revenue Impact' && (
+        {label === 'Impacted Customer ARR' && (
           <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#656B81', marginLeft: 4 }} />
         )}
       </span>
