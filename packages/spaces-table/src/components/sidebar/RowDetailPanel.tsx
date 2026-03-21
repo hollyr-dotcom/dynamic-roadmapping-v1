@@ -1577,7 +1577,7 @@ function AppStoreReviewDetail({
       style={{ flex: 1, overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
       {/* ── Sticky header ── */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 12px' }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 0' }}>
         {/* ← Feedback */}
         <button
           onClick={onBack}
@@ -1591,7 +1591,7 @@ function AppStoreReviewDetail({
         </button>
 
         {/* Author */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 15, paddingBottom: 20 }}>
           <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: card.borderColor ?? '#f1f2f5', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <IconUser css={{ width: 20, height: 20, color: 'rgba(0,0,0,0.35)' }} />
           </div>
@@ -1600,26 +1600,26 @@ function AppStoreReviewDetail({
             {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
           </div>
         </div>
+      </div>
 
-        {/* Metadata fields */}
-        <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-            <span style={LABEL}>Source</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <SourceLogoChip source={card.source ?? 'App Store'} />
-              <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#aeb2c0' }} />
-            </div>
+      {/* Metadata fields */}
+      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Source</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <SourceLogoChip source={card.source ?? 'App Store'} />
+            <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#aeb2c0' }} />
           </div>
-          {card.companies[0] && (
-            <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-              <span style={LABEL}>Company</span>
-              <CompanyLogo name={card.companies[0]} size={24} />
-            </div>
-          )}
+        </div>
+        {card.companies[0] && (
           <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-            <span style={LABEL}>Feedback date</span>
-            <div style={{ backgroundColor: '#f1f2f5', borderRadius: 6, padding: '0 8px', height: 28, display: 'inline-flex', alignItems: 'center', fontSize: 14, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{card.date}</div>
+            <span style={LABEL}>Company</span>
+            <CompanyLogo name={card.companies[0]} size={24} />
           </div>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Feedback date</span>
+          <div style={{ backgroundColor: '#f1f2f5', borderRadius: 6, padding: '0 8px', height: 28, display: 'inline-flex', alignItems: 'center', fontSize: 14, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{card.date}</div>
         </div>
       </div>
 
@@ -2044,7 +2044,7 @@ function SurveyFeedbackDetail({
       style={{ height: '100%', overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
       {/* ── Sticky header ── */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 12px' }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 0' }}>
         {/* ← Feedback */}
         <button
           onClick={onBack}
@@ -2057,8 +2057,8 @@ function SurveyFeedbackDetail({
           Feedback
         </button>
 
-        {/* Author row: avatar + name/role + action icons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        {/* Author row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: 20 }}>
           <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: card.borderColor ? '#222428' : 'white', fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
           </div>
@@ -2067,32 +2067,32 @@ function SurveyFeedbackDetail({
             {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
           </div>
         </div>
+      </div>
 
-        {/* Metadata fields */}
-        <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-            <span style={LABEL}>Response ID</span>
-            <div style={CHIP}>{responseId.slice(0, 20) + '…'}</div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-            <span style={LABEL}>Survey ID</span>
-            <div style={CHIP}>{surveyId}</div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-            <span style={LABEL}>Source</span>
-            <SourceLogoChip source="SurveyMonkey" />
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-            <span style={LABEL}>Survey started</span>
-            <div style={DATE_CHIP}>{card.date}</div>
-          </div>
-          {card.companies[0] && (
-            <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-              <span style={LABEL}>Company</span>
-              <CompanyLogo name={card.companies[0]} size={24} />
-            </div>
-          )}
+      {/* Metadata fields */}
+      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Response ID</span>
+          <div style={CHIP}>{responseId.slice(0, 20) + '…'}</div>
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Survey ID</span>
+          <div style={CHIP}>{surveyId}</div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Source</span>
+          <SourceLogoChip source="SurveyMonkey" />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Survey started</span>
+          <div style={DATE_CHIP}>{card.date}</div>
+        </div>
+        {card.companies[0] && (
+          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+            <span style={LABEL}>Company</span>
+            <CompanyLogo name={card.companies[0]} size={24} />
+          </div>
+        )}
       </div>
 
       {/* Summary bubble */}
@@ -2224,7 +2224,7 @@ function FeedbackCardDetailView({
       style={{ height: '100%', overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
       {/* ── Sticky header ── */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 12px' }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 0' }}>
         {/* ← Feedback back button */}
         <button
           onClick={onBack}
@@ -2238,7 +2238,7 @@ function FeedbackCardDetailView({
         </button>
 
         {/* Author info */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 15, paddingBottom: 20 }}>
           <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: card.borderColor ? '#222428' : 'white', fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
           </div>
@@ -2247,22 +2247,24 @@ function FeedbackCardDetailView({
             {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
           </div>
         </div>
+      </div>
 
-        {/* Metadata fields */}
-        <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
-          {card.companies[0] && (
-            <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-              <span style={LABEL}>Company</span>
-              <CompanyLogo name={card.companies[0]} size={24} />
-            </div>
-          )}
+      {/* Metadata fields */}
+      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
+        {card.companies[0] && (
           <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-            <span style={LABEL}>Feedback date</span>
-            <div style={CHIP}>{card.date}</div>
+            <span style={LABEL}>Company</span>
+            <CompanyLogo name={card.companies[0]} size={24} />
           </div>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Feedback date</span>
+          <div style={CHIP}>{card.date}</div>
         </div>
+      </div>
 
-        {/* Keyword search */}
+      {/* Keyword search */}
+      <div style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 32, padding: '0 12px', borderRadius: 8, backgroundColor: '#f1f2f5' }}>
           <IconMagnifyingGlass css={{ width: 14, height: 14, color: '#7D8297', flexShrink: 0 }} />
           <input
