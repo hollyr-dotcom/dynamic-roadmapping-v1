@@ -167,7 +167,7 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack,
                   </span>
                 )}
               </div>
-              <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#222428', fontWeight: line.highlighted ? 600 : 400, fontFamily: "'Open Sans', sans-serif" }}>
+              <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: '#222428', fontWeight: line.highlighted ? 600 : 400, fontFamily: "'Open Sans', sans-serif" }}>
                 {line.text}
               </p>
             </div>
@@ -184,7 +184,7 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack,
             </span>
             <span style={{ fontSize: 13, color: '#aeb2c0' }}>{line.timestamp}</span>
           </div>
-          <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#656b81', fontFamily: "'Open Sans', sans-serif" }}>
+          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>
             {line.text}
           </p>
         </div>
@@ -201,7 +201,7 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack,
               <span style={{ fontSize: 13, color: '#aeb2c0' }}>{line.timeLabel ?? line.timestamp}</span>
             )}
           </div>
-          <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#656b81', fontFamily: "'Open Sans', sans-serif" }}>
+          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>
             {line.text}
           </p>
         </div>
