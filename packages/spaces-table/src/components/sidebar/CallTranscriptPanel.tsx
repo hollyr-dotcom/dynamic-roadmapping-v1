@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { InputSearch } from '@mirohq/design-system'
+import { CompanyLogo } from '../CompanyLogo'
 
 export interface TranscriptLine {
   speaker: string
@@ -103,7 +104,7 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack 
         {/* Company */}
         <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
           <span style={LABEL}>Company</span>
-          <div style={CHIP}>{company}</div>
+          <CompanyLogo name={company} size={24} />
         </div>
 
         {/* Participants */}
