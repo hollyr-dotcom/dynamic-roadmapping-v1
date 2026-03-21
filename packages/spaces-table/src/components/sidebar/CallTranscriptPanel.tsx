@@ -62,7 +62,7 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack 
       <button
         onClick={onBack}
         className="hover:bg-[#F1F2F5] transition-colors"
-        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0 8px 4px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
