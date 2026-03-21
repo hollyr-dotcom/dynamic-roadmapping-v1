@@ -6,7 +6,6 @@ import { CompanyLogo } from '../CompanyLogo'
 import { SourceLogoChip } from './SourceLogoChip'
 import { CallTranscriptPanel, type TranscriptLine } from './CallTranscriptPanel'
 import {
-  IconInformationMarkCircle,
   IconCross,
   IconDotsThreeVertical,
   IconWarning as _IconWarning,
@@ -502,7 +501,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   onChange={e => setEditValue(e.target.value)}
                   onBlur={() => { setEditingField(null); triggerSaveToast() }}
                   onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); if (e.key === 'Escape') setEditingField(null) }}
-                  className="text-[14px] font-bold text-[#222428] leading-[1.4] w-full px-2 py-1 rounded-md outline-none bg-white"
+                  className="text-[14px] text-[#222428] leading-[1.4] w-full px-2 py-1 rounded-md outline-none bg-white"
                   style={{ border: '1.5px solid #4262FF', boxShadow: '0 0 0 3px rgba(66,98,255,0.12)' }}
                 />
               ) : (
@@ -510,7 +509,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   className="rounded px-2 py-1 w-full cursor-text hover:bg-[#F1F2F5] transition-colors"
                   onClick={() => { setEditingField('title'); setEditValue(row.title) }}
                 >
-                  <p className="text-[14px] font-bold text-[#222428] leading-[1.4]">{row.title}</p>
+                  <p className="text-[14px] text-[#222428] leading-[1.4]">{row.title}</p>
                 </div>
               )}
             </FieldRow>
@@ -630,7 +629,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   position: 'relative',
                 }}
               >
-                <IconInformationMarkCircle size="medium" css={{ flexShrink: 0, marginTop: 1, color: '#4262FF' }} />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, paddingRight: 20 }}>
                   <p className="text-[16px] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1", color: '#1a1b1e', margin: 0 }}>
                     Low-confidence Insights
@@ -667,7 +665,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 </div>
                 <div className="flex gap-3">
                   <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" noPadding />
-                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Est. Revenue Impact" noPadding />
+                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Impacted Customer ARR" noPadding />
                 </div>
               </div>
             </InsightSection>
@@ -1485,9 +1483,6 @@ function StatBox({ value, format, label, wow, noPadding }: { value: number; form
       </div>
       <span className="flex items-center gap-1 text-[14px] text-[#656B81] leading-[1.4]">
         {label}
-        {label === 'Est. Revenue Impact' && (
-          <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#656B81', marginLeft: 4 }} />
-        )}
       </span>
     </div>
   )
@@ -1606,7 +1601,6 @@ function AppStoreReviewDetail({
           <span style={LABEL}>Source</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <SourceLogoChip source={card.source ?? 'App Store'} />
-            <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#aeb2c0' }} />
           </div>
         </div>
         {card.companies[0] && (
@@ -1630,11 +1624,11 @@ function AppStoreReviewDetail({
           ))}
         </div>
         {/* Title */}
-        <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.4 }}>
+        <p style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', margin: 0, marginTop: 4, lineHeight: 1.4 }}>
           {card.title}
         </p>
         {/* Body */}
-        <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.5, fontFamily: "'Open Sans', sans-serif" }}>
+        <p style={{ fontSize: 12, color: '#222428', margin: 0, lineHeight: 1.5, fontFamily: "'Open Sans', sans-serif" }}>
           {card.text}
         </p>
       </div>
@@ -1709,7 +1703,7 @@ function FeedbackCard({
           borderColor === '#D1F09F' ? { bg: '#EAFAEA', text: '#3C3F4A' } :
           borderColor === '#d4bbff' ? { bg: '#EFE9FF', text: '#3C3F4A' } :
           { bg: '#FFF0E0', text: '#3C3F4A' }
-        const iconSize = category === 'User Problem' ? 24 : 20
+        const iconSize = category === 'User Problem' ? 30 : 26
         return (
       <div className="flex items-start gap-2">
         <span style={{
@@ -1720,8 +1714,8 @@ function FeedbackCard({
           gap: hovered ? 6 : 0,
           fontSize: 14,
           fontWeight: 400,
-          width: hovered ? 'auto' : 32,
-          height: 32,
+          width: hovered ? 'auto' : 40,
+          height: 40,
           padding: hovered ? '0 14px 0 0' : '0 4px 0 0',
           borderRadius: 6,
           backgroundColor: 'transparent',
@@ -1738,7 +1732,7 @@ function FeedbackCard({
             opacity: hovered ? 1 : 0,
             overflow: 'hidden',
             display: 'inline-block',
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: 600,
             transition: 'max-width 0.25s ease, opacity 0.2s ease',
           }}>{category}</span>
@@ -1780,7 +1774,7 @@ function FeedbackCard({
 
       {/* Text */}
       <p
-        className="text-[12px] text-[#222428] leading-[1.5] overflow-hidden"
+        className="text-[14px] text-[#222428] leading-[1.5] overflow-hidden"
         style={{
           fontVariationSettings: "'CTGR' 0, 'wdth' 100",
           ...(!expanded && { display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }),
@@ -1789,14 +1783,14 @@ function FeedbackCard({
         {text}
       </p>
       <span
-        className="text-[12px] text-[#222428] cursor-pointer hover:underline"
+        className="text-[14px] text-[#222428] cursor-pointer hover:underline"
         onClick={() => setExpanded(v => !v)}
       >
         {expanded ? 'Show less' : 'Show more'}
       </span>
 
       {/* Author */}
-      <p className="text-[12px] text-[#656B81] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
+      <p className="text-[14px] text-[#656B81] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
         {author}
       </p>
 
@@ -1810,7 +1804,7 @@ function FeedbackCard({
       >
         <div style={{ overflow: 'hidden' }}>
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: 0, gap: 8, height: 24 }}>
-            <span style={{ fontSize: 12, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{date}</span>
+            <span style={{ fontSize: 14, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{date}</span>
             {source && <SourceLogoChip source={source} />}
             {companies[0] && (
               <CompanyLogo name={companies[0]} size={24} />
@@ -2095,7 +2089,7 @@ function SurveyFeedbackDetail({
 
       {/* Summary bubble */}
       <div style={{ backgroundColor: highlightColor, borderRadius: 10, padding: 16, marginBottom: 20 }}>
-        <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{summary}</p>
+        <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{summary}</p>
       </div>
 
       {/* Survey Q&A pairs */}
@@ -2112,8 +2106,8 @@ function SurveyFeedbackDetail({
               marginBottom: i < responses.length - 1 ? 16 : 0,
             }}
           >
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#222428', fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1", lineHeight: 1.4 }}>{qa.question}</p>
-            <p style={{ margin: 0, fontSize: 13, color: '#656b81', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.5 }}>{qa.answer}</p>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#222428', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.4 }}>{qa.question}</p>
+            <p style={{ margin: 0, fontSize: 14, color: '#222428', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.5 }}>{qa.answer}</p>
           </div>
         ))}
       </div>
@@ -2283,7 +2277,7 @@ function FeedbackCardDetailView({
               </svg>
             </span>
           </div>
-          <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>
+          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>
             {transcript[0].text}{transcript[0].bold && <strong>{transcript[0].bold}</strong>}
           </p>
         </div>
@@ -2296,7 +2290,7 @@ function FeedbackCardDetailView({
             <span style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1" }}>{msg.speaker}</span>
             <span style={{ fontSize: 13, color: '#aeb2c0' }}>{msg.time}</span>
           </div>
-          <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#656b81', fontFamily: "'Open Sans', sans-serif" }}>{msg.text}</p>
+          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{msg.text}</p>
         </div>
       ))}
     </div>
@@ -2385,9 +2379,6 @@ function FieldRow({
       <div className={`w-[100px] shrink-0 flex ${alignStart ? 'h-[32px] items-end pb-[5px]' : 'items-center'}`}>
         <span className="flex items-center gap-1 text-[14px] text-[#656B81] leading-[1.4]">
         {label}
-        {label === 'Est. Revenue Impact' && (
-          <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#656B81', marginLeft: 4 }} />
-        )}
       </span>
       </div>
       <div className="flex-1 min-w-0 flex items-center flex-wrap">
