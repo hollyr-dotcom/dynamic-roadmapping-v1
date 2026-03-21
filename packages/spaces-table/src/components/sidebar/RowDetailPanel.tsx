@@ -1784,7 +1784,7 @@ function FeedbackCard({
 
       {/* Text */}
       <p
-        className="text-[12px] text-[#222428] leading-[1.5] overflow-hidden"
+        className="text-[14px] text-[#222428] leading-[1.5] overflow-hidden"
         style={{
           fontVariationSettings: "'CTGR' 0, 'wdth' 100",
           ...(!expanded && { display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }),
@@ -1793,14 +1793,14 @@ function FeedbackCard({
         {text}
       </p>
       <span
-        className="text-[12px] text-[#222428] cursor-pointer hover:underline"
+        className="text-[14px] text-[#222428] cursor-pointer hover:underline"
         onClick={() => setExpanded(v => !v)}
       >
         {expanded ? 'Show less' : 'Show more'}
       </span>
 
       {/* Author */}
-      <p className="text-[12px] text-[#656B81] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
+      <p className="text-[14px] text-[#656B81] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
         {author}
       </p>
 
@@ -1814,7 +1814,7 @@ function FeedbackCard({
       >
         <div style={{ overflow: 'hidden' }}>
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: 0, gap: 8, height: 24 }}>
-            <span style={{ fontSize: 12, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{date}</span>
+            <span style={{ fontSize: 14, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{date}</span>
             {source && <SourceLogoChip source={source} />}
             {companies[0] && (
               <CompanyLogo name={companies[0]} size={24} />
