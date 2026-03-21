@@ -844,14 +844,15 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             date={callCard.date}
             transcript={callCard.transcript}
             onBack={() => setCallCard(null)}
-            highlightColor={callCard.borderColor === '#d4bbff' ? '#EFEDFD' : '#f1f2f5'}
+            highlightColor={callCard.borderColor === '#d4bbff' ? '#EFEDFD' : callCard.borderColor === '#D1F09F' ? '#F1FECF' : '#f1f2f5'}
+            avatarColor={callCard.borderColor}
           />
         )}
         {selectedFeedbackCard && isStoreReview(selectedFeedbackCard.source) && (
           <AppStoreReviewDetail
             card={selectedFeedbackCard}
             onBack={() => setSelectedFeedbackCard(null)}
-            highlightColor={selectedFeedbackCard.borderColor === '#D1F09F' ? '#F1FECF' : '#f1f2f5'}
+            highlightColor={selectedFeedbackCard.borderColor === '#D1F09F' ? '#F1FECF' : selectedFeedbackCard.borderColor === '#d4bbff' ? '#EFEDFD' : '#f1f2f5'}
           />
         )}
         {selectedFeedbackCard?.source === 'SurveyMonkey' && (
@@ -1572,20 +1573,24 @@ function AppStoreReviewDetail({
       className="panel-scroll"
       style={{ flex: 1, overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
-      {/* ← Feedback */}
-      <button
-        onClick={onBack}
-        className="hover:bg-[#F1F2F5] transition-colors"
-        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-        Feedback
-      </button>
+      {/* ── Sticky header ── */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 0' }}>
+        {/* ← Feedback */}
+        <button
+          onClick={onBack}
+          className="hover:bg-[#F1F2F5] transition-colors"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Feedback
+        </button>
+
+      </div>
 
       {/* Author */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20, marginTop: 12 }}>
         <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: card.borderColor ?? '#f1f2f5', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <_IconUser css={{ width: 20, height: 20, color: 'rgba(0,0,0,0.35)' }} />
         </div>
@@ -2035,20 +2040,24 @@ function SurveyFeedbackDetail({
       className="panel-scroll"
       style={{ height: '100%', overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
-      {/* ← Feedback */}
-      <button
-        onClick={onBack}
-        className="hover:bg-[#F1F2F5] transition-colors"
-        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-        Feedback
-      </button>
+      {/* ── Sticky header ── */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 0' }}>
+        {/* ← Feedback */}
+        <button
+          onClick={onBack}
+          className="hover:bg-[#F1F2F5] transition-colors"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Feedback
+        </button>
 
-      {/* Author row: avatar + name/role + action icons */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+      </div>
+
+      {/* Author row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, marginTop: 12 }}>
         <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: card.borderColor ? '#222428' : 'white', fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
         </div>
@@ -2207,20 +2216,24 @@ function FeedbackCardDetailView({
       className="panel-scroll"
       style={{ height: '100%', overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
-      {/* ← Feedback back button */}
-      <button
-        onClick={onBack}
-        className="hover:bg-[#F1F2F5] transition-colors"
-        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-        Feedback
-      </button>
+      {/* ── Sticky header ── */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 0' }}>
+        {/* ← Feedback back button */}
+        <button
+          onClick={onBack}
+          className="hover:bg-[#F1F2F5] transition-colors"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Feedback
+        </button>
+
+      </div>
 
       {/* Author info */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20, marginTop: 12 }}>
         <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: card.borderColor ? '#222428' : 'white', fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
         </div>

@@ -23,6 +23,7 @@ import {
   IconCard,
   IconEyeOpen,
   IconSquarePencil,
+  IconSocialJira,
   Input,
 } from '@mirohq/design-system'
 
@@ -311,7 +312,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 <span className="font-body font-semibold text-[16px] text-[#1a1b1e] leading-none">Import records from</span>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    { icon: <img src={imgJiraLogo} alt="Jira" className="w-5 h-5 object-contain" />, label: 'Jira', tooltip: 'Import issues and epics from your Jira projects', checked: importJira, toggle: () => { setImportJira(v => !v); setImportTables(false); setImportCsv(false) } },
+                    { icon: <IconSocialJira css={{ width: 20, height: 20 }} />, label: 'Jira', tooltip: 'Import issues and epics from your Jira projects', checked: importJira, toggle: () => { setImportJira(v => !v); setImportTables(false); setImportCsv(false) } },
                     { icon: <IconTable css={{ width: 20, height: 20 }} />, label: 'Tables', tooltip: 'Pull in items from your Miro tables', checked: importTables, toggle: () => { setImportTables(v => !v); setImportJira(false); setImportCsv(false) } },
                     { icon: <IconFileSpreadsheet css={{ width: 20, height: 20 }} />, label: 'CSV', tooltip: 'Upload a spreadsheet of work items', checked: importCsv, toggle: () => { setImportCsv(v => !v); setImportJira(false); setImportTables(false) } },
                   ].map(({ icon, label, tooltip, checked, toggle }) => (

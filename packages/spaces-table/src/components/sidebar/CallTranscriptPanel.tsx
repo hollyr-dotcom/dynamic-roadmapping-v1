@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { InputSearch } from '@mirohq/design-system'
+import { InputSearch, IconUser } from '@mirohq/design-system'
 import { CompanyLogo } from '../CompanyLogo'
 import { SourceLogoChip } from './SourceLogoChip'
 
@@ -20,6 +20,7 @@ interface CallTranscriptPanelProps {
   transcript: TranscriptLine[]
   onBack: () => void
   highlightColor?: string
+  avatarColor?: string
 }
 
 const AVATAR_NO_PHOTO = 'https://www.figma.com/api/mcp/asset/4d11fed8-3b68-4a90-b907-9999522076d0'
@@ -46,7 +47,7 @@ const CHIP: React.CSSProperties = {
   fontFamily: "'Open Sans', sans-serif",
 }
 
-export function CallTranscriptPanel({ author, company, date, transcript, onBack, highlightColor = '#f1f2f5' }: CallTranscriptPanelProps) {
+export function CallTranscriptPanel({ author, company, date, transcript, onBack, highlightColor = '#f1f2f5', avatarColor }: CallTranscriptPanelProps) {
   const [search, setSearch] = useState('')
   const [authorName, authorRole] = author.split(',').map(s => s.trim())
 
@@ -59,37 +60,45 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack,
       className="panel-scroll"
       style={{ height: '100%', overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
-      {/* ← Feedback back button */}
-      <button
-        onClick={onBack}
-        className="hover:bg-[#F1F2F5] transition-colors"
-        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0 8px 4px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-        Feedback
-      </button>
+      {/* ── Sticky header: back button only ── */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 8px' }}>
+        {/* ← Feedback back button */}
+        <button
+          onClick={onBack}
+          className="hover:bg-[#F1F2F5] transition-colors"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0 8px 4px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 0, marginLeft: -8, marginTop: 0, fontWeight: 600 }}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Feedback
+        </button>
+      </div>
 
       {/* Caller info */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#f1f2f5', position: 'relative', flexShrink: 0 }}>
-          <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%', borderRadius: '50%' }} src={AVATAR_NO_PHOTO} />
-          <div style={{ position: 'absolute', inset: '18.75% 14.44% 0 14.44%' }}>
-            <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%' }} src={AVATAR_VECTOR} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 15, paddingBottom: 20, marginTop: 12 }}>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarColor ?? '#f1f2f5', position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {avatarColor
+              ? <IconUser css={{ width: 20, height: 20, color: 'rgba(0,0,0,0.35)' }} />
+              : <>
+                  <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%', borderRadius: '50%' }} src={AVATAR_NO_PHOTO} />
+                  <div style={{ position: 'absolute', inset: '18.75% 14.44% 0 14.44%' }}>
+                    <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%' }} src={AVATAR_VECTOR} />
+                  </div>
+                </>
+            }
+          </div>
+          <div>
+            <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>
+              {authorName}
+            </p>
+            {authorRole && (
+              <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>
+                {authorRole}
+              </p>
+            )}
           </div>
         </div>
-        <div>
-          <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>
-            {authorName}
-          </p>
-          {authorRole && (
-            <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>
-              {authorRole}
-            </p>
-          )}
-        </div>
-      </div>
 
       {/* Metadata fields */}
       <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
@@ -129,7 +138,7 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack,
       </div>
 
       {/* Keyword search */}
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 12 }}>
         <InputSearch
           value={search}
           onChange={e => setSearch(e.target.value)}
