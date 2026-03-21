@@ -85,7 +85,7 @@ const PRIORITY_LABELS: Record<string, string> = {
 
 // Colors matched to KanbanBoard column tags
 const PRIORITY_CHIP: Record<string, { bg: string; color: string }> = {
-  triage: { bg: '#BADEB1', color: '#600000' },
+  triage: { bg: '#D1F09F', color: '#600000' },
   now:    { bg: '#b5ecff', color: '#003d54' },
   next:   { bg: '#ffc795', color: '#5c3200' },
   later:  { bg: '#d4bbff', color: '#2d0066' },
@@ -144,20 +144,20 @@ const CARD_WEIGHTS = [0.13, 0.12, 0.10, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06, 0.05
 const isStoreReview = (source?: string) => source === 'App Store' || source === 'Play Store'
 
 const CARD_STYLES = [
-  { borderColor: '#BADEB1', Icon: IconHeart, stars: 3, date: 'Aug 02', source: 'App Store' },
+  { borderColor: '#D1F09F', Icon: IconHeart, stars: 3, date: 'Aug 02', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Jul 18', source: 'Gong' },
   { borderColor: '#ffd4b2', Icon: IconUserTickDown, date: 'Jun 30', source: 'SurveyMonkey' },
-  { borderColor: '#BADEB1', Icon: IconHeart, stars: 5, date: 'Jun 12', source: 'App Store' },
+  { borderColor: '#D1F09F', Icon: IconHeart, stars: 5, date: 'Jun 12', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'May 28', source: 'Play Store' },
-  { borderColor: '#BADEB1', Icon: IconHeart, stars: 4, date: 'May 14', source: 'Gong' },
+  { borderColor: '#D1F09F', Icon: IconHeart, stars: 4, date: 'May 14', source: 'Gong' },
   { borderColor: '#ffd4b2', Icon: IconUserTickDown, date: 'Apr 29', source: 'SurveyMonkey' },
-  { borderColor: '#BADEB1', Icon: IconHeart, stars: 5, date: 'Apr 11', source: 'Play Store' },
+  { borderColor: '#D1F09F', Icon: IconHeart, stars: 5, date: 'Apr 11', source: 'Play Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Mar 27', source: 'Gong' },
-  { borderColor: '#BADEB1', Icon: IconHeart, stars: 2, date: 'Mar 10', source: 'App Store' },
+  { borderColor: '#D1F09F', Icon: IconHeart, stars: 2, date: 'Mar 10', source: 'App Store' },
   { borderColor: '#ffd4b2', Icon: IconUserTickDown, date: 'Feb 22', source: 'SurveyMonkey' },
-  { borderColor: '#BADEB1', Icon: IconHeart, stars: 4, date: 'Feb 05', source: 'Play Store' },
+  { borderColor: '#D1F09F', Icon: IconHeart, stars: 4, date: 'Feb 05', source: 'Play Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Jan 20', source: 'Gong' },
-  { borderColor: '#BADEB1', Icon: IconHeart, stars: 5, date: 'Jan 08', source: 'App Store' },
+  { borderColor: '#D1F09F', Icon: IconHeart, stars: 5, date: 'Jan 08', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag, date: 'Dec 19', source: 'Play Store' },
 ]
 
@@ -288,7 +288,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   }, [initialCompany])
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null)
   const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string; source?: string; stars?: number } | null>(null)
-  const [callCard, setCallCard] = useState<{ title: string; author: string; company: string; date: string; transcript: TranscriptLine[] } | null>(null)
+  const [callCard, setCallCard] = useState<{ title: string; author: string; company: string; date: string; transcript: TranscriptLine[]; borderColor?: string } | null>(null)
   const [dismissedCards, setDismissedCards] = useState<Set<number>>(new Set())
   const [promptCards, setPromptCards] = useState<Set<number>>(new Set())
   const [showToast, setShowToast] = useState(false)
@@ -713,7 +713,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   >
                     {promptCards.has(i)
                       ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
-                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i] }) : undefined} />
+                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
                     }
                   </div>
                 ))}
@@ -847,18 +847,21 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             date={callCard.date}
             transcript={callCard.transcript}
             onBack={() => setCallCard(null)}
+            highlightColor={callCard.borderColor === '#d4bbff' ? '#EFEDFD' : '#f1f2f5'}
           />
         )}
         {selectedFeedbackCard && isStoreReview(selectedFeedbackCard.source) && (
           <AppStoreReviewDetail
             card={selectedFeedbackCard}
             onBack={() => setSelectedFeedbackCard(null)}
+            highlightColor={selectedFeedbackCard.borderColor === '#D1F09F' ? '#EAF6E6' : '#f1f2f5'}
           />
         )}
         {selectedFeedbackCard?.source === 'SurveyMonkey' && (
           <SurveyFeedbackDetail
             card={selectedFeedbackCard}
             onBack={() => setSelectedFeedbackCard(null)}
+            highlightColor={selectedFeedbackCard.borderColor === '#ffd4b2' ? '#FFEEDE' : '#f1f2f5'}
           />
         )}
         {selectedFeedbackCard && !isStoreReview(selectedFeedbackCard.source) && selectedFeedbackCard.source !== 'SurveyMonkey' && (
@@ -867,6 +870,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             onBack={() => setSelectedFeedbackCard(null)}
             onClose={onClose}
             onAddToBoard={onAddToBoard}
+            highlightColor={selectedFeedbackCard.borderColor === '#d4bbff' ? '#EFEDFD' : '#f1f2f5'}
           />
         )}
       </div>
@@ -1545,9 +1549,11 @@ function FeedbackPrompt({ onSubmit, onClose }: { onSubmit: () => void; onClose: 
 function AppStoreReviewDetail({
   card,
   onBack,
+  highlightColor = '#f1f2f5',
 }: {
   card: { title: string; text: string; author: string; date: string; companies: string[]; stars?: number; borderColor?: string }
   onBack: () => void
+  highlightColor?: string
 }) {
   const authorParts = card.author.split(',')
   const authorName = authorParts[0].trim()
@@ -1614,7 +1620,7 @@ function AppStoreReviewDetail({
       </div>
 
       {/* Review card */}
-      <div style={{ backgroundColor: '#f1f2f5', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ backgroundColor: highlightColor, borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
         {/* Stars */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {Array.from({ length: 5 }).map((_, i) => (
@@ -1695,11 +1701,11 @@ function FeedbackCard({
       {/* Card header: icon + category (on hover) + actions */}
       {(() => {
         const category =
-          borderColor === '#BADEB1' ? 'User Praise' :
+          borderColor === '#D1F09F' ? 'User Praise' :
           borderColor === '#d4bbff' ? 'User Request' :
           'User Problem'
         const categoryColor =
-          borderColor === '#BADEB1' ? { bg: '#EAFAEA', text: '#3C3F4A' } :
+          borderColor === '#D1F09F' ? { bg: '#EAFAEA', text: '#3C3F4A' } :
           borderColor === '#d4bbff' ? { bg: '#EFE9FF', text: '#3C3F4A' } :
           { bg: '#FFF0E0', text: '#3C3F4A' }
         const iconSize = category === 'User Problem' ? 24 : 20
@@ -1962,9 +1968,11 @@ function makeResponseId(seed: string) {
 function SurveyFeedbackDetail({
   card,
   onBack,
+  highlightColor = '#f1f2f5',
 }: {
   card: { title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string }
   onBack: () => void
+  highlightColor?: string
 }) {
   const authorParts = card.author.split(',')
   const authorName = authorParts[0].trim()
@@ -2081,7 +2089,7 @@ function SurveyFeedbackDetail({
       </div>
 
       {/* Summary bubble */}
-      <div style={{ backgroundColor: '#f1f2f5', borderRadius: 10, padding: 16, marginBottom: 20 }}>
+      <div style={{ backgroundColor: highlightColor, borderRadius: 10, padding: 16, marginBottom: 20 }}>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{summary}</p>
       </div>
 
@@ -2131,11 +2139,13 @@ function FeedbackCardDetailView({
   onBack,
   onClose,
   onAddToBoard,
+  highlightColor = '#f1f2f5',
 }: {
   card: { title: string; text: string; author: string; date: string; companies: string[] }
   onBack: () => void
   onClose: () => void
   onAddToBoard?: (data: import('../canvas/CanvasFeedbackCard').FeedbackCardData) => void
+  highlightColor?: string
 }) {
   const [activeTab, setActiveTab] = useState('Conversation')
   const [search, setSearch] = useState('')
@@ -2257,7 +2267,7 @@ function FeedbackCardDetailView({
       </div>
 
       {/* Grey box — highlighted excerpt */}
-      <div style={{ backgroundColor: '#f1f2f5', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 16 }}>
+      <div style={{ backgroundColor: highlightColor, borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 16 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <span style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1" }}>{transcript[0].speaker}</span>
@@ -2305,7 +2315,7 @@ function FeedbackCardDetailView({
               const entry = convMenuIndex === 0 ? transcript[0] : transcript[convMenuIndex ?? 0]
               const text = entry ? (entry.text + (entry.bold ?? '')) : ''
               const cardType = classifyEntry(text, card.borderColor ?? '')
-              const borderColor = cardType === 'request' ? '#d4bbff' : cardType === 'problem' ? '#ffd4b2' : '#BADEB1'
+              const borderColor = cardType === 'request' ? '#d4bbff' : cardType === 'problem' ? '#ffd4b2' : '#D1F09F'
               onAddToBoard?.({
                 title: card.title,
                 text,

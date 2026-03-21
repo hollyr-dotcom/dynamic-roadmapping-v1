@@ -41,7 +41,7 @@ const JIRA_KEY_MAP: Record<string, string> = {
 }
 
 const PRIORITY_CHIP: Record<string, { bg: string; color: string }> = {
-  triage: { bg: '#BADEB1', color: '#600000' },
+  triage: { bg: '#D1F09F', color: '#600000' },
   now:    { bg: '#b5ecff', color: '#003d54' },
   next:   { bg: '#ffc795', color: '#5c3200' },
   later:  { bg: '#d4bbff', color: '#2d0066' },
@@ -60,10 +60,10 @@ const INSIGHT_SUMMARIES: Record<string, string> = {
 }
 
 const CARD_STYLES = [
-  { borderColor: '#BADEB1', Icon: IconHeart,                  stars: 3, date: 'Aug 02', source: 'App Store' },
+  { borderColor: '#D1F09F', Icon: IconHeart,                  stars: 3, date: 'Aug 02', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag,                              date: 'Jul 18', source: 'Gong' },
   { borderColor: '#ffd4b2', Icon: IconUserTickDown,            date: 'Jun 30', source: 'SurveyMonkey' },
-  { borderColor: '#BADEB1', Icon: IconHeart,                  stars: 5, date: 'Jun 12', source: 'App Store' },
+  { borderColor: '#D1F09F', Icon: IconHeart,                  stars: 5, date: 'Jun 12', source: 'App Store' },
   { borderColor: '#d4bbff', Icon: IconFlag,                              date: 'May 28', source: 'Play Store' },
 ]
 
