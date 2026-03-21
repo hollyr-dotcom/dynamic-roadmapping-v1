@@ -19,6 +19,7 @@ interface CallTranscriptPanelProps {
   date: string
   transcript: TranscriptLine[]
   onBack: () => void
+  highlightColor?: string
 }
 
 const AVATAR_NO_PHOTO = 'https://www.figma.com/api/mcp/asset/4d11fed8-3b68-4a90-b907-9999522076d0'
@@ -45,7 +46,7 @@ const CHIP: React.CSSProperties = {
   fontFamily: "'Open Sans', sans-serif",
 }
 
-export function CallTranscriptPanel({ author, company, date, transcript, onBack }: CallTranscriptPanelProps) {
+export function CallTranscriptPanel({ author, company, date, transcript, onBack, highlightColor = '#f1f2f5' }: CallTranscriptPanelProps) {
   const [search, setSearch] = useState('')
   const [authorName, authorRole] = author.split(',').map(s => s.trim())
 
@@ -140,7 +141,7 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack 
 
       {/* Grey box: highlighted conversation */}
       {boxLines.length > 0 && (
-        <div style={{ backgroundColor: '#f1f2f5', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 16 }}>
+        <div style={{ backgroundColor: highlightColor, borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 16 }}>
           {boxLines.map((line, i) => (
             <div key={i}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
