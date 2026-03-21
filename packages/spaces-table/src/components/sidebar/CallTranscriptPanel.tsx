@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { InputSearch } from '@mirohq/design-system'
+import { InputSearch, IconUser } from '@mirohq/design-system'
 import { CompanyLogo } from '../CompanyLogo'
 import { SourceLogoChip } from './SourceLogoChip'
 
@@ -20,6 +20,7 @@ interface CallTranscriptPanelProps {
   transcript: TranscriptLine[]
   onBack: () => void
   highlightColor?: string
+  avatarColor?: string
 }
 
 const AVATAR_NO_PHOTO = 'https://www.figma.com/api/mcp/asset/4d11fed8-3b68-4a90-b907-9999522076d0'
@@ -46,7 +47,7 @@ const CHIP: React.CSSProperties = {
   fontFamily: "'Open Sans', sans-serif",
 }
 
-export function CallTranscriptPanel({ author, company, date, transcript, onBack, highlightColor = '#f1f2f5' }: CallTranscriptPanelProps) {
+export function CallTranscriptPanel({ author, company, date, transcript, onBack, highlightColor = '#f1f2f5', avatarColor }: CallTranscriptPanelProps) {
   const [search, setSearch] = useState('')
   const [authorName, authorRole] = author.split(',').map(s => s.trim())
 
@@ -73,11 +74,16 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack,
 
       {/* Caller info */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#f1f2f5', position: 'relative', flexShrink: 0 }}>
-          <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%', borderRadius: '50%' }} src={AVATAR_NO_PHOTO} />
-          <div style={{ position: 'absolute', inset: '18.75% 14.44% 0 14.44%' }}>
-            <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%' }} src={AVATAR_VECTOR} />
-          </div>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarColor ?? '#f1f2f5', position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {avatarColor
+            ? <IconUser css={{ width: 20, height: 20, color: 'rgba(0,0,0,0.35)' }} />
+            : <>
+                <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%', borderRadius: '50%' }} src={AVATAR_NO_PHOTO} />
+                <div style={{ position: 'absolute', inset: '18.75% 14.44% 0 14.44%' }}>
+                  <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%' }} src={AVATAR_VECTOR} />
+                </div>
+              </>
+          }
         </div>
         <div>
           <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>
