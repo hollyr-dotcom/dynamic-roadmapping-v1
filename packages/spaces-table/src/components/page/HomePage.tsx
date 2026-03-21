@@ -27,7 +27,6 @@ import {
   Input,
 } from '@mirohq/design-system'
 
-const imgJiraLogo = '/images/jira-logo.svg'
 const imgBoardIconTable = '/images/board-icon-table.svg'
 const imgLogotype = '/images/miro-logotype.svg'
 const imgFlowchart = '/images/template-flowchart.svg'
