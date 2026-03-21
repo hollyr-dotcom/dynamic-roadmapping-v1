@@ -56,7 +56,7 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack 
   return (
     <div
       className="panel-scroll"
-      style={{ height: '100%', overflowY: 'auto', padding: '8px 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+      style={{ height: '100%', overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
       {/* ← Feedback back button */}
       <button
