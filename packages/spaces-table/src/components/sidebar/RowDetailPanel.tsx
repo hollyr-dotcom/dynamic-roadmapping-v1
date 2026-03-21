@@ -849,6 +849,18 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         )}
       </div>
       </div>{/* end slider */}
+
+      {/* ── Feedback card detail overlay — inside content area so it doesn't cover header/tabs ─── */}
+      {selectedFeedbackCard && (
+        <div className="absolute inset-0 z-10 bg-white flex flex-col">
+          <FeedbackCardDetailView
+            card={selectedFeedbackCard}
+            onBack={() => setSelectedFeedbackCard(null)}
+            onClose={onClose}
+            onAddToBoard={onAddToBoard}
+          />
+        </div>
+      )}
       </div>{/* end overflow wrapper */}
 
       {/* ── Chat overlay (full-panel, avoids slider height-shift glitch) ─── */}
@@ -859,18 +871,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             company={selectedCompany ?? ''}
             onBack={() => setSelectedPrompt(null)}
             onClose={onClose}
-          />
-        </div>
-      )}
-
-      {/* ── Feedback card detail overlay ─── */}
-      {selectedFeedbackCard && (
-        <div className="absolute inset-0 z-10 bg-white flex flex-col">
-          <FeedbackCardDetailView
-            card={selectedFeedbackCard}
-            onBack={() => setSelectedFeedbackCard(null)}
-            onClose={onClose}
-            onAddToBoard={onAddToBoard}
           />
         </div>
       )}
