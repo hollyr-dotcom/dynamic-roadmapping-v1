@@ -1590,15 +1590,16 @@ function AppStoreReviewDetail({
           Feedback
         </button>
 
-        {/* Author */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 15, paddingBottom: 20 }}>
-          <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: card.borderColor ?? '#f1f2f5', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <IconUser css={{ width: 20, height: 20, color: 'rgba(0,0,0,0.35)' }} />
-          </div>
-          <div>
-            <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
-            {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
-          </div>
+      </div>
+
+      {/* Author */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20, marginTop: 12 }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: card.borderColor ?? '#f1f2f5', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <IconUser css={{ width: 20, height: 20, color: 'rgba(0,0,0,0.35)' }} />
+        </div>
+        <div>
+          <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
+          {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
         </div>
       </div>
 
@@ -2057,15 +2058,16 @@ function SurveyFeedbackDetail({
           Feedback
         </button>
 
-        {/* Author row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: 20 }}>
-          <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: card.borderColor ? '#222428' : 'white', fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
-            {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
-          </div>
+      </div>
+
+      {/* Author row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, marginTop: 12 }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: card.borderColor ? '#222428' : 'white', fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
+          {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
         </div>
       </div>
 
@@ -2237,15 +2239,16 @@ function FeedbackCardDetailView({
           Feedback
         </button>
 
-        {/* Author info */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 15, paddingBottom: 20 }}>
-          <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: card.borderColor ? '#222428' : 'white', fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
-          </div>
-          <div>
-            <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
-            {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
-          </div>
+      </div>
+
+      {/* Author info */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20, marginTop: 12 }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: card.borderColor ? '#222428' : 'white', fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
+        </div>
+        <div>
+          <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
+          {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
         </div>
       </div>
 
