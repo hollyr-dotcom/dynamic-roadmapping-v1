@@ -6,7 +6,6 @@ import { CompanyLogo } from '../CompanyLogo'
 import { SourceLogoChip } from './SourceLogoChip'
 import { CallTranscriptPanel, type TranscriptLine } from './CallTranscriptPanel'
 import {
-  IconInformationMarkCircle,
   IconCross,
   IconDotsThreeVertical,
   IconWarning,
@@ -633,7 +632,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   position: 'relative',
                 }}
               >
-                <IconInformationMarkCircle size="medium" css={{ flexShrink: 0, marginTop: 1, color: '#4262FF' }} />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, paddingRight: 20 }}>
                   <p className="text-[16px] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1", color: '#1a1b1e', margin: 0 }}>
                     Low-confidence Insights
@@ -1488,9 +1486,6 @@ function StatBox({ value, format, label, wow, noPadding }: { value: number; form
       </div>
       <span className="flex items-center gap-1 text-[14px] text-[#656B81] leading-[1.4]">
         {label}
-        {label === 'Impacted Customer ARR' && (
-          <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#656B81', marginLeft: 4 }} />
-        )}
       </span>
     </div>
   )
@@ -1609,7 +1604,6 @@ function AppStoreReviewDetail({
           <span style={LABEL}>Source</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <SourceLogoChip source={card.source ?? 'App Store'} />
-            <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#aeb2c0' }} />
           </div>
         </div>
         {card.companies[0] && (
@@ -1713,7 +1707,7 @@ function FeedbackCard({
           borderColor === '#D1F09F' ? { bg: '#EAFAEA', text: '#3C3F4A' } :
           borderColor === '#d4bbff' ? { bg: '#EFE9FF', text: '#3C3F4A' } :
           { bg: '#FFF0E0', text: '#3C3F4A' }
-        const iconSize = category === 'User Problem' ? 24 : 20
+        const iconSize = category === 'User Problem' ? 30 : 26
         return (
       <div className="flex items-start gap-2">
         <span style={{
@@ -1724,8 +1718,8 @@ function FeedbackCard({
           gap: hovered ? 6 : 0,
           fontSize: 14,
           fontWeight: 400,
-          width: hovered ? 'auto' : 32,
-          height: 32,
+          width: hovered ? 'auto' : 40,
+          height: 40,
           padding: hovered ? '0 14px 0 0' : '0 4px 0 0',
           borderRadius: 6,
           backgroundColor: 'transparent',
@@ -2394,9 +2388,6 @@ function FieldRow({
       <div className={`w-[100px] shrink-0 flex ${alignStart ? 'h-[32px] items-end pb-[5px]' : 'items-center'}`}>
         <span className="flex items-center gap-1 text-[14px] text-[#656B81] leading-[1.4]">
         {label}
-        {label === 'Impacted Customer ARR' && (
-          <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#656B81', marginLeft: 4 }} />
-        )}
       </span>
       </div>
       <div className="flex-1 min-w-0 flex items-center flex-wrap">
