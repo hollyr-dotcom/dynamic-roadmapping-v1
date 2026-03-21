@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { InputSearch } from '@mirohq/design-system'
 
 export interface TranscriptLine {
   speaker: string
@@ -127,16 +128,13 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack 
       </div>
 
       {/* Keyword search */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: '1.5px solid #e0e2e8', borderRadius: 8, padding: '0 12px', height: 32, marginBottom: 16 }}>
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
-          <circle cx="6" cy="6" r="4.5" stroke="#aeb2c0" strokeWidth="1.3" />
-          <path d="M10 10l2.5 2.5" stroke="#aeb2c0" strokeWidth="1.3" strokeLinecap="round" />
-        </svg>
-        <input
+      <div style={{ marginBottom: 16 }}>
+        <InputSearch
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Search keywords..."
-          style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}
+          size="medium"
+          css={{ width: '100%' }}
         />
       </div>
 
