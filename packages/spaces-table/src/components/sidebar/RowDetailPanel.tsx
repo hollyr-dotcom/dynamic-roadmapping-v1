@@ -35,6 +35,8 @@ import {
   IconStackedCircles,
   IconPlusBox,
   IconUser,
+  IconSmileyPlus,
+  IconPaperPlaneFilledRight,
 } from '@mirohq/design-system'
 
 function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
@@ -97,38 +99,38 @@ const FEEDBACK_FILTER_SUB_OPTIONS: Record<string, string[]> = {
 }
 
 const INSIGHT_SUMMARIES: Record<string, string> = {
-  '1':  'Customer feedback strongly signals demand for personalised portfolio guidance, with 142 mentions across 4,853 accounts. Users report that generic recommendations erode trust and lead to disengagement — AI-driven risk-adjusted suggestions are cited as a key driver of retention and upsell potential, with an estimated $425K revenue impact.',
-  'r1': 'Customer feedback strongly signals demand for personalised portfolio guidance, with 142 mentions across 4,853 accounts. Users report that generic recommendations erode trust and lead to disengagement — AI-driven risk-adjusted suggestions are cited as a key driver of retention and upsell potential, with an estimated $425K revenue impact.',
-  '2':  'With 118 mentions from 9,873 customers, automatic transaction categorisation ranks among the highest-impact requests in the backlog. Feedback highlights frustration with manual tagging errors and time spent correcting misclassified entries. Delivering accurate ML-based categorisation is projected to drive $917K in retained and expanded revenue.',
-  'r2': 'With 118 mentions from 9,873 customers, automatic transaction categorisation ranks among the highest-impact requests in the backlog. Feedback highlights frustration with manual tagging errors and time spent correcting misclassified entries. Delivering accurate ML-based categorisation is projected to drive $917K in retained and expanded revenue.',
-  '3':  'Customers consistently raise the lack of forward-looking budget intelligence as a gap that limits their financial confidence. 105 mentions across 2,957 accounts point to a clear need for predictive spending forecasts. Teams at Dropbox and Asana have specifically flagged this as a blocker to broader adoption, representing $235K in at-risk revenue.',
-  'r3': 'Customers consistently raise the lack of forward-looking budget intelligence as a gap that limits their financial confidence. 105 mentions across 2,957 accounts point to a clear need for predictive spending forecasts. Teams at Dropbox and Asana have specifically flagged this as a blocker to broader adoption, representing $235K in at-risk revenue.',
-  '4':  'International customers report significant friction around currency management, with 98 mentions spanning 8,532 accounts. Feedback from Atlassian and Notion highlights that delayed FX conversion and hidden fees are the top reasons users switch to competitor products. Solving this unlocks an estimated $843K in expansion revenue.',
-  'r4': 'International customers report significant friction around currency management, with 98 mentions spanning 8,532 accounts. Feedback from Atlassian and Notion highlights that delayed FX conversion and hidden fees are the top reasons users switch to competitor products. Solving this unlocks an estimated $843K in expansion revenue.',
-  '5':  'Automated savings rules surface frequently in feedback from users who want the app to work proactively on their behalf. 64 mentions across 6,394 customers reflect strong interest in set-and-forget financial automation. Shopify and Linear accounts indicate this feature would directly influence renewal decisions, with $629K in projected impact.',
-  'r5': 'Automated savings rules surface frequently in feedback from users who want the app to work proactively on their behalf. 64 mentions across 6,394 customers reflect strong interest in set-and-forget financial automation. Shopify and Linear accounts indicate this feature would directly influence renewal decisions, with $629K in projected impact.',
-  '6':  'Natural language search is one of the most-requested power-user features, with 48 mentions across 7,583 accounts. Customers at Apple, Google, and Slack describe current search as a friction point that slows down reconciliation workflows. Enabling plain-English queries is estimated to contribute $748K in retained revenue by reducing churn among high-value users.',
-  'r10': 'Natural language search is one of the most-requested power-user features, with 48 mentions across 7,583 accounts. Customers at Apple, Google, and Slack describe current search as a friction point that slows down reconciliation workflows. Enabling plain-English queries is estimated to contribute $748K in retained revenue by reducing churn among high-value users.',
-  '7':  'Recurring investment automation is gaining traction with customers focused on long-term wealth building, appearing in 45 mentions across 3,578 accounts. Feedback from Asana and Linear teams points to dollar-cost averaging as a missing capability that drives users to third-party investment apps. Closing this gap is valued at $317K in incremental revenue.',
-  'r6': 'Recurring investment automation is gaining traction with customers focused on long-term wealth building, appearing in 45 mentions across 3,578 accounts. Feedback from Asana and Linear teams points to dollar-cost averaging as a missing capability that drives users to third-party investment apps. Closing this gap is valued at $317K in incremental revenue.',
-  '8':  'Fraud detection improvements are cited in 23 mentions from 5,789 accounts, with enterprise customers at Apple and Google raising concerns about high-value transfer risk. Feedback highlights that the current anomaly model generates too many false positives, eroding confidence. Upgrading to v2 scoring is tied to $538K in at-risk contracts pending security review.',
-  'r11': 'Fraud detection improvements are cited in 23 mentions from 5,789 accounts, with enterprise customers at Apple and Google raising concerns about high-value transfer risk. Feedback highlights that the current anomaly model generates too many false positives, eroding confidence. Upgrading to v2 scoring is tied to $538K in at-risk contracts pending security review.',
-  '9':  'Social investing features generate 21 mentions across 1,039 accounts, primarily from younger, engagement-driven users. Feedback centres on wanting to learn from top performers rather than rely solely on personal research. While the revenue impact ($101K) is modest, this feature is a key differentiator for driving organic growth and word-of-mouth referrals.',
-  '10': 'Tax-loss harvesting is a high-stakes feature with only 16 mentions but an outsized $921K revenue impact across 9,283 accounts. Enterprise customers at Spotify and Stripe have flagged the absence of end-of-year optimisation tools as a direct factor in delayed renewals. This feature disproportionately resonates with premium-tier users managing large portfolios.',
-  'r7': 'Tax-loss harvesting is a high-stakes feature with only 16 mentions but an outsized $921K revenue impact across 9,283 accounts. Enterprise customers at Spotify and Stripe have flagged the absence of end-of-year optimisation tools as a direct factor in delayed renewals. This feature disproportionately resonates with premium-tier users managing large portfolios.',
-  '11': "Open Banking integration appears in 16 mentions from 4,759 accounts, particularly from users who manage finances across multiple institutions. Atlassian and Jira teams report that the inability to aggregate external accounts limits the app's utility as a single source of financial truth. API connectivity is estimated to unlock $415K in expansion opportunities.",
-  'r8': "Open Banking integration appears in 16 mentions from 4,759 accounts, particularly from users who manage finances across multiple institutions. Atlassian and Jira teams report that the inability to aggregate external accounts limits the app's utility as a single source of financial truth. API connectivity is estimated to unlock $415K in expansion opportunities.",
-  '12': 'The financial literacy hub surfaces in 12 mentions across 8,531 accounts, with feedback pointing to a gap between product capability and user confidence. Customers at Figma and Airbnb describe onboarding drop-off as closely tied to users not understanding core financial concepts. An in-app learning centre is projected to improve activation rates and contribute $823K in retained revenue.',
-  'r14': 'The financial literacy hub surfaces in 12 mentions across 8,531 accounts, with feedback pointing to a gap between product capability and user confidence. Customers at Figma and Airbnb describe onboarding drop-off as closely tied to users not understanding core financial concepts. An in-app learning centre is projected to improve activation rates and contribute $823K in retained revenue.',
-  '13': 'Accessibility gaps are flagged in 10 mentions across 2,649 accounts, often escalated by enterprise procurement and legal teams at Notion and Asana. Feedback indicates that non-compliance with WCAG 2.2 AA is a contractual blocker in several renewal negotiations. Resolving these issues is directly tied to $214K in contracts that are currently at risk.',
-  'r13': 'Accessibility gaps are flagged in 10 mentions across 2,649 accounts, often escalated by enterprise procurement and legal teams at Notion and Asana. Feedback indicates that non-compliance with WCAG 2.2 AA is a contractual blocker in several renewal negotiations. Resolving these issues is directly tied to $214K in contracts that are currently at risk.',
-  '14': 'Push notifications for price alerts appear in 10 mentions from 7,582 accounts, with strong signal from goal-oriented users at Asana and Google. Feedback highlights that without timely alerts, users miss key market moments and feel the app is passive rather than proactive. A well-executed notification engine is estimated to improve DAU by 18% and contribute $738K in retained revenue.',
-  'r9': 'Push notifications for price alerts appear in 10 mentions from 7,582 accounts, with strong signal from goal-oriented users at Asana and Google. Feedback highlights that without timely alerts, users miss key market moments and feel the app is passive rather than proactive. A well-executed notification engine is estimated to improve DAU by 18% and contribute $738K in retained revenue.',
-  '15': 'Crypto support generates 8 mentions across 3,214 accounts, primarily from digitally native users at Stripe. While feedback volume is low, sentiment is high-intensity — users who want crypto describe it as a dealbreaker for full adoption. The $156K revenue estimate is conservative; analyst feedback suggests crypto unlocks a new segment with 3–5x growth potential.',
-  '16': 'The advisor marketplace is mentioned across 5,621 customer accounts, with demand coming from users who want personalised guidance beyond what the app provides autonomously. Figma and Slack teams describe this as a trust-building feature that would increase willingness to pay for premium tiers, representing $490K in estimated revenue impact.',
-  '17': 'Dark mode surfaces in 6 mentions from 1,847 accounts — lower volume but consistent sentiment across Apple, Google, and Atlassian users. Feedback frames it as a quality-of-life expectation rather than a nice-to-have, with its absence noted as a signal of product immaturity. NPS data correlates dark mode delivery with a 12-point satisfaction improvement.',
-  'r12': 'Dark mode surfaces in 6 mentions from 1,847 accounts — lower volume but consistent sentiment across Apple, Google, and Atlassian users. Feedback frames it as a quality-of-life expectation rather than a nice-to-have, with its absence noted as a signal of product immaturity. NPS data correlates dark mode delivery with a 12-point satisfaction improvement.',
-  '18': 'Gamified savings challenges appear in 5 mentions from 982 accounts, driven by younger users at Shopify and Airbnb. Feedback describes the current savings experience as transactional and uninspiring — badges, streaks, and challenges are seen as motivators that could meaningfully improve goal completion rates, with $130K in projected revenue impact.',
+  '1':  'Customer feedback strongly signals demand for personalised portfolio guidance, with 142 mentions across 134 accounts. Users report that generic recommendations erode trust and lead to disengagement — AI-driven risk-adjusted suggestions are cited as a key driver of retention and upsell potential, with an estimated $425K revenue impact.',
+  'r1': 'Customer feedback strongly signals demand for personalised portfolio guidance, with 142 mentions across 134 accounts. Users report that generic recommendations erode trust and lead to disengagement — AI-driven risk-adjusted suggestions are cited as a key driver of retention and upsell potential, with an estimated $425K revenue impact.',
+  '2':  'With 118 mentions from 97 customers, automatic transaction categorisation ranks among the highest-impact requests in the backlog. Feedback highlights frustration with manual tagging errors and time spent correcting misclassified entries. Delivering accurate ML-based categorisation is projected to drive $340K in retained and expanded revenue.',
+  'r2': 'With 118 mentions from 97 customers, automatic transaction categorisation ranks among the highest-impact requests in the backlog. Feedback highlights frustration with manual tagging errors and time spent correcting misclassified entries. Delivering accurate ML-based categorisation is projected to drive $340K in retained and expanded revenue.',
+  '3':  'Customers consistently raise the lack of forward-looking budget intelligence as a gap that limits their financial confidence. 105 mentions across 89 accounts point to a clear need for predictive spending forecasts. Teams at Dropbox and Asana have specifically flagged this as a blocker to broader adoption, representing $235K in at-risk revenue.',
+  'r3': 'Customers consistently raise the lack of forward-looking budget intelligence as a gap that limits their financial confidence. 105 mentions across 89 accounts point to a clear need for predictive spending forecasts. Teams at Dropbox and Asana have specifically flagged this as a blocker to broader adoption, representing $235K in at-risk revenue.',
+  '4':  'International customers report significant friction around currency management, with 98 mentions spanning 112 accounts. Feedback from Atlassian and Notion highlights that delayed FX conversion and hidden fees are the top reasons users switch to competitor products. Solving this unlocks an estimated $390K in expansion revenue.',
+  'r4': 'International customers report significant friction around currency management, with 98 mentions spanning 112 accounts. Feedback from Atlassian and Notion highlights that delayed FX conversion and hidden fees are the top reasons users switch to competitor products. Solving this unlocks an estimated $390K in expansion revenue.',
+  '5':  'Automated savings rules surface frequently in feedback from users who want the app to work proactively on their behalf. 64 mentions across 71 customers reflect strong interest in set-and-forget financial automation. Shopify and Linear accounts indicate this feature would directly influence renewal decisions, with $250K in projected impact.',
+  'r5': 'Automated savings rules surface frequently in feedback from users who want the app to work proactively on their behalf. 64 mentions across 71 customers reflect strong interest in set-and-forget financial automation. Shopify and Linear accounts indicate this feature would directly influence renewal decisions, with $250K in projected impact.',
+  '6':  'Natural language search is one of the most-requested power-user features, with 48 mentions across 53 accounts. Customers at Apple, Google, and Slack describe current search as a friction point that slows down reconciliation workflows. Enabling plain-English queries is estimated to contribute $190K in retained revenue by reducing churn among high-value users.',
+  'r10': 'Natural language search is one of the most-requested power-user features, with 48 mentions across 53 accounts. Customers at Apple, Google, and Slack describe current search as a friction point that slows down reconciliation workflows. Enabling plain-English queries is estimated to contribute $190K in retained revenue by reducing churn among high-value users.',
+  '7':  'Recurring investment automation is gaining traction with customers focused on long-term wealth building, appearing in 45 mentions across 38 accounts. Feedback from Asana and Linear teams points to dollar-cost averaging as a missing capability that drives users to third-party investment apps. Closing this gap is valued at $160K in incremental revenue.',
+  'r6': 'Recurring investment automation is gaining traction with customers focused on long-term wealth building, appearing in 45 mentions across 38 accounts. Feedback from Asana and Linear teams points to dollar-cost averaging as a missing capability that drives users to third-party investment apps. Closing this gap is valued at $160K in incremental revenue.',
+  '8':  'Fraud detection improvements are cited in 23 mentions from 19 accounts, with enterprise customers at Apple and Google raising concerns about high-value transfer risk. Feedback highlights that the current anomaly model generates too many false positives, eroding confidence. Upgrading to v2 scoring is tied to $85K in at-risk contracts pending security review.',
+  'r11': 'Fraud detection improvements are cited in 23 mentions from 19 accounts, with enterprise customers at Apple and Google raising concerns about high-value transfer risk. Feedback highlights that the current anomaly model generates too many false positives, eroding confidence. Upgrading to v2 scoring is tied to $85K in at-risk contracts pending security review.',
+  '9':  'Social investing features generate 21 mentions across 24 accounts, primarily from younger, engagement-driven users. Feedback centres on wanting to learn from top performers rather than rely solely on personal research. While the revenue impact ($100K) is modest, this feature is a key differentiator for driving organic growth and word-of-mouth referrals.',
+  '10': 'Tax-loss harvesting is a niche but high-intent feature, with 16 mentions across 14 accounts. Enterprise customers at Spotify and Stripe have flagged the absence of end-of-year optimisation tools as a direct factor in delayed renewals. This feature disproportionately resonates with premium-tier users managing large portfolios, representing $70K in projected revenue.',
+  'r7': 'Tax-loss harvesting is a niche but high-intent feature, with 16 mentions across 14 accounts. Enterprise customers at Spotify and Stripe have flagged the absence of end-of-year optimisation tools as a direct factor in delayed renewals. This feature disproportionately resonates with premium-tier users managing large portfolios, representing $70K in projected revenue.',
+  '11': "Open Banking integration appears in 16 mentions from 18 accounts, particularly from users who manage finances across multiple institutions. Atlassian and Jira teams report that the inability to aggregate external accounts limits the app's utility as a single source of financial truth. API connectivity is estimated to unlock $80K in expansion opportunities.",
+  'r8': "Open Banking integration appears in 16 mentions from 18 accounts, particularly from users who manage finances across multiple institutions. Atlassian and Jira teams report that the inability to aggregate external accounts limits the app's utility as a single source of financial truth. API connectivity is estimated to unlock $80K in expansion opportunities.",
+  '12': 'The financial literacy hub surfaces in 12 mentions across 9 accounts, with feedback pointing to a gap between product capability and user confidence. Customers at Figma and Airbnb describe onboarding drop-off as closely tied to users not understanding core financial concepts. An in-app learning centre is projected to improve activation rates and contribute $45K in retained revenue.',
+  'r14': 'The financial literacy hub surfaces in 12 mentions across 9 accounts, with feedback pointing to a gap between product capability and user confidence. Customers at Figma and Airbnb describe onboarding drop-off as closely tied to users not understanding core financial concepts. An in-app learning centre is projected to improve activation rates and contribute $45K in retained revenue.',
+  '13': 'Accessibility gaps are flagged in 10 mentions across 11 accounts, often escalated by enterprise procurement and legal teams at Notion and Asana. Feedback indicates that non-compliance with WCAG 2.2 AA is a contractual blocker in several renewal negotiations. Resolving these issues is directly tied to $50K in contracts that are currently at risk.',
+  'r13': 'Accessibility gaps are flagged in 10 mentions across 11 accounts, often escalated by enterprise procurement and legal teams at Notion and Asana. Feedback indicates that non-compliance with WCAG 2.2 AA is a contractual blocker in several renewal negotiations. Resolving these issues is directly tied to $50K in contracts that are currently at risk.',
+  '14': 'Push notifications for price alerts appear in 10 mentions from 8 accounts, with strong signal from goal-oriented users at Asana and Google. Feedback highlights that without timely alerts, users miss key market moments and feel the app is passive rather than proactive. A well-executed notification engine is estimated to improve DAU by 18% and contribute $35K in retained revenue.',
+  'r9': 'Push notifications for price alerts appear in 10 mentions from 8 accounts, with strong signal from goal-oriented users at Asana and Google. Feedback highlights that without timely alerts, users miss key market moments and feel the app is passive rather than proactive. A well-executed notification engine is estimated to improve DAU by 18% and contribute $35K in retained revenue.',
+  '15': 'Crypto support generates 8 mentions across 6 accounts, primarily from digitally native users at Stripe. While feedback volume is low, sentiment is high-intensity — users who want crypto describe it as a dealbreaker for full adoption. The $25K revenue estimate is conservative; analyst feedback suggests crypto unlocks a new segment with 3–5x growth potential.',
+  '16': 'The advisor marketplace is mentioned across 9 customer accounts, with demand coming from users who want personalised guidance beyond what the app provides autonomously. Figma and Slack teams describe this as a trust-building feature that would increase willingness to pay for premium tiers, representing $40K in estimated revenue impact.',
+  '17': 'Dark mode surfaces in 6 mentions from 5 accounts — lower volume but consistent sentiment across Apple, Google, and Atlassian users. Feedback frames it as a quality-of-life expectation rather than a nice-to-have, with its absence noted as a signal of product immaturity. NPS data correlates dark mode delivery with a 12-point satisfaction improvement.',
+  'r12': 'Dark mode surfaces in 6 mentions from 5 accounts — lower volume but consistent sentiment across Apple, Google, and Atlassian users. Feedback frames it as a quality-of-life expectation rather than a nice-to-have, with its absence noted as a signal of product immaturity. NPS data correlates dark mode delivery with a 12-point satisfaction improvement.',
+  '18': 'Gamified savings challenges appear in 5 mentions from 7 accounts, driven by younger users at Shopify and Airbnb. Feedback describes the current savings experience as transactional and uninspiring — badges, streaks, and challenges are seen as motivators that could meaningfully improve goal completion rates, with $30K in projected revenue impact.',
 }
 
 // Per-card impact weights — must sum to 1.0
@@ -239,6 +241,14 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const [showFeedbackConfetti, setShowFeedbackConfetti] = useState(false)
   const [editingField, setEditingField] = useState<'title' | 'description' | null>(null)
   const [editValue, setEditValue] = useState('')
+  const [commentText, setCommentText] = useState('')
+  const [comments, setComments] = useState([
+    { name: 'Liam Johnson', time: 'Today, 12:30 PM', text: 'Adding rounded edges could create a friendlier look.', avatarImg: 10 },
+    { name: 'Sarah Kim', time: 'Today, 11:14 AM', text: 'Agreed — also worth checking how this lands on mobile viewports.', avatarImg: 47 },
+    { name: 'Marcus T.', time: 'Yesterday, 4:02 PM', text: 'Should we tie this to the existing design token for border radius?', avatarImg: 32 },
+  ])
+  const [resolved, setResolved] = useState(false)
+  const commentsEndRef = useRef<HTMLDivElement>(null)
   const [savePhase, setSavePhase] = useState<'refreshing' | 'success' | null>(null)
   const [saveProgress, setSaveProgress] = useState(0)
   const [saveToastExiting, setSaveToastExiting] = useState(false)
@@ -551,8 +561,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         {activeTab === 'Insights' && (
           <div className="flex flex-col gap-8 pb-6">
 
-            {/* Low-confidence Insights callout */}
-            {!insightDismissed && (
+            {/* Low-confidence Insights callout — only for AI portfolio advisor row */}
+            {!insightDismissed && (row.id === '1' || row.id === 'r1') && (
               <div
                 style={{
                   display: 'flex',
@@ -602,14 +612,14 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Unique Customers" />
                 </div>
                 <div className="flex gap-3">
-                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" />
-                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Est. Revenue Impact" />
+                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" noPadding />
+                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Est. Revenue Impact" noPadding />
                 </div>
               </div>
             </InsightSection>
 
             {/* Feedback */}
-            <div className="flex flex-col gap-3 -mt-1">
+            <div className="flex flex-col gap-3">
               {/* Feedback header row */}
               <div className="flex items-center justify-between">
                 <span className="text-[14px] font-semibold text-[#222428] leading-[1]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>
@@ -677,8 +687,85 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         )}
 
         {activeTab === 'Comments' && (
-          <div className="flex-1 flex items-center justify-center py-16">
-            <p className="text-[14px] text-[#AEB2C0]">Comments coming soon</p>
+          <div className="flex flex-col" style={{ minHeight: '100%' }}>
+            {/* Resolve toggle */}
+            <div className="flex items-center gap-2 px-2 pb-3">
+              <button
+                onClick={() => setResolved(r => !r)}
+                className="relative shrink-0"
+                style={{ width: 32, height: 18, borderRadius: 999, background: resolved ? '#4262FF' : '#E0E2E8', border: 'none', cursor: 'pointer', padding: 0, transition: 'background 150ms ease' }}
+              >
+                <span style={{ position: 'absolute', top: 2, left: resolved ? 16 : 2, width: 14, height: 14, borderRadius: '50%', background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', transition: 'left 150ms ease' }} />
+              </button>
+              <span className="text-[14px] text-[#222428]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Resolve</span>
+            </div>
+
+            {/* Comment list */}
+            <div className="flex flex-col flex-1 px-2">
+              {comments.map((comment, i) => (
+                <div key={i} className="flex gap-[9px] items-start py-2">
+                  <img
+                    src={`https://i.pravatar.cc/48?img=${comment.avatarImg}`}
+                    alt={comment.name}
+                    className="shrink-0 w-6 h-6 rounded-full object-cover"
+                  />
+                  <div className="flex flex-col gap-[4px] flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[14px] font-semibold text-[#050038] whitespace-nowrap" style={{ fontFamily: 'Open Sans, sans-serif' }}>{comment.name}</span>
+                      <span className="text-[12px] text-[#656B81]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{comment.time}</span>
+                    </div>
+                    <p className="text-[14px] text-[#222428] leading-[1.4] m-0" style={{ fontFamily: 'Open Sans, sans-serif' }}>{comment.text}</p>
+                  </div>
+                </div>
+              ))}
+              <div ref={commentsEndRef} />
+            </div>
+
+            {/* Compose box — sticky at bottom */}
+            <div className="sticky bottom-0 bg-white pt-2 pb-4 px-0" style={{ marginTop: 'auto' }}>
+              <div
+                className="flex flex-col rounded-[6px] px-2 py-2"
+                style={{ border: `1px solid ${commentText ? '#4262FF' : '#E0E2E8'}`, transition: 'border-color 150ms ease' }}
+              >
+                <textarea
+                  value={commentText}
+                  onChange={e => setCommentText(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && !e.shiftKey && commentText.trim()) {
+                      e.preventDefault()
+                      const now = new Date()
+                      const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                      setComments(prev => [...prev, { name: 'You', time: `Today, ${time}`, text: commentText.trim(), avatarImg: 1 }])
+                      setCommentText('')
+                      setTimeout(() => commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+                    }
+                  }}
+                  placeholder="Leave a comment. Use @ to mention."
+                  rows={3}
+                  className="w-full resize-none text-[14px] text-[#222428] leading-[1.4] px-2 outline-none bg-transparent placeholder-[#7D8297]"
+                  style={{ fontFamily: 'Open Sans, sans-serif', border: 'none', minHeight: 60 }}
+                />
+                <div className="flex items-center justify-end gap-1 pt-1">
+                  <button className="w-10 h-10 flex items-center justify-center rounded-lg text-[#AEB2C0]" style={{ border: 'none', background: 'none', cursor: 'default' }}>
+                    <IconSmileyPlus size="medium" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!commentText.trim()) return
+                      const now = new Date()
+                      const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                      setComments(prev => [...prev, { name: 'You', time: `Today, ${time}`, text: commentText.trim(), avatarImg: 1 }])
+                      setCommentText('')
+                      setTimeout(() => commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+                    }}
+                    className="w-10 h-10 flex items-center justify-center rounded-lg transition-colors"
+                    style={{ border: 'none', background: 'none', color: commentText.trim() ? '#4262FF' : '#AEB2C0', cursor: commentText.trim() ? 'pointer' : 'default' }}
+                  >
+                    <IconPaperPlaneFilledRight size="medium" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -1206,10 +1293,10 @@ function useAnimatedNumber(target: number, duration = 600): number {
   return displayed
 }
 
-function StatBox({ value, format, label, wow }: { value: number; format: (n: number) => string; label: string; wow?: number }) {
+function StatBox({ value, format, label, wow, noPadding }: { value: number; format: (n: number) => string; label: string; wow?: number; noPadding?: boolean }) {
   const animated = useAnimatedNumber(value)
   return (
-    <div className="flex-1 flex flex-col gap-1 pb-3">
+    <div className={`flex-1 flex flex-col gap-1 ${noPadding ? '' : 'pb-3'}`}>
       <div className="flex items-baseline gap-2">
         <span className="text-[32px] text-[#222428] leading-[1.2]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1", display: 'block' }}>
           {format(animated)}
