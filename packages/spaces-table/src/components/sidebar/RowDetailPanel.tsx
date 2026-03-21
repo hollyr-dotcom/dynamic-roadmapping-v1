@@ -505,7 +505,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   onChange={e => setEditValue(e.target.value)}
                   onBlur={() => { setEditingField(null); triggerSaveToast() }}
                   onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); if (e.key === 'Escape') setEditingField(null) }}
-                  className="text-[14px] font-bold text-[#222428] leading-[1.4] w-full px-2 py-1 rounded-md outline-none bg-white"
+                  className="text-[14px] text-[#222428] leading-[1.4] w-full px-2 py-1 rounded-md outline-none bg-white"
                   style={{ border: '1.5px solid #4262FF', boxShadow: '0 0 0 3px rgba(66,98,255,0.12)' }}
                 />
               ) : (
@@ -513,7 +513,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   className="rounded px-2 py-1 w-full cursor-text hover:bg-[#F1F2F5] transition-colors"
                   onClick={() => { setEditingField('title'); setEditValue(row.title) }}
                 >
-                  <p className="text-[14px] font-bold text-[#222428] leading-[1.4]">{row.title}</p>
+                  <p className="text-[14px] text-[#222428] leading-[1.4]">{row.title}</p>
                 </div>
               )}
             </FieldRow>
@@ -1633,11 +1633,11 @@ function AppStoreReviewDetail({
           ))}
         </div>
         {/* Title */}
-        <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.4 }}>
-          {card.title.length > 60 ? card.title.slice(0, 60) + '…' : card.title}
+        <p style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 400, fontSize: 12, color: '#222428', margin: 0, lineHeight: 1.4 }}>
+          {card.title}
         </p>
         {/* Body */}
-        <p style={{ fontSize: 14, color: '#656b81', margin: 0, lineHeight: 1.5, fontFamily: "'Open Sans', sans-serif" }}>
+        <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.5, fontFamily: "'Open Sans', sans-serif" }}>
           {card.text}
         </p>
       </div>
