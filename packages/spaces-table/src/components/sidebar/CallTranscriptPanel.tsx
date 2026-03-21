@@ -93,7 +93,7 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack,
               {authorName}
             </p>
             {authorRole && (
-              <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>
+              <p style={{ fontSize: 14, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>
                 {authorRole}
               </p>
             )}
