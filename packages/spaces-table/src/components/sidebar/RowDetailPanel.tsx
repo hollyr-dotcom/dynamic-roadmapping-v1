@@ -1748,8 +1748,8 @@ function FeedbackCard({
       >
         <div style={{ overflow: 'hidden' }}>
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: 0, gap: 8, height: 24 }}>
-            {source && <SourceLogoChip source={source} />}
             <span style={{ fontSize: 12, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{date}</span>
+            {source && <SourceLogoChip source={source} />}
             {companies[0] && (
               <CompanyLogo name={companies[0]} size={24} />
             )}
