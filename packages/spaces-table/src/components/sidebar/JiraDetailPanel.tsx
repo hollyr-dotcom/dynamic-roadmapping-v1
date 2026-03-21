@@ -561,7 +561,7 @@ function FeedbackCard({
       </span>
 
       {/* Author */}
-      <p className="text-[12px] text-[#656B81] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
+      <p className="text-[14px] text-[#656B81] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
         {author}
       </p>
 

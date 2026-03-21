@@ -763,7 +763,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   />
                   <div className="flex flex-col gap-[4px] flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-[14px] font-semibold text-[#050038] whitespace-nowrap" style={{ fontFamily: 'Open Sans, sans-serif' }}>{comment.name}</span>
+                      <span className="text-[14px] font-semibold text-[#050038] whitespace-nowrap" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>{comment.name}</span>
                       <span className="text-[12px] text-[#656B81]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{comment.time}</span>
                     </div>
                     <p className="text-[14px] text-[#222428] leading-[1.4] m-0" style={{ fontFamily: 'Open Sans, sans-serif' }}>{comment.text}</p>
@@ -1624,7 +1624,7 @@ function AppStoreReviewDetail({
           ))}
         </div>
         {/* Title */}
-        <p style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', margin: 0, marginTop: 4, lineHeight: 1.4 }}>
+        <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1", fontWeight: 600, fontSize: 14, color: '#222428', margin: 0, marginTop: 4, lineHeight: 1.4 }}>
           {card.title}
         </p>
         {/* Body */}
@@ -1734,6 +1734,8 @@ function FeedbackCard({
             display: 'inline-block',
             fontSize: 14,
             fontWeight: 600,
+            fontFamily: "'Roobert PRO', sans-serif",
+            fontFeatureSettings: "'ss01' 1",
             transition: 'max-width 0.25s ease, opacity 0.2s ease',
           }}>{category}</span>
         </span>
@@ -2106,7 +2108,7 @@ function SurveyFeedbackDetail({
               marginBottom: i < responses.length - 1 ? 16 : 0,
             }}
           >
-            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#222428', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.4 }}>{qa.question}</p>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#222428', fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1", lineHeight: 1.4 }}>{qa.question}</p>
             <p style={{ margin: 0, fontSize: 14, color: '#222428', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.5 }}>{qa.answer}</p>
           </div>
         ))}
