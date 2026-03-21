@@ -180,34 +180,22 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack 
         </div>
       ))}
 
-      {/* Chat bubbles */}
-      {bubbleLines.map((line, i) => {
-        const isUser = line.section === 'bubble-user'
-        return (
-          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: isUser ? 'flex-end' : 'flex-start', gap: 4, marginBottom: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-              <span style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1" }}>
-                {line.speaker}
-              </span>
-              {line.timeLabel && (
-                <span style={{ fontSize: 11, color: isUser ? 'rgba(86,136,211,0.6)' : '#aeb2c0' }}>
-                  {line.timeLabel}
-                </span>
-              )}
-            </div>
-            {!isUser && line.botLabel && (
-              <span style={{ fontSize: 11, color: '#aeb2c0' }}>{line.botLabel}</span>
+      {/* Chat bubbles — same treatment as dim lines */}
+      {bubbleLines.map((line, i) => (
+        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+            <span style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1" }}>
+              {line.speaker}
+            </span>
+            {(line.timeLabel ?? line.timestamp) && (
+              <span style={{ fontSize: 13, color: '#aeb2c0' }}>{line.timeLabel ?? line.timestamp}</span>
             )}
-            <div style={{ backgroundColor: isUser ? '#edf5ff' : '#f8f8fa', borderRadius: isUser ? 8 : 10, padding: '12px 14px', maxWidth: 280 }}>
-              {line.text.split('\n').map((t, j, arr) => (
-                <p key={j} style={{ margin: j < arr.length - 1 ? '0 0 4px 0' : 0, fontSize: 13, lineHeight: 1.4, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>
-                  {t}
-                </p>
-              ))}
-            </div>
           </div>
-        )
-      })}
+          <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#656b81', fontFamily: "'Open Sans', sans-serif" }}>
+            {line.text}
+          </p>
+        </div>
+      ))}
     </div>
   )
 }
