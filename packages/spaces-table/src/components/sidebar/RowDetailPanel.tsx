@@ -141,6 +141,7 @@ const AVATAR_VECTOR = 'https://www.figma.com/api/mcp/asset/2e063fe9-0a1a-4f85-a7
 
 // Per-card impact weights — must sum to 1.0
 const CARD_WEIGHTS = [0.13, 0.12, 0.10, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06, 0.05, 0.05, 0.04, 0.03, 0.02, 0.01]
+const isStoreReview = (source?: string) => source === 'App Store' || source === 'Play Store'
 
 const CARD_STYLES = [
   { borderColor: '#BADEB1', Icon: IconHeart, stars: 3, date: 'Aug 02', source: 'App Store' },
@@ -460,7 +461,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div className="h-1 shrink-0" />
 
       {/* ── Tabs ────────────────────────────────────────── */}
-      {(!selectedFeedbackCard || selectedFeedbackCard.source === 'App Store') && (
       <div className="flex pl-3 pr-4 shrink-0 pb-5 pt-4 relative z-20 bg-white">
         {TABS.map((tab) => (
           <button
@@ -477,7 +477,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </button>
         ))}
       </div>
-      )}
 
       {/* 4px spacer */}
       <div className="h-1 shrink-0" />
@@ -488,7 +487,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         className="flex absolute inset-y-0 left-0"
         style={{
           width: 1428,
-          transform: callCard ? 'translateX(-952px)' : selectedCompany ? 'translateX(-476px)' : 'translateX(0)',
+          transform: (callCard || selectedFeedbackCard) ? 'translateX(-952px)' : selectedCompany ? 'translateX(-476px)' : 'translateX(0)',
           transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
@@ -616,14 +615,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </>
         )}
 
-        {activeTab === 'Insights' && selectedFeedbackCard?.source === 'App Store' && (
-          <AppStoreReviewDetail
-            card={selectedFeedbackCard}
-            onBack={() => setSelectedFeedbackCard(null)}
-          />
-        )}
-
-        {activeTab === 'Insights' && !selectedFeedbackCard && (
+        {activeTab === 'Insights' && (
           <div className="flex flex-col gap-8 pb-6">
 
             {/* Low-confidence Insights callout — only for AI portfolio advisor row */}
@@ -721,7 +713,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   >
                     {promptCards.has(i)
                       ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
-                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }); if (card.source === 'App Store') setActiveTab('Insights') }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i] }) : undefined} />
+                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i] }) : undefined} />
                     }
                   </div>
                 ))}
@@ -846,7 +838,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           />
         )}
       </div>
-      {/* ── Call transcript panel ─── */}
+      {/* ── Detail panel (call transcript + all feedback card details) ─── */}
       <div className="h-full shrink-0" style={{ width: 476 }}>
         {callCard && (
           <CallTranscriptPanel
@@ -857,28 +849,29 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             onBack={() => setCallCard(null)}
           />
         )}
+        {selectedFeedbackCard && isStoreReview(selectedFeedbackCard.source) && (
+          <AppStoreReviewDetail
+            card={selectedFeedbackCard}
+            onBack={() => setSelectedFeedbackCard(null)}
+          />
+        )}
+        {selectedFeedbackCard?.source === 'SurveyMonkey' && (
+          <SurveyFeedbackDetail
+            card={selectedFeedbackCard}
+            onBack={() => setSelectedFeedbackCard(null)}
+          />
+        )}
+        {selectedFeedbackCard && !isStoreReview(selectedFeedbackCard.source) && selectedFeedbackCard.source !== 'SurveyMonkey' && (
+          <FeedbackCardDetailView
+            card={selectedFeedbackCard}
+            onBack={() => setSelectedFeedbackCard(null)}
+            onClose={onClose}
+            onAddToBoard={onAddToBoard}
+          />
+        )}
       </div>
       </div>{/* end slider */}
       </div>{/* end overflow wrapper */}
-
-      {/* ── Feedback card detail overlay (non-App Store only) ─── */}
-      {selectedFeedbackCard && selectedFeedbackCard.source !== 'App Store' && (
-        <div className="absolute inset-0 z-10 bg-white flex flex-col">
-          {selectedFeedbackCard.source === 'SurveyMonkey' ? (
-            <SurveyFeedbackDetail
-              card={selectedFeedbackCard}
-              onBack={() => setSelectedFeedbackCard(null)}
-            />
-          ) : (
-            <FeedbackCardDetailView
-              card={selectedFeedbackCard}
-              onBack={() => setSelectedFeedbackCard(null)}
-              onClose={onClose}
-              onAddToBoard={onAddToBoard}
-            />
-          )}
-        </div>
-      )}
 
       {/* ── Chat overlay (full-panel, avoids slider height-shift glitch) ─── */}
       {selectedPrompt && (
@@ -1574,7 +1567,7 @@ function AppStoreReviewDetail({
   return (
     <div
       className="panel-scroll"
-      style={{ flex: 1, overflowY: 'auto', padding: '0 0 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+      style={{ flex: 1, overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
       {/* ← Feedback */}
       <button
@@ -1590,11 +1583,8 @@ function AppStoreReviewDetail({
 
       {/* Author */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: card.borderColor ?? '#f1f2f5', flexShrink: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden' }}>
-          <svg width="26" height="26" viewBox="0 0 26 28" fill="none" style={{ marginBottom: -2 }}>
-            <ellipse cx="13" cy="9" rx="5.5" ry="5.5" fill="rgba(0,0,0,0.25)" />
-            <path d="M2 27c0-6.075 4.925-11 11-11s11 4.925 11 11" fill="rgba(0,0,0,0.25)" />
-          </svg>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: card.borderColor ?? '#f1f2f5', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <IconUser css={{ width: 20, height: 20, color: 'rgba(0,0,0,0.35)' }} />
         </div>
         <div>
           <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
@@ -1904,47 +1894,69 @@ function generateTranscript(card: { title: string; text: string; author: string 
   ]
 }
 
-type SurveyQA = {
-  question: string
-  answer: string
-  highlighted?: boolean
-  type?: 'text' | 'nps' | 'rating'
-  score?: number
-}
-
-function generateSurveyContent(card: { title: string; text: string; author: string }): SurveyQA[] {
+function generateSurveyResponses(card: { title: string; text: string; author: string }) {
   const sentences = card.text
     .split(/(?<=[.!?])\s+/)
     .map(s => s.trim())
     .filter(s => s.length > 10)
 
-  const s0 = sentences[0] ?? card.text
-  const s1 = sentences[1] ?? s0
-  const rest = sentences.slice(2).join(' ') || ''
+  const isPositive = /positive|exceeds|exceeded|adoption|enthusiastic|great|excellent|love|really helps/i.test(card.text)
+  const isNegative = /risk|churn|alternative|competitive|blocking|workaround|erode|trust|critical|evaluating/i.test(card.text)
 
-  const isPositive = /positive|exceeds|exceeded|adoption|enthusiastic|great|excellent/i.test(card.text)
-  const isNegative = /risk|churn|alternative|competitive|blocking|workaround|erode|trust|critical/i.test(card.text)
+  // Q1: Overall rating mapped to sentiment
+  const overallRating = isPositive ? 'Excellent' : isNegative ? 'Poor' : 'Average'
 
-  const satRating = isPositive ? 4 : isNegative ? 2 : 3
-  const npsScore = isPositive ? 9 : isNegative ? 4 : 6
+  // Q2: Frequency — note friction for negative cards
+  const frequency = isNegative
+    ? "Daily, though the missing functionality forces us to rely on workarounds that slow us down."
+    : 'Almost every day as part of our planning and review workflow.'
 
-  const mainQuestion = isPositive
-    ? 'What has been the most impactful change or feature for your team?'
-    : isNegative
-    ? 'What is the primary challenge or blocker your team is facing?'
-    : 'How would you describe your current experience with this area of the product?'
+  // Q3: Main use case — strip complaint framing from the title to get the capability name
+  const capability = card.title
+    .replace(/^(Quarterly Demand for |Churn Risk:\s*|Exec-Level\s+|Competitive Gap\s+|Fragile Workaround\s+|Hidden Ops Tax\s+|Platform Trust\s+|Power User\s+|Mid-Market\s+|Beta Exceeded.*?,\s*|Implementation Depth\s+|Onboarding Gap\s+|Positive Pilot Signal,?\s*|Enterprise Trial:\s*)/i, '')
+    .split(/[,:]|Blocking|Surfacing|Creating|Growing|Eroding/i)[0]
+    .trim()
+    .toLowerCase()
+  const mainUse = `Primarily for ${capability}, as part of our core planning and product operations workflow.`
 
-  const followUpQuestion = isPositive
-    ? 'Were there any gaps or friction points that still need to be addressed?'
-    : 'How long has this been affecting your workflows?'
+  // Q4: Ease of use — pick the sentence most about friction or difficulty
+  const frictionSentence = sentences.find(s =>
+    /workaround|fragile|breaks|slow|hard|difficult|manual|noise|friction|evaluate|gap|missing|lack|can't|cannot/i.test(s)
+  )
+  const easeAnswer = isPositive
+    ? "Pretty intuitive overall — onboarding took a little time but once familiar it's straightforward."
+    : frictionSentence ?? sentences[1] ?? sentences[0] ?? card.text
+
+  // Q5: Working well — use the positive opening sentence for positive cards, or a generic fallback for problem cards
+  const workingWell = isPositive
+    ? sentences[0] ?? card.text
+    : 'The core navigation and basic search work well. The reporting dashboard gives a useful high-level view.'
+
+  // Q6: What to change — the sentence carrying the core complaint
+  const changeSentence = sentences.find(s =>
+    /evaluat|churn|risk|compet|alternative|workaround|fragile|noise|escalat|lack|missing|can't|cannot|tax|erode/i.test(s)
+  ) ?? sentences[sentences.length - 1] ?? card.text
 
   return [
-    { question: mainQuestion, answer: s0, highlighted: true },
-    { question: 'Overall, how satisfied are you with the current solution?', answer: '', type: 'rating', score: satRating },
-    { question: followUpQuestion, answer: s1 },
-    { question: 'How likely are you to recommend this product to a colleague?', answer: '', type: 'nps', score: npsScore },
-    ...(rest ? [{ question: 'Any additional context or comments?', answer: rest }] : []),
+    { question: 'How would you rate your overall experience with the product?', answer: overallRating },
+    { question: 'How often do you use the product?', answer: frequency },
+    { question: 'What do you mainly use it for?', answer: mainUse },
+    { question: 'How easy is the product to use?', answer: easeAnswer },
+    { question: 'Which features are working well for you?', answer: workingWell },
+    { question: 'What, if anything, would you change?', answer: changeSentence },
   ]
+}
+
+function makeResponseId(seed: string) {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
+  let h = 0
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0
+  let id = ''
+  for (let i = 0; i < 24; i++) {
+    h = (h * 1664525 + 1013904223) >>> 0
+    id += chars[h % chars.length]
+  }
+  return id
 }
 
 function SurveyFeedbackDetail({
@@ -1954,8 +1966,6 @@ function SurveyFeedbackDetail({
   card: { title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string }
   onBack: () => void
 }) {
-  const [search, setSearch] = useState('')
-
   const authorParts = card.author.split(',')
   const authorName = authorParts[0].trim()
   const authorRole = authorParts.slice(1).join(',').trim()
@@ -1966,9 +1976,20 @@ function SurveyFeedbackDetail({
   const AVATAR_COLORS = ['#de350b', '#4262FF', '#00C7A8', '#3C3F4A', '#7E57C2']
   const avatarBg = AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]
 
-  const surveyContent = generateSurveyContent(card)
-  const highlighted = surveyContent.find(q => q.highlighted)!
-  const rest = surveyContent.filter(q => !q.highlighted)
+  const responses = generateSurveyResponses(card)
+  const responseId = makeResponseId(card.author)
+  const surveyId = 'sm-' + makeResponseId(card.title).slice(0, 6)
+  const summary = card.text
+    .replace(/\bwe've\b/gi, 'the team has')
+    .replace(/\bwe're\b/gi, 'the team is')
+    .replace(/\bwe\b/gi, 'the team')
+    .replace(/\bour\b/gi, 'their')
+    .replace(/\bi've\b/gi, 'the user has')
+    .replace(/\bi'm\b/gi, 'the user is')
+    .replace(/\bi\b/gi, 'the user')
+    .replace(/\bmy\b/gi, 'their')
+    .replace(/\bus\b/gi, 'the team')
+    .replace(/^./, c => c.toUpperCase())
 
   const LABEL: React.CSSProperties = {
     fontSize: 14,
@@ -1979,6 +2000,21 @@ function SurveyFeedbackDetail({
     lineHeight: 1.4,
   }
   const CHIP: React.CSSProperties = {
+    backgroundColor: '#f1f2f5',
+    borderRadius: 6,
+    padding: '0 8px',
+    height: 28,
+    display: 'inline-flex',
+    alignItems: 'center',
+    fontSize: 13,
+    color: '#222428',
+    fontFamily: 'monospace',
+    maxWidth: 180,
+    overflow: 'hidden',
+    whiteSpace: 'nowrap' as const,
+    textOverflow: 'ellipsis',
+  }
+  const DATE_CHIP: React.CSSProperties = {
     backgroundColor: '#f1f2f5',
     borderRadius: 6,
     padding: '0 8px',
@@ -2007,25 +2043,34 @@ function SurveyFeedbackDetail({
         Feedback
       </button>
 
-      {/* Author */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
+      {/* Author row: avatar + name/role + action icons */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: 'white', fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
         </div>
-        <div>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
           {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
         </div>
       </div>
 
       {/* Metadata fields */}
-      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Response ID</span>
+          <div style={CHIP}>{responseId.slice(0, 20) + '…'}</div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Survey ID</span>
+          <div style={CHIP}>{surveyId}</div>
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
           <span style={LABEL}>Source</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <SourceLogoChip source="SurveyMonkey" />
-            <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#aeb2c0' }} />
-          </div>
+          <SourceLogoChip source="SurveyMonkey" />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Survey started</span>
+          <div style={DATE_CHIP}>{card.date}</div>
         </div>
         {card.companies[0] && (
           <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
@@ -2033,88 +2078,32 @@ function SurveyFeedbackDetail({
             <CompanyLogo name={card.companies[0]} size={24} />
           </div>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-          <span style={LABEL}>Feedback date</span>
-          <div style={CHIP}>{card.date}</div>
-        </div>
       </div>
 
-      {/* Keyword search */}
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 32, padding: '0 12px', borderRadius: 8, backgroundColor: '#f1f2f5' }}>
-          <IconMagnifyingGlass css={{ width: 14, height: 14, color: '#7D8297', flexShrink: 0 }} />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search keywords..."
-            style={{ flex: 1, background: 'transparent', fontSize: 13, color: '#222428', outline: 'none', border: 'none', fontFamily: 'Open Sans, sans-serif' }}
-          />
-        </div>
+      {/* Summary bubble */}
+      <div style={{ backgroundColor: '#f1f2f5', borderRadius: 10, padding: 16, marginBottom: 20 }}>
+        <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{summary}</p>
       </div>
 
-      {/* Grey box — highlighted Q&A */}
-      <div style={{ backgroundColor: '#f1f2f5', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-          <span style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1" }}>{authorName}</span>
-          <span style={{ fontSize: 13, color: '#656b81' }}>Q1</span>
-          <span style={{ marginLeft: 'auto' }}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect x="2" y="5" width="8" height="9" rx="1.5" stroke="#aeb2c0" strokeWidth="1.3" />
-              <path d="M5 5V3.5A1.5 1.5 0 016.5 2H12A1.5 1.5 0 0113.5 3.5V9A1.5 1.5 0 0112 10.5h-1.5" stroke="#aeb2c0" strokeWidth="1.3" strokeLinecap="round" />
-            </svg>
-          </span>
-        </div>
-        <p style={{ margin: 0, fontSize: 11, color: '#aeb2c0', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.4 }}>{highlighted.question}</p>
-        <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{highlighted.answer}</p>
-      </div>
-
-      {/* Rest of Q&As */}
-      {rest.map((qa, i) => (
-        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-            <span style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1" }}>{authorName}</span>
-            <span style={{ fontSize: 13, color: '#aeb2c0' }}>Q{i + 2}</span>
+      {/* Survey Q&A pairs */}
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {responses.map((qa, i) => (
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 4,
+              paddingBottom: 16,
+              borderBottom: 'none',
+              marginBottom: i < responses.length - 1 ? 16 : 0,
+            }}
+          >
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#222428', fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1", lineHeight: 1.4 }}>{qa.question}</p>
+            <p style={{ margin: 0, fontSize: 13, color: '#656b81', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.5 }}>{qa.answer}</p>
           </div>
-          <p style={{ margin: '0 0 4px', fontSize: 11, color: '#aeb2c0', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.4 }}>{qa.question}</p>
-          {qa.type === 'rating' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-              {Array.from({ length: 5 }).map((_, idx) => (
-                <IconStarFilled key={idx} css={{ width: 14, height: 14, color: idx < (qa.score ?? 3) ? '#3C3F4A' : '#D1D4DC' }} />
-              ))}
-              <span style={{ fontSize: 12, color: '#656b81', marginLeft: 6, fontFamily: "'Open Sans', sans-serif" }}>{qa.score} / 5</span>
-            </div>
-          )}
-          {qa.type === 'nps' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div style={{ display: 'flex', gap: 3 }}>
-                {Array.from({ length: 11 }).map((_, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      flex: 1,
-                      height: 24,
-                      borderRadius: 4,
-                      backgroundColor: idx === qa.score ? '#3C3F4A' : '#e4e5ea',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <span style={{ fontSize: 11, color: idx === qa.score ? 'white' : '#aeb2c0', fontFamily: "'Open Sans', sans-serif", fontWeight: idx === qa.score ? 600 : 400 }}>{idx}</span>
-                  </div>
-                ))}
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 11, color: '#aeb2c0', fontFamily: "'Open Sans', sans-serif" }}>Not likely</span>
-                <span style={{ fontSize: 11, color: '#aeb2c0', fontFamily: "'Open Sans', sans-serif" }}>Very likely</span>
-              </div>
-            </div>
-          )}
-          {!qa.type && qa.answer && (
-            <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#656b81', fontFamily: "'Open Sans', sans-serif" }}>{qa.answer}</p>
-          )}
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }
