@@ -2252,7 +2252,7 @@ function FeedbackCardDetailView({
       </div>
 
       {/* Keyword search */}
-      <div style={{ marginBottom: 28 }}>
+      <div style={{ paddingBottom: 28 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 32, padding: '0 12px', borderRadius: 8, backgroundColor: '#f1f2f5' }}>
           <IconMagnifyingGlass css={{ width: 14, height: 14, color: '#7D8297', flexShrink: 0 }} />
           <input
