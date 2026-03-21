@@ -847,7 +847,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             date={callCard.date}
             transcript={callCard.transcript}
             onBack={() => setCallCard(null)}
-            highlightColor={callCard.borderColor === '#d4bbff' ? '#EFEDFD' : '#f1f2f5'}
+            highlightColor={callCard.borderColor === '#d4bbff' ? '#EFEDFD' : callCard.borderColor === '#D1F09F' ? '#D1F09F' : '#f1f2f5'}
           />
         )}
         {selectedFeedbackCard && isStoreReview(selectedFeedbackCard.source) && (
