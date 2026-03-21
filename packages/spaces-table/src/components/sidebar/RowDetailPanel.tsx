@@ -1672,7 +1672,7 @@ function AppStoreReviewDetail({
         {/* Stars */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {Array.from({ length: 5 }).map((_, i) => (
-            <IconStarFilled key={i} css={{ width: 12, height: 12, color: i < stars ? '#F5A623' : '#D1D4DC' }} />
+            <IconStarFilled key={i} css={{ width: 12, height: 12, color: i < stars ? '#3C3F4A' : '#D1D4DC' }} />
           ))}
         </div>
         {/* Title */}
@@ -2018,7 +2018,7 @@ function FeedbackCardDetailView({
   const authorInitials = (nameWords.length >= 2
     ? nameWords[0][0] + nameWords[nameWords.length - 1][0]
     : authorName.slice(0, 2)).toUpperCase()
-  const AVATAR_COLORS = ['#de350b', '#4262FF', '#00C7A8', '#F5A623', '#7E57C2']
+  const AVATAR_COLORS = ['#de350b', '#4262FF', '#00C7A8', '#3C3F4A', '#7E57C2']
   const avatarBg = AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]
 
   const LABEL: React.CSSProperties = {
