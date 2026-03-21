@@ -60,82 +60,83 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack,
       className="panel-scroll"
       style={{ height: '100%', overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
-      {/* ← Feedback back button */}
-      <button
-        onClick={onBack}
-        className="hover:bg-[#F1F2F5] transition-colors"
-        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0 8px 4px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-        Feedback
-      </button>
+      {/* ── Sticky header: back button + caller info + metadata + search ── */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 12px' }}>
+        {/* ← Feedback back button */}
+        <button
+          onClick={onBack}
+          className="hover:bg-[#F1F2F5] transition-colors"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0 8px 4px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Feedback
+        </button>
 
-      {/* Caller info */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarColor ?? '#f1f2f5', position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {avatarColor
-            ? <IconUser css={{ width: 20, height: 20, color: 'rgba(0,0,0,0.35)' }} />
-            : <>
-                <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%', borderRadius: '50%' }} src={AVATAR_NO_PHOTO} />
-                <div style={{ position: 'absolute', inset: '18.75% 14.44% 0 14.44%' }}>
-                  <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%' }} src={AVATAR_VECTOR} />
-                </div>
-              </>
-          }
-        </div>
-        <div>
-          <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>
-            {authorName}
-          </p>
-          {authorRole && (
-            <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>
-              {authorRole}
+        {/* Caller info */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarColor ?? '#f1f2f5', position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {avatarColor
+              ? <IconUser css={{ width: 20, height: 20, color: 'rgba(0,0,0,0.35)' }} />
+              : <>
+                  <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%', borderRadius: '50%' }} src={AVATAR_NO_PHOTO} />
+                  <div style={{ position: 'absolute', inset: '18.75% 14.44% 0 14.44%' }}>
+                    <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%' }} src={AVATAR_VECTOR} />
+                  </div>
+                </>
+            }
+          </div>
+          <div>
+            <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>
+              {authorName}
             </p>
-          )}
-        </div>
-      </div>
-
-      {/* Metadata fields */}
-      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
-        {/* Source */}
-        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-          <span style={LABEL}>Source</span>
-          <SourceLogoChip source="Gong" />
-        </div>
-
-        {/* Company */}
-        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-          <span style={LABEL}>Company</span>
-          <CompanyLogo name={company} size={24} />
-        </div>
-
-        {/* Participants */}
-        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-          <span style={LABEL}>Participants</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, backgroundColor: '#f1f2f5', borderRadius: 6, padding: '0 8px 0 5px', height: 28 }}>
-              <img
-                src="https://i.pravatar.cc/32?img=15"
-                alt="James Watson"
-                style={{ width: 16, height: 16, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-              />
-              <span style={{ fontSize: 14, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>James Watson</span>
-            </div>
-            <div style={CHIP}>+2</div>
+            {authorRole && (
+              <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>
+                {authorRole}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Feedback date */}
-        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-          <span style={LABEL}>Feedback date</span>
-          <div style={CHIP}>{date}</div>
-        </div>
-      </div>
+        {/* Metadata fields */}
+        <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
+          {/* Source */}
+          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+            <span style={LABEL}>Source</span>
+            <SourceLogoChip source="Gong" />
+          </div>
 
-      {/* Keyword search */}
-      <div style={{ marginBottom: 16 }}>
+          {/* Company */}
+          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+            <span style={LABEL}>Company</span>
+            <CompanyLogo name={company} size={24} />
+          </div>
+
+          {/* Participants */}
+          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+            <span style={LABEL}>Participants</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, backgroundColor: '#f1f2f5', borderRadius: 6, padding: '0 8px 0 5px', height: 28 }}>
+                <img
+                  src="https://i.pravatar.cc/32?img=15"
+                  alt="James Watson"
+                  style={{ width: 16, height: 16, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                />
+                <span style={{ fontSize: 14, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>James Watson</span>
+              </div>
+              <div style={CHIP}>+2</div>
+            </div>
+          </div>
+
+          {/* Feedback date */}
+          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+            <span style={LABEL}>Feedback date</span>
+            <div style={CHIP}>{date}</div>
+          </div>
+        </div>
+
+        {/* Keyword search */}
         <InputSearch
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -144,6 +145,9 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack,
           css={{ width: '100%' }}
         />
       </div>
+
+      {/* Spacer between sticky header and transcript content */}
+      <div style={{ height: 12 }} />
 
       {/* Grey box: highlighted conversation */}
       {boxLines.length > 0 && (
