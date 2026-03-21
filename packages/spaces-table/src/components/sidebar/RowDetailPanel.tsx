@@ -136,6 +136,9 @@ const INSIGHT_SUMMARIES: Record<string, string> = {
   '18': 'Gamified savings challenges appear in 5 mentions from 7 accounts, driven by younger users at Shopify and Airbnb. Feedback describes the current savings experience as transactional and uninspiring — badges, streaks, and challenges are seen as motivators that could meaningfully improve goal completion rates, with $30K in projected revenue impact.',
 }
 
+const AVATAR_NO_PHOTO = 'https://www.figma.com/api/mcp/asset/4d11fed8-3b68-4a90-b907-9999522076d0'
+const AVATAR_VECTOR = 'https://www.figma.com/api/mcp/asset/2e063fe9-0a1a-4f85-a78f-1882b257cad9'
+
 // Per-card impact weights — must sum to 1.0
 const CARD_WEIGHTS = [0.13, 0.12, 0.10, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06, 0.05, 0.05, 0.04, 0.03, 0.02, 0.01]
 
@@ -285,7 +288,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     if (initialCompany) setSelectedCompany(initialCompany)
   }, [initialCompany])
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null)
-  const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string } | null>(null)
+  const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string; source?: string; stars?: number } | null>(null)
   const [callCard, setCallCard] = useState<{ title: string; author: string; company: string; date: string; transcript: TranscriptLine[] } | null>(null)
   const [dismissedCards, setDismissedCards] = useState<Set<number>>(new Set())
   const [promptCards, setPromptCards] = useState<Set<number>>(new Set())
@@ -459,7 +462,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div className="h-1 shrink-0" />
 
       {/* ── Tabs ────────────────────────────────────────── */}
-      {!selectedFeedbackCard && (
+      {(!selectedFeedbackCard || selectedFeedbackCard.source === 'App Store') && (
       <div className="flex pl-3 pr-4 shrink-0 pb-5 pt-4 relative z-20 bg-white">
         {TABS.map((tab) => (
           <button
@@ -615,7 +618,14 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </>
         )}
 
-        {activeTab === 'Insights' && (
+        {activeTab === 'Insights' && selectedFeedbackCard?.source === 'App Store' && (
+          <AppStoreReviewDetail
+            card={selectedFeedbackCard}
+            onBack={() => setSelectedFeedbackCard(null)}
+          />
+        )}
+
+        {activeTab === 'Insights' && !selectedFeedbackCard && (
           <div className="flex flex-col gap-8 pb-6">
 
             {/* Low-confidence Insights callout — only for AI portfolio advisor row */}
@@ -713,7 +723,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   >
                     {promptCards.has(i)
                       ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
-                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor })} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i] }) : undefined} />
+                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }); if (card.source === 'App Store') setActiveTab('Insights') }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i] }) : undefined} />
                     }
                   </div>
                 ))}
@@ -853,8 +863,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       </div>{/* end slider */}
       </div>{/* end overflow wrapper */}
 
-      {/* ── Feedback card detail overlay ─── */}
-      {selectedFeedbackCard && (
+      {/* ── Feedback card detail overlay (non-App Store only) ─── */}
+      {selectedFeedbackCard && selectedFeedbackCard.source !== 'App Store' && (
         <div className="absolute inset-0 z-10 bg-white flex flex-col">
           <FeedbackCardDetailView
             card={selectedFeedbackCard}
@@ -1575,6 +1585,104 @@ function FeedbackPrompt({ onSubmit, onClose }: { onSubmit: () => void; onClose: 
         >
           Cancel
         </button>
+      </div>
+    </div>
+  )
+}
+
+function AppStoreReviewDetail({
+  card,
+  onBack,
+}: {
+  card: { title: string; text: string; author: string; date: string; companies: string[]; stars?: number }
+  onBack: () => void
+}) {
+  const authorParts = card.author.split(',')
+  const authorName = authorParts[0].trim()
+  const authorRole = authorParts.slice(1).join(',').trim()
+  const stars = card.stars ?? 3
+
+  const APP_STORE_PATH = 'M8.8086 14.9194l6.1107-11.0368c.0837-.1513.1682-.302.2437-.4584.0685-.142.1267-.2854.1646-.4403.0803-.3259.0588-.6656-.066-.9767-.1238-.3095-.3417-.5678-.6201-.7355a1.4175 1.4175 0 0 0-.921-.1924c-.3207.043-.6135.1935-.8443.4288-.1094.1118-.1996.2361-.2832.369-.092.1463-.175.2979-.259.4492l-.3864.6979-.3865-.6979c-.0837-.1515-.1667-.303-.2587-.4492-.0837-.1329-.1739-.2572-.2835-.369-.2305-.2353-.5233-.3857-.844-.429a1.4181 1.4181 0 0 0-.921.1926c-.2784.1677-.4964.426-.6203.7355-.1246.311-.1461.6508-.066.9767.038.155.0962.2984.1648.4403.0753.1564.1598.307.2437.4584l1.248 2.2543-4.8625 8.7825H2.0295c-.1676 0-.3351-.0007-.5026.0092-.1522.009-.3004.0284-.448.0714-.3108.0906-.5822.2798-.7783.548-.195.2665-.3006.5929-.3006.9279 0 .3352.1057.6612.3006.9277.196.2683.4675.4575.7782.548.1477.043.296.0623.4481.0715.1675.01.335.009.5026.009h13.0974c.0171-.0357.059-.1294.1-.2697.415-1.4151-.6156-2.843-2.0347-2.843zM3.113 18.5418l-.7922 1.5008c-.0818.1553-.1644.31-.2384.4705-.067.1458-.124.293-.1611.452-.0785.3346-.0576.6834.0645 1.0029.1212.3175.3346.583.607.7549.2727.172.5891.2416.9013.1975.3139-.044.6005-.1986.8263-.4402.1072-.1148.1954-.2424.2772-.3787.0902-.1503.1714-.3059.2535-.4612L6 19.4636c-.0896-.149-.9473-1.4704-2.887-.9218m20.5861-3.0056a1.4707 1.4707 0 0 0-.779-.5407c-.1476-.0425-.2961-.0616-.4483-.0705-.1678-.0099-.3352-.0091-.503-.0091H18.648l-4.3891-7.817c-.6655.7005-.9632 1.485-1.0773 2.1976-.1655 1.0333.0367 2.0934.546 3.0004l5.2741 9.3933c.084.1494.167.299.2591.4435.0837.131.1739.2537.2836.364.231.2323.5238.3809.8449.4232.3192.0424.643-.0244.9217-.1899.2784-.1653.4968-.4204.621-.7257.1246-.3072.146-.6425.0658-.9641-.0381-.1529-.0962-.2945-.165-.4346-.0753-.1543-.1598-.303-.2438-.4524l-1.216-2.1662h1.596c.1677 0 .3351.0009.5029-.009.1522-.009.3007-.028.4483-.0705a1.4707 1.4707 0 0 0 .779-.5407A1.5386 1.5386 0 0 0 24 16.452a1.539 1.539 0 0 0-.3009-.9158Z'
+
+  const LABEL: React.CSSProperties = {
+    fontSize: 14,
+    color: '#656b81',
+    width: 140,
+    flexShrink: 0,
+    fontFamily: "'Open Sans', sans-serif",
+    lineHeight: 1.4,
+  }
+
+  return (
+    <div
+      className="panel-scroll"
+      style={{ flex: 1, overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+    >
+      {/* ← Feedback */}
+      <button
+        onClick={onBack}
+        className="hover:bg-[#F1F2F5] transition-colors"
+        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        Feedback
+      </button>
+
+      {/* Author */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#f1f2f5', position: 'relative', flexShrink: 0 }}>
+          <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%', borderRadius: '50%' }} src={AVATAR_NO_PHOTO} />
+          <div style={{ position: 'absolute', inset: '18.75% 14.44% 0 14.44%' }}>
+            <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%' }} src={AVATAR_VECTOR} />
+          </div>
+        </div>
+        <div>
+          <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
+          {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
+        </div>
+      </div>
+
+      {/* Metadata fields */}
+      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Source</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ backgroundColor: '#F1F2F5', borderRadius: 6, padding: '0 6px', height: 28, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="#0D96F6" aria-hidden="true"><path d={APP_STORE_PATH} /></svg>
+            </div>
+            <IconInformationMarkCircle css={{ width: 14, height: 14, color: '#aeb2c0' }} />
+          </div>
+        </div>
+        {card.companies[0] && (
+          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+            <span style={LABEL}>Company</span>
+            <CompanyLogo name={card.companies[0]} size={24} />
+          </div>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Feedback date</span>
+          <div style={{ backgroundColor: '#f1f2f5', borderRadius: 6, padding: '0 8px', height: 28, display: 'inline-flex', alignItems: 'center', fontSize: 14, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{card.date}</div>
+        </div>
+      </div>
+
+      {/* Review card */}
+      <div style={{ backgroundColor: '#f1f2f5', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {/* Stars */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <IconStarFilled key={i} css={{ width: 12, height: 12, color: i < stars ? '#F5A623' : '#D1D4DC' }} />
+          ))}
+        </div>
+        {/* Title */}
+        <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.4 }}>
+          {card.title.length > 60 ? card.title.slice(0, 60) + '…' : card.title}
+        </p>
+        {/* Body */}
+        <p style={{ fontSize: 14, color: '#656b81', margin: 0, lineHeight: 1.5, fontFamily: "'Open Sans', sans-serif" }}>
+          {card.text}
+        </p>
       </div>
     </div>
   )
