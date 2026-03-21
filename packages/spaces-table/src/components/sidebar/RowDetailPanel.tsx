@@ -1633,11 +1633,11 @@ function AppStoreReviewDetail({
           ))}
         </div>
         {/* Title */}
-        <p style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 600, fontSize: 12, color: '#222428', margin: 0, lineHeight: 1.4 }}>
+        <p style={{ fontFamily: "'Open Sans', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', margin: 0, lineHeight: 1.4 }}>
           {card.title}
         </p>
         {/* Body */}
-        <p style={{ fontSize: 12, color: '#222428', margin: 0, lineHeight: 1.5, fontFamily: "'Open Sans', sans-serif" }}>
+        <p style={{ fontSize: 14, color: '#222428', margin: 0, lineHeight: 1.5, fontFamily: "'Open Sans', sans-serif" }}>
           {card.text}
         </p>
       </div>
@@ -2099,7 +2099,7 @@ function SurveyFeedbackDetail({
 
       {/* Summary bubble */}
       <div style={{ backgroundColor: highlightColor, borderRadius: 10, padding: 16, marginBottom: 20 }}>
-        <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{summary}</p>
+        <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{summary}</p>
       </div>
 
       {/* Survey Q&A pairs */}
@@ -2116,7 +2116,7 @@ function SurveyFeedbackDetail({
               marginBottom: i < responses.length - 1 ? 16 : 0,
             }}
           >
-            <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#222428', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.5 }}>{qa.question}</p>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#222428', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.4 }}>{qa.question}</p>
             <p style={{ margin: 0, fontSize: 13, color: '#222428', fontFamily: "'Open Sans', sans-serif", lineHeight: 1.5 }}>{qa.answer}</p>
           </div>
         ))}
@@ -2292,7 +2292,7 @@ function FeedbackCardDetailView({
               </svg>
             </span>
           </div>
-          <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>
+          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>
             {transcript[0].text}{transcript[0].bold && <strong>{transcript[0].bold}</strong>}
           </p>
         </div>
@@ -2305,7 +2305,7 @@ function FeedbackCardDetailView({
             <span style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1" }}>{msg.speaker}</span>
             <span style={{ fontSize: 13, color: '#aeb2c0' }}>{msg.time}</span>
           </div>
-          <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{msg.text}</p>
+          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{msg.text}</p>
         </div>
       ))}
     </div>
