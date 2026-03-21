@@ -459,6 +459,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div className="h-1 shrink-0" />
 
       {/* ── Tabs ────────────────────────────────────────── */}
+      {!selectedFeedbackCard && (
       <div className="flex pl-3 pr-4 shrink-0 pb-5 pt-4 relative z-20 bg-white">
         {TABS.map((tab) => (
           <button
@@ -475,6 +476,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </button>
         ))}
       </div>
+      )}
 
       {/* 4px spacer */}
       <div className="h-1 shrink-0" />
@@ -849,8 +851,9 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         )}
       </div>
       </div>{/* end slider */}
+      </div>{/* end overflow wrapper */}
 
-      {/* ── Feedback card detail overlay — inside content area so it doesn't cover header/tabs ─── */}
+      {/* ── Feedback card detail overlay ─── */}
       {selectedFeedbackCard && (
         <div className="absolute inset-0 z-10 bg-white flex flex-col">
           <FeedbackCardDetailView
@@ -861,7 +864,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           />
         </div>
       )}
-      </div>{/* end overflow wrapper */}
 
       {/* ── Chat overlay (full-panel, avoids slider height-shift glitch) ─── */}
       {selectedPrompt && (
@@ -1911,144 +1913,111 @@ function FeedbackCardDetailView({
   const AVATAR_COLORS = ['#de350b', '#4262FF', '#00C7A8', '#F5A623', '#7E57C2']
   const avatarBg = AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]
 
+  const LABEL: React.CSSProperties = {
+    fontSize: 14,
+    color: '#656b81',
+    width: 140,
+    flexShrink: 0,
+    fontFamily: "'Open Sans', sans-serif",
+    lineHeight: 1.4,
+  }
+  const CHIP: React.CSSProperties = {
+    backgroundColor: '#f1f2f5',
+    borderRadius: 6,
+    padding: '0 8px',
+    height: 28,
+    display: 'inline-flex',
+    alignItems: 'center',
+    fontSize: 14,
+    color: '#222428',
+    fontFamily: "'Open Sans', sans-serif",
+  }
+
   return (
-    <div className="flex flex-col h-full bg-white" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+    <div
+      className="panel-scroll"
+      style={{ height: '100%', overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+    >
+      {/* ← Feedback back button */}
+      <button
+        onClick={onBack}
+        className="hover:bg-[#F1F2F5] transition-colors"
+        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 12, marginLeft: -8, fontWeight: 600 }}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        Feedback
+      </button>
 
-      {/* Header */}
-      <div className="flex items-center gap-1 h-12 px-4 shrink-0">
-        <button
-          onClick={onBack}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors shrink-0"
-          aria-label="Go back"
-        >
-          <IconChevronLeft css={{ width: 16, height: 16 }} />
-        </button>
-        <p
-          className="flex-1 min-w-0 truncate text-[#222428] leading-[1.5]"
-          style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, fontFeatureSettings: "'ss01' 1" }}
-          title={card.title}
-        >
-          {card.title}
-        </p>
-        <div className="flex items-center shrink-0">
-          <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
-            <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
-          </button>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
-            <IconCross css={{ width: 16, height: 16 }} />
-          </button>
+      {/* Author info */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'white', fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
+        </div>
+        <div>
+          <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
+          {authorRole && <p style={{ fontSize: 12, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex px-4 shrink-0 pb-4 pt-3 gap-1">
-        {['Summary', 'Conversation'].map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className="px-2 py-1 rounded-lg text-[14px] font-semibold transition-colors"
-            style={{
-              fontFamily: 'Open Sans, sans-serif',
-              color: activeTab === tab ? '#4262FF' : '#656B81',
-              backgroundColor: activeTab === tab ? '#F2F4FC' : 'transparent',
-            }}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {/* Search — only shown on Conversation tab */}
-      {activeTab === 'Conversation' && (
-        <div className="px-6 shrink-0 pb-7">
-          <div className="flex items-center gap-2 h-8 px-3 rounded-lg bg-[#F1F2F5]">
-            <IconMagnifyingGlass css={{ width: 14, height: 14, color: '#7D8297', flexShrink: 0 }} />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search keywords..."
-              className="flex-1 bg-transparent text-[13px] text-[#222428] outline-none placeholder:text-[#7D8297]"
-              style={{ fontFamily: 'Open Sans, sans-serif' }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto panel-scroll pb-6">
-        {activeTab === 'Conversation' ? (
-          <div className="flex flex-col gap-4 px-6">
-            <div className="group relative rounded-lg p-4" style={{ backgroundColor: '#F1F2F5' }}>
-              <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-[14px] font-semibold text-[#222428]" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>{transcript[0].speaker}</span>
-                <span className="text-[13px] text-[#656B81]">{transcript[0].time}</span>
-              </div>
-              <p className="text-[14px] text-[#222428] leading-[1.5]">
-                {transcript[0].text}
-                {transcript[0].bold && <strong>{transcript[0].bold}</strong>}
-              </p>
-              <button
-                onClick={e => openConvMenu(0, e.currentTarget)}
-                className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:text-[#222428] hover:bg-white/60 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
-              </button>
-            </div>
-            {transcript.slice(1).map((msg, i) => (
-              <div key={i} className="group relative rounded-lg px-2 py-1 -mx-2 hover:bg-[#F1F2F5] transition-colors">
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-[14px] font-semibold text-[#222428]" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>{msg.speaker}</span>
-                  <span className="text-[13px] text-[#656B81]">{msg.time}</span>
-                </div>
-                <p className="text-[14px] text-[#656B81] leading-[1.5]">{msg.text}</p>
-                <button
-                  onClick={e => openConvMenu(i + 1, e.currentTarget)}
-                  className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:text-[#222428] hover:bg-[#E9EAEF] opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
-                </button>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col px-6 pt-5 pb-6 gap-6">
-            {/* Speaker */}
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: avatarBg }}>
-                <span className="text-[8px] font-semibold text-white leading-none" style={{ fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
-              </div>
-              <div className="flex flex-col min-w-0">
-                <p className="text-[14px] font-bold text-[#222428] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>{authorName}</p>
-                {authorRole && <p className="text-[12px] text-[#656B81] leading-[1.5]">{authorRole}</p>}
-              </div>
-            </div>
-
-            {/* Summary text */}
-            <p className="text-[14px] text-[#656B81] leading-[1.4]">{card.text}</p>
-
-            {/* Fields */}
-            <div className="flex flex-col gap-3">
-              <FieldRow label="Source">
-                <Chip removable={false} css={{ fontSize: 14 }}>Customer Interview</Chip>
-              </FieldRow>
-              <FieldRow label="State">
-                <div className="inline-flex items-center rounded-[6px] px-2" style={{ backgroundColor: '#c3faf5', color: '#0e4343', height: 28 }}>
-                  <span className="text-[14px] leading-[20px]">Open</span>
-                </div>
-              </FieldRow>
-              <FieldRow label="Provided">
-                <Chip removable={false} css={{ fontSize: 14 }}>{card.date}</Chip>
-              </FieldRow>
-              <FieldRow label="Created">
-                <Chip removable={false} css={{ fontSize: 14 }}>{card.date}</Chip>
-              </FieldRow>
-              <FieldRow label="Owner">
-                <span className="text-[14px] text-[#222428] leading-[1.4] px-2">—</span>
-              </FieldRow>
-            </div>
+      {/* Metadata fields */}
+      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
+        {card.companies[0] && (
+          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+            <span style={LABEL}>Company</span>
+            <CompanyLogo name={card.companies[0]} size={24} />
           </div>
         )}
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Feedback date</span>
+          <div style={CHIP}>{card.date}</div>
+        </div>
       </div>
+
+      {/* Keyword search */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 32, padding: '0 12px', borderRadius: 8, backgroundColor: '#f1f2f5' }}>
+          <IconMagnifyingGlass css={{ width: 14, height: 14, color: '#7D8297', flexShrink: 0 }} />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search keywords..."
+            style={{ flex: 1, background: 'transparent', fontSize: 13, color: '#222428', outline: 'none', border: 'none', fontFamily: 'Open Sans, sans-serif' }}
+          />
+        </div>
+      </div>
+
+      {/* Grey box — highlighted excerpt */}
+      <div style={{ backgroundColor: '#f1f2f5', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 16 }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <span style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1" }}>{transcript[0].speaker}</span>
+            <span style={{ fontSize: 13, color: '#656b81' }}>{transcript[0].time}</span>
+            <span style={{ marginLeft: 'auto' }}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="5" width="8" height="9" rx="1.5" stroke="#aeb2c0" strokeWidth="1.3" />
+                <path d="M5 5V3.5A1.5 1.5 0 016.5 2H12A1.5 1.5 0 0113.5 3.5V9A1.5 1.5 0 0112 10.5h-1.5" stroke="#aeb2c0" strokeWidth="1.3" strokeLinecap="round" />
+              </svg>
+            </span>
+          </div>
+          <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>
+            {transcript[0].text}{transcript[0].bold && <strong>{transcript[0].bold}</strong>}
+          </p>
+        </div>
+      </div>
+
+      {/* Remaining transcript entries */}
+      {transcript.slice(1).map((msg, i) => (
+        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+            <span style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1" }}>{msg.speaker}</span>
+            <span style={{ fontSize: 13, color: '#aeb2c0' }}>{msg.time}</span>
+          </div>
+          <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: '#656b81', fontFamily: "'Open Sans', sans-serif" }}>{msg.text}</p>
+        </div>
+      ))}
+    </div>
 
       {/* Conversation entry menu */}
       {convMenuIndex !== null && createPortal(
