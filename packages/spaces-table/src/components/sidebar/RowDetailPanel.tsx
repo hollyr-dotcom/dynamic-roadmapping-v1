@@ -730,64 +730,91 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               </div>
             </InsightSection>
 
-            {/* Impact estimates */}
-            <InsightSection label="Impact estimates">
-              <div className="flex flex-col gap-0 w-full">
-                <div className="flex gap-3">
-                  <StatBox value={adjMentions} format={n => String(n)} label="Total Mentions" />
-                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Unique Customers" />
+            {selectedLayout === 'Fullscreen' ? (
+              /* ── Fullscreen: two-column layout ── */
+              <div className="flex gap-8 items-start">
+                {/* Left: sticky metrics */}
+                <div style={{ position: 'sticky', top: 0, width: 360, flexShrink: 0, paddingRight: 48, paddingTop: 8 }}>
+                  <InsightSection label="Impact estimates">
+                    <div className="flex flex-col gap-0 w-full">
+                      <div className="flex gap-3">
+                        <StatBox value={adjMentions} format={n => String(n)} label="Total Mentions" />
+                        <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Unique Customers" />
+                      </div>
+                      <div className="flex gap-3">
+                        <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" noPadding />
+                        <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Impacted Customer ARR" noPadding />
+                      </div>
+                    </div>
+                  </InsightSection>
                 </div>
-                <div className="flex gap-3">
-                  <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" noPadding />
-                  <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Impacted Customer ARR" noPadding />
-                </div>
-              </div>
-            </InsightSection>
 
-            {/* Feedback */}
-            <div className="flex flex-col gap-3">
-              {/* Feedback header row */}
-              <div className="flex items-center justify-between">
-                <span className="text-[14px] font-semibold text-[#222428] leading-[1]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>
-                  Feedback
-                </span>
-                <div className="flex items-center gap-1">
-                  <button className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#222428] hover:bg-[#F1F2F5] transition-colors">
-                    Relevance
-                    <IconChevronDown size="small" />
-                  </button>
-                  <button
-                    ref={feedbackFilterBtnRef}
-                    onClick={openFeedbackFilter}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
-                    style={{ color: '#222428' }}
-                  >
-                    <IconSlidersY size="small" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Feedback cards */}
-              <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
-                {generateFeedbackCards(row).map((card, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      maxHeight: dismissedCards.has(i) ? 0 : 800,
-                      opacity: dismissedCards.has(i) ? 0 : 1,
-                      marginBottom: dismissedCards.has(i) ? 0 : (selectedLayout === 'Center' ? 24 : 12),
-                      overflow: 'hidden',
-                      transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease',
-                    }}
-                  >
-                    {promptCards.has(i)
-                      ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
-                      : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
-                    }
+                {/* Right: feedback cards */}
+                <div className="flex flex-col gap-3 flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[14px] font-semibold text-[#222428] leading-[1]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>Feedback</span>
+                    <div className="flex items-center gap-1">
+                      <button className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#222428] hover:bg-[#F1F2F5] transition-colors">
+                        Relevance<IconChevronDown size="small" />
+                      </button>
+                      <button ref={feedbackFilterBtnRef} onClick={openFeedbackFilter} className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors" style={{ color: '#222428' }}>
+                        <IconSlidersY size="small" />
+                      </button>
+                    </div>
                   </div>
-                ))}
+                  <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
+                    {generateFeedbackCards(row).map((card, i) => (
+                      <div key={i} style={{ maxHeight: dismissedCards.has(i) ? 0 : 800, opacity: dismissedCards.has(i) ? 0 : 1, marginBottom: dismissedCards.has(i) ? 0 : 24, overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
+                        {promptCards.has(i)
+                          ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
+                          : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
+                        }
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              /* ── Center / Right: single column ── */
+              <>
+                <InsightSection label="Impact estimates">
+                  <div className="flex flex-col gap-0 w-full">
+                    <div className="flex gap-3">
+                      <StatBox value={adjMentions} format={n => String(n)} label="Total Mentions" />
+                      <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Unique Customers" />
+                    </div>
+                    <div className="flex gap-3">
+                      <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" noPadding />
+                      <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Impacted Customer ARR" noPadding />
+                    </div>
+                  </div>
+                </InsightSection>
+
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[14px] font-semibold text-[#222428] leading-[1]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>Feedback</span>
+                    <div className="flex items-center gap-1">
+                      <button className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#222428] hover:bg-[#F1F2F5] transition-colors">
+                        Relevance<IconChevronDown size="small" />
+                      </button>
+                      <button ref={feedbackFilterBtnRef} onClick={openFeedbackFilter} className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors" style={{ color: '#222428' }}>
+                        <IconSlidersY size="small" />
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
+                    {generateFeedbackCards(row).map((card, i) => (
+                      <div key={i} style={{ maxHeight: dismissedCards.has(i) ? 0 : 800, opacity: dismissedCards.has(i) ? 0 : 1, marginBottom: dismissedCards.has(i) ? 0 : (selectedLayout === 'Center' ? 24 : 12), overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
+                        {promptCards.has(i)
+                          ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
+                          : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
+                        }
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -1597,7 +1624,7 @@ function useAnimatedNumber(target: number, duration = 600): number {
 function StatBox({ value, format, label, wow, noPadding }: { value: number; format: (n: number) => string; label: string; wow?: number; noPadding?: boolean }) {
   const animated = useAnimatedNumber(value)
   return (
-    <div className={`flex-1 flex flex-col gap-1 ${noPadding ? '' : 'pb-3'}`}>
+    <div className={`flex-1 flex flex-col gap-1 ${noPadding ? 'pt-4' : 'pb-3 pt-4'}`}>
       <div className="flex items-baseline gap-2">
         <span className="text-[32px] text-[#222428] leading-[1.2]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1", display: 'block' }}>
           {format(animated)}
