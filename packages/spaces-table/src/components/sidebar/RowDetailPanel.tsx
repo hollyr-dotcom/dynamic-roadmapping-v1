@@ -1190,11 +1190,11 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   if (selectedLayout === 'Center') {
     return createPortal(
       <div
-        className="fixed inset-0 z-[200] flex items-center justify-center"
+        className="center-overlay-enter fixed inset-0 z-[200] flex items-center justify-center"
         style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
         onClick={onClose}
       >
-        <div onClick={e => e.stopPropagation()}>
+        <div className="center-panel-enter" onClick={e => e.stopPropagation()}>
           {panelContent}
         </div>
       </div>,
