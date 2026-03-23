@@ -1100,8 +1100,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           {(['Right', 'Center', 'Fullscreen'] as const).map(option => (
             <button
               key={option}
-              className="flex items-center w-full rounded-[4px] hover:bg-[#F1F2F5] transition-colors text-left"
-              style={{ padding: '0 8px 0 0', gap: 0, background: selectedLayout === option ? '#F1F2F5' : 'transparent' }}
+              className={`flex items-center w-full rounded-[4px] transition-colors text-left ${selectedLayout === option ? 'bg-[#F1F2F5]' : 'hover:bg-[#F1F2F5]'}`}
+              style={{ padding: '0 8px 0 0', gap: 0 }}
               onClick={() => { setSelectedLayout(option); setLayoutOpen(false) }}
             >
               <span className="flex items-center justify-end shrink-0" style={{ padding: '12px 0 12px 8px' }}>
@@ -1844,7 +1844,6 @@ function FeedbackCard({
           height: 40,
           padding: hovered ? '0 14px 0 0' : '0 4px 0 0',
           borderRadius: 6,
-          backgroundColor: hovered ? categoryColor.bg : 'transparent',
           color: categoryColor.text,
           lineHeight: 1.4,
           whiteSpace: 'nowrap',
