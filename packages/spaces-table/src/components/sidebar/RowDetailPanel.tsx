@@ -54,6 +54,21 @@ function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: numb
   )
 }
 
+const MDS_AVATAR_COLORS: Record<string, { bg: string; fg: string }> = {
+  '#D1F09F': { bg: '#DBFAAD', fg: '#608521' },
+  '#d4bbff': { bg: '#E8DFFF', fg: '#5936B0' },
+  '#ffd4b2': { bg: '#FFE5CC', fg: '#A0522D' },
+}
+function MdsAvatar({ color }: { color?: string }) {
+  const { bg, fg } = (color ? MDS_AVATAR_COLORS[color] : undefined) ?? { bg: '#F1F2F5', fg: '#656B81' }
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+      <path d="M0 20C0 8.95431 8.95431 0 20 0C31.0457 0 40 8.95431 40 20C40 31.0457 31.0457 40 20 40C8.95431 40 0 31.0457 0 20Z" fill={bg}/>
+      <path d="M34.2234 34.0607C30.5968 37.7289 25.564 40.0001 19.9992 40.0001C14.4344 40.0001 9.40161 37.7266 5.77734 34.0584C7.01242 28.6557 11.2473 24.4001 16.6363 23.128C13.7984 21.8444 11.8232 18.9927 11.8232 15.6761C11.8232 11.1591 15.4845 7.50024 19.9992 7.50024C24.5162 7.50024 28.1752 11.1591 28.1752 15.6761C28.1752 18.9927 26.2 21.8444 23.3644 23.128C28.7534 24.4001 32.9883 28.658 34.2234 34.0607Z" fill={fg}/>
+    </svg>
+  )
+}
+
 interface FeedbackCardData {
   title: string
   text: string
@@ -1800,9 +1815,7 @@ function AppStoreReviewDetail({
 
       {/* Author */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20, marginTop: 12 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: card.borderColor ?? '#f1f2f5', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <_IconUser css={{ width: 20, height: 20, color: 'rgba(0,0,0,0.35)' }} />
-        </div>
+        <MdsAvatar color={card.borderColor} />
         <div>
           <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
           {authorRole && <p style={{ fontSize: 14, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
@@ -2192,13 +2205,6 @@ function SurveyFeedbackDetail({
   const authorParts = card.author.split(',')
   const authorName = authorParts[0].trim()
   const authorRole = authorParts.slice(1).join(',').trim()
-  const nameWords = authorName.split(' ')
-  const authorInitials = (nameWords.length >= 2
-    ? nameWords[0][0] + nameWords[nameWords.length - 1][0]
-    : authorName.slice(0, 2)).toUpperCase()
-  const AVATAR_COLORS = ['#de350b', '#4262FF', '#00C7A8', '#3C3F4A', '#7E57C2']
-  const avatarBg = card.borderColor ?? AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]
-
   const responses = generateSurveyResponses(card)
   const responseId = makeResponseId(card.author)
   const surveyId = 'sm-' + makeResponseId(card.title).slice(0, 6)
@@ -2272,9 +2278,7 @@ function SurveyFeedbackDetail({
 
       {/* Author row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, marginTop: 12 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: card.borderColor ? '#222428' : 'white', fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
-        </div>
+        <MdsAvatar color={card.borderColor} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
           {authorRole && <p style={{ fontSize: 14, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
@@ -2398,13 +2402,6 @@ function FeedbackCardDetailView({
   const authorParts = card.author.split(',')
   const authorName = authorParts[0].trim()
   const authorRole = authorParts.slice(1).join(',').trim()
-  const nameWords = authorName.split(' ')
-  const authorInitials = (nameWords.length >= 2
-    ? nameWords[0][0] + nameWords[nameWords.length - 1][0]
-    : authorName.slice(0, 2)).toUpperCase()
-  const AVATAR_COLORS = ['#de350b', '#4262FF', '#00C7A8', '#3C3F4A', '#7E57C2']
-  const avatarBg = card.borderColor ?? AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]
-
   const LABEL: React.CSSProperties = {
     fontSize: 14,
     color: '#656b81',
@@ -2448,9 +2445,7 @@ function FeedbackCardDetailView({
 
       {/* Author info */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20, marginTop: 12 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: card.borderColor ? '#222428' : 'white', fontFamily: 'Open Sans, sans-serif' }}>{authorInitials}</span>
-        </div>
+        <MdsAvatar color={card.borderColor} />
         <div>
           <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>{authorName}</p>
           {authorRole && <p style={{ fontSize: 14, color: '#656b81', margin: 0, lineHeight: 1.4, marginTop: 1 }}>{authorRole}</p>}
