@@ -329,6 +329,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
   const selectedLayout = selectedLayoutProp ?? layoutInternal
   const setSelectedLayout = (l: 'Center' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
+  const panelWidth = selectedLayout === 'Center' ? 720 : 376
   const layoutButtonRef = useRef<HTMLButtonElement>(null)
   const layoutMenuRef = useRef<HTMLDivElement>(null)
 
@@ -526,13 +527,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div
         className="flex absolute inset-y-0 left-0"
         style={{
-          width: 1128,
-          transform: (callCard || selectedFeedbackCard) ? 'translateX(-752px)' : selectedCompany ? 'translateX(-376px)' : 'translateX(0)',
+          width: panelWidth * 3,
+          transform: (callCard || selectedFeedbackCard) ? `translateX(-${panelWidth * 2}px)` : selectedCompany ? `translateX(-${panelWidth}px)` : 'translateX(0)',
           transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
       {/* ── Main panel ─── */}
-      <div key={activeTab} className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: 376, overflowAnchor: 'none' }}>
+      <div key={activeTab} className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: panelWidth, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -868,7 +869,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         {activeTab === 'Jira' && <JiraForm row={row} />}
       </div>
       {/* ── Company panel ─── */}
-      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-3 flex flex-col shrink-0" style={{ width: 376 }}>
+      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-3 flex flex-col shrink-0" style={{ width: panelWidth }}>
         {selectedCompany && (
           <CompanyDetailView
             company={selectedCompany}
@@ -878,7 +879,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         )}
       </div>
       {/* ── Detail panel (call transcript + all feedback card details) ─── */}
-      <div className="h-full shrink-0" style={{ width: 376 }}>
+      <div className="h-full shrink-0" style={{ width: panelWidth }}>
         {callCard && (
           <CallTranscriptPanel
             author={callCard.author}
