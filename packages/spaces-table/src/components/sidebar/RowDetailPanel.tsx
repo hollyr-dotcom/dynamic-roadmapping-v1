@@ -1075,41 +1075,37 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       {layoutOpen && layoutPos && createPortal(
         <div
           ref={layoutMenuRef}
-          className="fixed z-[9999] flex flex-col py-1 rounded-lg overflow-hidden"
-          style={{ top: layoutPos.top, right: layoutPos.right, width: 160, background: '#1E1F23', boxShadow: '0px 4px 16px rgba(0,0,0,0.32)' }}
+          className="fixed z-[9999] bg-white flex flex-col rounded-[8px]"
+          style={{ top: layoutPos.top, right: layoutPos.right, padding: '16px 12px', gap: 4, boxShadow: '0px 0px 12px rgba(34,36,40,0.04), 0px 2px 8px rgba(34,36,40,0.12)' }}
         >
-          {(['Center', 'Right', 'Fullscreen'] as const).map(option => (
+          {(['Right', 'Center', 'Fullscreen'] as const).map(option => (
             <button
               key={option}
-              className="flex items-center gap-2.5 w-full px-3 py-2 text-[13px] transition-colors text-left"
-              style={{
-                fontFamily: 'Open Sans, sans-serif',
-                color: selectedLayout === option ? '#fff' : 'rgba(255,255,255,0.7)',
-                background: selectedLayout === option ? 'rgba(255,255,255,0.08)' : 'transparent',
-                borderLeft: selectedLayout === option ? '2px solid #4262FF' : '2px solid transparent',
-              }}
+              className="flex items-center w-full rounded-[4px] hover:bg-[#F1F2F5] transition-colors text-left"
+              style={{ padding: '0 8px 0 0', gap: 0, background: selectedLayout === option ? '#F1F2F5' : 'transparent' }}
               onClick={() => { setSelectedLayout(option); setLayoutOpen(false) }}
             >
-              <span style={{ color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center' }}>
-                {option === 'Center' && (
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-                    <rect x="4.5" y="5.5" width="7" height="5" rx="1" fill="currentColor"/>
+              <span className="flex items-center justify-end shrink-0" style={{ padding: '12px 0 12px 8px' }}>
+                {option === 'Right' && (
+                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
+                    <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="#222428"/>
                   </svg>
                 )}
-                {option === 'Right' && (
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-                    <rect x="8" y="5.5" width="5.5" height="5" rx="1" fill="currentColor"/>
+                {option === 'Center' && (
+                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
+                    <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="#222428"/>
                   </svg>
                 )}
                 {option === 'Fullscreen' && (
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M2 5.5V3h2.5M14 5.5V3h-2.5M2 10.5V13h2.5M14 10.5V13h-2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
+                    <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="#222428"/>
                   </svg>
                 )}
               </span>
-              {option}
+              <span style={{ fontFamily: 'Open Sans, sans-serif', fontSize: 14, color: '#222428', paddingLeft: 8, paddingTop: 10, paddingBottom: 10, fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>{option}</span>
             </button>
           ))}
         </div>,
