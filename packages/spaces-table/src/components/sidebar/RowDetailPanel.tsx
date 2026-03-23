@@ -757,9 +757,14 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   <div className="flex items-center justify-between">
                     <span className="text-[14px] font-semibold text-[#222428] leading-[1]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>Feedback</span>
                     <div className="flex items-center gap-1">
-                      <button className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#222428] hover:bg-[#F1F2F5] transition-colors">
-                        Relevance<IconChevronDown size="small" />
-                      </button>
+                      <Tooltip>
+                        <Tooltip.Trigger asChild>
+                          <button className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#222428] hover:bg-[#F1F2F5] transition-colors">
+                            Relevance<IconChevronDown size="small" />
+                          </button>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Sort</Tooltip.Content></Tooltip.Portal>
+                      </Tooltip>
                       <Tooltip>
                         <Tooltip.Trigger asChild>
                           <button ref={feedbackFilterBtnRef} onClick={openFeedbackFilter} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F1F2F5] transition-colors" style={{ color: '#222428' }}>
@@ -784,7 +789,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
                     {showSavedOnly && savedCards.size === 0 ? (
                       <div className="flex items-center justify-center" style={{ paddingTop: 48, paddingBottom: 48 }}>
-                        <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center' }}>
+                        <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center' }}>
                           Save feedback cards to view them here.
                         </p>
                       </div>
@@ -822,9 +827,14 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   <div className="flex items-center justify-between">
                     <span className="text-[14px] font-semibold text-[#222428] leading-[1]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>Feedback</span>
                     <div className="flex items-center gap-1">
-                      <button className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#222428] hover:bg-[#F1F2F5] transition-colors">
-                        Relevance<IconChevronDown size="small" />
-                      </button>
+                      <Tooltip>
+                        <Tooltip.Trigger asChild>
+                          <button className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#222428] hover:bg-[#F1F2F5] transition-colors">
+                            Relevance<IconChevronDown size="small" />
+                          </button>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Sort</Tooltip.Content></Tooltip.Portal>
+                      </Tooltip>
                       <Tooltip>
                         <Tooltip.Trigger asChild>
                           <button ref={feedbackFilterBtnRef} onClick={openFeedbackFilter} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F1F2F5] transition-colors" style={{ color: '#222428' }}>
@@ -847,7 +857,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     </div>
                   </div>
                   <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
-                    {generateFeedbackCards(row).map((card, i) => {
+                    {showSavedOnly && savedCards.size === 0 ? (
+                      <div className="flex items-center justify-center" style={{ paddingTop: 48, paddingBottom: 48 }}>
+                        <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center' }}>
+                          Save feedback cards to view them here.
+                        </p>
+                      </div>
+                    ) : generateFeedbackCards(row).map((card, i) => {
                       const hidden = dismissedCards.has(i) || (showSavedOnly && !savedCards.has(i))
                       return (
                         <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : (selectedLayout === 'Center' ? 24 : 12), overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
