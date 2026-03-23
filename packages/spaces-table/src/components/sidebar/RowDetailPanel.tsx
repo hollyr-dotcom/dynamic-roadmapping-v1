@@ -1844,7 +1844,7 @@ function FeedbackCard({
           height: 40,
           padding: hovered ? '0 14px 0 0' : '0 4px 0 0',
           borderRadius: 6,
-          backgroundColor: 'transparent',
+          backgroundColor: hovered ? categoryColor.bg : 'transparent',
           color: categoryColor.text,
           lineHeight: 1.4,
           whiteSpace: 'nowrap',
