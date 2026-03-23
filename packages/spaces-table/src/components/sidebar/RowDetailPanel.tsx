@@ -322,6 +322,12 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const feedbackFilterBtnRef = useRef<HTMLButtonElement>(null)
   const feedbackFilterDropdownRef = useRef<HTMLDivElement>(null)
 
+  const [layoutOpen, setLayoutOpen] = useState(false)
+  const [layoutPos, setLayoutPos] = useState<{ top: number; right: number } | null>(null)
+  const [selectedLayout, setSelectedLayout] = useState<'Center' | 'Right' | 'Fullscreen'>('Center')
+  const layoutButtonRef = useRef<HTMLButtonElement>(null)
+  const layoutMenuRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     if (!feedbackFilterOpen) return
     const handler = (e: MouseEvent) => {
@@ -334,6 +340,15 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [feedbackFilterOpen])
+
+  useEffect(() => {
+    if (!layoutOpen) return
+    const handler = (e: MouseEvent) => {
+      if (layoutMenuRef.current && !layoutMenuRef.current.contains(e.target as Node)) setLayoutOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [layoutOpen])
 
   const openFeedbackFilter = () => {
     if (feedbackFilterOpen) {
@@ -428,7 +443,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const adjRevenue = Math.round(row.estRevenue * remainingFraction)
 
   return (
-    <div className="flex flex-col h-full bg-white overflow-hidden relative" style={{ width: 376, fontFamily: 'Open Sans, sans-serif' }}>
+    <div className="flex flex-col h-full bg-white overflow-hidden relative" style={{ width: 476, fontFamily: 'Open Sans, sans-serif' }}>
 
 
       {/* ── Header ──────────────────────────────────────── */}
@@ -451,13 +466,32 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
           </button>
           <button
+            ref={layoutButtonRef}
             aria-label="Panel layout"
             className="h-6 flex items-center gap-0.5 px-1 rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+            onClick={() => {
+              const r = layoutButtonRef.current?.getBoundingClientRect()
+              if (r) setLayoutPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+              setLayoutOpen(o => !o)
+            }}
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-              <rect x="4.5" y="5.5" width="7" height="5" rx="1" fill="currentColor"/>
-            </svg>
+            {selectedLayout === 'Center' && (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                <rect x="4.5" y="5.5" width="7" height="5" rx="1" fill="currentColor"/>
+              </svg>
+            )}
+            {selectedLayout === 'Right' && (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                <rect x="8" y="5.5" width="5.5" height="5" rx="1" fill="currentColor"/>
+              </svg>
+            )}
+            {selectedLayout === 'Fullscreen' && (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M2 5.5V3h2.5M14 5.5V3h-2.5M2 10.5V13h2.5M14 10.5V13h-2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            )}
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
               <path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -497,13 +531,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div
         className="flex absolute inset-y-0 left-0"
         style={{
-          width: 1128,
-          transform: (callCard || selectedFeedbackCard) ? 'translateX(-752px)' : selectedCompany ? 'translateX(-376px)' : 'translateX(0)',
+          width: 1428,
+          transform: (callCard || selectedFeedbackCard) ? 'translateX(-952px)' : selectedCompany ? 'translateX(-476px)' : 'translateX(0)',
           transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
       {/* ── Main panel ─── */}
-      <div key={activeTab} className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: 376, overflowAnchor: 'none' }}>
+      <div key={activeTab} className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: 476, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -839,7 +873,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         {activeTab === 'Jira' && <JiraForm row={row} />}
       </div>
       {/* ── Company panel ─── */}
-      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-3 flex flex-col shrink-0" style={{ width: 376 }}>
+      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-3 flex flex-col shrink-0" style={{ width: 476 }}>
         {selectedCompany && (
           <CompanyDetailView
             company={selectedCompany}
@@ -849,7 +883,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         )}
       </div>
       {/* ── Detail panel (call transcript + all feedback card details) ─── */}
-      <div className="h-full shrink-0" style={{ width: 376 }}>
+      <div className="h-full shrink-0" style={{ width: 476 }}>
         {callCard && (
           <CallTranscriptPanel
             author={callCard.author}
@@ -1035,6 +1069,50 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             </button>
           </div>
         </>,
+        document.body
+      )}
+
+      {layoutOpen && layoutPos && createPortal(
+        <div
+          ref={layoutMenuRef}
+          className="fixed z-[9999] flex flex-col py-1 rounded-lg overflow-hidden"
+          style={{ top: layoutPos.top, right: layoutPos.right, width: 160, background: '#1E1F23', boxShadow: '0px 4px 16px rgba(0,0,0,0.32)' }}
+        >
+          {(['Center', 'Right', 'Fullscreen'] as const).map(option => (
+            <button
+              key={option}
+              className="flex items-center gap-2.5 w-full px-3 py-2 text-[13px] transition-colors text-left"
+              style={{
+                fontFamily: 'Open Sans, sans-serif',
+                color: selectedLayout === option ? '#fff' : 'rgba(255,255,255,0.7)',
+                background: selectedLayout === option ? 'rgba(255,255,255,0.08)' : 'transparent',
+                borderLeft: selectedLayout === option ? '2px solid #4262FF' : '2px solid transparent',
+              }}
+              onClick={() => { setSelectedLayout(option); setLayoutOpen(false) }}
+            >
+              <span style={{ color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center' }}>
+                {option === 'Center' && (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                    <rect x="4.5" y="5.5" width="7" height="5" rx="1" fill="currentColor"/>
+                  </svg>
+                )}
+                {option === 'Right' && (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                    <rect x="8" y="5.5" width="5.5" height="5" rx="1" fill="currentColor"/>
+                  </svg>
+                )}
+                {option === 'Fullscreen' && (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 5.5V3h2.5M14 5.5V3h-2.5M2 10.5V13h2.5M14 10.5V13h-2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </span>
+              {option}
+            </button>
+          ))}
+        </div>,
         document.body
       )}
 

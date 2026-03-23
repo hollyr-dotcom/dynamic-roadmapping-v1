@@ -107,6 +107,21 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
   const [dismissedCards, setDismissedCards] = useState<Set<number>>(new Set())
   const [companiesExpanded, setCompaniesExpanded] = useState(false)
 
+  const [layoutOpen, setLayoutOpen] = useState(false)
+  const [layoutPos, setLayoutPos] = useState<{ top: number; right: number } | null>(null)
+  const [selectedLayout, setSelectedLayout] = useState<'Center' | 'Right' | 'Fullscreen'>('Center')
+  const layoutButtonRef = useRef<HTMLButtonElement>(null)
+  const layoutMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!layoutOpen) return
+    const handler = (e: MouseEvent) => {
+      if (layoutMenuRef.current && !layoutMenuRef.current.contains(e.target as Node)) setLayoutOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [layoutOpen])
+
   const jiraKey = JIRA_KEY_MAP[row.id] ?? 'PT-100'
   const chip = PRIORITY_CHIP[row.priority] ?? PRIORITY_CHIP.icebox
   const priorityLabel = PRIORITY_LABELS[row.priority] ?? row.priority
@@ -142,13 +157,32 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
             <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
           </button>
           <button
+            ref={layoutButtonRef}
             aria-label="Panel layout"
             className="h-6 flex items-center gap-0.5 px-1 rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+            onClick={() => {
+              const r = layoutButtonRef.current?.getBoundingClientRect()
+              if (r) setLayoutPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+              setLayoutOpen(o => !o)
+            }}
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-              <rect x="4.5" y="5.5" width="7" height="5" rx="1" fill="currentColor"/>
-            </svg>
+            {selectedLayout === 'Center' && (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                <rect x="4.5" y="5.5" width="7" height="5" rx="1" fill="currentColor"/>
+              </svg>
+            )}
+            {selectedLayout === 'Right' && (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                <rect x="8" y="5.5" width="5.5" height="5" rx="1" fill="currentColor"/>
+              </svg>
+            )}
+            {selectedLayout === 'Fullscreen' && (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M2 5.5V3h2.5M14 5.5V3h-2.5M2 10.5V13h2.5M14 10.5V13h-2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            )}
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
               <path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -595,6 +629,50 @@ function FeedbackCard({
           </div>
         </div>
       </div>
+
+      {layoutOpen && layoutPos && createPortal(
+        <div
+          ref={layoutMenuRef}
+          className="fixed z-[9999] flex flex-col py-1 rounded-lg overflow-hidden"
+          style={{ top: layoutPos.top, right: layoutPos.right, width: 160, background: '#1E1F23', boxShadow: '0px 4px 16px rgba(0,0,0,0.32)' }}
+        >
+          {(['Center', 'Right', 'Fullscreen'] as const).map(option => (
+            <button
+              key={option}
+              className="flex items-center gap-2.5 w-full px-3 py-2 text-[13px] transition-colors text-left"
+              style={{
+                fontFamily: 'Open Sans, sans-serif',
+                color: selectedLayout === option ? '#fff' : 'rgba(255,255,255,0.7)',
+                background: selectedLayout === option ? 'rgba(255,255,255,0.08)' : 'transparent',
+                borderLeft: selectedLayout === option ? '2px solid #4262FF' : '2px solid transparent',
+              }}
+              onClick={() => { setSelectedLayout(option); setLayoutOpen(false) }}
+            >
+              <span style={{ color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center' }}>
+                {option === 'Center' && (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                    <rect x="4.5" y="5.5" width="7" height="5" rx="1" fill="currentColor"/>
+                  </svg>
+                )}
+                {option === 'Right' && (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                    <rect x="8" y="5.5" width="5.5" height="5" rx="1" fill="currentColor"/>
+                  </svg>
+                )}
+                {option === 'Fullscreen' && (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 5.5V3h2.5M14 5.5V3h-2.5M2 10.5V13h2.5M14 10.5V13h-2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </span>
+              {option}
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
 
       {menuOpen && menuPos && createPortal(
         <div
