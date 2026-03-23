@@ -40,6 +40,7 @@ import {
   IconSmileyPlus,
   IconPaperPlaneFilledRight,
   IconSocialJira,
+  IconBookmark,
 } from '@mirohq/design-system'
 
 function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
@@ -289,6 +290,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string; source?: string; stars?: number } | null>(null)
   const [callCard, setCallCard] = useState<{ title: string; author: string; company: string; date: string; transcript: TranscriptLine[]; borderColor?: string } | null>(null)
   const [dismissedCards, setDismissedCards] = useState<Set<number>>(new Set())
+  const [savedCards, setSavedCards] = useState<Set<number>>(new Set())
+  const [showSavedOnly, setShowSavedOnly] = useState(false)
   const [promptCards, setPromptCards] = useState<Set<number>>(new Set())
   const [showToast, setShowToast] = useState(false)
   const [toastExiting, setToastExiting] = useState(false)
@@ -751,23 +754,53 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   <div className="flex items-center justify-between">
                     <span className="text-[14px] font-semibold text-[#222428] leading-[1]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>Feedback</span>
                     <div className="flex items-center gap-1">
-                      <button className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#222428] hover:bg-[#F1F2F5] transition-colors">
-                        Relevance<IconChevronDown size="small" />
-                      </button>
-                      <button ref={feedbackFilterBtnRef} onClick={openFeedbackFilter} className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors" style={{ color: '#222428' }}>
-                        <IconSlidersY size="small" />
-                      </button>
+                      <Tooltip>
+                        <Tooltip.Trigger asChild>
+                          <button className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#222428] hover:bg-[#F1F2F5] transition-colors">
+                            Relevance<IconChevronDown size="small" />
+                          </button>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Sort</Tooltip.Content></Tooltip.Portal>
+                      </Tooltip>
+                      <Tooltip>
+                        <Tooltip.Trigger asChild>
+                          <button ref={feedbackFilterBtnRef} onClick={openFeedbackFilter} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F1F2F5] transition-colors" style={{ color: '#222428' }}>
+                            <IconSlidersY size="small" />
+                          </button>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Filter</Tooltip.Content></Tooltip.Portal>
+                      </Tooltip>
+                      <Tooltip>
+                        <Tooltip.Trigger asChild>
+                          <button onClick={() => setShowSavedOnly(v => !v)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F1F2F5] transition-colors" style={{ color: '#222428', background: showSavedOnly ? '#F1F2F5' : undefined }}>
+                            {showSavedOnly
+                              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3h14a1 1 0 0 1 1 1v17.5a.5.5 0 0 1-.8.4L12 17.333 4.8 21.9a.5.5 0 0 1-.8-.4V4a1 1 0 0 1 1-1Z"/></svg>
+                              : <IconBookmark size="small" />
+                            }
+                          </button>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Saved</Tooltip.Content></Tooltip.Portal>
+                      </Tooltip>
                     </div>
                   </div>
                   <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
-                    {generateFeedbackCards(row).map((card, i) => (
-                      <div key={i} style={{ maxHeight: dismissedCards.has(i) ? 0 : 800, opacity: dismissedCards.has(i) ? 0 : 1, marginBottom: dismissedCards.has(i) ? 0 : 24, overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
-                        {promptCards.has(i)
-                          ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
-                          : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
-                        }
+                    {showSavedOnly && savedCards.size === 0 ? (
+                      <div className="flex items-center justify-center" style={{ paddingTop: 48, paddingBottom: 48 }}>
+                        <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center' }}>
+                          Save feedback cards to view them here.
+                        </p>
                       </div>
-                    ))}
+                    ) : generateFeedbackCards(row).map((card, i) => {
+                      const hidden = dismissedCards.has(i) || (showSavedOnly && !savedCards.has(i))
+                      return (
+                        <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : 24, overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
+                          {promptCards.has(i)
+                            ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
+                            : <FeedbackCard {...card} saved={savedCards.has(i)} onSave={() => setSavedCards(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
+                          }
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               </div>
@@ -791,23 +824,53 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   <div className="flex items-center justify-between">
                     <span className="text-[14px] font-semibold text-[#222428] leading-[1]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>Feedback</span>
                     <div className="flex items-center gap-1">
-                      <button className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#222428] hover:bg-[#F1F2F5] transition-colors">
-                        Relevance<IconChevronDown size="small" />
-                      </button>
-                      <button ref={feedbackFilterBtnRef} onClick={openFeedbackFilter} className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors" style={{ color: '#222428' }}>
-                        <IconSlidersY size="small" />
-                      </button>
+                      <Tooltip>
+                        <Tooltip.Trigger asChild>
+                          <button className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#222428] hover:bg-[#F1F2F5] transition-colors">
+                            Relevance<IconChevronDown size="small" />
+                          </button>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Sort</Tooltip.Content></Tooltip.Portal>
+                      </Tooltip>
+                      <Tooltip>
+                        <Tooltip.Trigger asChild>
+                          <button ref={feedbackFilterBtnRef} onClick={openFeedbackFilter} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F1F2F5] transition-colors" style={{ color: '#222428' }}>
+                            <IconSlidersY size="small" />
+                          </button>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Filter</Tooltip.Content></Tooltip.Portal>
+                      </Tooltip>
+                      <Tooltip>
+                        <Tooltip.Trigger asChild>
+                          <button onClick={() => setShowSavedOnly(v => !v)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F1F2F5] transition-colors" style={{ color: '#222428', background: showSavedOnly ? '#F1F2F5' : undefined }}>
+                            {showSavedOnly
+                              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3h14a1 1 0 0 1 1 1v17.5a.5.5 0 0 1-.8.4L12 17.333 4.8 21.9a.5.5 0 0 1-.8-.4V4a1 1 0 0 1 1-1Z"/></svg>
+                              : <IconBookmark size="small" />
+                            }
+                          </button>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Saved</Tooltip.Content></Tooltip.Portal>
+                      </Tooltip>
                     </div>
                   </div>
                   <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
-                    {generateFeedbackCards(row).map((card, i) => (
-                      <div key={i} style={{ maxHeight: dismissedCards.has(i) ? 0 : 800, opacity: dismissedCards.has(i) ? 0 : 1, marginBottom: dismissedCards.has(i) ? 0 : (selectedLayout === 'Center' ? 24 : 12), overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
-                        {promptCards.has(i)
-                          ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
-                          : <FeedbackCard {...card} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
-                        }
+                    {showSavedOnly && savedCards.size === 0 ? (
+                      <div className="flex items-center justify-center" style={{ paddingTop: 48, paddingBottom: 48 }}>
+                        <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center' }}>
+                          Save feedback cards to view them here.
+                        </p>
                       </div>
-                    ))}
+                    ) : generateFeedbackCards(row).map((card, i) => {
+                      const hidden = dismissedCards.has(i) || (showSavedOnly && !savedCards.has(i))
+                      return (
+                        <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : (selectedLayout === 'Center' ? 24 : 12), overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
+                          {promptCards.has(i)
+                            ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
+                            : <FeedbackCard {...card} saved={savedCards.has(i)} onSave={() => setSavedCards(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
+                          }
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               </>
@@ -1796,6 +1859,8 @@ function FeedbackCard({
   date,
   companies,
   source,
+  saved,
+  onSave,
   onDismiss,
   onSelect,
   onAddToBoard,
@@ -1809,6 +1874,8 @@ function FeedbackCard({
   date: string
   companies: string[]
   source?: string
+  saved?: boolean
+  onSave?: () => void
   onDismiss: () => void
   onSelect: () => void
   onAddToBoard?: () => void
@@ -1971,6 +2038,7 @@ function FeedbackCard({
           style={{ top: menuPos.top, right: menuPos.right, width: 224, boxShadow: '0px 2px 8px rgba(34,36,40,0.12), 0px 0px 12px rgba(34,36,40,0.04)' }}
         >
           {[
+            { icon: <IconBookmark size="small" />, label: saved ? 'Unsave' : 'Save', onClick: () => { onSave?.(); setMenuOpen(false) } },
             { icon: <IconBoard size="small" />, label: 'Add to board', onClick: () => { onAddToBoard?.(); setMenuOpen(false) } },
             { icon: <IconSquaresTwoOverlap size="small" />, label: 'Copy', onClick: () => setMenuOpen(false) },
             { icon: <IconDocFormat size="small" />, label: 'View in transcript', onClick: () => setMenuOpen(false) },
