@@ -488,15 +488,22 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   setLayoutOpen(o => !o)
                 }}
               >
-                {selectedLayout === 'Center' ? (
+                {selectedLayout === 'Center' && (
                   <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
                     <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
                     <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
                   </svg>
-                ) : (
+                )}
+                {selectedLayout === 'Right' && (
                   <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
                     <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
                     <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
+                  </svg>
+                )}
+                {selectedLayout === 'Fullscreen' && (
+                  <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                    <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="currentColor"/>
                   </svg>
                 )}
               </button>
