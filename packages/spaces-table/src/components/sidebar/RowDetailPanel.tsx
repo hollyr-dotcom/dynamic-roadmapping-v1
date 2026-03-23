@@ -474,7 +474,9 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
               </button>
             </Tooltip.Trigger>
-            <Tooltip.Content side="top" sideOffset={4}>More options</Tooltip.Content>
+            <Tooltip.Portal>
+              <Tooltip.Content side="top" sideOffset={4}>More options</Tooltip.Content>
+            </Tooltip.Portal>
           </Tooltip>
           <Tooltip>
             <Tooltip.Trigger asChild>
@@ -508,7 +510,9 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 )}
               </button>
             </Tooltip.Trigger>
-            <Tooltip.Content side="top" sideOffset={4}>Panel view</Tooltip.Content>
+            <Tooltip.Portal>
+              <Tooltip.Content side="top" sideOffset={4}>Panel view</Tooltip.Content>
+            </Tooltip.Portal>
           </Tooltip>
           <Tooltip>
             <Tooltip.Trigger asChild>
@@ -516,7 +520,9 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 <IconCross css={{ width: 16, height: 16 }} />
               </button>
             </Tooltip.Trigger>
-            <Tooltip.Content side="top" sideOffset={4}>Close</Tooltip.Content>
+            <Tooltip.Portal>
+              <Tooltip.Content side="top" sideOffset={4}>Close</Tooltip.Content>
+            </Tooltip.Portal>
           </Tooltip>
         </div>
       </div>
@@ -1421,15 +1427,14 @@ function CompanyDetailView({ company, onBack, onPromptSelect }: { company: strin
         style={{ fontFamily: 'Open Sans, sans-serif' }}
       >
         <IconArrowLeft size="small" />
-        {company}
+        Company
       </button>
-      <p className="text-[16px] text-[#222428] leading-[1.5] mb-1" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>Details</p>
       <div className="flex flex-col">
-        <CompanyFieldRow icon={<IconOffice size="small" />} label="Name"><Chip removable={false} css={{ fontSize: 13, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{company}</Chip></CompanyFieldRow>
-        <CompanyFieldRow icon={<IconLink size="small" />} label="Domain"><Chip removable={false} css={{ fontSize: 13, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{info.domain}</Chip></CompanyFieldRow>
-        <CompanyFieldRow icon={<span className="text-[13px] leading-none">◎</span>} label="Stage"><Chip removable={false} css={{ fontSize: 13, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{info.stage}</Chip></CompanyFieldRow>
-        <CompanyFieldRow icon={<span className="text-[13px] font-semibold leading-none">$</span>} label="Deal Value"><span className="text-[14px] text-[#222428] px-1">{info.dealValue}</span></CompanyFieldRow>
-        <CompanyFieldRow icon={<IconGlobe size="small" />} label="Source"><Chip removable={false} css={{ fontSize: 13, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{info.source}</Chip></CompanyFieldRow>
+        <CompanyFieldRow label="Name"><CompanyLogo name={company} size={24} /></CompanyFieldRow>
+        <CompanyFieldRow label="Domain"><Chip removable={false} css={{ fontSize: 13 }}>{info.domain}</Chip></CompanyFieldRow>
+        <CompanyFieldRow label="Stage"><Chip removable={false} css={{ fontSize: 13 }}>{info.stage}</Chip></CompanyFieldRow>
+        <CompanyFieldRow label="Deal Value"><span className="text-[14px] text-[#222428]">{info.dealValue}</span></CompanyFieldRow>
+        <CompanyFieldRow label="Source"><Chip removable={false} css={{ fontSize: 13 }}>{info.source}</Chip></CompanyFieldRow>
       </div>
       <p className="text-[16px] text-[#222428] leading-[1.5] mt-6 mb-3" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>Discover more about {company}</p>
       <div className="flex flex-col gap-3">
@@ -1443,13 +1448,10 @@ function CompanyDetailView({ company, onBack, onPromptSelect }: { company: strin
   )
 }
 
-function CompanyFieldRow({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+function CompanyFieldRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2 min-h-[40px]">
-      <div className="w-[120px] shrink-0 flex items-center gap-2 text-[#656B81]">
-        <span className="flex items-center shrink-0">{icon}</span>
-        <span className="text-[14px] leading-[1.4]">{label}</span>
-      </div>
+    <div className="flex items-center min-h-[40px]">
+      <span className="text-[14px] text-[#656b81] leading-[1.4]" style={{ width: 140, flexShrink: 0 }}>{label}</span>
       <div className="flex-1 flex items-center">{children}</div>
     </div>
   )
