@@ -449,11 +449,11 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const adjRevenue = Math.round(row.estRevenue * remainingFraction)
 
   const panelContent = (
-    <div className="flex flex-col bg-white overflow-hidden relative" style={{ width: panelWidth, height: '100%', fontFamily: 'Open Sans, sans-serif', borderRadius: (selectedLayout === 'Center' || selectedLayout === 'Fullscreen') ? 8 : 0, boxShadow: (selectedLayout === 'Center' || selectedLayout === 'Fullscreen') ? '0px 8px 32px rgba(34,36,40,0.16), 0px 1px 4px rgba(34,36,40,0.08)' : 'none' }}>
+    <div className="flex flex-col bg-white overflow-hidden relative" style={{ width: panelWidth, height: '100%', fontFamily: 'Open Sans, sans-serif', borderRadius: selectedLayout !== 'Right' ? 8 : 0, boxShadow: selectedLayout !== 'Right' ? '0px 8px 32px rgba(34,36,40,0.16), 0px 1px 4px rgba(34,36,40,0.08)' : 'none', transition: 'width 0.5s cubic-bezier(0.16, 1, 0.3, 1)' }}>
 
 
       {/* ── Header ──────────────────────────────────────── */}
-      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout === 'Center' ? 24 : 16, paddingRight: selectedLayout === 'Center' ? 24 : 12 }}>
+      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12 }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <IconSocialJira css={{ width: 18, height: 18, flexShrink: 0 }} />
           <p
@@ -518,7 +518,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div className="h-1 shrink-0" />
 
       {/* ── Tabs ────────────────────────────────────────── */}
-      <div className="flex shrink-0 pb-5 pt-4 relative z-20 bg-white" style={{ paddingLeft: selectedLayout === 'Center' ? 20 : 12, paddingRight: selectedLayout === 'Center' ? 24 : 16 }}>
+      <div className="flex shrink-0 pb-5 pt-4 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 20 : 12, paddingRight: selectedLayout !== 'Right' ? 24 : 16 }}>
         {TABS.map((tab) => (
           <button
             key={tab}
@@ -549,7 +549,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         }}
       >
       {/* ── Main panel ─── */}
-      <div key={activeTab} className="h-full overflow-y-auto panel-scroll flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: panelWidth, paddingLeft: selectedLayout === 'Center' ? 24 : 16, paddingRight: selectedLayout === 'Center' ? 24 : 16, paddingTop: 8, overflowAnchor: 'none' }}>
+      <div key={activeTab} className="h-full overflow-y-auto panel-scroll flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: 8, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -885,7 +885,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         {activeTab === 'Jira' && <JiraForm row={row} />}
       </div>
       {/* ── Company panel ─── */}
-      <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout === 'Center' ? 24 : 16, paddingRight: selectedLayout === 'Center' ? 24 : 16, paddingTop: selectedLayout === 'Center' ? 24 : 12 }}>
+      <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: selectedLayout !== 'Right' ? 24 : 12 }}>
         {selectedCompany && (
           <CompanyDetailView
             company={selectedCompany}
