@@ -1,1 +1,1 @@
-export { TimelinePlaceholder } from './TimelinePlaceholder'
+export { KanbanBoard } from './KanbanBoard'
