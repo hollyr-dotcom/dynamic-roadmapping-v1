@@ -142,6 +142,18 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
             <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
           </button>
           <button
+            aria-label="Panel layout"
+            className="h-6 flex items-center gap-0.5 px-1 rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+              <rect x="4.5" y="5.5" width="7" height="5" rx="1" fill="currentColor"/>
+            </svg>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <button
             aria-label="Close panel"
             className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
             onClick={onClose}

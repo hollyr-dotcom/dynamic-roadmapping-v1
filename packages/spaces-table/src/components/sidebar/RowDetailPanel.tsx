@@ -428,7 +428,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const adjRevenue = Math.round(row.estRevenue * remainingFraction)
 
   return (
-    <div className="flex flex-col h-full bg-white overflow-hidden relative" style={{ width: 476, fontFamily: 'Open Sans, sans-serif' }}>
+    <div className="flex flex-col h-full bg-white overflow-hidden relative" style={{ width: 376, fontFamily: 'Open Sans, sans-serif' }}>
 
 
       {/* ── Header ──────────────────────────────────────── */}
@@ -449,6 +449,18 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
           >
             <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
+          </button>
+          <button
+            aria-label="Panel layout"
+            className="h-6 flex items-center gap-0.5 px-1 rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+              <rect x="4.5" y="5.5" width="7" height="5" rx="1" fill="currentColor"/>
+            </svg>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </button>
           <button aria-label="Close panel" className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors" onClick={onClose}>
             <IconCross css={{ width: 16, height: 16 }} />
@@ -485,13 +497,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div
         className="flex absolute inset-y-0 left-0"
         style={{
-          width: 1428,
-          transform: (callCard || selectedFeedbackCard) ? 'translateX(-952px)' : selectedCompany ? 'translateX(-476px)' : 'translateX(0)',
+          width: 1128,
+          transform: (callCard || selectedFeedbackCard) ? 'translateX(-752px)' : selectedCompany ? 'translateX(-376px)' : 'translateX(0)',
           transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
       {/* ── Main panel ─── */}
-      <div key={activeTab} className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: 476, overflowAnchor: 'none' }}>
+      <div key={activeTab} className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: 376, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -827,7 +839,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         {activeTab === 'Jira' && <JiraForm row={row} />}
       </div>
       {/* ── Company panel ─── */}
-      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-3 flex flex-col shrink-0" style={{ width: 476 }}>
+      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-3 flex flex-col shrink-0" style={{ width: 376 }}>
         {selectedCompany && (
           <CompanyDetailView
             company={selectedCompany}
@@ -837,7 +849,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         )}
       </div>
       {/* ── Detail panel (call transcript + all feedback card details) ─── */}
-      <div className="h-full shrink-0" style={{ width: 476 }}>
+      <div className="h-full shrink-0" style={{ width: 376 }}>
         {callCard && (
           <CallTranscriptPanel
             author={callCard.author}
