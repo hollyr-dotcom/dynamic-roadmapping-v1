@@ -330,7 +330,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
   const selectedLayout = selectedLayoutProp ?? layoutInternal
   const setSelectedLayout = (l: 'Center' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
-  const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 140 : 376
+  const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 48 : 376
   const layoutButtonRef = useRef<HTMLButtonElement>(null)
   const layoutMenuRef = useRef<HTMLDivElement>(null)
 
@@ -453,7 +453,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
 
       {/* ── Header ──────────────────────────────────────── */}
-      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12 }}>
+      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 48 : 16, paddingRight: selectedLayout !== 'Right' ? 48 : 12 }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <IconSocialJira css={{ width: 18, height: 18, flexShrink: 0 }} />
           <p
@@ -518,7 +518,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div className="h-1 shrink-0" />
 
       {/* ── Tabs ────────────────────────────────────────── */}
-      <div className="flex shrink-0 pb-5 pt-4 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 20 : 12, paddingRight: selectedLayout !== 'Right' ? 24 : 16 }}>
+      <div className="flex shrink-0 pb-5 pt-4 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 44 : 12, paddingRight: selectedLayout !== 'Right' ? 48 : 16 }}>
         {TABS.map((tab) => (
           <button
             key={tab}
@@ -549,7 +549,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         }}
       >
       {/* ── Main panel ─── */}
-      <div key={activeTab} className="h-full overflow-y-auto panel-scroll flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: 8, overflowAnchor: 'none' }}>
+      <div key={activeTab} className="h-full overflow-y-auto panel-scroll flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 48 : 16, paddingRight: selectedLayout !== 'Right' ? 48 : 16, paddingTop: 8, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -885,7 +885,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         {activeTab === 'Jira' && <JiraForm row={row} />}
       </div>
       {/* ── Company panel ─── */}
-      <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: selectedLayout !== 'Right' ? 24 : 12 }}>
+      <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 48 : 16, paddingRight: selectedLayout !== 'Right' ? 48 : 16, paddingTop: selectedLayout !== 'Right' ? 48 : 12 }}>
         {selectedCompany && (
           <CompanyDetailView
             company={selectedCompany}
@@ -1206,7 +1206,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   if (selectedLayout === 'Center' || selectedLayout === 'Fullscreen') {
     return createPortal(
       <div
-        className="center-overlay-enter fixed inset-0 z-[200] flex items-center justify-center py-[70px]"
+        className="center-overlay-enter fixed inset-0 z-[200] flex items-center justify-center py-[24px]"
         style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
         onClick={onClose}
       >
