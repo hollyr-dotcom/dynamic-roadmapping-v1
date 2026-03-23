@@ -452,7 +452,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
 
       {/* ── Header ──────────────────────────────────────── */}
-      <div className="flex items-center gap-2 h-12 pl-4 pr-3 shrink-0 relative z-20 bg-white">
+      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout === 'Center' ? 24 : 16, paddingRight: selectedLayout === 'Center' ? 24 : 12 }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <IconSocialJira css={{ width: 18, height: 18, flexShrink: 0 }} />
           <p
@@ -502,7 +502,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div className="h-1 shrink-0" />
 
       {/* ── Tabs ────────────────────────────────────────── */}
-      <div className="flex pl-3 pr-4 shrink-0 pb-5 pt-4 relative z-20 bg-white">
+      <div className="flex shrink-0 pb-5 pt-4 relative z-20 bg-white" style={{ paddingLeft: selectedLayout === 'Center' ? 20 : 12, paddingRight: selectedLayout === 'Center' ? 24 : 16 }}>
         {TABS.map((tab) => (
           <button
             key={tab}
@@ -533,7 +533,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         }}
       >
       {/* ── Main panel ─── */}
-      <div key={activeTab} className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: panelWidth, overflowAnchor: 'none' }}>
+      <div key={activeTab} className="h-full overflow-y-auto panel-scroll flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: panelWidth, paddingLeft: selectedLayout === 'Center' ? 24 : 16, paddingRight: selectedLayout === 'Center' ? 24 : 16, paddingTop: 8, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -869,7 +869,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         {activeTab === 'Jira' && <JiraForm row={row} />}
       </div>
       {/* ── Company panel ─── */}
-      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-3 flex flex-col shrink-0" style={{ width: panelWidth }}>
+      <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout === 'Center' ? 24 : 16, paddingRight: selectedLayout === 'Center' ? 24 : 16, paddingTop: selectedLayout === 'Center' ? 24 : 12 }}>
         {selectedCompany && (
           <CompanyDetailView
             company={selectedCompany}
