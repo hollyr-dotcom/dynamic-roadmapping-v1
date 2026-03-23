@@ -474,7 +474,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
               </button>
             </Tooltip.Trigger>
-            <Tooltip.Content side="bottom" sideOffset={4}>More options</Tooltip.Content>
+            <Tooltip.Content side="top" sideOffset={4}>More options</Tooltip.Content>
           </Tooltip>
           <Tooltip>
             <Tooltip.Trigger asChild>
@@ -501,7 +501,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 )}
               </button>
             </Tooltip.Trigger>
-            <Tooltip.Content side="bottom" sideOffset={4}>Panel view</Tooltip.Content>
+            <Tooltip.Content side="top" sideOffset={4}>Panel view</Tooltip.Content>
           </Tooltip>
           <Tooltip>
             <Tooltip.Trigger asChild>
@@ -509,7 +509,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 <IconCross css={{ width: 16, height: 16 }} />
               </button>
             </Tooltip.Trigger>
-            <Tooltip.Content side="bottom" sideOffset={4}>Close</Tooltip.Content>
+            <Tooltip.Content side="top" sideOffset={4}>Close</Tooltip.Content>
           </Tooltip>
         </div>
       </div>
