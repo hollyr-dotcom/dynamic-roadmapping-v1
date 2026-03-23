@@ -330,7 +330,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
   const selectedLayout = selectedLayoutProp ?? layoutInternal
   const setSelectedLayout = (l: 'Center' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
-  const panelWidth = selectedLayout === 'Center' ? 720 : 376
+  const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 140 : 376
   const layoutButtonRef = useRef<HTMLButtonElement>(null)
   const layoutMenuRef = useRef<HTMLDivElement>(null)
 
@@ -449,7 +449,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const adjRevenue = Math.round(row.estRevenue * remainingFraction)
 
   const panelContent = (
-    <div className="flex flex-col bg-white overflow-hidden relative" style={{ width: selectedLayout === 'Center' ? 720 : 376, height: selectedLayout === 'Center' ? '100%' : '100%', fontFamily: 'Open Sans, sans-serif', borderRadius: selectedLayout === 'Center' ? 8 : 0, boxShadow: selectedLayout === 'Center' ? '0px 8px 32px rgba(34,36,40,0.16), 0px 1px 4px rgba(34,36,40,0.08)' : 'none' }}>
+    <div className="flex flex-col bg-white overflow-hidden relative" style={{ width: panelWidth, height: '100%', fontFamily: 'Open Sans, sans-serif', borderRadius: (selectedLayout === 'Center' || selectedLayout === 'Fullscreen') ? 8 : 0, boxShadow: (selectedLayout === 'Center' || selectedLayout === 'Fullscreen') ? '0px 8px 32px rgba(34,36,40,0.16), 0px 1px 4px rgba(34,36,40,0.08)' : 'none' }}>
 
 
       {/* ── Header ──────────────────────────────────────── */}
@@ -1203,7 +1203,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     </div>
   )
 
-  if (selectedLayout === 'Center') {
+  if (selectedLayout === 'Center' || selectedLayout === 'Fullscreen') {
     return createPortal(
       <div
         className="center-overlay-enter fixed inset-0 z-[200] flex items-center justify-center py-[70px]"
