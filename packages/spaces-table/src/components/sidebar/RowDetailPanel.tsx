@@ -762,14 +762,22 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               </div>
 
               {/* Feedback cards */}
-              <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
+              <div
+                style={{
+                  overflowAnchor: 'none',
+                  display: selectedLayout === 'Fullscreen' ? 'grid' : 'flex',
+                  gridTemplateColumns: selectedLayout === 'Fullscreen' ? '1fr 1fr' : undefined,
+                  gap: selectedLayout === 'Fullscreen' ? 12 : undefined,
+                  flexDirection: selectedLayout !== 'Fullscreen' ? 'column' : undefined,
+                }}
+              >
                 {generateFeedbackCards(row).map((card, i) => (
                   <div
                     key={i}
                     style={{
                       maxHeight: dismissedCards.has(i) ? 0 : 800,
                       opacity: dismissedCards.has(i) ? 0 : 1,
-                      marginBottom: dismissedCards.has(i) ? 0 : (selectedLayout === 'Center' ? 24 : 12),
+                      marginBottom: selectedLayout === 'Fullscreen' ? 0 : dismissedCards.has(i) ? 0 : (selectedLayout === 'Center' ? 24 : 12),
                       overflow: 'hidden',
                       transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease',
                     }}
