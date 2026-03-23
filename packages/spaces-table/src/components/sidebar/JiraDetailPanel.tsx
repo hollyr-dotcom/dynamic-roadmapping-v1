@@ -16,6 +16,7 @@ import {
   IconDocFormat,
   IconInformationMarkCircle,
   Chip,
+  Tooltip,
 } from '@mirohq/design-system'
 import type { SpaceRow } from '@spaces/shared'
 import { CompanyLogo } from '../CompanyLogo'
@@ -150,50 +151,65 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
           </p>
         </div>
         <div className="flex items-center shrink-0">
-          <button
-            aria-label="More options"
-            className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
-          >
-            <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
-          </button>
-          <button
-            ref={layoutButtonRef}
-            aria-label="Panel layout"
-            className="h-6 flex items-center gap-0.5 px-1 rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
-            onClick={() => {
-              const r = layoutButtonRef.current?.getBoundingClientRect()
-              if (r) setLayoutPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
-              setLayoutOpen(o => !o)
-            }}
-          >
-            {selectedLayout === 'Center' && (
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-                <rect x="4.5" y="5.5" width="7" height="5" rx="1" fill="currentColor"/>
-              </svg>
-            )}
-            {selectedLayout === 'Right' && (
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-                <rect x="8" y="5.5" width="5.5" height="5" rx="1" fill="currentColor"/>
-              </svg>
-            )}
-            {selectedLayout === 'Fullscreen' && (
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M2 5.5V3h2.5M14 5.5V3h-2.5M2 10.5V13h2.5M14 10.5V13h-2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            )}
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-              <path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-          <button
-            aria-label="Close panel"
-            className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
-            onClick={onClose}
-          >
-            <IconCross css={{ width: 16, height: 16 }} />
-          </button>
+          <Tooltip>
+            <Tooltip.Trigger asChild>
+              <button
+                aria-label="More options"
+                className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+              >
+                <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Content side="bottom" sideOffset={4}>More options</Tooltip.Content>
+          </Tooltip>
+          <Tooltip>
+            <Tooltip.Trigger asChild>
+              <button
+                ref={layoutButtonRef}
+                aria-label="Panel layout"
+                className="h-6 flex items-center gap-0.5 px-1 rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+                onClick={() => {
+                  const r = layoutButtonRef.current?.getBoundingClientRect()
+                  if (r) setLayoutPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+                  setLayoutOpen(o => !o)
+                }}
+              >
+                {selectedLayout === 'Center' && (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                    <rect x="4.5" y="5.5" width="7" height="5" rx="1" fill="currentColor"/>
+                  </svg>
+                )}
+                {selectedLayout === 'Right' && (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                    <rect x="8" y="5.5" width="5.5" height="5" rx="1" fill="currentColor"/>
+                  </svg>
+                )}
+                {selectedLayout === 'Fullscreen' && (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 5.5V3h2.5M14 5.5V3h-2.5M2 10.5V13h2.5M14 10.5V13h-2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Content side="bottom" sideOffset={4}>Panel view</Tooltip.Content>
+          </Tooltip>
+          <Tooltip>
+            <Tooltip.Trigger asChild>
+              <button
+                aria-label="Close panel"
+                className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+                onClick={onClose}
+              >
+                <IconCross css={{ width: 16, height: 16 }} />
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Content side="bottom" sideOffset={4}>Close</Tooltip.Content>
+          </Tooltip>
         </div>
       </div>
 

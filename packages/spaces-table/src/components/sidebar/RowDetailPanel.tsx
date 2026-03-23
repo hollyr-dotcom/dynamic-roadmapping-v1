@@ -10,6 +10,7 @@ import {
   IconDotsThreeVertical,
   IconWarning,
   Chip,
+  Tooltip,
   IconHeart,
   IconFlag,
 
@@ -448,7 +449,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const adjRevenue = Math.round(row.estRevenue * remainingFraction)
 
   const panelContent = (
-    <div className="flex flex-col bg-white overflow-hidden relative" style={{ width: selectedLayout === 'Center' ? 720 : 376, height: selectedLayout === 'Center' ? '884px' : '100%', fontFamily: 'Open Sans, sans-serif', borderRadius: selectedLayout === 'Center' ? 8 : 0, boxShadow: selectedLayout === 'Center' ? '0px 8px 32px rgba(34,36,40,0.16), 0px 1px 4px rgba(34,36,40,0.08)' : 'none' }}>
+    <div className="flex flex-col bg-white overflow-hidden relative" style={{ width: selectedLayout === 'Center' ? 720 : 376, height: selectedLayout === 'Center' ? '100%' : '100%', fontFamily: 'Open Sans, sans-serif', borderRadius: selectedLayout === 'Center' ? 8 : 0, boxShadow: selectedLayout === 'Center' ? '0px 8px 32px rgba(34,36,40,0.16), 0px 1px 4px rgba(34,36,40,0.08)' : 'none' }}>
 
 
       {/* ── Header ──────────────────────────────────────── */}
@@ -464,37 +465,52 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          <button
-            aria-label="More options"
-            className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
-          >
-            <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
-          </button>
-          <button
-            ref={layoutButtonRef}
-            aria-label="Panel layout"
-            className="h-6 flex items-center gap-0.5 px-1 rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
-            onClick={() => {
-              const r = layoutButtonRef.current?.getBoundingClientRect()
-              if (r) setLayoutPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
-              setLayoutOpen(o => !o)
-            }}
-          >
-            {selectedLayout === 'Center' ? (
-              <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
-                <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
-              </svg>
-            ) : (
-              <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
-                <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
-              </svg>
-            )}
-          </button>
-          <button aria-label="Close panel" className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors" onClick={onClose}>
-            <IconCross css={{ width: 16, height: 16 }} />
-          </button>
+          <Tooltip>
+            <Tooltip.Trigger asChild>
+              <button
+                aria-label="More options"
+                className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+              >
+                <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Content side="bottom" sideOffset={4}>More options</Tooltip.Content>
+          </Tooltip>
+          <Tooltip>
+            <Tooltip.Trigger asChild>
+              <button
+                ref={layoutButtonRef}
+                aria-label="Panel layout"
+                className="h-6 flex items-center gap-0.5 px-1 rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+                onClick={() => {
+                  const r = layoutButtonRef.current?.getBoundingClientRect()
+                  if (r) setLayoutPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+                  setLayoutOpen(o => !o)
+                }}
+              >
+                {selectedLayout === 'Center' ? (
+                  <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                    <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
+                  </svg>
+                ) : (
+                  <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                    <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
+                  </svg>
+                )}
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Content side="bottom" sideOffset={4}>Panel view</Tooltip.Content>
+          </Tooltip>
+          <Tooltip>
+            <Tooltip.Trigger asChild>
+              <button aria-label="Close panel" className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors" onClick={onClose}>
+                <IconCross css={{ width: 16, height: 16 }} />
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Content side="bottom" sideOffset={4}>Close</Tooltip.Content>
+          </Tooltip>
         </div>
       </div>
 
@@ -1190,11 +1206,11 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   if (selectedLayout === 'Center') {
     return createPortal(
       <div
-        className="center-overlay-enter fixed inset-0 z-[200] flex items-center justify-center"
+        className="center-overlay-enter fixed inset-0 z-[200] flex items-center justify-center py-[70px]"
         style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
         onClick={onClose}
       >
-        <div className="center-panel-enter" onClick={e => e.stopPropagation()}>
+        <div className="center-panel-enter h-full" onClick={e => e.stopPropagation()}>
           {panelContent}
         </div>
       </div>,
