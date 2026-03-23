@@ -10,6 +10,7 @@ import {
   IconDotsThreeVertical,
   IconWarning as _IconWarning,
   Chip,
+  Tooltip,
   IconHeart,
   IconFlag,
 
@@ -17,9 +18,9 @@ import {
   IconChevronDown,
   IconSlidersY,
   IconArrowLeft,
-  IconOffice,
+  IconOffice as _IconOffice,
   IconLink,
-  IconGlobe,
+  IconGlobe as _IconGlobe,
   IconArrowUp,
   IconSlidersX,
   IconStickyNote,
@@ -72,6 +73,8 @@ interface RowDetailPanelProps {
   timelineDates?: { startDate: string; endDate: string }
   onCompanyFilter?: (name: string) => void
   activeCompanyFilter?: string[] | null
+  selectedLayout?: 'Center' | 'Right' | 'Fullscreen'
+  onLayoutChange?: (layout: 'Center' | 'Right' | 'Fullscreen') => void
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -274,7 +277,7 @@ function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter: _activeCompanyFilter }: RowDetailPanelProps) {
+export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter: _activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
@@ -319,6 +322,15 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const feedbackFilterBtnRef = useRef<HTMLButtonElement>(null)
   const feedbackFilterDropdownRef = useRef<HTMLDivElement>(null)
 
+  const [layoutOpen, setLayoutOpen] = useState(false)
+  const [layoutPos, setLayoutPos] = useState<{ top: number; right: number } | null>(null)
+  const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
+  const selectedLayout = selectedLayoutProp ?? layoutInternal
+  const setSelectedLayout = (l: 'Center' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
+  const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 48 : 376
+  const layoutButtonRef = useRef<HTMLButtonElement>(null)
+  const layoutMenuRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     if (!feedbackFilterOpen) return
     const handler = (e: MouseEvent) => {
@@ -331,6 +343,15 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [feedbackFilterOpen])
+
+  useEffect(() => {
+    if (!layoutOpen) return
+    const handler = (e: MouseEvent) => {
+      if (layoutMenuRef.current && !layoutMenuRef.current.contains(e.target as Node)) setLayoutOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [layoutOpen])
 
   const openFeedbackFilter = () => {
     if (feedbackFilterOpen) {
@@ -424,12 +445,12 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const adjCustomers = Math.round(row.customers * remainingFraction)
   const adjRevenue = Math.round(row.estRevenue * remainingFraction)
 
-  return (
-    <div className="flex flex-col h-full bg-white overflow-hidden relative" style={{ width: 476, fontFamily: 'Open Sans, sans-serif' }}>
+  const panelContent = (
+    <div className="flex flex-col bg-white overflow-hidden relative" style={{ width: panelWidth, height: '100%', fontFamily: 'Open Sans, sans-serif', borderRadius: selectedLayout !== 'Right' ? 8 : 0, boxShadow: selectedLayout !== 'Right' ? '0px 8px 32px rgba(34,36,40,0.16), 0px 1px 4px rgba(34,36,40,0.08)' : 'none', transition: 'width 0.5s cubic-bezier(0.16, 1, 0.3, 1)' }}>
 
 
       {/* ── Header ──────────────────────────────────────── */}
-      <div className="flex items-center gap-2 h-12 pl-4 pr-3 shrink-0 relative z-20 bg-white">
+      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12 }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <IconSocialJira css={{ width: 18, height: 18, flexShrink: 0 }} />
           <p
@@ -440,16 +461,66 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             {row.jiraKey ?? row.title}
           </p>
         </div>
-        <div className="flex items-center shrink-0">
-          <button
-            aria-label="More options"
-            className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
-          >
-            <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
-          </button>
-          <button aria-label="Close panel" className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors" onClick={onClose}>
-            <IconCross css={{ width: 16, height: 16 }} />
-          </button>
+        <div className="flex items-center gap-1 shrink-0">
+          <Tooltip>
+            <Tooltip.Trigger asChild>
+              <button
+                aria-label="More options"
+                className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+              >
+                <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Portal>
+              <Tooltip.Content side="top" sideOffset={4}>More options</Tooltip.Content>
+            </Tooltip.Portal>
+          </Tooltip>
+          <Tooltip>
+            <Tooltip.Trigger asChild>
+              <button
+                ref={layoutButtonRef}
+                aria-label="Panel layout"
+                className="h-6 flex items-center gap-0.5 px-1 rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+                onClick={() => {
+                  const r = layoutButtonRef.current?.getBoundingClientRect()
+                  if (r) setLayoutPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+                  setLayoutOpen(o => !o)
+                }}
+              >
+                {selectedLayout === 'Center' && (
+                  <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                    <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
+                  </svg>
+                )}
+                {selectedLayout === 'Right' && (
+                  <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                    <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
+                  </svg>
+                )}
+                {selectedLayout === 'Fullscreen' && (
+                  <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                    <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="currentColor"/>
+                  </svg>
+                )}
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Portal>
+              <Tooltip.Content side="top" sideOffset={4}>Panel view</Tooltip.Content>
+            </Tooltip.Portal>
+          </Tooltip>
+          <Tooltip>
+            <Tooltip.Trigger asChild>
+              <button aria-label="Close panel" className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors" onClick={onClose}>
+                <IconCross css={{ width: 16, height: 16 }} />
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Portal>
+              <Tooltip.Content side="top" sideOffset={4}>Close</Tooltip.Content>
+            </Tooltip.Portal>
+          </Tooltip>
         </div>
       </div>
 
@@ -457,7 +528,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div className="h-1 shrink-0" />
 
       {/* ── Tabs ────────────────────────────────────────── */}
-      <div className="flex pl-3 pr-4 shrink-0 pb-5 pt-4 relative z-20 bg-white">
+      <div className="flex shrink-0 pb-5 pt-4 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 20 : 12, paddingRight: selectedLayout !== 'Right' ? 24 : 16 }}>
         {TABS.map((tab) => (
           <button
             key={tab}
@@ -482,13 +553,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div
         className="flex absolute inset-y-0 left-0"
         style={{
-          width: 1428,
-          transform: (callCard || selectedFeedbackCard) ? 'translateX(-952px)' : selectedCompany ? 'translateX(-476px)' : 'translateX(0)',
+          width: panelWidth * 3,
+          transform: (callCard || selectedFeedbackCard) ? `translateX(-${panelWidth * 2}px)` : selectedCompany ? `translateX(-${panelWidth}px)` : 'translateX(0)',
           transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
       {/* ── Main panel ─── */}
-      <div key={activeTab} className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: 476, overflowAnchor: 'none' }}>
+      <div key={activeTab} className="h-full overflow-y-auto panel-scroll flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: 8, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -701,7 +772,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     style={{
                       maxHeight: dismissedCards.has(i) ? 0 : 800,
                       opacity: dismissedCards.has(i) ? 0 : 1,
-                      marginBottom: dismissedCards.has(i) ? 0 : 12,
+                      marginBottom: dismissedCards.has(i) ? 0 : (selectedLayout === 'Center' ? 24 : 12),
                       overflow: 'hidden',
                       transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease',
                     }}
@@ -824,7 +895,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         {activeTab === 'Jira' && <JiraForm row={row} />}
       </div>
       {/* ── Company panel ─── */}
-      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-3 flex flex-col shrink-0" style={{ width: 476 }}>
+      <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: selectedLayout !== 'Right' ? 48 : 12 }}>
         {selectedCompany && (
           <CompanyDetailView
             company={selectedCompany}
@@ -834,7 +905,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         )}
       </div>
       {/* ── Detail panel (call transcript + all feedback card details) ─── */}
-      <div className="h-full shrink-0" style={{ width: 476 }}>
+      <div className="h-full shrink-0" style={{ width: panelWidth }}>
         {callCard && (
           <CallTranscriptPanel
             author={callCard.author}
@@ -1023,6 +1094,46 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         document.body
       )}
 
+      {layoutOpen && layoutPos && createPortal(
+        <div
+          ref={layoutMenuRef}
+          className="fixed z-[9999] bg-white flex flex-col rounded-[8px]"
+          style={{ top: layoutPos.top, right: layoutPos.right, padding: '16px 12px', gap: 4, boxShadow: '0px 0px 12px rgba(34,36,40,0.04), 0px 2px 8px rgba(34,36,40,0.12)' }}
+        >
+          {(['Right', 'Center', 'Fullscreen'] as const).map(option => (
+            <button
+              key={option}
+              className={`flex items-center w-full rounded-[4px] transition-colors text-left ${selectedLayout === option ? 'bg-[#F1F2F5]' : 'hover:bg-[#F1F2F5]'}`}
+              style={{ padding: '0 8px 0 0', gap: 0 }}
+              onClick={() => { setSelectedLayout(option); setLayoutOpen(false) }}
+            >
+              <span className="flex items-center justify-end shrink-0" style={{ padding: '12px 0 12px 8px' }}>
+                {option === 'Right' && (
+                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
+                    <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="#222428"/>
+                  </svg>
+                )}
+                {option === 'Center' && (
+                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
+                    <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="#222428"/>
+                  </svg>
+                )}
+                {option === 'Fullscreen' && (
+                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
+                    <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="#222428"/>
+                  </svg>
+                )}
+              </span>
+              <span style={{ fontFamily: 'Open Sans, sans-serif', fontSize: 14, color: '#222428', paddingLeft: 8, paddingTop: 10, paddingBottom: 10, fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>{option}</span>
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
+
       {feedbackFilterOpen && createPortal(
         <div
           ref={feedbackFilterDropdownRef}
@@ -1101,6 +1212,23 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       )}
     </div>
   )
+
+  if (selectedLayout === 'Center' || selectedLayout === 'Fullscreen') {
+    return createPortal(
+      <div
+        className="center-overlay-enter fixed inset-0 z-[200] flex items-center justify-center py-[24px]"
+        style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+        onClick={onClose}
+      >
+        <div className="center-panel-enter h-full" onClick={e => e.stopPropagation()}>
+          {panelContent}
+        </div>
+      </div>,
+      document.body
+    )
+  }
+
+  return panelContent
 }
 
 const COMPANY_INFO: Record<string, { domain: string; stage: string; dealValue: string; source: string }> = {
@@ -1296,15 +1424,14 @@ function CompanyDetailView({ company, rowTitle: _rowTitle, onBack, onPromptSelec
         style={{ fontFamily: 'Open Sans, sans-serif' }}
       >
         <IconArrowLeft size="small" />
-        {company}
+        Company
       </button>
-      <p className="text-[16px] text-[#222428] leading-[1.5] mb-1" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>Details</p>
       <div className="flex flex-col">
-        <CompanyFieldRow icon={<IconOffice size="small" />} label="Name"><Chip removable={false} css={{ fontSize: 13, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{company}</Chip></CompanyFieldRow>
-        <CompanyFieldRow icon={<IconLink size="small" />} label="Domain"><Chip removable={false} css={{ fontSize: 13, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{info.domain}</Chip></CompanyFieldRow>
-        <CompanyFieldRow icon={<span className="text-[13px] leading-none">◎</span>} label="Stage"><Chip removable={false} css={{ fontSize: 13, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{info.stage}</Chip></CompanyFieldRow>
-        <CompanyFieldRow icon={<span className="text-[13px] font-semibold leading-none">$</span>} label="Deal Value"><span className="text-[14px] text-[#222428] px-1">{info.dealValue}</span></CompanyFieldRow>
-        <CompanyFieldRow icon={<IconGlobe size="small" />} label="Source"><Chip removable={false} css={{ fontSize: 13, '&:hover': { backgroundColor: '#000', color: '#fff', cursor: 'pointer' } }}>{info.source}</Chip></CompanyFieldRow>
+        <CompanyFieldRow label="Name"><CompanyLogo name={company} size={24} /></CompanyFieldRow>
+        <CompanyFieldRow label="Domain"><Chip removable={false} css={{ fontSize: 13 }}>{info.domain}</Chip></CompanyFieldRow>
+        <CompanyFieldRow label="Stage"><Chip removable={false} css={{ fontSize: 13 }}>{info.stage}</Chip></CompanyFieldRow>
+        <CompanyFieldRow label="Deal Value"><span className="text-[14px] text-[#222428]">{info.dealValue}</span></CompanyFieldRow>
+        <CompanyFieldRow label="Source"><Chip removable={false} css={{ fontSize: 13 }}>{info.source}</Chip></CompanyFieldRow>
       </div>
       <p className="text-[16px] text-[#222428] leading-[1.5] mt-6 mb-3" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>Discover more about {company}</p>
       <div className="flex flex-col gap-3">
@@ -1318,13 +1445,10 @@ function CompanyDetailView({ company, rowTitle: _rowTitle, onBack, onPromptSelec
   )
 }
 
-function CompanyFieldRow({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+function CompanyFieldRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2 min-h-[40px]">
-      <div className="w-[120px] shrink-0 flex items-center gap-2 text-[#656B81]">
-        <span className="flex items-center shrink-0">{icon}</span>
-        <span className="text-[14px] leading-[1.4]">{label}</span>
-      </div>
+    <div className="flex items-center min-h-[40px]">
+      <span className="text-[14px] text-[#656b81] leading-[1.4]" style={{ width: 140, flexShrink: 0 }}>{label}</span>
       <div className="flex-1 flex items-center">{children}</div>
     </div>
   )
@@ -1718,7 +1842,6 @@ function FeedbackCard({
           height: 40,
           padding: hovered ? '0 14px 0 0' : '0 4px 0 0',
           borderRadius: 6,
-          backgroundColor: 'transparent',
           color: categoryColor.text,
           lineHeight: 1.4,
           whiteSpace: 'nowrap',

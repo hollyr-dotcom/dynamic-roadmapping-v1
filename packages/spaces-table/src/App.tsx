@@ -113,6 +113,7 @@ export function App() {
   const [pageTransitioning, setPageTransitioning] = useState(false)
   const [ghostRowId, setGhostRowId] = useState<string | null>(null)
   const [companyFilter, setCompanyFilter] = useState<string[]>([])
+  const [panelLayout, setPanelLayout] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
 
   const handleCompanyFilter = useCallback((name: string) => {
     setCompanyFilter(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name])
@@ -236,7 +237,7 @@ export function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [toggleSidebar, canvasOpen, zoom, zoomTo, widgets, selectedWidgetId])
 
-  const closeSidebar = () => { setActiveSidebar(null); setIsJiraDetailOpen(false) }
+  const closeSidebar = () => { setActiveSidebar(null); setIsJiraDetailOpen(false); setPanelLayout('Right') }
 
   const switchPage = useCallback((pageId: string) => {
     const id = pageId as PageId
@@ -525,10 +526,10 @@ export function App() {
 
       {/* Right sidebar — fixed overlay, slides in over the top nav */}
       <div
-        className="fixed top-0 right-0 h-full z-50 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className="fixed top-0 right-0 h-full z-50 transition-transform duration-[450ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{
-          width: activeSidebar === 'row-detail' ? 476 + 24 : activeSidebar === 'ai-sidekick' ? 420 + 36 : 320,
-          transform: isRightOpen ? 'translateX(0)' : 'translateX(100%)',
+          width: activeSidebar === 'row-detail' ? 376 + 24 : activeSidebar === 'ai-sidekick' ? 420 + 36 : 320,
+          transform: (isRightOpen && !(activeSidebar === 'row-detail' && (panelLayout === 'Center' || panelLayout === 'Fullscreen'))) ? 'translateX(0)' : 'translateX(100%)',
         }}
       >
         {activeSidebar === 'row-detail' ? (
@@ -539,7 +540,7 @@ export function App() {
             >
               {isJiraDetailOpen && selectedJiraRow
                 ? <JiraDetailPanel row={selectedJiraRow} onClose={() => { setIsJiraDetailOpen(false); closeSidebar() }} />
-                : selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} initialCompany={initialCompany} onAddToBoard={handleAddToBoard} onRowUpdated={handleRowUpdated} timelineDates={selectedRowDates} onCompanyFilter={handleCompanyFilter} activeCompanyFilter={companyFilter.length > 0 ? companyFilter : null} />
+                : selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} initialCompany={initialCompany} onAddToBoard={handleAddToBoard} onRowUpdated={handleRowUpdated} timelineDates={selectedRowDates} onCompanyFilter={handleCompanyFilter} activeCompanyFilter={companyFilter.length > 0 ? companyFilter : null} selectedLayout={panelLayout} onLayoutChange={setPanelLayout} />
               }
             </div>
           </div>
