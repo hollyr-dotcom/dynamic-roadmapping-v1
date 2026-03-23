@@ -746,7 +746,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     style={{
                       maxHeight: dismissedCards.has(i) ? 0 : 800,
                       opacity: dismissedCards.has(i) ? 0 : 1,
-                      marginBottom: dismissedCards.has(i) ? 0 : 12,
+                      marginBottom: dismissedCards.has(i) ? 0 : (selectedLayout === 'Center' ? 24 : 12),
                       overflow: 'hidden',
                       transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease',
                     }}
