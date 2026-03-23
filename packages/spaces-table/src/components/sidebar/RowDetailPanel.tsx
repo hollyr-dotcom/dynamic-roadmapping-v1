@@ -72,6 +72,8 @@ interface RowDetailPanelProps {
   timelineDates?: { startDate: string; endDate: string }
   onCompanyFilter?: (name: string) => void
   activeCompanyFilter?: string[] | null
+  selectedLayout?: 'Center' | 'Right' | 'Fullscreen'
+  onLayoutChange?: (layout: 'Center' | 'Right' | 'Fullscreen') => void
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -277,7 +279,7 @@ function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter }: RowDetailPanelProps) {
+export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
@@ -324,7 +326,9 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
   const [layoutOpen, setLayoutOpen] = useState(false)
   const [layoutPos, setLayoutPos] = useState<{ top: number; right: number } | null>(null)
-  const [selectedLayout, setSelectedLayout] = useState<'Center' | 'Right' | 'Fullscreen'>('Center')
+  const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
+  const selectedLayout = selectedLayoutProp ?? layoutInternal
+  const setSelectedLayout = (l: 'Center' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
   const layoutButtonRef = useRef<HTMLButtonElement>(null)
   const layoutMenuRef = useRef<HTMLDivElement>(null)
 
@@ -442,8 +446,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const adjCustomers = Math.round(row.customers * remainingFraction)
   const adjRevenue = Math.round(row.estRevenue * remainingFraction)
 
-  return (
-    <div className="flex flex-col h-full bg-white overflow-hidden relative" style={{ width: 476, fontFamily: 'Open Sans, sans-serif' }}>
+  const panelContent = (
+    <div className="flex flex-col bg-white overflow-hidden relative" style={{ width: selectedLayout === 'Center' ? 720 : 376, height: selectedLayout === 'Center' ? '884px' : '100%', fontFamily: 'Open Sans, sans-serif', borderRadius: selectedLayout === 'Center' ? 8 : 0, boxShadow: selectedLayout === 'Center' ? '0px 8px 32px rgba(34,36,40,0.16), 0px 1px 4px rgba(34,36,40,0.08)' : 'none' }}>
 
 
       {/* ── Header ──────────────────────────────────────── */}
@@ -458,7 +462,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             {row.jiraKey ?? row.title}
           </p>
         </div>
-        <div className="flex items-center shrink-0">
+        <div className="flex items-center gap-1 shrink-0">
           <button
             aria-label="More options"
             className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
@@ -475,26 +479,17 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               setLayoutOpen(o => !o)
             }}
           >
-            {selectedLayout === 'Center' && (
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-                <rect x="4.5" y="5.5" width="7" height="5" rx="1" fill="currentColor"/>
+            {selectedLayout === 'Center' ? (
+              <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
+              </svg>
+            ) : (
+              <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
               </svg>
             )}
-            {selectedLayout === 'Right' && (
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-                <rect x="8" y="5.5" width="5.5" height="5" rx="1" fill="currentColor"/>
-              </svg>
-            )}
-            {selectedLayout === 'Fullscreen' && (
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M2 5.5V3h2.5M14 5.5V3h-2.5M2 10.5V13h2.5M14 10.5V13h-2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            )}
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-              <path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
           </button>
           <button aria-label="Close panel" className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors" onClick={onClose}>
             <IconCross css={{ width: 16, height: 16 }} />
@@ -531,13 +526,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div
         className="flex absolute inset-y-0 left-0"
         style={{
-          width: 1428,
-          transform: (callCard || selectedFeedbackCard) ? 'translateX(-952px)' : selectedCompany ? 'translateX(-476px)' : 'translateX(0)',
+          width: 1128,
+          transform: (callCard || selectedFeedbackCard) ? 'translateX(-752px)' : selectedCompany ? 'translateX(-376px)' : 'translateX(0)',
           transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
       {/* ── Main panel ─── */}
-      <div key={activeTab} className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: 476, overflowAnchor: 'none' }}>
+      <div key={activeTab} className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: 376, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -873,7 +868,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         {activeTab === 'Jira' && <JiraForm row={row} />}
       </div>
       {/* ── Company panel ─── */}
-      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-3 flex flex-col shrink-0" style={{ width: 476 }}>
+      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-3 flex flex-col shrink-0" style={{ width: 376 }}>
         {selectedCompany && (
           <CompanyDetailView
             company={selectedCompany}
@@ -883,7 +878,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         )}
       </div>
       {/* ── Detail panel (call transcript + all feedback card details) ─── */}
-      <div className="h-full shrink-0" style={{ width: 476 }}>
+      <div className="h-full shrink-0" style={{ width: 376 }}>
         {callCard && (
           <CallTranscriptPanel
             author={callCard.author}
@@ -1190,6 +1185,23 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       )}
     </div>
   )
+
+  if (selectedLayout === 'Center') {
+    return createPortal(
+      <div
+        className="fixed inset-0 z-[200] flex items-center justify-center"
+        style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+        onClick={onClose}
+      >
+        <div onClick={e => e.stopPropagation()}>
+          {panelContent}
+        </div>
+      </div>,
+      document.body
+    )
+  }
+
+  return panelContent
 }
 
 const COMPANY_INFO: Record<string, { domain: string; stage: string; dealValue: string; source: string }> = {
