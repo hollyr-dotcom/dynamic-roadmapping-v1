@@ -789,7 +789,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
                     {showSavedOnly && savedCards.size === 0 ? (
                       <div className="flex items-center justify-center" style={{ paddingTop: 48, paddingBottom: 48 }}>
-                        <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center' }}>
+                        <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center' }}>
                           Save feedback cards to view them here.
                         </p>
                       </div>
@@ -857,7 +857,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     </div>
                   </div>
                   <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
-                    {generateFeedbackCards(row).map((card, i) => {
+                    {showSavedOnly && savedCards.size === 0 ? (
+                      <div className="flex items-center justify-center" style={{ paddingTop: 48, paddingBottom: 48 }}>
+                        <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center' }}>
+                          Save feedback cards to view them here.
+                        </p>
+                      </div>
+                    ) : generateFeedbackCards(row).map((card, i) => {
                       const hidden = dismissedCards.has(i) || (showSavedOnly && !savedCards.has(i))
                       return (
                         <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : (selectedLayout === 'Center' ? 24 : 12), overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
