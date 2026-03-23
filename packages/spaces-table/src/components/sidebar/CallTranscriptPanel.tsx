@@ -1,5 +1,22 @@
 import React, { useState } from 'react'
-import { InputSearch, IconUser } from '@mirohq/design-system'
+import { InputSearch } from '@mirohq/design-system'
+
+const AVATAR_COLORS: Record<string, { bg: string; fg: string }> = {
+  '#D1F09F': { bg: '#DBFAAD', fg: '#608521' },
+  '#d4bbff': { bg: '#E8DFFF', fg: '#5936B0' },
+  '#ffd4b2': { bg: '#FFE5CC', fg: '#A0522D' },
+}
+const AVATAR_DEFAULT = { bg: '#F1F2F5', fg: '#656B81' }
+
+function MdsAvatar({ color }: { color?: string }) {
+  const { bg, fg } = (color && AVATAR_COLORS[color]) ?? AVATAR_DEFAULT
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+      <path d="M0 20C0 8.95431 8.95431 0 20 0C31.0457 0 40 8.95431 40 20C40 31.0457 31.0457 40 20 40C8.95431 40 0 31.0457 0 20Z" fill={bg}/>
+      <path d="M34.2234 34.0607C30.5968 37.7289 25.564 40.0001 19.9992 40.0001C14.4344 40.0001 9.40161 37.7266 5.77734 34.0584C7.01242 28.6557 11.2473 24.4001 16.6363 23.128C13.7984 21.8444 11.8232 18.9927 11.8232 15.6761C11.8232 11.1591 15.4845 7.50024 19.9992 7.50024C24.5162 7.50024 28.1752 11.1591 28.1752 15.6761C28.1752 18.9927 26.2 21.8444 23.3644 23.128C28.7534 24.4001 32.9883 28.658 34.2234 34.0607Z" fill={fg}/>
+    </svg>
+  )
+}
 import { CompanyLogo } from '../CompanyLogo'
 import { SourceLogoChip } from './SourceLogoChip'
 
@@ -23,8 +40,6 @@ interface CallTranscriptPanelProps {
   avatarColor?: string
 }
 
-const AVATAR_NO_PHOTO = 'https://www.figma.com/api/mcp/asset/4d11fed8-3b68-4a90-b907-9999522076d0'
-const AVATAR_VECTOR = 'https://www.figma.com/api/mcp/asset/2e063fe9-0a1a-4f85-a78f-1882b257cad9'
 
 const LABEL: React.CSSProperties = {
   fontSize: 14,
@@ -77,17 +92,7 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack,
 
       {/* Caller info */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 15, paddingBottom: 20, marginTop: 12 }}>
-          <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: avatarColor ?? '#f1f2f5', position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {avatarColor
-              ? <IconUser css={{ width: 20, height: 20, color: 'rgba(0,0,0,0.35)' }} />
-              : <>
-                  <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%', borderRadius: '50%' }} src={AVATAR_NO_PHOTO} />
-                  <div style={{ position: 'absolute', inset: '18.75% 14.44% 0 14.44%' }}>
-                    <img alt="" style={{ position: 'absolute', display: 'block', width: '100%', height: '100%' }} src={AVATAR_VECTOR} />
-                  </div>
-                </>
-            }
-          </div>
+          <MdsAvatar color={avatarColor} />
           <div>
             <p style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 16, color: '#222428', fontFeatureSettings: "'ss01' 1", margin: 0, lineHeight: 1.5 }}>
               {authorName}
