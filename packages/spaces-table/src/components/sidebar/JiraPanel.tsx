@@ -1,5 +1,4 @@
 import {
-  IconSocialJira,
   IconSidebarGlobalOpen,
   IconArrowsSquareCounterClockwiseY,
   IconBookmark,
@@ -7,6 +6,7 @@ import {
   IconPlus,
 } from '@mirohq/design-system'
 import type { SpaceRow } from '@spaces/shared'
+import { JiraLogo } from '../JiraLogo'
 
 interface JiraPanelProps {
   row: SpaceRow
@@ -47,7 +47,7 @@ export function JiraPanel({ row, onClose }: JiraPanelProps) {
       <div className="flex items-center justify-between px-1.5 pt-1.5 pb-0 shrink-0">
         {selectedTicket?.id ? (
           <div className="flex items-center gap-1.5 pl-1">
-            <IconSocialJira css={{ width: 14, height: 14, flexShrink: 0 }} />
+            <JiraLogo size={14} />
             <span className="text-[13px] font-semibold text-[#222428]">{selectedTicket.id}</span>
           </div>
         ) : (
@@ -107,7 +107,7 @@ export function JiraPanel({ row, onClose }: JiraPanelProps) {
                 {r.id ? (
                   <>
                     <span className="w-8 h-8 flex items-center justify-center shrink-0">
-                      <IconSocialJira css={{ width: 16, height: 16 }} />
+                      <JiraLogo size={16} />
                     </span>
                     <span className="text-[14px] text-[#222428] truncate">{r.id}</span>
                   </>
@@ -126,7 +126,7 @@ export function JiraPanel({ row, onClose }: JiraPanelProps) {
                   style={{ backgroundColor: r.statusBg, borderRadius: 4 }}
                 >
                   {r.showJiraIcon && (
-                    <IconSocialJira css={{ width: 14, height: 14, flexShrink: 0 }} />
+                    <JiraLogo size={14} />
                   )}
                   <span
                     className="text-[14px] leading-[1.4] whitespace-nowrap"

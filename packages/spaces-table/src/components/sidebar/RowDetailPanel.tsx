@@ -39,9 +39,9 @@ import {
   IconUser,
   IconSmileyPlus,
   IconPaperPlaneFilledRight,
-  IconSocialJira,
   IconBookmark,
 } from '@mirohq/design-system'
+import { JiraLogo } from '../JiraLogo'
 
 function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
   const size = (props as { width?: number }).width ?? 24
@@ -473,7 +473,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       {/* ── Header ──────────────────────────────────────── */}
       <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12 }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <IconSocialJira css={{ width: 18, height: 18, flexShrink: 0 }} />
+          <JiraLogo size={18} />
           <p
             className="flex-1 min-w-0 truncate text-[#222428] leading-[1.5]"
             style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: '16px', fontFeatureSettings: "'ss01' 1" }}
