@@ -23,12 +23,11 @@ import {
   IconCard,
   IconEyeOpen,
   IconSquarePencil,
-  IconSocialJira,
   Input,
 } from '@mirohq/design-system'
+import { JiraLogo } from '../JiraLogo'
 
 // Figma asset URLs (valid for 7 days — refreshed 2026-03-21)
-const imgJiraLogo = 'https://www.figma.com/api/mcp/asset/4209f456-a892-4952-b21a-077b917e1d3d'
 const imgBoardIconTable = 'https://www.figma.com/api/mcp/asset/d7b60294-cc30-4857-8d54-a7653877ba6e'
 const imgLogotype = 'https://www.figma.com/api/mcp/asset/80edae33-8543-4004-9cd9-3c2683b456f7'
 const imgFlowchart = 'https://www.figma.com/api/mcp/asset/a4dddbd5-d73c-4e7c-8197-74a7c5d867b0'
@@ -313,7 +312,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 <span className="font-body font-semibold text-[16px] text-[#1a1b1e] leading-none">Import records from</span>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    { icon: <IconSocialJira css={{ width: 20, height: 20 }} />, label: 'Jira', tooltip: 'Import issues and epics from your Jira projects', checked: importJira, toggle: () => { setImportJira(v => !v); setImportTables(false); setImportCsv(false) } },
+                    { icon: <JiraLogo size={20} />, label: 'Jira', tooltip: 'Import issues and epics from your Jira projects', checked: importJira, toggle: () => { setImportJira(v => !v); setImportTables(false); setImportCsv(false) } },
                     { icon: <IconTable css={{ width: 20, height: 20 }} />, label: 'Tables', tooltip: 'Pull in items from your Miro tables', checked: importTables, toggle: () => { setImportTables(v => !v); setImportJira(false); setImportCsv(false) } },
                     { icon: <IconFileSpreadsheet css={{ width: 20, height: 20 }} />, label: 'CSV', tooltip: 'Upload a spreadsheet of work items', checked: importCsv, toggle: () => { setImportCsv(v => !v); setImportJira(false); setImportTables(false) } },
                   ].map(({ icon, label, tooltip, checked, toggle }) => (

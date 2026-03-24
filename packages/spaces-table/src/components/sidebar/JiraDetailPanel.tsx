@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { JiraForm, SourceLogoChip } from './RowDetailPanel'
+import { JiraLogo } from '../JiraLogo'
 import {
-  IconSocialJira,
   IconDotsThreeVertical,
   IconCross,
   IconHeart,
@@ -142,7 +142,7 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
       {/* ── Header ── */}
       <div className="flex items-center gap-2 h-12 pl-4 pr-3 shrink-0">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <IconSocialJira css={{ width: 18, height: 18, flexShrink: 0 }} />
+          <JiraLogo size={18} />
           <p
             className="flex-1 min-w-0 truncate text-[#222428] leading-[1.5]"
             style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: '16px', fontFeatureSettings: "'ss01' 1" }}
