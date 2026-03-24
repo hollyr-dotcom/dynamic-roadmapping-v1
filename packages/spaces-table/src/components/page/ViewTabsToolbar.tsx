@@ -11,6 +11,7 @@ import {
   IconSlidersY,
   IconFunnel,
   IconArrowsDownUp,
+  IconSquareArrowIn,
   IconColumnsThree,
   IconPlus,
   IconTable,
@@ -615,6 +616,18 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
             </IconButton>
           </Tooltip.Trigger>
           <Tooltip.Content side="top" sideOffset={4}>Sort</Tooltip.Content>
+        </Tooltip>
+
+        <Tooltip>
+          <Tooltip.Trigger asChild>
+            <IconButton aria-label="Import" variant="ghost" size="medium" css={{ borderRadius: 8, cursor: 'default' }}>
+              <IconSquareArrowIn />
+            </IconButton>
+          </Tooltip.Trigger>
+          <Tooltip.Content side="top" sideOffset={4}>
+            Import
+            <Tooltip.Hotkey>⌘ + I</Tooltip.Hotkey>
+          </Tooltip.Content>
         </Tooltip>
 
         <Tooltip>
