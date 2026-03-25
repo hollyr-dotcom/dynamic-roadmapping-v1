@@ -651,6 +651,10 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
               Jira
             </DropdownMenu.Item>
             <DropdownMenu.Item css={{ cursor: 'default' }}>
+              <DropdownMenu.IconSlot><IconTable /></DropdownMenu.IconSlot>
+              Tables
+            </DropdownMenu.Item>
+            <DropdownMenu.Item css={{ cursor: 'default' }}>
               <DropdownMenu.IconSlot><IconFileSpreadsheet /></DropdownMenu.IconSlot>
               CSV
             </DropdownMenu.Item>

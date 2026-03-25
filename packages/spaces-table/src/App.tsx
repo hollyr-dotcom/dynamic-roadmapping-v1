@@ -439,7 +439,8 @@ export function App() {
         setPendingToast(true)
         setTimeout(() => setPendingImport(importSource), 300)
       } else {
-        setTimeout(() => { setShowInsightsToast(true); setTimeout(() => setShowShareTooltip(true), 4000) }, 0)
+        setHasData(false)
+        setTimeout(() => setShowShareTooltip(true), 300)
       }
     }} />
   }
