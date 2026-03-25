@@ -20,9 +20,10 @@ interface SpaceMenuProps {
   activePage: string
   onPageChange: (id: string) => void
   onGoHome?: () => void
+  spaceName?: string
 }
 
-export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome }: SpaceMenuProps) {
+export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome, spaceName = 'Project Galaxy' }: SpaceMenuProps) {
   return (
     <div className="flex flex-col h-full pt-2 px-3">
       {/* Top bar: Home | Search + Close */}
@@ -47,7 +48,7 @@ export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome }: Space
             className="font-heading font-semibold text-[#1A1B1E] leading-[1.4] truncate block"
             style={{ fontSize: '20px', fontFeatureSettings: "'ss01' 1" }}
           >
-            Project Galaxy
+            {spaceName}
           </span>
           <span
             className="font-body text-[#656B81] leading-[1.4] cursor-pointer hover:underline"

@@ -23,6 +23,7 @@ import { CanvasTableWidget } from './components/canvas/CanvasTableWidget'
 import { CanvasNavPanels } from './components/canvas/CanvasNavPanels'
 import { CanvasFeedbackCard, type FeedbackCardData } from './components/canvas/CanvasFeedbackCard'
 import { MoveToRoadmapSnackbar } from './components/page/MoveToRoadmapSnackbar'
+import { NameSpaceModal } from './components/page/NameSpaceModal'
 
 type PageId = 'backlog' | 'roadmap'
 
@@ -64,12 +65,19 @@ const PAGE_CONFIGS: Record<PageId, PageConfig> = {
 
 const ROADMAP_KANBAN_COLUMNS: Priority[] = ['now', 'next', 'later']
 
+const PLANET_NAMES = ['Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune']
+function randomSpaceName() {
+  return `Project ${PLANET_NAMES[Math.floor(Math.random() * PLANET_NAMES.length)]}`
+}
+
 export function App() {
   const [scrollFade, setScrollFade] = useState(0)
   const [view, setView] = useState<'home' | 'app'>('home')
+  const [spaceName, setSpaceName] = useState('Project Galaxy')
+  const [showNameModal, setShowNameModal] = useState(false)
   const [showInsightsModal, setShowInsightsModal] = useState(false)
   const [showInsightsToast, setShowInsightsToast] = useState(false)
-  const [showShareTooltip, setShowShareTooltip] = useState(false)
+  const [showImportPopover, setShowImportPopover] = useState(false)
   const [activePage, setActivePage] = useState<PageId>('backlog')
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
   const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
@@ -123,7 +131,7 @@ export function App() {
     if (pendingToast) {
       setPendingToast(false)
       setShowInsightsToast(true)
-      setTimeout(() => setShowShareTooltip(true), 4000)
+      setTimeout(() => setShowImportPopover(true), 4000)
     }
   }, [pendingToast])
 
@@ -430,16 +438,16 @@ export function App() {
   const viewData = companyFilter.length > 0 ? sortedViewData.filter(r => companyFilter.some(f => r.companies?.includes(f))) : sortedViewData
 
   if (view === 'home') {
-    return <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv') => {
+    return <HomePage onOpenApp={(isNew?: boolean) => {
       setView('app')
       setActivePage('backlog')
       setActiveTab('all-items')
-      if (importSource) {
+      if (isNew) {
+        setSpaceName(randomSpaceName())
         setHasData(false)
-        setPendingToast(true)
-        setTimeout(() => setPendingImport(importSource), 300)
+        setShowNameModal(true)
       } else {
-        setTimeout(() => { setShowInsightsToast(true); setTimeout(() => setShowShareTooltip(true), 4000) }, 0)
+        setTimeout(() => { setShowInsightsToast(true); setTimeout(() => setShowImportPopover(true), 4000) }, 0)
       }
     }} />
   }
@@ -466,9 +474,9 @@ export function App() {
             borderOpacity={scrollFade}
             scrollFade={scrollFade}
             databaseTitle={databaseTitle}
+            spaceName={spaceName}
             isMenuOpen={isLeftOpen}
             onToggleMenu={() => toggleSidebar('space-menu')}
-            showShareTooltip={showShareTooltip}
           />
         </div>
         {/* Scroll area — vertical + horizontal, table header sticks below toolbar */}
@@ -477,7 +485,7 @@ export function App() {
             <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} />
           </div>
           <div className={`sticky top-0 left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
-            <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} />
+            <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} showImportPopover={showImportPopover} onDismissImportPopover={() => setShowImportPopover(false)} />
           </div>
 
           {/* Type-based view renderer */}
@@ -511,7 +519,7 @@ export function App() {
           </div>
         ) : (
           <SidebarShell side="left" onClose={closeSidebar} showClose={false} width={320}>
-            <SpaceMenu onClose={closeSidebar} activePage={activePage} onPageChange={switchPage} onGoHome={() => { closeSidebar(); setView('home') }} />
+            <SpaceMenu onClose={closeSidebar} activePage={activePage} onPageChange={switchPage} onGoHome={() => { closeSidebar(); setView('home') }} spaceName={spaceName} />
           </SidebarShell>
         )}
       </div>
@@ -637,7 +645,29 @@ export function App() {
       ))}
 
       {/* Canvas floating nav panels */}
-      <CanvasNavPanels isOpen={canvasOpen} databaseTitle={databaseTitle} />
+      <CanvasNavPanels isOpen={canvasOpen} databaseTitle={databaseTitle} spaceName={spaceName} />
+
+      {/* Name space modal (shown after creating a new space) */}
+      {showNameModal && (
+        <NameSpaceModal
+          initialName={spaceName}
+          onSubmit={(name, importSource) => {
+            setSpaceName(name)
+            setShowNameModal(false)
+            if (importSource) {
+              setPendingToast(true)
+              setTimeout(() => setPendingImport(importSource), 300)
+            } else {
+              setHasData(true)
+              setTimeout(() => { setShowInsightsToast(true); setTimeout(() => setShowImportPopover(true), 4000) }, 0)
+            }
+          }}
+          onCancel={() => {
+            setShowNameModal(false)
+            setView('home')
+          }}
+        />
+      )}
 
       {/* Jira import modal */}
       {pendingImport === 'jira' && (

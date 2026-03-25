@@ -15,9 +15,10 @@ const avatars = [
 interface CanvasNavPanelsProps {
   isOpen: boolean
   databaseTitle: string
+  spaceName?: string
 }
 
-export function CanvasNavPanels({ isOpen, databaseTitle }: CanvasNavPanelsProps) {
+export function CanvasNavPanels({ isOpen, databaseTitle, spaceName = 'Project Galaxy' }: CanvasNavPanelsProps) {
   return (
     <>
       {/* Left panel: menu + breadcrumb */}
@@ -39,7 +40,7 @@ export function CanvasNavPanels({ isOpen, databaseTitle }: CanvasNavPanelsProps)
             className="font-heading font-semibold text-[#222428] leading-none select-none"
             style={{ fontSize: '14px' }}
           >
-            Project Galaxy
+            {spaceName}
           </span>
           <span
             className="flex items-center"

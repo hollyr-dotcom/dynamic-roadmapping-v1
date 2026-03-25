@@ -44,7 +44,7 @@ const imgShareAvatar = 'https://www.figma.com/api/mcp/asset/33cf113b-9e21-4dfe-8
 const imgMiroTeamLogo = 'https://www.figma.com/api/mcp/asset/c9119d54-1298-4f33-a414-9b1ce85ffd9c'
 
 interface HomePageProps {
-  onOpenApp: (importSource?: 'jira' | 'miro' | 'csv') => void
+  onOpenApp: (isNew?: boolean) => void
 }
 
 const templates = [
@@ -207,7 +207,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 </Tooltip.Content>
               </Tooltip>
               <DropdownMenu.Content side="bottom" align="start" sideOffset={4} alignOffset={-16} css={{ minWidth: 220 }}>
-                <DropdownMenu.Item onSelect={() => { setSpacesMenuOpen(false); onOpenApp() }}>
+                <DropdownMenu.Item onSelect={(e) => e.preventDefault()}>
                   <DropdownMenu.IconSlot>
                     <span className="inline-flex items-center justify-center size-4 rounded-sm bg-gradient-to-br from-[#6C5CE7] to-[#2D3436] overflow-hidden">
                       <span className="text-white text-[8px] font-bold">E</span>
@@ -216,16 +216,16 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                   EPD WoW v2.2
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator css={{ marginTop: 4, marginBottom: 4 }} />
-                <DropdownMenu.Item onSelect={() => { setSpacesMenuOpen(false); setCreateSpaceModalOpen(true) }}>
+                <DropdownMenu.Item onSelect={() => { setSpacesMenuOpen(false); onOpenApp(true) }}>
                   <DropdownMenu.IconSlot><IconRocket /></DropdownMenu.IconSlot>
                   Roadmap
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator css={{ marginTop: 4, marginBottom: 4 }} />
-                <DropdownMenu.Item onSelect={() => { setSpacesMenuOpen(false) }}>
+                <DropdownMenu.Item onSelect={(e) => e.preventDefault()}>
                   <DropdownMenu.IconSlot><IconLayout /></DropdownMenu.IconSlot>
                   Blueprint
                 </DropdownMenu.Item>
-                <DropdownMenu.Item onSelect={() => { setSpacesMenuOpen(false); setCreateSpaceModalOpen(true) }}>
+                <DropdownMenu.Item onSelect={(e) => e.preventDefault()}>
                   <DropdownMenu.IconSlot><IconPlus /></DropdownMenu.IconSlot>
                   Blank
                 </DropdownMenu.Item>
@@ -375,9 +375,8 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                   variant="primary"
                   size="large"
                   onPress={() => {
-                    const importSource = importJira ? 'jira' as const : importTables ? 'miro' as const : importCsv ? 'csv' as const : null
                     setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create')
-                    onOpenApp(importSource ?? undefined)
+                    onOpenApp(true)
                   }}
                 >
                   <Button.Label>{(importJira || importTables || importCsv) ? 'Create and import' : 'Create'}</Button.Label>
