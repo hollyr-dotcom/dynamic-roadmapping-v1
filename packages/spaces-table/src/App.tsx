@@ -92,6 +92,7 @@ export function App() {
     roadmap: PAGE_CONFIGS.roadmap.tabs,
   })
   const scrollRef = useRef<HTMLDivElement>(null)
+  const namePlaceholder = useRef('')
 
   const [selectedRow, setSelectedRow] = useState<SpaceRow | null>(null)
   const [selectedRowDates, setSelectedRowDates] = useState<{ startDate: string; endDate: string } | undefined>(undefined)
@@ -423,6 +424,7 @@ export function App() {
     const fadeZone = 25
     const scrollTop = e.currentTarget.scrollTop
     setScrollFade(Math.max(0, Math.min(1, (scrollTop - fadeStart) / fadeZone)))
+    if (showImportPopover) { setShowImportPopover(false); setTimeout(() => setShowSharePopover(true), 600) }
   }
 
   const isLeftOpen = activeSidebar === 'space-menu' || jiraPanelOpen
@@ -443,8 +445,9 @@ export function App() {
       setActivePage('backlog')
       setActiveTab('all-items')
       if (isNew) {
-        setSpaceName(randomSpaceName())
+        setSpaceName('')
         setHasData(false)
+        namePlaceholder.current = randomSpaceName()
         setShowNameModal(true)
       } else {
         setTimeout(() => setShowInsightsToast(true), 0)
@@ -652,7 +655,7 @@ export function App() {
       {/* Name space modal (shown after creating a new space) */}
       {showNameModal && (
         <NameSpaceModal
-          initialName={spaceName}
+          initialName={namePlaceholder.current}
           onSubmit={(name, importSource) => {
             setSpaceName(name)
             setShowNameModal(false)

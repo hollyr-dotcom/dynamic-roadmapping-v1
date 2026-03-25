@@ -58,12 +58,14 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, spaceName,
           className="flex items-center transition-opacity duration-200"
           style={{ gap: '2px', opacity: isMenuOpen ? scrollFade : 1, marginLeft: '2px' }}
         >
-          <span
-            className="font-heading font-semibold text-[#222428] leading-none select-none"
-            style={{ fontSize: '14px' }}
-          >
-            {spaceName}
-          </span>
+          {spaceName && (
+            <span
+              className="font-heading font-semibold text-[#222428] leading-none select-none"
+              style={{ fontSize: '14px' }}
+            >
+              {spaceName}
+            </span>
+          )}
 
           {/* Breadcrumb: chevron + database title — fades in on scroll */}
           <span

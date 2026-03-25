@@ -19,7 +19,7 @@ interface NameSpaceModalProps {
 }
 
 export function NameSpaceModal({ initialName, onSubmit, onCancel }: NameSpaceModalProps) {
-  const [spaceName, setSpaceName] = useState(initialName)
+  const [spaceName, setSpaceName] = useState('')
   const [importJira, setImportJira] = useState(false)
   const [importTables, setImportTables] = useState(false)
   const [importCsv, setImportCsv] = useState(false)
@@ -81,7 +81,7 @@ export function NameSpaceModal({ initialName, onSubmit, onCancel }: NameSpaceMod
         <Input
           autoFocus
           size="x-large"
-          placeholder="Project Galaxy"
+          placeholder={initialName}
           value={spaceName}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSpaceName(e.target.value)}
         />
@@ -154,6 +154,7 @@ export function NameSpaceModal({ initialName, onSubmit, onCancel }: NameSpaceMod
             variant="primary"
             size="large"
             onPress={handleSubmit}
+            isDisabled={spaceName.trim().length === 0}
           >
             <Button.Label>{importSource ? 'Create and import' : 'Create'}</Button.Label>
           </Button>
