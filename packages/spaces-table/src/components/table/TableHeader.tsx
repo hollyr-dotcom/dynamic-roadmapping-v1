@@ -1,4 +1,5 @@
 import type { FieldDefinition } from '@spaces/shared'
+import { IconSortDescending } from '@mirohq/design-system'
 
 const STICKY_TOP = 64
 const GAP_COVER = '0 -12px 0 0 white'
@@ -31,7 +32,10 @@ export function TableHeader({ fields, className }: TableHeaderProps) {
               paddingRight: '20px',
             }}
           >
-            <span className="truncate">{field.label}</span>
+            <span className="inline-flex items-center truncate" style={{ gap: field.type === 'priority' ? 4 : undefined }}>
+              {field.type === 'priority' && <IconSortDescending size="small" style={{ color: '#7D8297', flexShrink: 0 }} />}
+              {field.label}
+            </span>
           </th>
         ))}
         <th className="table-fill sticky z-10 bg-white" style={{ top: STICKY_TOP, boxShadow: GAP_COVER }} aria-hidden="true" />

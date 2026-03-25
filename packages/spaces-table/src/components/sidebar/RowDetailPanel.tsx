@@ -94,11 +94,11 @@ interface RowDetailPanelProps {
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
-  now:    'Now',
-  next:   'Next',
-  later:  'Later',
+  now:    'New',
   triage: 'Triage',
-  icebox: 'Icebox',
+  next:   'Prioritized',
+  later:  'Up next',
+  icebox: 'Watching',
 }
 
 // Colors matched to KanbanBoard column tags

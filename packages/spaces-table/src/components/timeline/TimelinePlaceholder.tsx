@@ -4,8 +4,8 @@ import { KanbanCardToolbar } from '../kanban/KanbanCardToolbar'
 import { JiraLogo } from '../JiraLogo'
 
 const PRIORITY_BAR_COLORS: Record<Priority, { bg: string; border: string; text: string }> = {
-  triage: { bg: '#fff0f0', border: '#ffc6c6', text: '#600000' },
   now:    { bg: '#e4f9ff', border: '#b5ecff', text: '#003d54' },
+  triage: { bg: '#fff0f0', border: '#ffc6c6', text: '#600000' },
   next:   { bg: '#ffeede', border: '#ffc795', text: '#5c3200' },
   later:  { bg: '#f3eeff', border: '#d4bbff', text: '#2d0066' },
   icebox: { bg: '#f7f7f7', border: '#dad8d8', text: '#222428' },
