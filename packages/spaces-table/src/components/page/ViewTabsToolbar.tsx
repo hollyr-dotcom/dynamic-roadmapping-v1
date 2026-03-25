@@ -774,13 +774,12 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
       {/* Import tip popover — fixed-position, measured from import button ref */}
       {showImportPopover && importBtnRect && (
         <div
-          className="import-popover-tip"
+          className="import-popover-tip-center"
           data-import-popover
           style={{
             position: 'fixed',
             top: importBtnRect.y + 10,
             left: importBtnRect.x,
-            transform: 'translateX(-50%)',
             zIndex: 9999,
           }}
         >

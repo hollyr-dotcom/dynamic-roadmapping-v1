@@ -56,10 +56,17 @@ body {
   animation: center-panel-out 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
 }
 
-/* ── Import popover entrance ─────────────────────────── */
-@keyframes popover-tip-in {
+/* ── Onboarding popover entrances ─────────────────────── */
+@keyframes popover-tip-center-in {
   from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
   to   { opacity: 1; transform: translateX(-50%) translateY(0);    }
+}
+@keyframes popover-tip-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+.import-popover-tip-center {
+  animation: popover-tip-center-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .import-popover-tip {
   animation: popover-tip-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;

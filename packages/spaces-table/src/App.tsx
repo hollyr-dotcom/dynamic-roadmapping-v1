@@ -78,6 +78,7 @@ export function App() {
   const [showInsightsModal, setShowInsightsModal] = useState(false)
   const [showInsightsToast, setShowInsightsToast] = useState(false)
   const [showImportPopover, setShowImportPopover] = useState(false)
+  const [showSharePopover, setShowSharePopover] = useState(false)
   const [activePage, setActivePage] = useState<PageId>('backlog')
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
   const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
@@ -477,6 +478,8 @@ export function App() {
             spaceName={spaceName}
             isMenuOpen={isLeftOpen}
             onToggleMenu={() => toggleSidebar('space-menu')}
+            showSharePopover={showSharePopover}
+            onDismissSharePopover={() => setShowSharePopover(false)}
           />
         </div>
         {/* Scroll area — vertical + horizontal, table header sticks below toolbar */}
@@ -485,7 +488,7 @@ export function App() {
             <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} />
           </div>
           <div className={`sticky top-0 left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
-            <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} showImportPopover={showImportPopover} onDismissImportPopover={() => setShowImportPopover(false)} />
+            <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} showImportPopover={showImportPopover} onDismissImportPopover={() => { setShowImportPopover(false); setTimeout(() => setShowSharePopover(true), 600) }} />
           </div>
 
           {/* Type-based view renderer */}
