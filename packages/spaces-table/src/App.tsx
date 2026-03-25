@@ -70,7 +70,8 @@ export function App() {
   const [view, setView] = useState<'home' | 'app'>('home')
   const [showInsightsModal, setShowInsightsModal] = useState(false)
   const [showInsightsToast, setShowInsightsToast] = useState(false)
-  const [showShareTooltip, setShowShareTooltip] = useState(false)
+  const [showImportPopover, setShowImportPopover] = useState(false)
+  const [showSharePopover, setShowSharePopover] = useState(false)
   const [activePage, setActivePage] = useState<PageId>('backlog')
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
   const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
@@ -125,7 +126,7 @@ export function App() {
     if (pendingToast) {
       setPendingToast(false)
       setShowInsightsToast(true)
-      setTimeout(() => setShowShareTooltip(true), 4000)
+      setTimeout(() => setShowImportPopover(true), 4000)
     }
   }, [pendingToast])
 
@@ -442,7 +443,7 @@ export function App() {
         setTimeout(() => setPendingImport(importSource), 300)
       } else {
         setHasData(false)
-        setTimeout(() => setShowShareTooltip(true), 300)
+        setTimeout(() => setShowSharePopover(true), 500)
       }
     }} />
   }
@@ -471,7 +472,8 @@ export function App() {
             databaseTitle={databaseTitle}
             isMenuOpen={isLeftOpen}
             onToggleMenu={() => toggleSidebar('space-menu')}
-            showShareTooltip={showShareTooltip}
+            showSharePopover={showSharePopover}
+            onDismissSharePopover={() => setShowSharePopover(false)}
           />
         </div>
         {/* Scroll area — vertical + horizontal, table header sticks below toolbar */}
@@ -480,12 +482,12 @@ export function App() {
             <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} />
           </div>
           <div className={`sticky top-0 left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
-            <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} onImportSource={(source) => { setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} />
+            <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} showImportPopover={showImportPopover} onDismissImportPopover={() => setShowImportPopover(false)} />
           </div>
 
           {/* Type-based view renderer */}
           {activeTabConfig?.type === 'table' && (
-              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onImportSource={(source) => { setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} />
+              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} />
           )}
           {activeTabConfig?.type === 'kanban' && (
             <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onCardSelectedChange={setKanbanCardSelected} />

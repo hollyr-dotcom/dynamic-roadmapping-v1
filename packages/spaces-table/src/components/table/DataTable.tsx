@@ -86,24 +86,19 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
             </svg>
           </div>
           <h3 className="text-[16px] font-semibold text-[#1a1b1e] mb-1" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>Start building your roadmap</h3>
-          <p className="text-[14px] text-[#7D8297] mb-5" style={{ fontFamily: 'Open Sans, sans-serif' }}>Add records manually or import from your tools</p>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="large">
-              <Button.IconSlot><IconPlus /></Button.IconSlot>
-              <Button.Label>Add record</Button.Label>
-            </Button>
-
+          <p className="text-[14px] text-[#7D8297] mb-6" style={{ fontFamily: 'Open Sans, sans-serif' }}>Add records manually or import from your tools</p>
+          <div className="flex flex-col items-center gap-3">
             {importVariant === 'dialog' ? (
               <Button variant="primary" size="large" onPress={() => setImportDialogOpen(true)}>
                 <Button.IconSlot><IconSquareArrowIn css={{ transform: 'rotate(180deg)' }} /></Button.IconSlot>
-                <Button.Label>Import sources</Button.Label>
+                <Button.Label>Import</Button.Label>
               </Button>
             ) : (
               <DropdownMenu>
                 <DropdownMenu.Trigger asChild>
                   <Button variant="primary" size="large">
                     <Button.IconSlot><IconSquareArrowIn css={{ transform: 'rotate(180deg)' }} /></Button.IconSlot>
-                    <Button.Label>Import sources</Button.Label>
+                    <Button.Label>Import</Button.Label>
                   </Button>
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Content side="bottom" align="center" css={{ minWidth: 180 }}>
@@ -116,6 +111,10 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
                 </DropdownMenu.Content>
               </DropdownMenu>
             )}
+            <Button variant="ghost" size="large">
+              <Button.IconSlot><IconPlus /></Button.IconSlot>
+              <Button.Label>Add record</Button.Label>
+            </Button>
           </div>
         </div>
 
