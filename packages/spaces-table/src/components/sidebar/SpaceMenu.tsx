@@ -6,13 +6,13 @@ import {
   IconChevronUpDown,
   IconDotsThreeVertical,
   IconLightbulb,
-  IconMap,
+  IconRocket,
   IconPlus,
 } from '@mirohq/design-system'
 
 const pages = [
   { id: 'backlog', label: 'Backlog', icon: IconLightbulb },
-  { id: 'roadmap', label: 'Roadmap', icon: IconMap },
+  { id: 'roadmap', label: 'Roadmap', icon: IconRocket },
 ]
 
 interface SpaceMenuProps {

@@ -132,7 +132,6 @@ export function App() {
     if (pendingToast) {
       setPendingToast(false)
       setShowInsightsToast(true)
-      setTimeout(() => setShowImportPopover(true), 4000)
     }
   }, [pendingToast])
 
@@ -448,7 +447,7 @@ export function App() {
         setHasData(false)
         setShowNameModal(true)
       } else {
-        setTimeout(() => { setShowInsightsToast(true); setTimeout(() => setShowImportPopover(true), 4000) }, 0)
+        setTimeout(() => setShowInsightsToast(true), 0)
       }
     }} />
   }
@@ -662,7 +661,7 @@ export function App() {
               setTimeout(() => setPendingImport(importSource), 300)
             } else {
               setHasData(true)
-              setTimeout(() => { setShowInsightsToast(true); setTimeout(() => setShowImportPopover(true), 4000) }, 0)
+              setTimeout(() => setShowInsightsToast(true), 0)
             }
           }}
           onCancel={() => {
@@ -689,7 +688,7 @@ export function App() {
       )}
 
       {showInsightsToast && (
-        <InsightsToast onDismiss={() => setShowInsightsToast(false)} />
+        <InsightsToast onDismiss={() => { setShowInsightsToast(false); setTimeout(() => setShowImportPopover(true), 600) }} />
       )}
 
       {showMoveSnackbar && (
