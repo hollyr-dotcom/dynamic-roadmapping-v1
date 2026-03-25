@@ -1,11 +1,11 @@
 import type { Priority } from '@spaces/shared'
 
 const PRIORITY_TAG: Record<Priority, { label: string; bg: string; text: string }> = {
-  triage: { label: 'Triage', bg: '#ffc6c6', text: '#600000' },
-  now:    { label: 'Now',    bg: '#b5ecff', text: '#003d54' },
-  next:   { label: 'Next',   bg: '#ffc795', text: '#5c3200' },
-  later:  { label: 'Later',  bg: '#d4bbff', text: '#2d0066' },
-  icebox: { label: 'Icebox', bg: '#dad8d8', text: '#222428' },
+  now:    { label: 'New',         bg: '#b5ecff', text: '#003d54' },
+  triage: { label: 'Triage',      bg: '#ffc6c6', text: '#600000' },
+  next:   { label: 'Prioritized', bg: '#ffc795', text: '#5c3200' },
+  later:  { label: 'Up next',     bg: '#d4bbff', text: '#2d0066' },
+  icebox: { label: 'Watching',    bg: '#dad8d8', text: '#222428' },
 }
 
 interface PriorityCellProps {

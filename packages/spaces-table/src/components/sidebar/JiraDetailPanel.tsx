@@ -50,7 +50,7 @@ const PRIORITY_CHIP: Record<string, { bg: string; color: string }> = {
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
-  now: 'Now', next: 'Next', later: 'Later', triage: 'Triage', icebox: 'Icebox',
+  now: 'New', triage: 'Triage', next: 'Prioritized', later: 'Up next', icebox: 'Watching',
 }
 
 const INSIGHT_SUMMARIES: Record<string, string> = {

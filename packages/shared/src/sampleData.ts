@@ -35,18 +35,18 @@ export const sampleData: SpaceRow[] = [
 ]
 
 export const roadmapData: SpaceRow[] = [
-  // Now — actively in progress
+  // New — actively in progress
   { id: "r1",  title: "AI portfolio advisor with personalized risk-adjusted recommendations",       mentions: 142, customers: 134, estRevenue: 425, companies: ["Figma", "Airbnb", "Stripe", "Notion"],   priority: "now", status: "in-progress" },
   { id: "r2",  title: "Real-time transaction categorisation using ML classification",               mentions: 118, customers: 97,  estRevenue: 340, companies: ["Spotify", "Stripe", "Linear"],            priority: "now", status: "in-progress" },
   { id: "r3",  title: "Smart budgeting engine with predictive spending forecasts",                  mentions: 105, customers: 89,  estRevenue: 235, companies: ["Dropbox", "ZenDesk", "Asana"],            priority: "now", status: "in-progress" },
   { id: "r4",  title: "Multi-currency wallet with instant FX conversion",                           mentions: 98,  customers: 112, estRevenue: 390, companies: ["Atlassian", "Notion", "Miro"],            priority: "now", status: "planning" },
   { id: "r5",  title: "Automated savings rules based on spending pattern analysis",                 mentions: 64,  customers: 71,  estRevenue: 250, companies: ["Shopify", "Figma", "Linear"],             priority: "now", status: "in-progress" },
-  // Next — planned, not started
+  // Prioritized — planned, not started
   { id: "r6",  title: "Recurring investment plans with dollar-cost averaging automation",           mentions: 45,  customers: 38,  estRevenue: 160, companies: ["Asana", "Linear", "Notion"],              priority: "next", status: "planning" },
   { id: "r7",  title: "Tax-loss harvesting assistant with end-of-year optimisation",                mentions: 16,  customers: 14,  estRevenue: 70,  companies: ["Spotify", "Stripe", "Miro", "Slack"],     priority: "next", status: "planning" },
   { id: "r8",  title: "Open Banking API integration for third-party account aggregation",           mentions: 16,  customers: 18,  estRevenue: 80,  companies: ["ZenDesk", "Jira", "Atlassian"],           priority: "next", status: "planning" },
   { id: "r9",  title: "Push notification engine for price alerts and goal milestones",              mentions: 10,  customers: 8,   estRevenue: 35,  companies: ["Asana", "Linear", "Google"],              priority: "next", status: "planning" },
-  // Later — on the horizon
+  // Up next — on the horizon
   { id: "r10", title: "Natural language search across transactions and accounts",                   mentions: 48,  customers: 53,  estRevenue: 190, companies: ["Apple", "Google", "Slack", "Jira"],       priority: "later", status: "planning" },
   { id: "r11", title: "Fraud detection model v2 — anomaly scoring for high-value transfers",       mentions: 23,  customers: 19,  estRevenue: 85,  companies: ["Apple", "Google", "ZenDesk"],             priority: "later", status: "planning" },
   // Done — shipped
