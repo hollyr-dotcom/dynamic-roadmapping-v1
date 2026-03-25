@@ -67,11 +67,12 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
 
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [importVariant, setImportVariant] = useState<'dialog' | 'dropdown'>('dialog')
+  const [selectedImportSource, setSelectedImportSource] = useState<'jira' | 'miro' | 'csv' | null>(null)
 
-  const importSources: { source: 'jira' | 'miro' | 'csv'; icon: JSX.Element; iconSmall: JSX.Element; label: string; description: string }[] = [
-    { source: 'jira', icon: <JiraLogo size={24} />, iconSmall: <JiraLogo size={20} />, label: 'Jira', description: 'Import issues and epics from your Jira projects' },
-    { source: 'miro', icon: <IconTable css={{ width: 24, height: 24 }} />, iconSmall: <IconTable css={{ width: 20, height: 20 }} />, label: 'Tables', description: 'Pull in items from your Miro tables' },
-    { source: 'csv', icon: <IconFileSpreadsheet css={{ width: 24, height: 24 }} />, iconSmall: <IconFileSpreadsheet css={{ width: 20, height: 20 }} />, label: 'CSV', description: 'Upload a spreadsheet of work items' },
+  const importSources: { source: 'jira' | 'miro' | 'csv'; icon: JSX.Element; iconSmall: JSX.Element; label: string; description: string; action: string }[] = [
+    { source: 'jira', icon: <JiraLogo size={24} />, iconSmall: <JiraLogo size={20} />, label: 'Jira', description: 'Sync issues and epics from Jira', action: 'Connect' },
+    { source: 'miro', icon: <IconTable css={{ width: 24, height: 24 }} />, iconSmall: <IconTable css={{ width: 20, height: 20 }} />, label: 'Miro Table', description: 'Select from your existing boards', action: 'Select' },
+    { source: 'csv', icon: <IconFileSpreadsheet css={{ width: 24, height: 24 }} />, iconSmall: <IconFileSpreadsheet css={{ width: 20, height: 20 }} />, label: 'CSV', description: 'Import from a .csv file', action: 'Upload' },
   ]
 
   if (data.length === 0) {
@@ -144,7 +145,7 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
           <div
             className="fixed inset-0 z-50 flex items-center justify-center"
             style={{ backgroundColor: 'rgba(99,107,130,0.55)' }}
-            onClick={() => setImportDialogOpen(false)}
+            onClick={() => { setImportDialogOpen(false); setSelectedImportSource(null) }}
           >
             <div
               className="bg-white flex flex-col relative"
@@ -158,7 +159,7 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
               onClick={e => e.stopPropagation()}
             >
               <div className="absolute top-4 right-4 z-10">
-                <IconButton variant="ghost" size="large" aria-label="Close" onPress={() => setImportDialogOpen(false)}>
+                <IconButton variant="ghost" size="large" aria-label="Close" onPress={() => { setImportDialogOpen(false); setSelectedImportSource(null) }}>
                   <IconCross />
                 </IconButton>
               </div>
@@ -166,22 +167,42 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
               <h2 className="text-[22px] text-[#1a1b1e] leading-[40px] font-semibold" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>Import from</h2>
 
               <div className="flex flex-col gap-2">
-                {importSources.map(({ source, icon, label, description }) => (
-                  <button
-                    key={label}
-                    className="flex items-center gap-4 w-full text-left rounded-xl transition-colors hover:bg-[#f1f2f5] active:bg-[#e9eaef]"
-                    style={{ padding: '14px 16px', border: 'none', background: 'transparent', cursor: 'pointer' }}
-                    onClick={() => { setImportDialogOpen(false); onImportSource?.(source) }}
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-[#f1f2f5] flex items-center justify-center shrink-0">
-                      {icon}
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[16px] font-semibold text-[#1a1b1e]" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>{label}</span>
-                      <span className="text-[13px] text-[#7D8297]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{description}</span>
-                    </div>
-                  </button>
-                ))}
+                {importSources.map(({ source, icon, label, description, action }) => {
+                  const selected = selectedImportSource === source
+                  return (
+                    <button
+                      key={label}
+                      className="flex items-center gap-4 w-full text-left rounded-xl transition-colors hover:bg-[#f1f2f5] active:bg-[#e9eaef]"
+                      style={{
+                        padding: '16px 20px',
+                        border: selected ? '1.5px solid #4262FF' : '1px solid #e9eaef',
+                        background: selected ? '#f5f6ff' : 'transparent',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => setSelectedImportSource(source)}
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-[#f1f2f5] flex items-center justify-center shrink-0">
+                        {icon}
+                      </div>
+                      <div className="flex-1 flex flex-col gap-0.5">
+                        <span className="text-[16px] font-semibold text-[#1a1b1e]" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>{label}</span>
+                        <span className="text-[13px] text-[#7D8297]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{description}</span>
+                      </div>
+                      <div className="w-[18px] h-[18px] rounded-full border-[1.5px] flex items-center justify-center shrink-0" style={{ borderColor: selected ? '#4262FF' : '#c2c5cc' }}>
+                        {selected && <div className="w-[10px] h-[10px] rounded-full bg-[#4262FF]" />}
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <Button variant="primary" size="large" disabled={!selectedImportSource} onPress={() => { if (selectedImportSource) { setImportDialogOpen(false); onImportSource?.(selectedImportSource); setSelectedImportSource(null) } }}>
+                  <Button.Label>Import</Button.Label>
+                </Button>
+                <Button variant="ghost" size="large" onPress={() => { setImportDialogOpen(false); setSelectedImportSource(null) }}>
+                  <Button.Label>Cancel</Button.Label>
+                </Button>
               </div>
             </div>
           </div>

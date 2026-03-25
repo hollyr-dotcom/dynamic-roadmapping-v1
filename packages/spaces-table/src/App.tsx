@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { Button, IconButton, IconCross } from '@mirohq/design-system'
 import { sampleData, fields, roadmapData, roadmapFields } from '@spaces/shared'
 import type { Priority, SpaceRow, Status } from '@spaces/shared'
 import { TopNavBar } from './components/page/TopNavBar'
@@ -107,6 +108,7 @@ export function App() {
   const [syncShimmering, setSyncShimmering] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
   const [pendingToast, setPendingToast] = useState(false)
+  const [showJiraAuth, setShowJiraAuth] = useState(false)
   const [movedRow, setMovedRow] = useState<SpaceRow | null>(null)
   const [showMoveSnackbar, setShowMoveSnackbar] = useState(false)
   const [pageTransitioning, setPageTransitioning] = useState(false)
@@ -478,12 +480,12 @@ export function App() {
             <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} />
           </div>
           <div className={`sticky top-0 left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
-            <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} />
+            <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} onImportSource={(source) => { setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} />
           </div>
 
           {/* Type-based view renderer */}
           {activeTabConfig?.type === 'table' && (
-              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onImportSource={(source) => { setPendingImport(source); setPendingToast(true) }} />
+              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onImportSource={(source) => { setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} />
           )}
           {activeTabConfig?.type === 'kanban' && (
             <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onCardSelectedChange={setKanbanCardSelected} />
@@ -640,8 +642,59 @@ export function App() {
       {/* Canvas floating nav panels */}
       <CanvasNavPanels isOpen={canvasOpen} databaseTitle={databaseTitle} />
 
+      {/* Jira auth dialog */}
+      {showJiraAuth && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ backgroundColor: 'rgba(99,107,130,0.55)' }}
+          onClick={() => { setShowJiraAuth(false); setPendingImport(null) }}
+        >
+          <div
+            className="bg-white flex flex-col relative"
+            style={{
+              borderRadius: 16,
+              width: 480,
+              padding: 40,
+              gap: 20,
+              boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="absolute top-4 right-4 z-10">
+              <IconButton variant="ghost" size="large" aria-label="Close" onPress={() => { setShowJiraAuth(false); setPendingImport(null) }}>
+                <IconCross />
+              </IconButton>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full border-[1.5px] border-[#4262FF] flex items-center justify-center shrink-0">
+                <span className="text-[#4262FF] text-[13px] font-semibold" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>!</span>
+              </div>
+              <h2 className="text-[22px] text-[#1a1b1e] font-semibold" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>Authorization required</h2>
+            </div>
+
+            <p className="text-[15px] text-[#44474f]" style={{ fontFamily: 'Open Sans, sans-serif', lineHeight: 1.5 }}>
+              Sign in to Jira using your personal credentials to continue working with Jira Cards in Miro.
+            </p>
+
+            <div className="flex items-center gap-3 pt-2">
+              <Button variant="primary" size="large" onPress={() => { setShowJiraAuth(false) }}>
+                <Button.Label>Authorize</Button.Label>
+              </Button>
+              <Button variant="ghost" size="large" onPress={() => { setShowJiraAuth(false); setPendingImport(null) }}>
+                <Button.Label>Cancel</Button.Label>
+              </Button>
+              <div className="flex-1" />
+              <Button variant="ghost" size="large" onPress={() => { setShowJiraAuth(false) }}>
+                <Button.Label>Skip for now</Button.Label>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Jira import modal */}
-      {pendingImport === 'jira' && (
+      {pendingImport === 'jira' && !showJiraAuth && (
         <JiraImportModal
           onImport={() => { setPendingImport(null); setHasData(true); setIsImporting(true) }}
           onClose={() => { setPendingImport(null) }}

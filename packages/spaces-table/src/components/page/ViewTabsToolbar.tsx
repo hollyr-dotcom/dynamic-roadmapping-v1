@@ -67,9 +67,10 @@ interface ViewTabsToolbarProps {
   variant?: 'page' | 'widget'
   companyFilter?: string[]
   onClearCompanyFilter?: (name: string) => void
+  onImportSource?: (source: 'jira' | 'miro' | 'csv') => void
 }
 
-export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange, onDuplicateWidget, variant = 'page', companyFilter, onClearCompanyFilter }: ViewTabsToolbarProps) {
+export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange, onDuplicateWidget, variant = 'page', companyFilter, onClearCompanyFilter, onImportSource }: ViewTabsToolbarProps) {
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
   const [isImportMenuOpen, setIsImportMenuOpen] = useState(false)
   const [pendingTabId, setPendingTabId] = useState<string | null>(null)
@@ -646,15 +647,15 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
             </Tooltip.Content>
           </Tooltip>
           <DropdownMenu.Content side="bottom" align="center" css={{ minWidth: 180 }}>
-            <DropdownMenu.Item css={{ cursor: 'default' }}>
+            <DropdownMenu.Item onSelect={() => onImportSource?.('jira')}>
               <DropdownMenu.IconSlot><JiraLogo size={20} /></DropdownMenu.IconSlot>
               Jira
             </DropdownMenu.Item>
-            <DropdownMenu.Item css={{ cursor: 'default' }}>
+            <DropdownMenu.Item onSelect={() => onImportSource?.('miro')}>
               <DropdownMenu.IconSlot><IconTable /></DropdownMenu.IconSlot>
               Tables
             </DropdownMenu.Item>
-            <DropdownMenu.Item css={{ cursor: 'default' }}>
+            <DropdownMenu.Item onSelect={() => onImportSource?.('csv')}>
               <DropdownMenu.IconSlot><IconFileSpreadsheet /></DropdownMenu.IconSlot>
               CSV
             </DropdownMenu.Item>
