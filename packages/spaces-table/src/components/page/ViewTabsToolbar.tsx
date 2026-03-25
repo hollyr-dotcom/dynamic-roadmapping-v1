@@ -70,9 +70,10 @@ interface ViewTabsToolbarProps {
   onImportSource?: (source: 'jira' | 'miro' | 'csv') => void
   showImportPopover?: boolean
   onDismissImportPopover?: () => void
+  hideControls?: boolean
 }
 
-export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange, onDuplicateWidget, variant = 'page', companyFilter, onClearCompanyFilter, onImportSource, showImportPopover, onDismissImportPopover }: ViewTabsToolbarProps) {
+export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange, onDuplicateWidget, variant = 'page', companyFilter, onClearCompanyFilter, onImportSource, showImportPopover, onDismissImportPopover, hideControls }: ViewTabsToolbarProps) {
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
   const [isImportMenuOpen, setIsImportMenuOpen] = useState(false)
   const importBtnRef = useRef<HTMLSpanElement>(null)
@@ -605,6 +606,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
 
       {/* Right: actions — disabled (no handlers) on canvas widget */}
       <div className="flex items-center gap-1 shrink-0 self-center">
+        {!hideControls && (<>
         <Tooltip>
           <Tooltip.Trigger asChild>
             <IconButton aria-label="Search" variant="ghost" size="medium" css={{ borderRadius: 8 }}>
@@ -671,7 +673,9 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
             </DropdownMenu.Content>
           </DropdownMenu>
         </span>
+        </>)}
 
+        {!hideControls && (
         <Tooltip>
           <Tooltip.Trigger asChild>
             <IconButton
@@ -689,6 +693,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
             <Tooltip.Hotkey>⌘ + ,</Tooltip.Hotkey>
           </Tooltip.Content>
         </Tooltip>
+        )}
 
         {/* <Tooltip>
           <Tooltip.Trigger asChild>
@@ -705,7 +710,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
           <Tooltip.Content side="top" sideOffset={4}>Insights</Tooltip.Content>
         </Tooltip> */}
 
-        {variant !== 'widget' ? (
+        {hideControls ? null : variant !== 'widget' ? (
           <Tooltip>
             <DropdownMenu open={newColumnMenuOpen} onOpen={() => onNewColumnMenuOpenChange(true)} onClose={() => onNewColumnMenuOpenChange(false)}>
               <Tooltip.Trigger asChild>

@@ -32,9 +32,10 @@ interface DataTableProps {
   showMoveToRoadmap?: boolean
   onImportSource?: (source: 'jira' | 'miro' | 'csv') => void
   onAddRecord?: () => void
+  onEmptyVariantChange?: (variant: 'dialog' | 'dropdown' | 'dropdown-v1') => void
 }
 
-export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete, onMoveToRoadmap, showMoveToRoadmap, onImportSource, onAddRecord }: DataTableProps) {
+export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete, onMoveToRoadmap, showMoveToRoadmap, onImportSource, onAddRecord, onEmptyVariantChange }: DataTableProps) {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const tableRef = useRef<HTMLDivElement>(null)
   const hasImportedRef = useRef(false)
@@ -67,7 +68,7 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
   }, [])
 
   const [importDialogOpen, setImportDialogOpen] = useState(false)
-  const [importVariant, setImportVariant] = useState<'dialog' | 'dropdown'>('dialog')
+  const [importVariant, setImportVariant] = useState<'dialog' | 'dropdown' | 'dropdown-v1'>('dialog')
   const [selectedImportSource, setSelectedImportSource] = useState<'jira' | 'miro' | 'csv' | null>(null)
 
   const importSources: { source: 'jira' | 'miro' | 'csv'; icon: JSX.Element; iconSmall: JSX.Element; label: string; description: string; action: string }[] = [
@@ -121,10 +122,10 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
 
         {/* Version toggle */}
         <div className="fixed bottom-4 left-4 z-50 flex items-center gap-1 rounded-lg bg-[#1a1b1e] p-1" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
-          {(['dialog', 'dropdown'] as const).map(v => (
+          {(['dialog', 'dropdown', 'dropdown-v1'] as const).map(v => (
             <button
               key={v}
-              onClick={() => { setImportVariant(v); setImportDialogOpen(false) }}
+              onClick={() => { setImportVariant(v); setImportDialogOpen(false); onEmptyVariantChange?.(v) }}
               className="text-[12px] font-medium rounded-md transition-colors"
               style={{
                 padding: '6px 12px',
@@ -135,7 +136,7 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
                 fontFamily: 'Open Sans, sans-serif',
               }}
             >
-              {v === 'dialog' ? 'A: Dialog' : 'B: Dropdown'}
+              {v === 'dialog' ? 'A: Dialog' : v === 'dropdown' ? 'B: Dropdown' : 'C: Dropdown V1'}
             </button>
           ))}
         </div>
