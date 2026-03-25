@@ -31,9 +31,10 @@ interface DataTableProps {
   onMoveToRoadmap?: (rowId: string) => void
   showMoveToRoadmap?: boolean
   onImportSource?: (source: 'jira' | 'miro' | 'csv') => void
+  onAddRecord?: () => void
 }
 
-export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete, onMoveToRoadmap, showMoveToRoadmap, onImportSource }: DataTableProps) {
+export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete, onMoveToRoadmap, showMoveToRoadmap, onImportSource, onAddRecord }: DataTableProps) {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const tableRef = useRef<HTMLDivElement>(null)
   const hasImportedRef = useRef(false)
@@ -71,7 +72,6 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
 
   const importSources: { source: 'jira' | 'miro' | 'csv'; icon: JSX.Element; iconSmall: JSX.Element; label: string; description: string; action: string }[] = [
     { source: 'jira', icon: <JiraLogo size={24} />, iconSmall: <JiraLogo size={20} />, label: 'Jira', description: 'Sync issues and epics from Jira', action: 'Connect' },
-    { source: 'miro', icon: <IconTable css={{ width: 24, height: 24 }} />, iconSmall: <IconTable css={{ width: 20, height: 20 }} />, label: 'Miro Table', description: 'Select from your existing boards', action: 'Select' },
     { source: 'csv', icon: <IconFileSpreadsheet css={{ width: 24, height: 24 }} />, iconSmall: <IconFileSpreadsheet css={{ width: 20, height: 20 }} />, label: 'CSV', description: 'Import from a .csv file', action: 'Upload' },
   ]
 
@@ -99,6 +99,7 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
                   <Button variant="primary" size="large">
                     <Button.IconSlot><IconSquareArrowIn css={{ transform: 'rotate(180deg)' }} /></Button.IconSlot>
                     <Button.Label>Import</Button.Label>
+                    <Button.IconSlot placement="end"><IconChevronDown css={{ width: 16, height: 16 }} /></Button.IconSlot>
                   </Button>
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Content side="bottom" align="center" css={{ minWidth: 180 }}>
@@ -111,7 +112,7 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
                 </DropdownMenu.Content>
               </DropdownMenu>
             )}
-            <Button variant="ghost" size="large">
+            <Button variant="ghost" size="large" onPress={onAddRecord}>
               <Button.IconSlot><IconPlus /></Button.IconSlot>
               <Button.Label>Add record</Button.Label>
             </Button>

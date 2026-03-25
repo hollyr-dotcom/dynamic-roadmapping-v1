@@ -664,11 +664,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
                 <DropdownMenu.IconSlot><JiraLogo size={20} /></DropdownMenu.IconSlot>
                 Jira
               </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => onImportSource?.('miro')}>
-                <DropdownMenu.IconSlot><IconTable /></DropdownMenu.IconSlot>
-                Tables
-              </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => onImportSource?.('csv')}>
+<DropdownMenu.Item onSelect={() => onImportSource?.('csv')}>
                 <DropdownMenu.IconSlot><IconFileSpreadsheet /></DropdownMenu.IconSlot>
                 CSV
               </DropdownMenu.Item>
