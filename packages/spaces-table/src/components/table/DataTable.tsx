@@ -68,7 +68,7 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
   }, [])
 
   const [importDialogOpen, setImportDialogOpen] = useState(false)
-  const [importVariant, setImportVariant] = useState<'dialog' | 'dropdown' | 'dropdown-v1'>('dialog')
+  const [importVariant, setImportVariant] = useState<'dialog' | 'dropdown' | 'dropdown-v1'>('dropdown-v1')
   const [selectedImportSource, setSelectedImportSource] = useState<'jira' | 'miro' | 'csv' | null>(null)
 
   const importSources: { source: 'jira' | 'miro' | 'csv'; icon: JSX.Element; iconSmall: JSX.Element; label: string; description: string; action: string }[] = [

@@ -93,7 +93,7 @@ export function App() {
   const [isJiraDetailOpen, setIsJiraDetailOpen] = useState(false)
   const [initialCompany, setInitialCompany] = useState<string | undefined>(undefined)
   const [newColumnMenuOpen, setNewColumnMenuOpen] = useState(false)
-  const [emptyVariant, setEmptyVariant] = useState<'dialog' | 'dropdown' | 'dropdown-v1'>('dialog')
+  const [emptyVariant, setEmptyVariant] = useState<'dialog' | 'dropdown' | 'dropdown-v1'>('dropdown-v1')
   const [canvasOpen, setCanvasOpen] = useState(false)
   const [navHovered, setNavHovered] = useState(false)
   const [kanbanCardSelected, setKanbanCardSelected] = useState(false)
