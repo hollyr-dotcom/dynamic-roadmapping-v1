@@ -648,11 +648,11 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
         </Tooltip>
 
         <span ref={importBtnRef} className="inline-flex">
-          <DropdownMenu onOpen={() => { if (!disableControls) { setIsImportMenuOpen(true); if (showImportPopover) onDismissImportPopover?.() } }} onClose={() => setIsImportMenuOpen(false)}>
+          <DropdownMenu onOpen={() => { setIsImportMenuOpen(true); if (showImportPopover) onDismissImportPopover?.() }} onClose={() => setIsImportMenuOpen(false)}>
             <Tooltip>
               <Tooltip.Trigger asChild>
                 <DropdownMenu.Trigger asChild>
-                  <IconButton aria-label="Import" variant="ghost" size="medium" disabled={disableControls} css={isImportMenuOpen ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}>
+                  <IconButton aria-label="Import" variant="ghost" size="medium" css={isImportMenuOpen ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}>
                     <IconSquareArrowIn css={{ transform: 'rotate(180deg)' }} />
                   </IconButton>
                 </DropdownMenu.Trigger>
