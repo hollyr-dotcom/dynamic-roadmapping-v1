@@ -154,7 +154,7 @@ export function NameSpaceModal({ initialName, onSubmit, onCancel }: NameSpaceMod
             variant="primary"
             size="large"
             onPress={handleSubmit}
-            isDisabled={spaceName.trim().length === 0}
+            disabled={!spaceName.trim()}
           >
             <Button.Label>{importSource ? 'Create and import' : 'Create'}</Button.Label>
           </Button>
