@@ -307,35 +307,6 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSpaceName(e.target.value)}
               />
 
-              {/* Enrich records with */}
-              <div className="flex flex-col gap-5 py-2">
-                <span className="font-body font-semibold text-[16px] text-[#1a1b1e] leading-none">Enrich records with</span>
-                <div className="flex">
-                  <Tooltip>
-                    <Tooltip.Trigger asChild>
-                      <button
-                        onClick={() => setEnrichInsights(v => !v)}
-                        className={`flex items-center gap-2 h-12 rounded-full transition-colors duration-150 ${
-                          enrichInsights
-                            ? 'border-[#4262FF] hover:border-[#3350e0] active:border-[#2b44c7]'
-                            : 'border-[#e9eaef] hover:border-[#d5d8de] active:border-[#c2c5cc]'
-                        } bg-white`}
-                        style={{ borderWidth: '1.5px', borderStyle: 'solid', paddingLeft: 18, paddingRight: 12 }}
-                      >
-                        <span className="shrink-0 -translate-y-px">
-                          <IconInsights css={{ width: 20, height: 20 }} />
-                        </span>
-                        <span className="text-[16px] text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif', paddingBottom: 1 }}>Insights</span>
-                        <div className="pointer-events-none shrink-0 pill-checkbox translate-y-0.5">
-                          <Checkbox checked={enrichInsights} />
-                        </div>
-                      </button>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content side="top" sideOffset={4}>Enrich items with customer feedback and signals</Tooltip.Content>
-                  </Tooltip>
-                </div>
-              </div>
-
               {/* Actions */}
               <div className="flex items-center gap-3 pt-4">
                 <Button
