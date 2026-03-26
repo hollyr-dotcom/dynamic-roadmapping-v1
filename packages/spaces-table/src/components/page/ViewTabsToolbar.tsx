@@ -71,9 +71,10 @@ interface ViewTabsToolbarProps {
   showImportPopover?: boolean
   onDismissImportPopover?: () => void
   hideControls?: boolean
+  disableControls?: boolean
 }
 
-export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange, onDuplicateWidget, variant = 'page', companyFilter, onClearCompanyFilter, onImportSource, showImportPopover, onDismissImportPopover, hideControls }: ViewTabsToolbarProps) {
+export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange, onDuplicateWidget, variant = 'page', companyFilter, onClearCompanyFilter, onImportSource, showImportPopover, onDismissImportPopover, hideControls, disableControls }: ViewTabsToolbarProps) {
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
   const [isImportMenuOpen, setIsImportMenuOpen] = useState(false)
   const importBtnRef = useRef<HTMLSpanElement>(null)
@@ -609,7 +610,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
         {!hideControls && (<>
         <Tooltip>
           <Tooltip.Trigger asChild>
-            <IconButton aria-label="Search" variant="ghost" size="medium" css={{ borderRadius: 8 }}>
+            <IconButton aria-label="Search" variant="ghost" size="medium" disabled={disableControls} css={{ borderRadius: 8 }}>
               <IconMagnifyingGlass />
             </IconButton>
           </Tooltip.Trigger>
@@ -621,7 +622,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
 
         <Tooltip>
           <Tooltip.Trigger asChild>
-            <IconButton aria-label="Group" variant="ghost" size="medium" css={{ borderRadius: 8, cursor: 'default' }}>
+            <IconButton aria-label="Group" variant="ghost" size="medium" disabled={disableControls} css={{ borderRadius: 8, cursor: 'default' }}>
               <IconHorizontalBlocks />
             </IconButton>
           </Tooltip.Trigger>
@@ -630,7 +631,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
 
         <Tooltip>
           <Tooltip.Trigger asChild>
-            <IconButton aria-label="Filter" variant="ghost" size="medium" css={{ borderRadius: 8 }}>
+            <IconButton aria-label="Filter" variant="ghost" size="medium" disabled={disableControls} css={{ borderRadius: 8 }}>
               <IconFunnel />
             </IconButton>
           </Tooltip.Trigger>
@@ -639,7 +640,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
 
         <Tooltip>
           <Tooltip.Trigger asChild>
-            <IconButton aria-label="Sort" variant="ghost" size="medium" css={{ borderRadius: 8 }}>
+            <IconButton aria-label="Sort" variant="ghost" size="medium" disabled={disableControls} css={{ borderRadius: 8 }}>
               <IconArrowsDownUp />
             </IconButton>
           </Tooltip.Trigger>
@@ -647,11 +648,11 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
         </Tooltip>
 
         <span ref={importBtnRef} className="inline-flex">
-          <DropdownMenu onOpen={() => { setIsImportMenuOpen(true); if (showImportPopover) onDismissImportPopover?.() }} onClose={() => setIsImportMenuOpen(false)}>
+          <DropdownMenu onOpen={() => { if (!disableControls) { setIsImportMenuOpen(true); if (showImportPopover) onDismissImportPopover?.() } }} onClose={() => setIsImportMenuOpen(false)}>
             <Tooltip>
               <Tooltip.Trigger asChild>
                 <DropdownMenu.Trigger asChild>
-                  <IconButton aria-label="Import" variant="ghost" size="medium" css={isImportMenuOpen ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}>
+                  <IconButton aria-label="Import" variant="ghost" size="medium" disabled={disableControls} css={isImportMenuOpen ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}>
                     <IconSquareArrowIn css={{ transform: 'rotate(180deg)' }} />
                   </IconButton>
                 </DropdownMenu.Trigger>
@@ -682,6 +683,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
               aria-label="View settings"
               variant="ghost"
               size="medium"
+              disabled={disableControls}
               onPress={undefined}
               css={activeSidebar === 'view-settings' && variant !== 'widget' ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}
             >
@@ -712,10 +714,10 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
 
         {hideControls ? null : variant !== 'widget' ? (
           <Tooltip>
-            <DropdownMenu open={newColumnMenuOpen} onOpen={() => onNewColumnMenuOpenChange(true)} onClose={() => onNewColumnMenuOpenChange(false)}>
+            <DropdownMenu open={disableControls ? false : newColumnMenuOpen} onOpen={() => !disableControls && onNewColumnMenuOpenChange(true)} onClose={() => onNewColumnMenuOpenChange(false)}>
               <Tooltip.Trigger asChild>
                 <DropdownMenu.Trigger asChild>
-                  <IconButton aria-label="New column" variant="ghost" size="medium" css={{ borderRadius: 8 }}>
+                  <IconButton aria-label="New column" variant="ghost" size="medium" disabled={disableControls} css={{ borderRadius: 8 }}>
                     <IconPlus />
                   </IconButton>
                 </DropdownMenu.Trigger>
