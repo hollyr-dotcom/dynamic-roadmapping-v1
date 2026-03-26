@@ -45,6 +45,7 @@ const imgMiroTeamLogo = 'https://www.figma.com/api/mcp/asset/c9119d54-1298-4f33-
 
 interface HomePageProps {
   onOpenApp: (importSource?: 'jira' | 'miro' | 'csv') => void
+  skipCreationModal?: boolean
 }
 
 const templates = [
@@ -109,7 +110,7 @@ const boards = [
   { iconImg: imgIconPeople,   name: 'Design Review Team Picker',       modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
 ]
 
-export function HomePage({ onOpenApp }: HomePageProps) {
+export function HomePage({ onOpenApp, skipCreationModal }: HomePageProps) {
   const [spacesMenuOpen, setSpacesMenuOpen] = useState(false)
   const [yourSpacesExpanded, setYourSpacesExpanded] = useState(true)
   const [createSpaceModalOpen, setCreateSpaceModalOpen] = useState(false)
@@ -216,7 +217,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                   EPD WoW v2.2
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator css={{ marginTop: 4, marginBottom: 4 }} />
-                <DropdownMenu.Item onSelect={() => { setSpacesMenuOpen(false); setCreateSpaceModalOpen(true) }}>
+                <DropdownMenu.Item onSelect={() => { setSpacesMenuOpen(false); if (skipCreationModal) { onOpenApp() } else { setCreateSpaceModalOpen(true) } }}>
                   <DropdownMenu.IconSlot><IconRocket /></DropdownMenu.IconSlot>
                   Roadmap
                 </DropdownMenu.Item>
