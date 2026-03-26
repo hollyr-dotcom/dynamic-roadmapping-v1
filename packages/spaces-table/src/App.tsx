@@ -708,7 +708,7 @@ export function App() {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center"
           style={{ backgroundColor: 'rgba(99,107,130,0.55)' }}
-          onClick={() => { setShowJiraAuth(false); setPendingImport(null) }}
+          onClick={() => { setShowJiraAuth(false); setPendingImport(null); if (!onboardingDone.current) setTimeout(() => setShowSharePopover(true), 500) }}
         >
           <div
             className="bg-white flex flex-col relative"
@@ -722,7 +722,7 @@ export function App() {
             onClick={e => e.stopPropagation()}
           >
             <div className="absolute top-4 right-4 z-10">
-              <IconButton variant="ghost" size="large" aria-label="Close" onPress={() => { setShowJiraAuth(false); setPendingImport(null) }}>
+              <IconButton variant="ghost" size="large" aria-label="Close" onPress={() => { setShowJiraAuth(false); setPendingImport(null); if (!onboardingDone.current) setTimeout(() => setShowSharePopover(true), 500) }}>
                 <IconCross />
               </IconButton>
             </div>
@@ -742,7 +742,7 @@ export function App() {
               <Button variant="primary" size="large" onPress={() => { setShowJiraAuth(false) }}>
                 <Button.Label>Authorize</Button.Label>
               </Button>
-              <Button variant="ghost" size="large" onPress={() => { setShowJiraAuth(false); setPendingImport(null) }}>
+              <Button variant="ghost" size="large" onPress={() => { setShowJiraAuth(false); setPendingImport(null); if (!onboardingDone.current) setTimeout(() => setShowSharePopover(true), 500) }}>
                 <Button.Label>Cancel</Button.Label>
               </Button>
               <div className="flex-1" />
@@ -758,7 +758,7 @@ export function App() {
       {pendingImport === 'jira' && !showJiraAuth && (
         <JiraImportModal
           onImport={() => { setPendingImport(null); setBacklogData(sampleData); setHasData(true); setIsImporting(true) }}
-          onClose={() => { setPendingImport(null) }}
+          onClose={() => { setPendingImport(null); if (!onboardingDone.current) setTimeout(() => setShowSharePopover(true), 500) }}
         />
       )}
 
