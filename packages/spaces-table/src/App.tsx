@@ -771,7 +771,7 @@ export function App() {
       )}
 
       {showInsightsToast && (
-        <InsightsToast onDismiss={() => setShowInsightsToast(false)} />
+        <InsightsToast onDismiss={() => { setShowInsightsToast(false); if (concept === 'nameaftercreation') setTimeout(() => setShowImportPopover(true), 600) }} />
       )}
 
       {showMoveSnackbar && (
@@ -800,7 +800,8 @@ export function App() {
               setPendingToast(true)
               setTimeout(() => setPendingImport(importSource), 300)
             } else {
-              setTimeout(() => setShowSharePopover(true), 500)
+              setHasData(true)
+              setTimeout(() => setShowInsightsToast(true), 0)
             }
           }}
           onCancel={() => {
