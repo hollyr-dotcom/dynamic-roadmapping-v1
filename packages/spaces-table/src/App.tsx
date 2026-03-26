@@ -141,9 +141,7 @@ export function App() {
     if (pendingToast) {
       setPendingToast(false)
       setShowInsightsToast(true)
-      if (concept === 'nameaftercreation') {
-        if (!onboardingDone.current) setTimeout(() => setShowSharePopover(true), 2000)
-      }
+      if (!onboardingDone.current) setTimeout(() => setShowSharePopover(true), 2000)
     }
   }, [pendingToast])
 
@@ -534,7 +532,7 @@ export function App() {
             isMenuOpen={isLeftOpen}
             onToggleMenu={() => toggleSidebar('space-menu')}
             showSharePopover={showSharePopover}
-            onDismissSharePopover={() => { setShowSharePopover(false); if (!onboardingDone.current && concept === 'nameaftercreation') { onboardingDone.current = true; setTimeout(() => setShowImportPopover(true), 600) } else { onboardingDone.current = true } }}
+            onDismissSharePopover={() => { setShowSharePopover(false); if (!onboardingDone.current) { onboardingDone.current = true; setTimeout(() => setShowImportPopover(true), 600) } }}
           />
         </div>
         {/* Scroll area — vertical + horizontal, table header sticks below toolbar */}
