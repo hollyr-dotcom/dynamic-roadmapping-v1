@@ -477,7 +477,7 @@ export function App() {
 
   if (view === 'home') {
     return <>
-      <HomePage skipCreationModal={concept === 'nameaftercreation'} onOpenApp={(importSource?: 'jira' | 'miro' | 'csv') => {
+      <HomePage skipCreationModal={concept === 'nameaftercreation'} titleOnly={concept === 'namebeforecreation'} onOpenApp={(importSource?: 'jira' | 'miro' | 'csv') => {
       onboardingDone.current = false
       setView('app')
       setActivePage('backlog')

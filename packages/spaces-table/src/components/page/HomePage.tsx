@@ -46,6 +46,7 @@ const imgMiroTeamLogo = 'https://www.figma.com/api/mcp/asset/c9119d54-1298-4f33-
 interface HomePageProps {
   onOpenApp: (importSource?: 'jira' | 'miro' | 'csv') => void
   skipCreationModal?: boolean
+  titleOnly?: boolean
 }
 
 const templates = [
@@ -110,7 +111,7 @@ const boards = [
   { iconImg: imgIconPeople,   name: 'Design Review Team Picker',       modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
 ]
 
-export function HomePage({ onOpenApp, skipCreationModal }: HomePageProps) {
+export function HomePage({ onOpenApp, skipCreationModal, titleOnly }: HomePageProps) {
   const [spacesMenuOpen, setSpacesMenuOpen] = useState(false)
   const [yourSpacesExpanded, setYourSpacesExpanded] = useState(true)
   const [createSpaceModalOpen, setCreateSpaceModalOpen] = useState(false)
@@ -308,7 +309,7 @@ export function HomePage({ onOpenApp, skipCreationModal }: HomePageProps) {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSpaceName(e.target.value)}
               />
 
-              {/* Enrich records with */}
+              {!titleOnly && (
               <div className="flex flex-col gap-5 py-2">
                 <span className="font-body font-semibold text-[16px] text-[#1a1b1e] leading-none">Enrich records with</span>
                 <div className="flex">
@@ -336,6 +337,7 @@ export function HomePage({ onOpenApp, skipCreationModal }: HomePageProps) {
                   </Tooltip>
                 </div>
               </div>
+              )}
 
               {/* Actions */}
               <div className="flex items-center gap-3 pt-4">
