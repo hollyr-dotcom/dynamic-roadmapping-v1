@@ -456,7 +456,7 @@ export function App() {
       ]).map(({ id, label }) => (
         <button
           key={id}
-          onClick={() => { setConcept(id); setView('home'); setHasData(true); setBacklogData(sampleData); setShowImportDialog(false); setShowNameModal(false); setShowSharePopover(false); setShowImportPopover(false); setShowInsightsToast(false); setPendingImport(null); setShowJiraAuth(false) }}
+          onClick={() => { setConcept(id); setView('home'); setHasData(true); setBacklogData(sampleData); setShowImportDialog(false); setShowNameModal(false); setShowSharePopover(false); setShowImportPopover(false); setShowInsightsToast(false); setPendingImport(null); setPendingToast(false); setIsImporting(false); setShowJiraAuth(false); onboardingDone.current = false }}
           className="text-[12px] font-medium rounded-md transition-colors"
           style={{
             padding: '6px 12px',
