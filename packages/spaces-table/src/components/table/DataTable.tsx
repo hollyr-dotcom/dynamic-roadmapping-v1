@@ -32,9 +32,10 @@ interface DataTableProps {
   showMoveToRoadmap?: boolean
   onImportSource?: (source: 'jira' | 'miro' | 'csv') => void
   onAddRecord?: () => void
+  emptyVariant?: 'full' | 'minimal'
 }
 
-export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete, onMoveToRoadmap, showMoveToRoadmap, onImportSource, onAddRecord }: DataTableProps) {
+export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete, onMoveToRoadmap, showMoveToRoadmap, onImportSource, onAddRecord, emptyVariant = 'full' }: DataTableProps) {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const tableRef = useRef<HTMLDivElement>(null)
   const hasImportedRef = useRef(false)
@@ -75,33 +76,42 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
             <path d="M3 9h18M9 9v12" stroke="#7D8297" strokeWidth="1.5"/>
           </svg>
         </div>
-        <h3 className="text-[16px] font-semibold text-[#1a1b1e] mb-1" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>Start building your roadmap</h3>
-        <p className="text-[14px] text-[#7D8297] mb-6" style={{ fontFamily: 'Open Sans, sans-serif' }}>Add records manually or import from your tools</p>
-        <div className="flex flex-col items-center gap-3">
-          <DropdownMenu>
-            <DropdownMenu.Trigger asChild>
-              <Button variant="primary" size="large">
-                <Button.IconSlot><IconSquareArrowIn css={{ transform: 'rotate(180deg)' }} /></Button.IconSlot>
-                <Button.Label>Import</Button.Label>
-                <Button.IconSlot placement="end"><IconChevronDown css={{ width: 16, height: 16 }} /></Button.IconSlot>
-              </Button>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content side="bottom" align="center" css={{ minWidth: 180 }}>
-              <DropdownMenu.Item onSelect={() => onImportSource?.('jira')}>
-                <DropdownMenu.IconSlot><JiraLogo size={20} /></DropdownMenu.IconSlot>
-                Jira
-              </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => onImportSource?.('csv')}>
-                <DropdownMenu.IconSlot><IconFileSpreadsheet /></DropdownMenu.IconSlot>
-                CSV
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu>
-          <Button variant="ghost" size="large" onPress={onAddRecord}>
+        {emptyVariant === 'full' ? (<>
+          <h3 className="text-[16px] font-semibold text-[#1a1b1e] mb-1" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>Start building your roadmap</h3>
+          <p className="text-[14px] text-[#7D8297] mb-6" style={{ fontFamily: 'Open Sans, sans-serif' }}>Add records manually or import from your tools</p>
+          <div className="flex flex-col items-center gap-3">
+            <DropdownMenu>
+              <DropdownMenu.Trigger asChild>
+                <Button variant="primary" size="large">
+                  <Button.IconSlot><IconSquareArrowIn css={{ transform: 'rotate(180deg)' }} /></Button.IconSlot>
+                  <Button.Label>Import</Button.Label>
+                  <Button.IconSlot placement="end"><IconChevronDown css={{ width: 16, height: 16 }} /></Button.IconSlot>
+                </Button>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content side="bottom" align="center" css={{ minWidth: 180 }}>
+                <DropdownMenu.Item onSelect={() => onImportSource?.('jira')}>
+                  <DropdownMenu.IconSlot><JiraLogo size={20} /></DropdownMenu.IconSlot>
+                  Jira
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={() => onImportSource?.('csv')}>
+                  <DropdownMenu.IconSlot><IconFileSpreadsheet /></DropdownMenu.IconSlot>
+                  CSV
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu>
+            <Button variant="ghost" size="large" onPress={onAddRecord}>
+              <Button.IconSlot><IconPlus /></Button.IconSlot>
+              <Button.Label>Add record</Button.Label>
+            </Button>
+          </div>
+        </>) : (<>
+          <h3 className="text-[16px] font-semibold text-[#1a1b1e] mb-1" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>No records yet</h3>
+          <p className="text-[14px] text-[#7D8297] mb-6" style={{ fontFamily: 'Open Sans, sans-serif' }}>Add your first record to get started</p>
+          <Button variant="secondary" size="large" onPress={onAddRecord}>
             <Button.IconSlot><IconPlus /></Button.IconSlot>
             <Button.Label>Add record</Button.Label>
           </Button>
-        </div>
+        </>)}
       </div>
     )
   }
