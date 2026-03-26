@@ -1,5 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { Button, IconButton, IconCross } from '@mirohq/design-system'
+import { ImportSourcesDialog } from './components/page/ImportSourcesDialog'
+import { NameSpaceModal } from './components/page/NameSpaceModal'
 import { sampleData, fields, roadmapData, roadmapFields } from '@spaces/shared'
 import type { Priority, SpaceRow, Status } from '@spaces/shared'
 import { TopNavBar } from './components/page/TopNavBar'
@@ -65,13 +67,26 @@ const PAGE_CONFIGS: Record<PageId, PageConfig> = {
 
 const ROADMAP_KANBAN_COLUMNS: Priority[] = ['now', 'next', 'later']
 
+type ConceptId = 'emptystate' | 'namebeforecreation' | 'nameaftercreation'
+
+const PLANET_NAMES = ['Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune']
+function randomSpaceName() {
+  return `Project ${PLANET_NAMES[Math.floor(Math.random() * PLANET_NAMES.length)]}`
+}
+
 export function App() {
   const [scrollFade, setScrollFade] = useState(0)
+  const [concept, setConcept] = useState<ConceptId>('emptystate')
   const [view, setView] = useState<'home' | 'app'>('home')
   const [showInsightsModal, setShowInsightsModal] = useState(false)
   const [showInsightsToast, setShowInsightsToast] = useState(false)
   const [showImportPopover, setShowImportPopover] = useState(false)
   const [showSharePopover, setShowSharePopover] = useState(false)
+  const [showImportDialog, setShowImportDialog] = useState(false)
+  const [showNameModal, setShowNameModal] = useState(false)
+  const [spaceName, setSpaceName] = useState('Project Galaxy')
+  const namePlaceholder = useRef('')
+  const onboardingDone = useRef(false)
   const [activePage, setActivePage] = useState<PageId>('backlog')
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
   const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
@@ -432,20 +447,64 @@ export function App() {
   const sortedViewData = [...baseViewData].sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 5) - (PRIORITY_ORDER[b.priority] ?? 5))
   const viewData = companyFilter.length > 0 ? sortedViewData.filter(r => companyFilter.some(f => r.companies?.includes(f))) : sortedViewData
 
+  const conceptToggle = (
+    <div className="fixed bottom-4 left-4 z-[9999] flex items-center gap-1 rounded-lg bg-[#1a1b1e] p-1" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+      {([
+        { id: 'emptystate' as ConceptId, label: 'A: Empty State' },
+        { id: 'namebeforecreation' as ConceptId, label: 'B: Name Before' },
+        { id: 'nameaftercreation' as ConceptId, label: 'C: Name After' },
+      ]).map(({ id, label }) => (
+        <button
+          key={id}
+          onClick={() => { setConcept(id); setView('home'); setHasData(true); setBacklogData(sampleData); setShowImportDialog(false); setShowNameModal(false); setShowSharePopover(false); setShowImportPopover(false); setShowInsightsToast(false); setPendingImport(null); setShowJiraAuth(false) }}
+          className="text-[12px] font-medium rounded-md transition-colors"
+          style={{
+            padding: '6px 12px',
+            border: 'none',
+            cursor: 'pointer',
+            background: concept === id ? '#4262FF' : 'transparent',
+            color: concept === id ? '#fff' : '#9ca3af',
+            fontFamily: 'Open Sans, sans-serif',
+          }}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  )
+
   if (view === 'home') {
-    return <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv') => {
+    return <>
+      <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv') => {
+      onboardingDone.current = false
       setView('app')
       setActivePage('backlog')
       setActiveTab('all-items')
-      if (importSource) {
+
+      if (concept === 'emptystate') {
+        // Concept A: empty state with import dropdown + add record
+        if (importSource) {
+          setHasData(false)
+          setPendingToast(true)
+          setTimeout(() => setPendingImport(importSource), 300)
+        } else {
+          setHasData(false)
+          setTimeout(() => setShowSharePopover(true), 500)
+        }
+      } else if (concept === 'namebeforecreation') {
+        // Concept B: title first, then import dialog after creation
         setHasData(false)
-        setPendingToast(true)
-        setTimeout(() => setPendingImport(importSource), 300)
-      } else {
+        setTimeout(() => setShowImportDialog(true), 400)
+      } else if (concept === 'nameaftercreation') {
+        // Concept C: create first, then name + import in modal
+        setSpaceName('')
         setHasData(false)
-        setTimeout(() => setShowSharePopover(true), 500)
+        namePlaceholder.current = randomSpaceName()
+        setShowNameModal(true)
       }
     }} />
+      {conceptToggle}
+    </>
   }
 
   return (
@@ -721,6 +780,37 @@ export function App() {
           onDismiss={() => { setShowMoveSnackbar(false); setMovedRow(null) }}
         />
       )}
+
+      {/* Import sources dialog (concept B: namebeforecreation) */}
+      {showImportDialog && (
+        <ImportSourcesDialog
+          onImport={(source) => { setShowImportDialog(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }}
+          onSkip={() => { setShowImportDialog(false); if (!onboardingDone.current) setTimeout(() => setShowSharePopover(true), 500) }}
+        />
+      )}
+
+      {/* Name space modal (concept C: nameaftercreation) */}
+      {showNameModal && (
+        <NameSpaceModal
+          initialName={namePlaceholder.current}
+          onSubmit={(name, importSource) => {
+            setSpaceName(name)
+            setShowNameModal(false)
+            if (importSource) {
+              setPendingToast(true)
+              setTimeout(() => setPendingImport(importSource), 300)
+            } else {
+              setTimeout(() => setShowSharePopover(true), 500)
+            }
+          }}
+          onCancel={() => {
+            setShowNameModal(false)
+            setView('home')
+          }}
+        />
+      )}
+
+      {conceptToggle}
 
     </div>
   )
