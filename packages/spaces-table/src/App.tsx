@@ -111,6 +111,7 @@ export function App() {
   const [insightsAllDots, setInsightsAllDots] = useState(false)
   const [syncShimmering, setSyncShimmering] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+  const onboardingDone = useRef(false)
   const [pendingToast, setPendingToast] = useState(false)
   const [showJiraAuth, setShowJiraAuth] = useState(false)
   const [movedRow, setMovedRow] = useState<SpaceRow | null>(null)
@@ -129,7 +130,7 @@ export function App() {
     if (pendingToast) {
       setPendingToast(false)
       setShowInsightsToast(true)
-      setTimeout(() => setShowSharePopover(true), 4000)
+      if (!onboardingDone.current) setTimeout(() => setShowSharePopover(true), 4000)
     }
   }, [pendingToast])
 
@@ -476,7 +477,7 @@ export function App() {
             isMenuOpen={isLeftOpen}
             onToggleMenu={() => toggleSidebar('space-menu')}
             showSharePopover={showSharePopover}
-            onDismissSharePopover={() => { setShowSharePopover(false); setTimeout(() => setShowImportPopover(true), 600) }}
+            onDismissSharePopover={() => { setShowSharePopover(false); if (!onboardingDone.current) { onboardingDone.current = true; setTimeout(() => setShowImportPopover(true), 600) } }}
           />
         </div>
         {/* Scroll area — vertical + horizontal, table header sticks below toolbar */}
@@ -490,7 +491,7 @@ export function App() {
 
           {/* Type-based view renderer */}
           {activeTabConfig?.type === 'table' && (
-              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onAddRecord={() => { setShowSharePopover(false); setHasData(true); setBacklogData([{ id: 'new-1', title: '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]) }} />
+              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onAddRecord={() => { onboardingDone.current = true; setShowSharePopover(false); setShowImportPopover(false); setHasData(true); setBacklogData([{ id: 'new-1', title: '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]) }} />
           )}
           {activeTabConfig?.type === 'kanban' && (
             <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onCardSelectedChange={setKanbanCardSelected} />
@@ -702,7 +703,7 @@ export function App() {
       {showImportDialog && (
         <ImportSourcesDialog
           onImport={(source) => { setShowImportDialog(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }}
-          onSkip={() => { setShowImportDialog(false); setTimeout(() => setShowSharePopover(true), 500) }}
+          onSkip={() => { setShowImportDialog(false); if (!onboardingDone.current) setTimeout(() => setShowSharePopover(true), 500) }}
         />
       )}
 
