@@ -62,7 +62,7 @@ const PAGE_CONFIGS: Record<PageId, PageConfig> = {
     title: 'Roadmap',
     tabs: [
       { id: 'roadmap', label: 'Roadmap', type: 'timeline' },
-      { id: 'kanban', label: 'Now, next, later', type: 'kanban' },
+      { id: 'kanban', label: 'New, prioritized, up next', type: 'kanban' },
       { id: 'all-items-roadmap', label: 'All items', type: 'table' },
       { id: 'done', label: 'Done', type: 'table' },
     ],
@@ -432,10 +432,12 @@ export function App() {
   // Dynamic view rendering
   const currentTabs = pageTabs[activePage]
   const activeTabConfig = currentTabs.find(t => t.id === activeTab)
-  const pageData = hasData ? (activePage === 'roadmap' ? roadmapItems : backlogData) : []
-  const pageFields = activePage === 'roadmap' ? roadmapFields : fields
+  const pageData = hasData ? (activePage === 'backlog' ? backlogData : roadmapItems) : []
+  const pageFields = activePage === 'backlog' ? fields : roadmapFields
+  const PRIORITY_ORDER: Record<Priority, number> = { now: 0, triage: 1, next: 2, later: 3, icebox: 4 }
   const baseViewData = activeTab === 'done' ? pageData.filter(r => r.status === 'done') : pageData
-  const viewData = companyFilter.length > 0 ? baseViewData.filter(r => companyFilter.some(f => r.companies?.includes(f))) : baseViewData
+  const sortedViewData = [...baseViewData].sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 5) - (PRIORITY_ORDER[b.priority] ?? 5))
+  const viewData = companyFilter.length > 0 ? sortedViewData.filter(r => companyFilter.some(f => r.companies?.includes(f))) : sortedViewData
 
   if (view === 'home') {
     return <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv', activePage?: string) => {

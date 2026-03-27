@@ -1,16 +1,16 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import type { SpaceRow, Priority } from '@spaces/shared'
 import { KanbanCardToolbar } from '../kanban/KanbanCardToolbar'
+import { JiraLogo } from '../JiraLogo'
 
 const PRIORITY_BAR_COLORS: Record<Priority, { bg: string; border: string; text: string }> = {
-  triage: { bg: '#fff0f0', border: '#ffc6c6', text: '#600000' },
   now:    { bg: '#e4f9ff', border: '#b5ecff', text: '#003d54' },
+  triage: { bg: '#fff0f0', border: '#ffc6c6', text: '#600000' },
   next:   { bg: '#ffeede', border: '#ffc795', text: '#5c3200' },
   later:  { bg: '#f3eeff', border: '#d4bbff', text: '#2d0066' },
   icebox: { bg: '#f7f7f7', border: '#dad8d8', text: '#222428' },
 }
 const DEFAULT_BAR_COLOR = PRIORITY_BAR_COLORS.icebox
-const JIRA_LOGO = 'https://www.figma.com/api/mcp/asset/4209f456-a892-4952-b21a-077b917e1d3d'
 const DAY_WIDTH = 48
 const BAR_HEIGHT = 40
 const ROW_HEIGHT = 56
@@ -463,7 +463,7 @@ const [selectedBarId, setSelectedBarId] = useState<string | null>(null)
               </div>
 
               <img src={person.avatar} alt="" style={{ width: 24, height: 24, borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
-              <img src={JIRA_LOGO} alt="Jira" style={{ width: 16, height: 16, flexShrink: 0, objectFit: 'contain' }} />
+              <JiraLogo size={16} />
               <span style={{ fontSize: 14, color: (PRIORITY_BAR_COLORS[row.priority] ?? DEFAULT_BAR_COLOR).text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                 {row.title}
               </span>
