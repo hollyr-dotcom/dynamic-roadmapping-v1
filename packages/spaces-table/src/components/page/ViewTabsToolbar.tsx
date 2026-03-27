@@ -7,10 +7,13 @@ import {
   InputSearch,
   IconMagnifyingGlass,
   IconSparksFilled as _IconSparksFilled,
-  IconInsights,
+  IconInsights as _IconInsights,
   IconSlidersY,
   IconFunnel,
   IconArrowsDownUp,
+  IconHorizontalBlocks,
+  IconSquareArrowIn,
+  IconFileSpreadsheet,
   IconColumnsThree as _IconColumnsThree,
   IconPlus,
   IconTable,
@@ -26,6 +29,7 @@ import {
   Tooltip,
 } from '@mirohq/design-system'
 import { CompanyLogo } from '../CompanyLogo'
+import { JiraLogo } from '../JiraLogo'
 
 export const MENU_WIDTH = 220
 
@@ -65,8 +69,9 @@ interface ViewTabsToolbarProps {
   onClearCompanyFilter?: (name: string) => void
 }
 
-export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange, onDuplicateWidget, variant = 'page', companyFilter, onClearCompanyFilter }: ViewTabsToolbarProps) {
+export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar: _onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange, onDuplicateWidget, variant = 'page', companyFilter, onClearCompanyFilter }: ViewTabsToolbarProps) {
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
+  const [isImportMenuOpen, setIsImportMenuOpen] = useState(false)
   const [pendingTabId, setPendingTabId] = useState<string | null>(null)
   const [editingTabId, setEditingTabId] = useState<string | null>(null)
   const [editDraft, setEditDraft] = useState('')
@@ -601,6 +606,15 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
 
         <Tooltip>
           <Tooltip.Trigger asChild>
+            <IconButton aria-label="Group" variant="ghost" size="medium" css={{ borderRadius: 8, cursor: 'default' }}>
+              <IconHorizontalBlocks />
+            </IconButton>
+          </Tooltip.Trigger>
+          <Tooltip.Content side="top" sideOffset={4}>Group</Tooltip.Content>
+        </Tooltip>
+
+        <Tooltip>
+          <Tooltip.Trigger asChild>
             <IconButton aria-label="Filter" variant="ghost" size="medium" css={{ borderRadius: 8 }}>
               <IconFunnel />
             </IconButton>
@@ -616,6 +630,32 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
           </Tooltip.Trigger>
           <Tooltip.Content side="top" sideOffset={4}>Sort</Tooltip.Content>
         </Tooltip>
+
+        <DropdownMenu onOpen={() => setIsImportMenuOpen(true)} onClose={() => setIsImportMenuOpen(false)}>
+          <Tooltip>
+            <Tooltip.Trigger asChild>
+              <DropdownMenu.Trigger asChild>
+                <IconButton aria-label="Import" variant="ghost" size="medium" css={isImportMenuOpen ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}>
+                  <IconSquareArrowIn css={{ transform: 'rotate(180deg)' }} />
+                </IconButton>
+              </DropdownMenu.Trigger>
+            </Tooltip.Trigger>
+            <Tooltip.Content side="top" sideOffset={4}>
+              Import
+              <Tooltip.Hotkey>⌘ + I</Tooltip.Hotkey>
+            </Tooltip.Content>
+          </Tooltip>
+          <DropdownMenu.Content side="bottom" align="center" css={{ minWidth: 180 }}>
+            <DropdownMenu.Item css={{ cursor: 'default' }}>
+              <DropdownMenu.IconSlot><JiraLogo size={20} /></DropdownMenu.IconSlot>
+              Jira
+            </DropdownMenu.Item>
+            <DropdownMenu.Item css={{ cursor: 'default' }}>
+              <DropdownMenu.IconSlot><IconFileSpreadsheet /></DropdownMenu.IconSlot>
+              CSV
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu>
 
         <Tooltip>
           <Tooltip.Trigger asChild>
@@ -635,7 +675,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
           </Tooltip.Content>
         </Tooltip>
 
-        <Tooltip>
+        {/* <Tooltip>
           <Tooltip.Trigger asChild>
             <IconButton
               aria-label="Insights"
@@ -648,7 +688,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
             </IconButton>
           </Tooltip.Trigger>
           <Tooltip.Content side="top" sideOffset={4}>Insights</Tooltip.Content>
-        </Tooltip>
+        </Tooltip> */}
 
         {variant !== 'widget' ? (
           <Tooltip>

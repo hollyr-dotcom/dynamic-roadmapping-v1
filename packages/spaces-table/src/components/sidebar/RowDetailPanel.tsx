@@ -22,6 +22,7 @@ import {
   IconLink,
   IconGlobe as _IconGlobe,
   IconArrowUp,
+  IconThumbsUp,
   IconSlidersX,
   IconStickyNote,
   IconChevronRight,
@@ -37,11 +38,11 @@ import {
   IconStackedCircles as _IconStackedCircles,
   IconPlusBox as _IconPlusBox,
   IconUser as _IconUser,
-  IconSmileyPlus,
-  IconPaperPlaneFilledRight,
-  IconSocialJira,
+  IconSmileyPlus as _IconSmileyPlus,
+  IconPaperPlaneFilledRight as _IconPaperPlaneFilledRight,
   IconBookmark,
 } from '@mirohq/design-system'
+import { JiraLogo } from '../JiraLogo'
 
 function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
   const size = (props as { width?: number }).width ?? 24
@@ -89,16 +90,18 @@ interface RowDetailPanelProps {
   timelineDates?: { startDate: string; endDate: string }
   onCompanyFilter?: (name: string) => void
   activeCompanyFilter?: string[] | null
-  selectedLayout?: 'Center' | 'Right' | 'Fullscreen'
-  onLayoutChange?: (layout: 'Center' | 'Right' | 'Fullscreen') => void
+  selectedLayout?: 'Center' | 'Right' | 'Half-screen' | 'Fullscreen'
+  onLayoutChange?: (layout: 'Center' | 'Right' | 'Half-screen' | 'Fullscreen') => void
+  hideInsightCallout?: boolean
+  overrideSummary?: string
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
-  now:    'Now',
-  next:   'Next',
-  later:  'Later',
+  now:    'New',
   triage: 'Triage',
-  icebox: 'Icebox',
+  next:   'Prioritized',
+  later:  'Up next',
+  icebox: 'Watching',
 }
 
 // Colors matched to KanbanBoard column tags
@@ -110,7 +113,6 @@ const PRIORITY_CHIP: Record<string, { bg: string; color: string }> = {
   icebox: { bg: '#dad8d8', color: '#222428' },
 }
 
-const TABS = ['Details', 'Insights', 'Comments', 'Jira']
 
 const FEEDBACK_FILTER_SUB_OPTIONS: Record<string, string[]> = {
   'Company':   ['Spotify', 'Stripe', 'Linear', 'Atlassian', 'Notion', 'Shopify', 'Dropbox', 'Google', 'Apple'],
@@ -293,8 +295,8 @@ function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter: _activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange }: RowDetailPanelProps) {
-  const [activeTab, setActiveTab] = useState('Details')
+export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter: _activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, overrideSummary }: RowDetailPanelProps) {
+  const [activeTab, _setActiveTab] = useState('Insights')
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
 
@@ -316,14 +318,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const [showFeedbackConfetti, setShowFeedbackConfetti] = useState(false)
   const [editingField, setEditingField] = useState<'title' | 'description' | null>(null)
   const [editValue, setEditValue] = useState('')
-  const [commentText, setCommentText] = useState('')
-  const [comments, setComments] = useState([
+  const [_commentText, _setCommentText] = useState('')
+  const [_comments, _setComments] = useState([
     { name: 'Liam Johnson', time: 'Today, 12:30 PM', text: 'Adding rounded edges could create a friendlier look.', avatarImg: 10 },
     { name: 'Sarah Kim', time: 'Today, 11:14 AM', text: 'Agreed — also worth checking how this lands on mobile viewports.', avatarImg: 47 },
     { name: 'Marcus T.', time: 'Yesterday, 4:02 PM', text: 'Should we tie this to the existing design token for border radius?', avatarImg: 32 },
   ])
-  const [resolved, setResolved] = useState(false)
-  const commentsEndRef = useRef<HTMLDivElement>(null)
+  const [_resolved, _setResolved] = useState(false)
   const [savePhase, setSavePhase] = useState<'refreshing' | 'success' | null>(null)
   const [saveProgress, setSaveProgress] = useState(0)
   const [saveToastExiting, setSaveToastExiting] = useState(false)
@@ -342,10 +343,10 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
   const [layoutOpen, setLayoutOpen] = useState(false)
   const [layoutPos, setLayoutPos] = useState<{ top: number; right: number } | null>(null)
-  const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
+  const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Half-screen' | 'Fullscreen'>('Right')
   const selectedLayout = selectedLayoutProp ?? layoutInternal
-  const setSelectedLayout = (l: 'Center' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
-  const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 48 : 376
+  const setSelectedLayout = (l: 'Center' | 'Right' | 'Half-screen' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
+  const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 48 : selectedLayout === 'Half-screen' ? Math.round(window.innerWidth * 0.5) : 376
   const layoutButtonRef = useRef<HTMLButtonElement>(null)
   const layoutMenuRef = useRef<HTMLDivElement>(null)
 
@@ -470,13 +471,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       {/* ── Header ──────────────────────────────────────── */}
       <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12 }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <IconSocialJira css={{ width: 18, height: 18, flexShrink: 0 }} />
+          <JiraLogo size={18} />
           <p
             className="flex-1 min-w-0 truncate text-[#222428] leading-[1.5]"
             style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: '16px', fontFeatureSettings: "'ss01' 1" }}
-            title={row.jiraKey ?? row.title}
+            title={row.title}
           >
-            {row.jiraKey ?? row.title}
+            {row.title}
           </p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
@@ -517,6 +518,12 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
                   </svg>
                 )}
+                {selectedLayout === 'Half-screen' && (
+                  <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                    <rect x="6.5" y="1.5" width="6" height="9" rx="0.8" fill="currentColor"/>
+                  </svg>
+                )}
                 {selectedLayout === 'Fullscreen' && (
                   <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
                     <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
@@ -545,24 +552,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       {/* 4px spacer */}
       <div className="h-1 shrink-0" />
 
-      {/* ── Tabs ────────────────────────────────────────── */}
-      <div className="flex shrink-0 pb-5 pt-4 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 20 : 12, paddingRight: selectedLayout !== 'Right' ? 24 : 16 }}>
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => { setActiveTab(tab); if (selectedCompany) setSelectedCompany(null); if (selectedFeedbackCard) setSelectedFeedbackCard(null); if (callCard) setCallCard(null) }}
-            className="mr-1 px-2 py-1 rounded-lg text-[14px] font-semibold transition-colors"
-            style={{
-              fontFamily: 'Open Sans, sans-serif',
-              color: activeTab === tab ? '#4262FF' : '#656B81',
-              backgroundColor: activeTab === tab ? '#F2F4FC' : 'transparent',
-            }}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
       {/* 4px spacer */}
       <div className="h-1 shrink-0" />
 
@@ -577,7 +566,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         }}
       >
       {/* ── Main panel ─── */}
-      <div key={activeTab} className="h-full overflow-y-auto panel-scroll flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: 8, overflowAnchor: 'none' }}>
+      <div className="h-full overflow-y-auto panel-scroll flex flex-col gap-2 shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 20, paddingRight: selectedLayout !== 'Right' ? 24 : 20, paddingTop: 8, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -700,11 +689,10 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </>
         )}
 
-        {activeTab === 'Insights' && (
-          <div className="flex flex-col gap-8 pb-6">
+        <div className="flex flex-col gap-8 pb-6">
 
             {/* Low-confidence Insights callout — only for AI portfolio advisor row */}
-            {!insightDismissed && (row.id === '1' || row.id === 'r1') && (
+            {!hideInsightCallout && !insightDismissed && (row.id === '1' || row.id === 'r1') && (
               <div
                 style={{
                   display: 'flex',
@@ -732,7 +720,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             {/* Summary */}
             <InsightSection label="Summary">
               <p className="text-[14px] text-[#222428] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
-                {INSIGHT_SUMMARIES[row.id] ?? row.description ?? row.title}
+                {overrideSummary ?? INSIGHT_SUMMARIES[row.id] ?? row.description ?? row.title}
               </p>
             </InsightSection>
 
@@ -891,7 +879,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               </>
             )}
           </div>
-        )}
 
         {activeTab === 'Updates' && (
           <div className="flex flex-col">
@@ -911,89 +898,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 </p>
               </div>
             ))}
-          </div>
-        )}
-
-        {activeTab === 'Comments' && (
-          <div className="flex flex-col" style={{ minHeight: '100%' }}>
-            {/* Resolve toggle */}
-            <div className="flex items-center gap-2 px-2 pb-3">
-              <button
-                onClick={() => setResolved(r => !r)}
-                className="relative shrink-0"
-                style={{ width: 32, height: 18, borderRadius: 999, background: resolved ? '#4262FF' : '#E0E2E8', border: 'none', cursor: 'pointer', padding: 0, transition: 'background 150ms ease' }}
-              >
-                <span style={{ position: 'absolute', top: 2, left: resolved ? 16 : 2, width: 14, height: 14, borderRadius: '50%', background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', transition: 'left 150ms ease' }} />
-              </button>
-              <span className="text-[14px] text-[#222428]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Resolve</span>
-            </div>
-
-            {/* Comment list */}
-            <div className="flex flex-col flex-1 px-2">
-              {comments.map((comment, i) => (
-                <div key={i} className="flex gap-[9px] items-start py-2">
-                  <img
-                    src={`https://i.pravatar.cc/48?img=${comment.avatarImg}`}
-                    alt={comment.name}
-                    className="shrink-0 w-6 h-6 rounded-full object-cover"
-                  />
-                  <div className="flex flex-col gap-[4px] flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[14px] font-semibold text-[#050038] whitespace-nowrap" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>{comment.name}</span>
-                      <span className="text-[12px] text-[#656B81]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{comment.time}</span>
-                    </div>
-                    <p className="text-[14px] text-[#222428] leading-[1.4] m-0" style={{ fontFamily: 'Open Sans, sans-serif' }}>{comment.text}</p>
-                  </div>
-                </div>
-              ))}
-              <div ref={commentsEndRef} />
-            </div>
-
-            {/* Compose box — sticky at bottom */}
-            <div className="sticky bottom-0 bg-white pt-2 pb-4 px-0" style={{ marginTop: 'auto' }}>
-              <div
-                className="flex flex-col rounded-[6px] px-2 py-2"
-                style={{ border: `1px solid ${commentText ? '#4262FF' : '#E0E2E8'}`, transition: 'border-color 150ms ease' }}
-              >
-                <textarea
-                  value={commentText}
-                  onChange={e => setCommentText(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && !e.shiftKey && commentText.trim()) {
-                      e.preventDefault()
-                      const now = new Date()
-                      const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-                      setComments(prev => [...prev, { name: 'You', time: `Today, ${time}`, text: commentText.trim(), avatarImg: 1 }])
-                      setCommentText('')
-                      setTimeout(() => commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
-                    }
-                  }}
-                  placeholder="Leave a comment. Use @ to mention."
-                  rows={3}
-                  className="w-full resize-none text-[14px] text-[#222428] leading-[1.4] px-2 outline-none bg-transparent placeholder-[#7D8297]"
-                  style={{ fontFamily: 'Open Sans, sans-serif', border: 'none', minHeight: 60 }}
-                />
-                <div className="flex items-center justify-end gap-1 pt-1">
-                  <button className="w-10 h-10 flex items-center justify-center rounded-lg text-[#AEB2C0]" style={{ border: 'none', background: 'none', cursor: 'default' }}>
-                    <IconSmileyPlus size="medium" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (!commentText.trim()) return
-                      const now = new Date()
-                      const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-                      setComments(prev => [...prev, { name: 'You', time: `Today, ${time}`, text: commentText.trim(), avatarImg: 1 }])
-                      setCommentText('')
-                      setTimeout(() => commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
-                    }}
-                    className="w-10 h-10 flex items-center justify-center rounded-lg transition-colors"
-                    style={{ border: 'none', background: 'none', color: commentText.trim() ? '#4262FF' : '#AEB2C0', cursor: commentText.trim() ? 'pointer' : 'default' }}
-                  >
-                    <IconPaperPlaneFilledRight size="medium" />
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
         )}
 
@@ -1205,7 +1109,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           className="fixed z-[9999] bg-white flex flex-col rounded-[8px]"
           style={{ top: layoutPos.top, right: layoutPos.right, padding: '16px 12px', gap: 4, boxShadow: '0px 0px 12px rgba(34,36,40,0.04), 0px 2px 8px rgba(34,36,40,0.12)' }}
         >
-          {(['Right', 'Center', 'Fullscreen'] as const).map(option => (
+          {(['Right', 'Half-screen', 'Center', 'Fullscreen'] as const).map(option => (
             <button
               key={option}
               className={`flex items-center w-full rounded-[4px] transition-colors text-left ${selectedLayout === option ? 'bg-[#F1F2F5]' : 'hover:bg-[#F1F2F5]'}`}
@@ -1223,6 +1127,12 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
                     <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
                     <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="#222428"/>
+                  </svg>
+                )}
+                {option === 'Half-screen' && (
+                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
+                    <rect x="6.5" y="1.5" width="6" height="9" rx="0.8" fill="#222428"/>
                   </svg>
                 )}
                 {option === 'Fullscreen' && (
@@ -1896,6 +1806,9 @@ function FeedbackCard({
 }) {
   const [expanded, setExpanded] = useState(false)
   const [hovered, setHovered] = useState(false)
+  const [thumbsUp, setThumbsUp] = useState(false)
+  const [thumbsDown, setThumbsDown] = useState(false)
+  const [thumbTooltip, setThumbTooltip] = useState<{ label: string; pos: { top: number; left: number } } | null>(null)
   const [tooltipVisible, setTooltipVisible] = useState(false)
   const [tooltipPos, setTooltipPos] = useState<{ top: number; right: number } | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -1918,10 +1831,10 @@ function FeedbackCard({
 
   return (
     <div
-      className="w-full rounded-xl flex flex-col gap-2 p-5 cursor-pointer"
-      style={{ border: `2px solid ${borderColor}`, borderBottomWidth: 6 }}
+      className="w-full rounded-xl flex flex-col gap-2 p-5 cursor-pointer relative"
+      style={{ borderTop: `1px solid ${borderColor}`, borderLeft: `1px solid ${borderColor}`, borderRight: `1px solid ${borderColor}`, borderBottom: `6px solid ${borderColor}`, boxShadow: hovered ? '0 2px 6px rgba(34,36,40,0.14)' : 'none', transition: 'box-shadow 0.2s ease' }}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseLeave={() => { setHovered(false); setThumbTooltip(null) }}
       onClick={onViewCall ?? onSelect}
     >
       {/* Card header: icon + category (on hover) + actions */}
@@ -2016,7 +1929,7 @@ function FeedbackCard({
       </p>
       <span
         className="text-[14px] text-[#222428] cursor-pointer hover:underline"
-        onClick={() => setExpanded(v => !v)}
+        onClick={e => { e.stopPropagation(); setExpanded(v => !v) }}
       >
         {expanded ? 'Show less' : 'Show more'}
       </span>
@@ -2026,7 +1939,7 @@ function FeedbackCard({
         {author}
       </p>
 
-      {/* Source + company — smooth slide-in on hover using CSS grid trick */}
+      {/* Source + company + thumbs — smooth slide-in on hover using CSS grid trick */}
       <div
         style={{
           display: 'grid',
@@ -2035,12 +1948,34 @@ function FeedbackCard({
         }}
       >
         <div style={{ overflow: 'hidden' }}>
-          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: 0, gap: 8, height: 24 }}>
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '4px 0 0 0', gap: 8, height: 24, isolation: 'isolate' }}>
             <span style={{ fontSize: 14, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{date}</span>
             {source && <SourceLogoChip source={source} />}
             {companies[0] && (
               <CompanyLogo name={companies[0]} size={24} />
             )}
+            <div className="flex items-center gap-0.5 ml-auto" onClick={e => e.stopPropagation()}>
+              {[
+                { key: 'up', label: 'Relevant', active: thumbsUp, onClick: () => { setThumbsUp(v => !v); setThumbsDown(false) } },
+                { key: 'down', label: 'Irrelevant', active: thumbsDown, onClick: () => { setThumbsDown(v => !v); setThumbsUp(false) } },
+              ].map(({ key, label, active, onClick: handleClick }) => (
+                <button
+                  key={key}
+                  onClick={handleClick}
+                  onMouseEnter={e => {
+                    const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+                    setThumbTooltip({ label, pos: { top: r.top - 4, left: r.left + r.width / 2 } })
+                  }}
+                  onMouseLeave={() => setThumbTooltip(null)}
+                  className="w-6 h-6 flex items-center justify-center rounded transition-colors hover:bg-[#F1F2F5]"
+                  style={{ color: active ? '#222428' : '#aeb2c0' }}
+                >
+                  <span style={{ transform: key === 'down' ? 'rotate(180deg)' : undefined, display: 'inline-flex' }}>
+                    <IconThumbsUp css={{ width: 16, height: 16 }} />
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -2069,6 +2004,18 @@ function FeedbackCard({
         </div>,
         document.body
       )}
+{thumbTooltip && createPortal(
+        <div
+          className="fixed z-[9999] pointer-events-none"
+          style={{ top: thumbTooltip.pos.top, left: thumbTooltip.pos.left, transform: 'translate(-50%, -100%)' }}
+        >
+          <div className="bg-[#2B2D33] text-white text-[12px] leading-none px-2 py-1.5 rounded-md whitespace-nowrap" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+            {thumbTooltip.label}
+          </div>
+        </div>,
+        document.body
+      )}
+
       {tooltipVisible && tooltipPos && createPortal(
         <div
           className="fixed pointer-events-none z-[9999] flex flex-col items-end whitespace-nowrap"

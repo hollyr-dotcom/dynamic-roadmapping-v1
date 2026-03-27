@@ -3,6 +3,13 @@ import type { Priority, SpaceRow, FieldDefinition } from '@spaces/shared'
 import { KanbanColumn } from './KanbanColumn'
 
 const PRIORITY_CONFIG = {
+  now: {
+    label: 'New',
+    columnBg: '#e4f9ff',
+    cardBorder: '#b5ecff',
+    tagBg: '#b5ecff',
+    tagText: '#003d54',
+  },
   triage: {
     label: 'Triage',
     columnBg: '#fff0f0',
@@ -10,29 +17,22 @@ const PRIORITY_CONFIG = {
     tagBg: '#ffc6c6',
     tagText: '#600000',
   },
-  now: {
-    label: 'Now',
-    columnBg: '#e4f9ff',
-    cardBorder: '#b5ecff',
-    tagBg: '#b5ecff',
-    tagText: '#003d54',
-  },
   next: {
-    label: 'Next',
+    label: 'Prioritized',
     columnBg: '#ffeede',
     cardBorder: '#ffc795',
     tagBg: '#ffc795',
     tagText: '#5c3200',
   },
   later: {
-    label: 'Later',
+    label: 'Up next',
     columnBg: '#f3eeff',
     cardBorder: '#d4bbff',
     tagBg: '#d4bbff',
     tagText: '#2d0066',
   },
   icebox: {
-    label: 'Icebox',
+    label: 'Watching',
     columnBg: '#f7f7f7',
     cardBorder: '#dad8d8',
     tagBg: '#dad8d8',
@@ -40,7 +40,7 @@ const PRIORITY_CONFIG = {
   },
 } as const
 
-const DEFAULT_COLUMNS: Priority[] = ['triage', 'now', 'next', 'later', 'icebox']
+const DEFAULT_COLUMNS: Priority[] = ['now', 'triage', 'next', 'later', 'icebox']
 
 interface KanbanBoardProps {
   data: SpaceRow[]

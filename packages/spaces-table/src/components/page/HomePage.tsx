@@ -23,9 +23,9 @@ import {
   IconCard,
   IconEyeOpen,
   IconSquarePencil,
-  IconSocialJira,
   Input,
 } from '@mirohq/design-system'
+import { JiraLogo } from '../JiraLogo'
 
 const imgBoardIconTable = '/images/board-icon-table.svg'
 const imgLogotype = '/images/miro-logotype.svg'
@@ -37,13 +37,13 @@ const imgTeamLogo = '/images/team-logo.png'
 const imgIconPlant = '/images/icon-plant.svg'
 const imgIconPaper = '/images/icon-paper.svg'
 const imgIconCursor = '/images/icon-cursor.svg'
-const imgIconUser = '/images/icon-user.svg'
+const imgIconPeople = '/images/icon-user.svg'
 const imgIconOrgChart = '/images/icon-orgchart.svg'
 const imgShareAvatar = 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop&crop=face'
 const imgMiroTeamLogo = '/images/team-logo.png'
 
 interface HomePageProps {
-  onOpenApp: (importSource?: 'jira' | 'miro' | 'csv') => void
+  onOpenApp: (importSource?: 'jira' | 'miro' | 'csv', activePage?: string) => void
 }
 
 const templates = [
@@ -103,7 +103,7 @@ const boards = [
   { iconImg: imgIconPlant,    name: 'FY25 Product Illustrations...',  modifier: 'Alberta', date: 'Today', space: '',                classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 3 },
   { iconImg: imgIconPaper,    name: 'Design Reviews - FY25 Q4',       modifier: 'Alberta', date: 'Today', space: 'Product Design',   classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
   { iconImg: imgIconCursor,   name: 'User Testing Prep',               modifier: 'Alberta', date: 'Today', space: "Alberta's Space",  classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 1 },
-  { iconImg: imgIconUser,     name: 'Space Overview - Reviews',        modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
+  { iconImg: imgIconPeople,   name: 'Design Review Team Picker',       modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
   { iconImg: imgIconOrgChart, name: 'Design Review Team Picker',       modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
   { iconImg: imgIconOrgChart, name: 'Design Review Team Picker',       modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
 ]
@@ -240,7 +240,13 @@ export function HomePage({ onOpenApp }: HomePageProps) {
 
           {yourSpacesExpanded && (
             <div className="flex flex-col gap-0.5 pl-2 mb-1">
-              {['Project Newton', 'Sync Communication', 'Project Newton'].map((name, i) => (
+              <button
+                onClick={() => onOpenApp(undefined, 'overview')}
+                className="flex items-center px-3 py-2 rounded-lg w-full text-left hover:bg-[#F1F2F5] transition-colors"
+              >
+                <span className="text-[14px] text-[#1c1c1c]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Miro Mirage Roadmap</span>
+              </button>
+              {['Sync Communication', 'Project Newton'].map((name, i) => (
                 <div key={i} className="flex items-center px-3 py-2 rounded-lg w-full text-left">
                   <span className="text-[14px] text-[#1c1c1c]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{name}</span>
                 </div>
@@ -311,7 +317,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 <span className="font-body font-semibold text-[16px] text-[#1a1b1e] leading-none">Import records from</span>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    { icon: <IconSocialJira css={{ width: 20, height: 20 }} />, label: 'Jira', tooltip: 'Import issues and epics from your Jira projects', checked: importJira, toggle: () => { setImportJira(v => !v); setImportTables(false); setImportCsv(false) } },
+                    { icon: <JiraLogo size={20} />, label: 'Jira', tooltip: 'Import issues and epics from your Jira projects', checked: importJira, toggle: () => { setImportJira(v => !v); setImportTables(false); setImportCsv(false) } },
                     { icon: <IconTable css={{ width: 20, height: 20 }} />, label: 'Tables', tooltip: 'Pull in items from your Miro tables', checked: importTables, toggle: () => { setImportTables(v => !v); setImportJira(false); setImportCsv(false) } },
                     { icon: <IconFileSpreadsheet css={{ width: 20, height: 20 }} />, label: 'CSV', tooltip: 'Upload a spreadsheet of work items', checked: importCsv, toggle: () => { setImportCsv(v => !v); setImportJira(false); setImportTables(false) } },
                   ].map(({ icon, label, tooltip, checked, toggle }) => (

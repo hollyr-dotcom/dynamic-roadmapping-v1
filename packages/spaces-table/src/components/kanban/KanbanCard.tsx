@@ -2,6 +2,7 @@ import type { SpaceRow, FieldDefinition } from '@spaces/shared'
 import { Tooltip } from '@mirohq/design-system'
 import { KanbanCardToolbar } from './KanbanCardToolbar'
 import { CompanyLogo } from '../CompanyLogo'
+import { JiraLogo } from '../JiraLogo'
 
 interface KanbanCardProps {
   row: SpaceRow
@@ -13,7 +14,6 @@ interface KanbanCardProps {
   onMoveToRoadmap?: () => void
 }
 
-const JIRA_LOGO = '/images/jira-logo.svg'
 
 function FieldTag({ field, row }: { field: FieldDefinition; row: SpaceRow }) {
   const value = row[field.id as keyof SpaceRow]
@@ -24,7 +24,7 @@ function FieldTag({ field, row }: { field: FieldDefinition; row: SpaceRow }) {
         className="inline-flex items-center gap-1.5 font-body text-[#222428] rounded whitespace-nowrap min-w-0"
         style={{ fontSize: '12px', height: '26px', padding: '4px 8px', backgroundColor: '#F1F2F5', maxWidth: '100%' }}
       >
-        <img src={JIRA_LOGO} alt="Jira" style={{ width: 14, height: 14, flexShrink: 0, objectFit: 'contain' }} />
+        <JiraLogo size={14} />
         <span className="truncate">{String(value)}</span>
       </span>
     )
