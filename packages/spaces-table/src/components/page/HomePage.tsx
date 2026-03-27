@@ -45,7 +45,7 @@ const imgShareAvatar = 'https://www.figma.com/api/mcp/asset/33cf113b-9e21-4dfe-8
 const imgMiroTeamLogo = 'https://www.figma.com/api/mcp/asset/c9119d54-1298-4f33-a414-9b1ce85ffd9c'
 
 interface HomePageProps {
-  onOpenApp: (importSource?: 'jira' | 'miro' | 'csv') => void
+  onOpenApp: (importSource?: 'jira' | 'miro' | 'csv', activePage?: string) => void
 }
 
 const templates = [
@@ -242,7 +242,13 @@ export function HomePage({ onOpenApp }: HomePageProps) {
 
           {yourSpacesExpanded && (
             <div className="flex flex-col gap-0.5 pl-2 mb-1">
-              {['Project Newton', 'Sync Communication', 'Project Newton'].map((name, i) => (
+              <button
+                onClick={() => onOpenApp(undefined, 'overview')}
+                className="flex items-center px-3 py-2 rounded-lg w-full text-left hover:bg-[#F1F2F5] transition-colors"
+              >
+                <span className="text-[14px] text-[#1c1c1c]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Miro Mirage Roadmap</span>
+              </button>
+              {['Sync Communication', 'Project Newton'].map((name, i) => (
                 <div key={i} className="flex items-center px-3 py-2 rounded-lg w-full text-left">
                   <span className="text-[14px] text-[#1c1c1c]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{name}</span>
                 </div>

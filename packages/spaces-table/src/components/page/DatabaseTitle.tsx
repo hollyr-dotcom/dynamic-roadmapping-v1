@@ -25,9 +25,10 @@ interface DatabaseTitleProps {
   onExitCanvas?: () => void
   syncCount?: number
   syncing?: boolean
+  centered?: boolean
 }
 
-export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, variant = 'page', onExitCanvas, syncCount = 0, syncing = false }: DatabaseTitleProps) {
+export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, variant = 'page', onExitCanvas, syncCount = 0, syncing = false, centered = false }: DatabaseTitleProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const measureRef = useRef<HTMLSpanElement>(null)
   const [draft, setDraft] = useState(title)
@@ -79,7 +80,7 @@ export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, v
 
   return (
     <div
-      className={`group/title sticky left-0 z-30 flex items-center gap-1 pb-1 shrink-0 ${variant === 'widget' ? 'px-0' : 'px-14'}`}
+      className={`group/title sticky left-0 z-30 flex items-center gap-1 pb-1 shrink-0 ${variant === 'widget' ? 'px-0' : 'px-14'} ${centered ? 'justify-center' : ''}`}
       style={{ paddingTop: variant === 'widget' ? 0 : '28px', opacity: variant === 'widget' ? opacity : 1 - scrollFade }}
     >
       {/* Hidden span to measure text width */}
