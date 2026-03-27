@@ -569,7 +569,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         }}
       >
       {/* ── Main panel ─── */}
-      <div className="h-full overflow-y-auto panel-scroll flex flex-col gap-2 shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: 8, overflowAnchor: 'none' }}>
+      <div className="h-full overflow-y-auto panel-scroll flex flex-col gap-2 shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 20, paddingRight: selectedLayout !== 'Right' ? 24 : 20, paddingTop: 8, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -777,11 +777,11 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                       </Tooltip>
                     </div>
                   </div>
-                  <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
+                  <div style={{ overflowAnchor: 'none' }} className="flex flex-col px-1">
                     {generateFeedbackCards(row).map((card, i) => {
                       const hidden = dismissedCards.has(i)
                       return (
-                        <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : 24, overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
+                        <div key={i} style={{ maxHeight: hidden ? 0 : 900, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : 24, overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
                           {promptCards.has(i)
                             ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
                             : <FeedbackCard {...card} saved={savedCards.has(i)} onSave={() => setSavedCards(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
@@ -830,11 +830,11 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                       </Tooltip>
                     </div>
                   </div>
-                  <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
+                  <div style={{ overflowAnchor: 'none' }} className="flex flex-col px-1">
                     {generateFeedbackCards(row).map((card, i) => {
                       const hidden = dismissedCards.has(i)
                       return (
-                        <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : (selectedLayout === 'Center' ? 24 : 12), overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
+                        <div key={i} style={{ maxHeight: hidden ? 0 : 900, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : (selectedLayout === 'Center' ? 24 : 12), overflow: 'hidden', padding: hidden ? 0 : '4px 4px 8px 4px', margin: hidden ? 0 : '-4px -4px 16px -4px', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
                           {promptCards.has(i)
                             ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
                             : <FeedbackCard {...card} saved={savedCards.has(i)} onSave={() => setSavedCards(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
@@ -1801,7 +1801,7 @@ function FeedbackCard({
   return (
     <div
       className="w-full rounded-xl flex flex-col gap-2 p-5 cursor-pointer relative"
-      style={{ borderTop: `1px solid ${borderColor}`, borderLeft: `1px solid ${borderColor}`, borderRight: `1px solid ${borderColor}`, borderBottom: `6px solid ${borderColor}` }}
+      style={{ borderTop: `1px solid ${borderColor}`, borderLeft: `1px solid ${borderColor}`, borderRight: `1px solid ${borderColor}`, borderBottom: `6px solid ${borderColor}`, boxShadow: hovered ? '0 2px 6px rgba(34,36,40,0.14)' : 'none', transition: 'box-shadow 0.2s ease' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setThumbTooltip(null) }}
       onClick={onViewCall ?? onSelect}
