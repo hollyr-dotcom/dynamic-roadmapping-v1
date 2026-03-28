@@ -475,7 +475,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       {/* ── Header ──────────────────────────────────────── */}
       <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12 }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <JiraLogo size={18} />
+          {!hideInsightCallout && <JiraLogo size={18} />}
           <p
             className="flex-1 min-w-0 truncate text-[#222428] leading-[1.5]"
             style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: '16px', fontFeatureSettings: "'ss01' 1" }}
@@ -728,32 +728,33 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             </InsightSection>
 
             {/* Top impacted customers */}
-            <InsightSection label="Top impacted customers">
-              <div className="flex flex-wrap gap-2 mt-2">
-                {row.companies.map(name => (
-                  <CompanyLogo key={name} name={name} size={32} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
-                ))}
+            {row.companies && row.companies.length > 0 && (
+              <InsightSection label="Top impacted customers">
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {row.companies.map(name => (
+                    <CompanyLogo key={name} name={name} size={32} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
+                  ))}
+                </div>
+              </InsightSection>
+            )}
+
+            {/* Impact estimates */}
+            <InsightSection label="Impact estimates">
+              <div className="flex flex-col gap-0 w-full">
+                <div className="flex gap-3">
+                  <StatBox value={row.mentions ?? 0} format={n => String(n)} label="Total Mentions" />
+                  <StatBox value={row.customers ?? 0} format={n => n.toLocaleString()} label="Unique Customers" />
+                </div>
+                <div className="flex gap-3">
+                  <StatBox value={row.customers ?? 0} format={n => n.toLocaleString()} label="Total Users" noPadding />
+                  <StatBox value={row.estRevenue ?? 0} format={n => n > 0 ? `$${n}K` : '—'} label="Impacted Customer ARR" noPadding />
+                </div>
               </div>
             </InsightSection>
 
             {selectedLayout === 'Fullscreen' ? (
               /* ── Fullscreen: two-column layout ── */
               <div className="flex gap-8 items-start">
-                {/* Left: sticky metrics */}
-                <div style={{ position: 'sticky', top: 0, width: 360, flexShrink: 0, paddingRight: 48, paddingTop: 8 }}>
-                  <InsightSection label="Impact estimates">
-                    <div className="flex flex-col gap-0 w-full">
-                      <div className="flex gap-3">
-                        <StatBox value={adjMentions} format={n => String(n)} label="Total Mentions" />
-                        <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Unique Customers" />
-                      </div>
-                      <div className="flex gap-3">
-                        <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" noPadding />
-                        <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Impacted Customer ARR" noPadding />
-                      </div>
-                    </div>
-                  </InsightSection>
-                </div>
 
                 {/* Right: feedback cards */}
                 <div className="flex flex-col gap-3 flex-1 min-w-0">
@@ -799,7 +800,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     ) : generateFeedbackCards(row).map((card, i) => {
                       const hidden = dismissedCards.has(i) || (showSavedOnly && !savedCards.has(i))
                       return (
-                        <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : 24, overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
+                        <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : (selectedLayout !== 'Right' ? 24 : 20), overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
                           {promptCards.has(i)
                             ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
                             : <FeedbackCard {...card} saved={savedCards.has(i)} onSave={() => setSavedCards(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
@@ -813,18 +814,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             ) : (
               /* ── Center / Right: single column ── */
               <>
-                <InsightSection label="Impact estimates">
-                  <div className="flex flex-col gap-0 w-full">
-                    <div className="flex gap-3">
-                      <StatBox value={adjMentions} format={n => String(n)} label="Total Mentions" />
-                      <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Unique Customers" />
-                    </div>
-                    <div className="flex gap-3">
-                      <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" noPadding />
-                      <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Impacted Customer ARR" noPadding />
-                    </div>
-                  </div>
-                </InsightSection>
 
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center justify-between">
@@ -869,7 +858,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     ) : generateFeedbackCards(row).map((card, i) => {
                       const hidden = dismissedCards.has(i) || (showSavedOnly && !savedCards.has(i))
                       return (
-                        <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : (selectedLayout === 'Center' ? 24 : 12), overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
+                        <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : (selectedLayout !== 'Right' ? 24 : 20), overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
                           {promptCards.has(i)
                             ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
                             : <FeedbackCard {...card} saved={savedCards.has(i)} onSave={() => setSavedCards(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
@@ -1944,20 +1933,12 @@ function FeedbackCard({
       </p>
 
       {/* Source + company + thumbs — smooth slide-in on hover using CSS grid trick */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateRows: hovered ? '1fr' : '0fr',
-          transition: 'grid-template-rows 0.25s ease',
-        }}
-      >
+      <div style={{ display: 'grid', gridTemplateRows: hovered ? '1fr' : '0fr', transition: 'grid-template-rows 0.25s ease' }}>
         <div style={{ overflow: 'hidden' }}>
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '4px 0 0 0', gap: 8, height: 24, isolation: 'isolate' }}>
             <span style={{ fontSize: 14, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{date}</span>
             {source && <SourceLogoChip source={source} />}
-            {companies[0] && (
-              <CompanyLogo name={companies[0]} size={24} />
-            )}
+            {companies[0] && <CompanyLogo name={companies[0]} size={24} />}
             <div className="flex items-center gap-0.5 ml-auto" onClick={e => e.stopPropagation()}>
               {[
                 { key: 'up', label: 'Relevant', active: thumbsUp, onClick: () => { setThumbsUp(v => !v); setThumbsDown(false) } },
@@ -1983,6 +1964,7 @@ function FeedbackCard({
           </div>
         </div>
       </div>
+
       {menuOpen && menuPos && createPortal(
         <div
           ref={menuRef}

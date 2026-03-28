@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { SpaceRow } from '@spaces/shared'
 import {
   IconChartLine,
   IconChartProgress,
@@ -41,6 +42,14 @@ function confidenceBorderColor(confidence: string): string {
   return '#F8D3AF'                 // orange — low
 }
 
+function confidenceTagStyle(confidence: string): { bg: string; text: string } {
+  const pct = parseInt(confidence)
+  if (pct >= 95) return { bg: '#DCFFF1', text: '#1C6B4A' } // green subtle
+  if (pct >= 88) return { bg: '#C6DCFF', text: '#0055CC' } // blue subtle
+  if (pct >= 80) return { bg: '#FFF0B3', text: '#7F5F01' } // yellow subtle
+  return { bg: '#FFE2BD', text: '#A54800' }                 // orange subtle
+}
+
 function TagIcon({ label }: { label: string }) {
   if (label === 'New') return <GiftIcon />
   if (label === 'Customer') return <IconSmileyChat css={{ width: 13, height: 13 }} />
@@ -52,14 +61,20 @@ function TagIcon({ label }: { label: string }) {
 }
 
 export const CARD_SUMMARIES: Record<string, string> = {
-  '1': '47 customers requested Jira custom fields in Q3, up 65% from the previous quarter. Feedback spans mid-market and enterprise accounts, with multiple sales calls flagging it as a direct evaluation criterion. Competitors lacking this capability are being eliminated at the shortlisting stage. The window for differentiation is narrowing as two competitors have this on their public roadmap.',
-  '2': 'Active usage dropped 22% over 90 days despite a 14% increase in new signups — a clear signal that what we\'re shipping isn\'t aligning with how teams actually work. One feature stands out: it accounts for 38% of retained revenue and shows consistent week-over-week engagement. The evidence points to a need to double down on this pattern rather than continuing to fund adjacent bets with lower adoption.',
-  '3': 'Facilitators across 60+ customer interviews cite AI sticky note clustering as the single highest time-saver we\'ve shipped — averaging over 40 minutes saved per session. The signal is particularly strong in retro and workshop workflows. FigJam shipped a near-identical feature last sprint, which means the competitive advantage is time-limited. Customers who have used both rate ours higher on accuracy, giving us a narrow window to expand and lock in preference.',
-  '4': '12 enterprise accounts have explicitly named canvas lag as the primary blocker to broader team rollout. The issue surfaces in 34% of churn interviews this quarter — more than any other single factor. Performance degradation begins at 40–50 objects on a board and becomes critical above 80. Three Tier-1 accounts are on watch status, representing a combined $2.1M ARR at risk if the issue isn\'t addressed before their renewal window.',
-  '5': 'Teams using async video on sticky notes are reporting 30% fewer sync meetings, the strongest meeting-reduction signal we\'ve seen from any feature. But 18 open support threads show the same users frustrated that the capability doesn\'t extend to shapes, connectors, or frames. The pattern is clear: the value is proven, and users are trying to expand it themselves via workarounds. Shipping native support across all object types is a direct path to deepening the existing behaviour.',
+  '1': 'This is the highest-volume theme with ~793 projected monthly mentions in March. Customers report board-wide lag, stuck loading spinners, frozen editing, and browser tab crashes when tables exceed 100–300 rows. This directly correlates with the existing roadmap item "I can work easily with large tables without significantly degrading the performance of my browser" (P0) and the item about going beyond 1000 rows and 50 fields. The volume and severity of this feedback — including total browser crashes and lost work — suggests this should remain a top priority and may need acceleration. The issue is compounded during collaborative sessions and large paste operations.',
+  '2': 'Broken paste from Excel, Google Sheets, CSV, Word, and Confluence is a massive pain point with projected ~652 monthly mentions. The most critical sub-issue is that large pastes are silently truncated to 5 rows, forcing users to manually add rows and re-paste in chunks. Beyond truncation, data collapses into single cells, formatting is stripped, and rich text (bullets, links, bold) is flattened. No current roadmap item addresses paste/import fidelity. This is a foundational gap — customers cannot reliably get data into tables, which undermines adoption of all downstream table features.',
+  '3': 'Cell formatting limitations are the highest-volume theme at ~874 projected monthly mentions in March. Customers consistently ask for bullets/numbered lists, bold text, and clickable links within cells. Current cells are essentially plain text, which breaks use cases like mini-specs, acceptance criteria, meeting notes, and workshop content. This is not covered by any existing roadmap item. The demand spans diverse user personas (PMs, facilitators, planners) and is strongly tied to paste fidelity issues — even if paste is fixed, cells need to support the rich content.',
+  '4': 'Users are reporting that AI-generated tables appear instantly and unexpectedly overwrite their existing content without warning or preview. The lack of opt-in controls means mistakes are hard to reverse, eroding trust in the AI feature. Feedback consistently asks for a suggestion-only mode — where the AI proposes a table structure before inserting it — with a visible preview and explicit confirmation step before any changes are applied.',
 }
 
 export { CARD_SUMMARIES as OVERVIEW_CARD_SUMMARIES }
+
+export const OVERVIEW_ROWS: Record<string, SpaceRow> = {
+  '1': { id: 'ov1', title: 'Accelerate large-table performance improvements — boards become unusable at ~100+ rows', description: 'Customers report board-wide lag, stuck loading spinners, frozen editing, and browser tab crashes when tables exceed 100–300 rows.', mentions: 793, customers: 284, estRevenue: 4200, companies: ['Figma', 'Atlassian', 'Notion', 'Stripe'], priority: 'now' },
+  '2': { id: 'ov2', title: 'Fix paste and CSV import fidelity — especially the 5-row truncation bug', description: 'Large pastes are silently truncated to 5 rows, forcing users to manually add rows and re-paste in chunks. Data collapses into single cells and formatting is stripped.', mentions: 652, customers: 198, estRevenue: 3100, companies: ['Google', 'Dropbox', 'Asana', 'Linear'], priority: 'now' },
+  '3': { id: 'ov3', title: 'Add rich text editing inside table cells (bullets, bold, links)', description: 'Current cells are essentially plain text, breaking use cases like mini-specs, acceptance criteria, meeting notes, and workshop content.', mentions: 874, customers: 312, estRevenue: 3800, companies: ['Miro', 'Notion', 'Atlassian', 'Figma'], priority: 'now' },
+  '4': { id: 'ov4', title: 'Rein in AI table creation — make it suggestion-only with preview and opt-in controls', description: 'AI-generated tables appear instantly and unexpectedly overwrite existing content without warning or preview, eroding trust in the AI feature.', mentions: 241, customers: 89, estRevenue: 1900, companies: ['Slack', 'Airbnb', 'Google', 'Spotify'], priority: 'now' },
+}
 
 type CardIcon = 'chart-line' | 'chart-progress' | 'sparks' | 'lightning' | 'chat'
 
@@ -69,81 +84,48 @@ const CARDS: {
   tags: string[]
   title: string
   description: string
-  arr: string
   confidence: string
-  confidenceDelta: string
-  likes: number
-  comments?: number
   primaryAction: string
   secondaryAction: string
 }[] = [
   {
     id: '1',
-    icon: 'chart-line',
-    tags: ['New', 'Customer', 'Market'],
-    title: 'Jira custom fields demand surged +65% this quarter',
-    description: '47 customers requested this in Q3 alone, up from 28 the quarter before. Competitors without this feature are losing mid-market deals at the evaluation stage.',
-    arr: '$2.3 Million ARR',
-    confidence: '99%',
-    confidenceDelta: '+1%',
-    likes: 1,
-    comments: 1,
-    primaryAction: 'Add to roadmap',
+    icon: 'lightning',
+    tags: ['Urgent', 'Customer'],
+    title: 'Accelerate large-table performance improvements — boards become unusable at ~100+ rows',
+    description: '~793 projected monthly mentions make this the highest-volume theme in March. It correlates directly to an existing P0 roadmap item that may need to be pulled forward.',
+    confidence: '90%',
+    primaryAction: 'Reprioritize',
     secondaryAction: 'Dive deeper',
   },
   {
     id: '2',
     icon: 'chart-progress',
     tags: ['New', 'Customer'],
-    title: 'Adoption plateau signals mismatch between vision and usage',
-    description: 'Active usage dropped 22% over 90 days despite growing signups, pointing to a gap between what we\'re building and how teams actually work. The one feature bucking this trend accounts for 38% of retained revenue.',
-    arr: '$2.3 Million ARR',
+    title: 'Fix paste and CSV import fidelity — especially the 5-row truncation bug',
+    description: 'Paste from Excel, Google Sheets, CSV, and Confluence is broken for ~652 projected monthly mentions. This foundational gap isn\'t covered by any existing roadmap item.',
     confidence: '88%',
-    confidenceDelta: '+1%',
-    likes: 3,
-    primaryAction: 'Reprioritize',
+    primaryAction: 'Add to roadmap',
     secondaryAction: 'Dive deeper',
   },
   {
     id: '3',
-    icon: 'sparks',
-    tags: ['Urgent', 'Customer', 'Market'],
-    title: 'AI sticky note clustering saves facilitators 40+ minutes per session',
-    description: 'Facilitators running retros and workshops report saving over 40 minutes per session, the highest time-saving of any AI feature we\'ve shipped. FigJam launched a near-identical feature last sprint, narrowing our window.',
-    arr: '$4.1 Million ARR',
-    confidence: '94%',
-    confidenceDelta: '+3%',
-    likes: 7,
-    comments: 3,
+    icon: 'chart-line',
+    tags: ['Customer', 'Market'],
+    title: 'Add rich text editing inside table cells (bullets, bold, links)',
+    description: '~874 projected monthly mentions make rich text the single highest-volume theme in March. Current cells are plain text only, breaking use cases like mini-specs, meeting notes, and workshop content.',
+    confidence: '85%',
     primaryAction: 'Add to roadmap',
     secondaryAction: 'Dive deeper',
   },
   {
     id: '4',
-    icon: 'lightning',
-    tags: ['Strengthening', 'Customer'],
-    title: 'Real-time cursor lag on boards with 50+ objects drives session abandonment',
-    description: '12 enterprise accounts named canvas lag as the primary blocker to rolling out across their full team. It appeared in 34% of churn interviews this quarter — the highest of any single issue.',
-    arr: '$3.6 Million ARR',
-    confidence: '91%',
-    confidenceDelta: '+2%',
-    likes: 5,
-    comments: 2,
-    primaryAction: 'Review evidence',
-    secondaryAction: 'Dive deeper',
-  },
-  {
-    id: '5',
-    icon: 'chat',
+    icon: 'sparks',
     tags: ['Urgent', 'Customer'],
-    title: 'Async video comments reduce meeting load — users want it on every object',
-    description: 'Teams using async video on sticky notes report 30% fewer sync meetings, but the same users are frustrated it doesn\'t work on shapes, connectors, or frames. This gap is appearing in 18 open support threads.',
-    arr: '$2.7 Million ARR',
-    confidence: '88%',
-    confidenceDelta: '+4%',
-    likes: 9,
-    comments: 5,
-    primaryAction: 'Add to roadmap',
+    title: 'Rein in AI table creation — make it suggestion-only with preview and opt-in controls',
+    description: 'AI-generated tables overwrite existing content with no preview or confirmation, and the pattern is emerging across multiple enterprise accounts. More evidence needed before scoping a fix.',
+    confidence: '83%',
+    primaryAction: 'Review evidence',
     secondaryAction: 'Dive deeper',
   },
 ]
@@ -177,8 +159,8 @@ export function OverviewPage({ onDiveDeeper }: { onDiveDeeper?: (cardId: string)
                   <CardIcon type={card.icon} />
                 </div>
                 <span
-                  className="flex items-center gap-1 py-1 px-2.5 rounded-full text-[12px] text-[#222428]"
-                  style={{ backgroundColor: '#F1F2F5', fontFamily: 'Open Sans, sans-serif' }}
+                  className="flex items-center gap-1 py-1 px-2.5 rounded-full text-[12px] font-medium"
+                  style={{ backgroundColor: confidenceTagStyle(card.confidence).bg, color: confidenceTagStyle(card.confidence).text, fontFamily: 'Open Sans, sans-serif' }}
                 >
                   {card.confidence} confidence
                 </span>
@@ -197,7 +179,7 @@ export function OverviewPage({ onDiveDeeper }: { onDiveDeeper?: (cardId: string)
             </h3>
 
             {/* Description */}
-            <p className="text-[14px] leading-relaxed line-clamp-2" style={{ fontFamily: 'Open Sans, sans-serif', color: '#656b81' }}>
+            <p className="text-[14px] leading-relaxed" style={{ fontFamily: 'Open Sans, sans-serif', color: '#656b81' }}>
               {card.description}
             </p>
 
