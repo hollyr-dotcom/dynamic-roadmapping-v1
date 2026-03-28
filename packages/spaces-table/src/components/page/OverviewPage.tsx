@@ -78,10 +78,20 @@ export const OVERVIEW_ROWS: Record<string, SpaceRow> = {
 
 type CardIcon = 'chart-line' | 'chart-progress' | 'sparks' | 'lightning' | 'chat'
 
+type MatchTag = 'Demand change' | 'Priority mismatch' | 'Unmatched demand' | 'New evidence'
+
+const MATCH_TAG_STYLE: Record<MatchTag, { bg: string; text: string }> = {
+  'Demand change':    { bg: '#F8D3AF', text: '#A54800' },
+  'Priority mismatch': { bg: '#FFD8F4', text: '#7B2F6E' },
+  'Unmatched demand': { bg: '#DEDAFF', text: '#3D25A0' },
+  'New evidence':     { bg: '#ADF0C7', text: '#1C6B4A' },
+}
+
 const CARDS: {
   id: string
   icon: CardIcon
   tags: string[]
+  matchTag: MatchTag
   title: string
   description: string
   confidence: string
@@ -92,6 +102,7 @@ const CARDS: {
     id: '1',
     icon: 'lightning',
     tags: ['Urgent', 'Customer'],
+    matchTag: 'Priority mismatch',
     title: 'Accelerate large-table performance improvements — boards become unusable at ~100+ rows',
     description: '~793 projected monthly mentions make this the highest-volume theme in March. It correlates directly to an existing P0 roadmap item that may need to be pulled forward.',
     confidence: '90%',
@@ -102,6 +113,7 @@ const CARDS: {
     id: '2',
     icon: 'chart-progress',
     tags: ['New', 'Customer'],
+    matchTag: 'Unmatched demand',
     title: 'Fix paste and CSV import fidelity — especially the 5-row truncation bug',
     description: 'Paste from Excel, Google Sheets, CSV, and Confluence is broken for ~652 projected monthly mentions. This foundational gap isn\'t covered by any existing roadmap item.',
     confidence: '88%',
@@ -112,6 +124,7 @@ const CARDS: {
     id: '3',
     icon: 'chart-line',
     tags: ['Customer', 'Market'],
+    matchTag: 'Unmatched demand',
     title: 'Add rich text editing inside table cells (bullets, bold, links)',
     description: '~874 projected monthly mentions make rich text the single highest-volume theme in March. Current cells are plain text only, breaking use cases like mini-specs, meeting notes, and workshop content.',
     confidence: '85%',
@@ -122,6 +135,7 @@ const CARDS: {
     id: '4',
     icon: 'sparks',
     tags: ['Urgent', 'Customer'],
+    matchTag: 'New evidence',
     title: 'Rein in AI table creation — make it suggestion-only with preview and opt-in controls',
     description: 'AI-generated tables overwrite existing content with no preview or confirmation, and the pattern is emerging across multiple enterprise accounts. More evidence needed before scoping a fix.',
     confidence: '83%',
@@ -140,7 +154,7 @@ function CardIcon({ type }: { type: CardIcon }) {
   return null
 }
 
-export function OverviewPage({ onDiveDeeper }: { onDiveDeeper?: (cardId: string) => void }) {
+export function OverviewPage({ onDiveDeeper, onAddToRoadmap }: { onDiveDeeper?: (cardId: string) => void; onAddToRoadmap?: (cardId: string) => void }) {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
 
   return (
@@ -152,18 +166,26 @@ export function OverviewPage({ onDiveDeeper }: { onDiveDeeper?: (cardId: string)
           style={{ border: '0.5px solid #e0e2e8', paddingBottom: 80 }}
         >
           <div className="p-6 flex flex-col gap-3">
-            {/* Icon + confidence + close row */}
+            {/* Icon + tags + close row */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-6">
                 <div className="flex items-center justify-center shrink-0" style={{ color: '#222428' }}>
                   <CardIcon type={card.icon} />
                 </div>
-                <span
-                  className="flex items-center gap-1 py-1 px-2.5 rounded-full text-[12px] font-medium"
-                  style={{ backgroundColor: confidenceTagStyle(card.confidence).bg, color: confidenceTagStyle(card.confidence).text, fontFamily: 'Open Sans, sans-serif' }}
-                >
-                  {card.confidence} confidence
-                </span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span
+                    className="flex items-center py-1 px-2.5 rounded-full text-[14px] font-bold"
+                    style={{ backgroundColor: MATCH_TAG_STYLE[card.matchTag].bg, color: MATCH_TAG_STYLE[card.matchTag].text, fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}
+                  >
+                    {card.matchTag}
+                  </span>
+                  <span
+                    className="flex items-center py-1 px-2.5 rounded-full text-[14px] font-bold"
+                    style={{ backgroundColor: confidenceTagStyle(card.confidence).bg, color: confidenceTagStyle(card.confidence).text, fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}
+                  >
+                    {card.confidence} confidence
+                  </span>
+                </div>
               </div>
               <button
                 onClick={() => setDismissed(prev => new Set(prev).add(card.id))}
@@ -188,6 +210,7 @@ export function OverviewPage({ onDiveDeeper }: { onDiveDeeper?: (cardId: string)
           {/* Hover-reveal actions */}
           <div className="absolute bottom-5 left-6 flex items-center gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-[transform,opacity] duration-300 ease-out">
             <button
+              onClick={() => { if (card.primaryAction === 'Add to roadmap') { onAddToRoadmap?.(card.id); setDismissed(prev => new Set(prev).add(card.id)) } }}
               className="h-9 px-5 rounded-[18px] text-[13px] font-medium text-white active:scale-[0.97] transition-transform hover:brightness-110"
               style={{ backgroundColor: '#1a1b1e', boxShadow: '0px 12px 32px rgba(34,36,40,0.2), 0px 0px 8px rgba(34,36,40,0.06)', fontFamily: 'Open Sans, sans-serif' }}
             >
