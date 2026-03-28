@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { SpaceRow } from '@spaces/shared'
+import { Chip } from '@mirohq/design-system'
 import {
   IconChartLine,
   IconChartProgress,
@@ -173,18 +174,8 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap }: { onDiveDeeper?: 
                   <CardIcon type={card.icon} />
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span
-                    className="flex items-center py-1 px-2.5 rounded-full text-[14px] font-bold"
-                    style={{ backgroundColor: MATCH_TAG_STYLE[card.matchTag].bg, color: MATCH_TAG_STYLE[card.matchTag].text, fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}
-                  >
-                    {card.matchTag}
-                  </span>
-                  <span
-                    className="flex items-center py-1 px-2.5 rounded-full text-[14px] font-bold"
-                    style={{ backgroundColor: confidenceTagStyle(card.confidence).bg, color: confidenceTagStyle(card.confidence).text, fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}
-                  >
-                    {card.confidence} confidence
-                  </span>
+                  <Chip removable={false} css={{ backgroundColor: MATCH_TAG_STYLE[card.matchTag].bg, color: MATCH_TAG_STYLE[card.matchTag].text, fontWeight: 700 }}>{card.matchTag}</Chip>
+                  <Chip removable={false} css={{ backgroundColor: confidenceTagStyle(card.confidence).bg, color: confidenceTagStyle(card.confidence).text, fontWeight: 700 }}>{card.confidence} confidence</Chip>
                 </div>
               </div>
               <button
