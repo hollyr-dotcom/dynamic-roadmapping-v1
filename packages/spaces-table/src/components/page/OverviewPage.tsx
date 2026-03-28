@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { SpaceRow } from '@spaces/shared'
-import { Chip } from '@mirohq/design-system'
+import { Button, Chip, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard } from '@mirohq/design-system'
 import {
   IconChartLine,
   IconChartProgress,
@@ -12,6 +12,10 @@ import {
   IconArrowDown,
   IconExclamationPointCircle,
   IconCross,
+  IconPlus,
+  IconTimelineFormat,
+  IconEyeOpen,
+  IconArrowRight,
 } from '@mirohq/design-system'
 
 const TAG_BG: Record<string, string> = {
@@ -164,7 +168,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap }: { onDiveDeeper?: 
         <div
           key={card.id}
           className="group relative rounded-[24px] bg-white overflow-hidden transition-shadow duration-200 hover:shadow-[0_4px_24px_rgba(34,36,40,0.10)]"
-          style={{ border: '0.5px solid #e0e2e8', paddingBottom: 80 }}
+          style={{ borderTop: `1px solid ${MATCH_TAG_STYLE[card.matchTag].bg}`, borderLeft: `1px solid ${MATCH_TAG_STYLE[card.matchTag].bg}`, borderRight: `1px solid ${MATCH_TAG_STYLE[card.matchTag].bg}`, borderBottom: `6px solid ${MATCH_TAG_STYLE[card.matchTag].bg}`, paddingBottom: 80 }}
         >
           <div className="p-6 flex flex-col gap-3">
             {/* Icon + tags + close row */}
@@ -178,12 +182,31 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap }: { onDiveDeeper?: 
                   <Chip removable={false} css={{ backgroundColor: confidenceTagStyle(card.confidence).bg, color: confidenceTagStyle(card.confidence).text, fontWeight: 700 }}>{card.confidence} confidence</Chip>
                 </div>
               </div>
-              <button
-                onClick={() => setDismissed(prev => new Set(prev).add(card.id))}
-                className="w-7 h-7 flex items-center justify-center rounded-full text-[#9da3b4] hover:bg-[#F1F2F5] hover:text-[#222428] transition-colors"
-              >
-                <IconCross size="small" />
-              </button>
+              <div className="flex items-center gap-1">
+                <DropdownMenu>
+                  <DropdownMenu.Trigger asChild>
+                    <button className="w-7 h-7 flex items-center justify-center rounded-full text-[#9da3b4] hover:bg-[#F1F2F5] hover:text-[#222428] transition-colors">
+                      <IconDotsThreeVertical size="small" />
+                    </button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Content>
+                    <DropdownMenu.Item onSelect={() => {}}>
+                      <DropdownMenu.IconSlot><IconSquaresTwoOverlap /></DropdownMenu.IconSlot>
+                      Copy
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item onSelect={() => {}}>
+                      <DropdownMenu.IconSlot><IconBoard /></DropdownMenu.IconSlot>
+                      Add to board
+                    </DropdownMenu.Item>
+                  </DropdownMenu.Content>
+                </DropdownMenu>
+                <button
+                  onClick={() => setDismissed(prev => new Set(prev).add(card.id))}
+                  className="w-7 h-7 flex items-center justify-center rounded-full text-[#9da3b4] hover:bg-[#F1F2F5] hover:text-[#222428] transition-colors"
+                >
+                  <IconCross size="small" />
+                </button>
+              </div>
             </div>
 
             {/* Title */}
@@ -200,20 +223,23 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap }: { onDiveDeeper?: 
 
           {/* Hover-reveal actions */}
           <div className="absolute bottom-5 left-6 flex items-center gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-[transform,opacity] duration-300 ease-out">
-            <button
-              onClick={() => { if (card.primaryAction === 'Add to roadmap') { onAddToRoadmap?.(card.id); setDismissed(prev => new Set(prev).add(card.id)) } }}
-              className="h-9 px-5 rounded-[18px] text-[13px] font-medium text-white active:scale-[0.97] transition-transform hover:brightness-110"
-              style={{ backgroundColor: '#1a1b1e', boxShadow: '0px 12px 32px rgba(34,36,40,0.2), 0px 0px 8px rgba(34,36,40,0.06)', fontFamily: 'Open Sans, sans-serif' }}
+            <Button
+              variant="primary"
+              size="medium"
+              onPress={() => { if (card.primaryAction === 'Add to roadmap') { onAddToRoadmap?.(card.id); setDismissed(prev => new Set(prev).add(card.id)) } }}
             >
-              {card.primaryAction}
-            </button>
-            <button
-              onClick={() => onDiveDeeper?.(card.id)}
-              className="h-9 px-5 rounded-[18px] text-[13px] font-medium text-[#374151] border border-[#e0e2e8] bg-white hover:bg-[#f5f5f3] active:scale-[0.97] transition-[transform,background-color]"
-              style={{ fontFamily: 'Open Sans, sans-serif' }}
+              <Button.IconSlot>
+                {card.primaryAction === 'Add to roadmap' ? <IconPlus /> : card.primaryAction === 'Reprioritize' ? <IconTimelineFormat /> : <IconEyeOpen />}
+              </Button.IconSlot>
+              <Button.Label>{card.primaryAction}</Button.Label>
+            </Button>
+            <Button
+              variant="secondary"
+              size="medium"
+              onPress={() => onDiveDeeper?.(card.id)}
             >
-              {card.secondaryAction}
-            </button>
+              <Button.Label>{card.secondaryAction}</Button.Label>
+            </Button>
           </div>
         </div>
       ))}
