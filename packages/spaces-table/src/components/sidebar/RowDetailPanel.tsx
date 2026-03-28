@@ -777,21 +777,10 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                         </Tooltip.Trigger>
                         <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Filter</Tooltip.Content></Tooltip.Portal>
                       </Tooltip>
-                      <Tooltip>
-                        <Tooltip.Trigger asChild>
-                          <button onClick={() => setShowSavedOnly(v => !v)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F1F2F5] transition-colors" style={{ color: '#222428', background: showSavedOnly ? '#F1F2F5' : undefined }}>
-                            {showSavedOnly
-                              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3h14a1 1 0 0 1 1 1v17.5a.5.5 0 0 1-.8.4L12 17.333 4.8 21.9a.5.5 0 0 1-.8-.4V4a1 1 0 0 1 1-1Z"/></svg>
-                              : <IconBookmark size="small" />
-                            }
-                          </button>
-                        </Tooltip.Trigger>
-                        <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Saved</Tooltip.Content></Tooltip.Portal>
-                      </Tooltip>
                     </div>
                   </div>
                   <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
-                    {showSavedOnly && savedCards.size === 0 ? (
+                    {false ? (
                       <div className="flex items-center justify-center" style={{ paddingTop: 48, paddingBottom: 48 }}>
                         <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center' }}>
                           Save feedback cards to view them here.
@@ -800,7 +789,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     ) : generateFeedbackCards(row).map((card, i) => {
                       const hidden = dismissedCards.has(i) || (showSavedOnly && !savedCards.has(i))
                       return (
-                        <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : (selectedLayout !== 'Right' ? 24 : 20), overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
+                        <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : (selectedLayout !== 'Right' ? 24 : 20), overflow: hidden ? 'hidden' : 'visible', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
                           {promptCards.has(i)
                             ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
                             : <FeedbackCard {...card} saved={savedCards.has(i)} onSave={() => setSavedCards(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
@@ -835,21 +824,10 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                         </Tooltip.Trigger>
                         <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Filter</Tooltip.Content></Tooltip.Portal>
                       </Tooltip>
-                      <Tooltip>
-                        <Tooltip.Trigger asChild>
-                          <button onClick={() => setShowSavedOnly(v => !v)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F1F2F5] transition-colors" style={{ color: '#222428', background: showSavedOnly ? '#F1F2F5' : undefined }}>
-                            {showSavedOnly
-                              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3h14a1 1 0 0 1 1 1v17.5a.5.5 0 0 1-.8.4L12 17.333 4.8 21.9a.5.5 0 0 1-.8-.4V4a1 1 0 0 1 1-1Z"/></svg>
-                              : <IconBookmark size="small" />
-                            }
-                          </button>
-                        </Tooltip.Trigger>
-                        <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Saved</Tooltip.Content></Tooltip.Portal>
-                      </Tooltip>
                     </div>
                   </div>
                   <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
-                    {showSavedOnly && savedCards.size === 0 ? (
+                    {false ? (
                       <div className="flex items-center justify-center" style={{ paddingTop: 48, paddingBottom: 48 }}>
                         <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center' }}>
                           Save feedback cards to view them here.
@@ -858,7 +836,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     ) : generateFeedbackCards(row).map((card, i) => {
                       const hidden = dismissedCards.has(i) || (showSavedOnly && !savedCards.has(i))
                       return (
-                        <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : (selectedLayout !== 'Right' ? 24 : 20), overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
+                        <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : (selectedLayout !== 'Right' ? 24 : 20), overflow: hidden ? 'hidden' : 'visible', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
                           {promptCards.has(i)
                             ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
                             : <FeedbackCard {...card} saved={savedCards.has(i)} onSave={() => setSavedCards(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
@@ -1825,7 +1803,7 @@ function FeedbackCard({
   return (
     <div
       className="w-full rounded-xl flex flex-col gap-2 p-5 cursor-pointer relative"
-      style={{ borderTop: `1px solid ${borderColor}`, borderLeft: `1px solid ${borderColor}`, borderRight: `1px solid ${borderColor}`, borderBottom: `6px solid ${borderColor}`, boxShadow: hovered ? '0 2px 6px rgba(34,36,40,0.14)' : 'none', transition: 'box-shadow 0.2s ease' }}
+      style={{ border: `2px solid ${borderColor}`, boxShadow: hovered ? '0 8px 24px rgba(34,36,40,0.08)' : 'none', transition: 'box-shadow 0.2s ease' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setThumbTooltip(null) }}
       onClick={onViewCall ?? onSelect}
@@ -1972,7 +1950,6 @@ function FeedbackCard({
           style={{ top: menuPos.top, right: menuPos.right, width: 224, boxShadow: '0px 2px 8px rgba(34,36,40,0.12), 0px 0px 12px rgba(34,36,40,0.04)' }}
         >
           {[
-            { icon: <IconBookmark size="small" />, label: saved ? 'Unsave' : 'Save', onClick: () => { onSave?.(); setMenuOpen(false) } },
             { icon: <IconBoard size="small" />, label: 'Add to board', onClick: () => { onAddToBoard?.(); setMenuOpen(false) } },
             { icon: <IconSquaresTwoOverlap size="small" />, label: 'Copy', onClick: () => setMenuOpen(false) },
             { icon: <IconDocFormat size="small" />, label: 'View in transcript', onClick: () => setMenuOpen(false) },

@@ -87,8 +87,8 @@ type MatchTag = 'Demand change' | 'Priority mismatch' | 'Unmatched demand' | 'Ne
 
 const MATCH_TAG_STYLE: Record<MatchTag, { bg: string; text: string }> = {
   'Demand change':    { bg: '#F8D3AF', text: '#A54800' },
-  'Priority mismatch': { bg: '#FFD8F4', text: '#7B2F6E' },
-  'Unmatched demand': { bg: '#DEDAFF', text: '#3D25A0' },
+  'Priority mismatch': { bg: '#FBBEEA', text: '#7B2F6E' },
+  'Unmatched demand': { bg: '#d4bbff', text: '#3D25A0' },
   'New evidence':     { bg: '#ADF0C7', text: '#1C6B4A' },
 }
 
@@ -168,7 +168,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap }: { onDiveDeeper?: 
         <div
           key={card.id}
           className="group relative rounded-[24px] bg-white overflow-hidden transition-shadow duration-200 hover:shadow-[0_4px_24px_rgba(34,36,40,0.10)]"
-          style={{ borderTop: `1px solid ${MATCH_TAG_STYLE[card.matchTag].bg}`, borderLeft: `1px solid ${MATCH_TAG_STYLE[card.matchTag].bg}`, borderRight: `1px solid ${MATCH_TAG_STYLE[card.matchTag].bg}`, borderBottom: `6px solid ${MATCH_TAG_STYLE[card.matchTag].bg}`, paddingBottom: 80 }}
+          style={{ border: '0.5px solid #e0e2e8', paddingBottom: 80 }}
         >
           <div className="p-6 flex flex-col gap-3">
             {/* Icon + tags + close row */}

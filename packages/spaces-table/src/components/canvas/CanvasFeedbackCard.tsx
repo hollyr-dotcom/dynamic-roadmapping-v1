@@ -244,7 +244,7 @@ export function CanvasFeedbackCard({
           /* Classic feedback card style */
           <div
             className="bg-white rounded-xl flex flex-col gap-2 p-5"
-            style={{ border: `2px solid ${data.borderColor}`, borderBottomWidth: 6, fontFamily: 'Open Sans, sans-serif', position: 'relative' }}
+            style={{ border: `2px solid ${data.borderColor}`, fontFamily: 'Open Sans, sans-serif', position: 'relative' }}
           >
             <div className="flex items-start gap-2">
               {data.borderColor === '#d4bbff' && (
