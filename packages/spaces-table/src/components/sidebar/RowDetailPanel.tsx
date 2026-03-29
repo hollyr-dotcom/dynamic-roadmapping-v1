@@ -479,9 +479,9 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           <p
             className="flex-1 min-w-0 truncate text-[#222428] leading-[1.5]"
             style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: '16px', fontFeatureSettings: "'ss01' 1" }}
-            title={row.title}
+            title={hideInsightCallout ? row.title : (row.jiraKey ?? row.title)}
           >
-            {row.title}
+            {hideInsightCallout ? row.title : (row.jiraKey ?? row.title)}
           </p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
@@ -1803,7 +1803,7 @@ function FeedbackCard({
   return (
     <div
       className="w-full rounded-xl flex flex-col gap-2 p-5 cursor-pointer relative"
-      style={{ border: `2px solid ${borderColor}`, boxShadow: hovered ? '0 8px 24px rgba(34,36,40,0.08)' : 'none', transition: 'box-shadow 0.2s ease' }}
+      style={{ border: `1px solid ${borderColor}`, boxShadow: hovered ? '0 8px 24px rgba(34,36,40,0.08)' : 'none', transition: 'box-shadow 0.2s ease' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setThumbTooltip(null) }}
       onClick={onViewCall ?? onSelect}
@@ -1818,7 +1818,7 @@ function FeedbackCard({
           borderColor === '#D1F09F' ? { bg: '#EAFAEA', text: '#3C3F4A' } :
           borderColor === '#d4bbff' ? { bg: '#EFE9FF', text: '#3C3F4A' } :
           { bg: '#FFF0E0', text: '#3C3F4A' }
-        const iconSize = category === 'User Problem' ? 30 : 26
+        const iconSize = category === 'User Problem' ? 36 : 28
         return (
       <div className="flex items-start gap-2">
         <span style={{
@@ -1840,7 +1840,11 @@ function FeedbackCard({
           transition: 'width 0.25s ease, padding 0.25s ease, gap 0.25s ease',
         }}>
 
-          <Icon css={{ width: iconSize, height: iconSize, flexShrink: 0, color: '#3C3F4A' }} />
+          <div style={{ width: iconSize, height: iconSize, flexShrink: 0, overflow: 'hidden' }}>
+            <div style={{ transform: `scale(${iconSize / 24})`, transformOrigin: '0 0', width: 24, height: 24 }}>
+              <Icon css={{ color: '#3C3F4A' }} />
+            </div>
+          </div>
           <span style={{
             maxWidth: hovered ? 120 : 0,
             opacity: hovered ? 1 : 0,
