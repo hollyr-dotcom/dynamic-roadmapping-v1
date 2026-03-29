@@ -88,8 +88,8 @@ type MatchTag = 'Demand change' | 'Priority mismatch' | 'Unmatched demand' | 'Ne
 const MATCH_TAG_STYLE: Record<MatchTag, { bg: string; text: string }> = {
   'Demand change':    { bg: '#F8D3AF', text: '#A54800' },
   'Priority mismatch': { bg: '#FBBEEA', text: '#7B2F6E' },
-  'Unmatched demand': { bg: '#d4bbff', text: '#3D25A0' },
-  'New evidence':     { bg: '#ADF0C7', text: '#1C6B4A' },
+  'Unmatched demand': { bg: '#EFE9FF', text: '#3D25A0' },
+  'New evidence':     { bg: '#EAFAEA', text: '#067429' },
 }
 
 const CARDS: {
@@ -178,8 +178,8 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap }: { onDiveDeeper?: 
                   <CardIcon type={card.icon} />
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Chip removable={false} css={{ backgroundColor: MATCH_TAG_STYLE[card.matchTag].bg, color: MATCH_TAG_STYLE[card.matchTag].text, fontWeight: 700 }}>{card.matchTag}</Chip>
-                  <Chip removable={false} css={{ backgroundColor: confidenceTagStyle(card.confidence).bg, color: confidenceTagStyle(card.confidence).text, fontWeight: 700 }}>{card.confidence} confidence</Chip>
+                  <Chip removable={false} css={{ backgroundColor: MATCH_TAG_STYLE[card.matchTag].bg, color: MATCH_TAG_STYLE[card.matchTag].text, fontWeight: 700, borderRadius: 6, fontFamily: "'Roobert PRO', sans-serif", fontSize: 14 }}>{card.matchTag}</Chip>
+                  <Chip removable={false} css={{ backgroundColor: confidenceTagStyle(card.confidence).bg, color: confidenceTagStyle(card.confidence).text, fontWeight: 700, borderRadius: 6, fontFamily: "'Roobert PRO', sans-serif", fontSize: 14 }}>{card.confidence} confidence</Chip>
                 </div>
               </div>
               <div className="flex items-center gap-1">
