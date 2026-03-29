@@ -23,22 +23,21 @@ import {
   IconCard,
   IconEyeOpen,
   IconSquarePencil,
+  IconPlanet,
+  IconBoard,
+  IconCursorFilled,
+  IconUser,
+  IconOrgChart,
   Input,
 } from '@mirohq/design-system'
 import { JiraLogo } from '../JiraLogo'
 
-const imgBoardIconTable = '/images/board-icon-table.svg'
 const imgLogotype = '/images/miro-logotype.svg'
 const imgFlowchart = '/images/template-flowchart.svg'
 const imgMindMap = '/images/template-mindmap.svg'
 const imgAvatar = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=48&h=48&fit=crop&crop=face'
 const imgAvatar1 = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=48&h=48&fit=crop&crop=face'
 const imgTeamLogo = '/images/team-logo.png'
-const imgIconPlant = '/images/icon-plant.svg'
-const imgIconPaper = '/images/icon-paper.svg'
-const imgIconCursor = '/images/icon-cursor.svg'
-const imgIconPeople = '/images/icon-user.svg'
-const imgIconOrgChart = '/images/icon-orgchart.svg'
 const imgShareAvatar = 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop&crop=face'
 const imgMiroTeamLogo = '/images/team-logo.png'
 
@@ -100,12 +99,12 @@ const templates = [
 ]
 
 const boards = [
-  { iconImg: imgIconPlant,    name: 'FY25 Product Illustrations...',  modifier: 'Alberta', date: 'Today', space: '',                classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 3 },
-  { iconImg: imgIconPaper,    name: 'Design Reviews - FY25 Q4',       modifier: 'Alberta', date: 'Today', space: 'Product Design',   classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
-  { iconImg: imgIconCursor,   name: 'User Testing Prep',               modifier: 'Alberta', date: 'Today', space: "Alberta's Space",  classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 1 },
-  { iconImg: imgIconPeople,   name: 'Design Review Team Picker',       modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
-  { iconImg: imgIconOrgChart, name: 'Design Review Team Picker',       modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
-  { iconImg: imgIconOrgChart, name: 'Design Review Team Picker',       modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
+  { icon: <span style={{ color: '#3BAD6D', display: 'flex' }}><IconPlanet      size="small" /></span>, name: 'FY25 Product Illustrations...',  modifier: 'Alberta', date: 'Today', space: '',                classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 3 },
+  { icon: <span style={{ color: '#4B9EE0', display: 'flex' }}><IconBoard       size="small" /></span>, name: 'Design Reviews - FY25 Q4',       modifier: 'Alberta', date: 'Today', space: 'Product Design',   classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
+  { icon: <span style={{ color: '#F5A623', display: 'flex' }}><IconCursorFilled size="small" /></span>, name: 'User Testing Prep',             modifier: 'Alberta', date: 'Today', space: "Alberta's Space",  classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 1 },
+  { icon: <span style={{ color: '#9B59B6', display: 'flex' }}><IconUser        size="small" /></span>, name: 'Space Overview - Reviews',        modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
+  { icon: <span style={{ color: '#E0587E', display: 'flex' }}><IconOrgChart    size="small" /></span>, name: 'Design Review Team Picker',       modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
+  { icon: <span style={{ color: '#E0587E', display: 'flex' }}><IconOrgChart    size="small" /></span>, name: 'Design Review Team Picker',       modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
 ]
 
 export function HomePage({ onOpenApp }: HomePageProps) {
@@ -679,7 +678,9 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                     <div key={i} className="hover:bg-[#f9f9fb] transition-colors" style={{ display: 'flex', alignItems: 'center', height: 76, cursor: 'pointer', flexShrink: 0, borderRadius: 5 }}>
                       {/* Name + subtitle */}
                       <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 15, minWidth: 0, paddingLeft: 15, paddingRight: 30 }}>
-                        <img src={imgBoardIconTable} alt="" style={{ width: 42, height: 42, flexShrink: 0, objectFit: 'contain', padding: 7, boxSizing: 'content-box' }} />
+                        <div style={{ width: 42, height: 42, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <IconTable size="large" />
+                        </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ fontFamily: 'Open Sans, sans-serif', fontWeight: 700, fontSize: 16, color: '#1A1B1E', margin: 0, lineHeight: '1.3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{board.name}</p>
                           <p style={{ fontFamily: 'Open Sans, sans-serif', fontWeight: 400, fontSize: 15, color: '#656B81', margin: 0, lineHeight: '25px' }}>{board.modified}</p>
@@ -825,7 +826,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                   {/* Name + icon */}
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-6 h-6 shrink-0 flex items-center justify-center">
-                      <img src={board.iconImg} alt="" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
+                      {board.icon}
                     </div>
                     <div className="min-w-0">
                       <div className="text-[14px] font-semibold text-[#1a1b1e] truncate" style={{ fontFamily: 'Open Sans, sans-serif' }}>{board.name}</div>
