@@ -1797,7 +1797,7 @@ function FeedbackCard({
   return (
     <div
       className="w-full rounded-xl flex flex-col gap-2 p-5 cursor-pointer relative"
-      style={{ border: `1px solid ${borderColor}`, boxShadow: hovered ? '0 8px 24px rgba(34,36,40,0.08)' : 'none', transition: 'box-shadow 0.2s ease' }}
+      style={{ border: `2px solid ${borderColor}`, boxShadow: hovered ? '0 8px 24px rgba(34,36,40,0.08)' : 'none', transition: 'box-shadow 0.2s ease' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setThumbTooltip(null) }}
       onClick={onViewCall ?? onSelect}
