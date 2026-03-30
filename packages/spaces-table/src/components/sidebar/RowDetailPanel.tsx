@@ -1849,7 +1849,7 @@ function FeedbackCard({
         <div className="flex items-center gap-1">
           <button
             ref={menuButtonRef}
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-white transition-colors"
             onClick={e => { e.stopPropagation(); setMenuOpen(o => !o) }}
           >
             <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
@@ -1862,7 +1862,7 @@ function FeedbackCard({
             }}
             onMouseLeave={() => setTooltipVisible(false)}
           >
-            <button onClick={e => { e.stopPropagation(); onDismiss() }} aria-label="Remove signal" className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
+            <button onClick={e => { e.stopPropagation(); onDismiss() }} aria-label="Remove signal" className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-white transition-colors">
               <IconCross css={{ width: 16, height: 16 }} />
             </button>
           </div>
@@ -1909,7 +1909,7 @@ function FeedbackCard({
             <span style={{ fontSize: 14, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: 'white', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{date}</span>
             {source && <SourceLogoChip source={source} />}
             {companies[0] && <CompanyLogo name={companies[0]} size={24} />}
-            <div className="flex items-center gap-0.5 ml-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-1 ml-auto" onClick={e => e.stopPropagation()}>
               {[
                 { key: 'up', label: 'Relevant', active: thumbsUp, onClick: () => { setThumbsUp(v => !v); setThumbsDown(false) } },
                 { key: 'down', label: 'Irrelevant', active: thumbsDown, onClick: () => { setThumbsDown(v => !v); setThumbsUp(false) } },
@@ -1922,8 +1922,8 @@ function FeedbackCard({
                     setThumbTooltip({ label, pos: { top: r.top - 4, left: r.left + r.width / 2 } })
                   }}
                   onMouseLeave={() => setThumbTooltip(null)}
-                  className="w-6 h-6 flex items-center justify-center rounded transition-colors hover:bg-[#F1F2F5]"
-                  style={{ color: active ? '#222428' : '#aeb2c0' }}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors hover:bg-white"
+                  style={{ color: active ? '#222428' : '#656B81' }}
                 >
                   <span style={{ transform: key === 'down' ? 'rotate(180deg)' : undefined, display: 'inline-flex' }}>
                     <IconThumbsUp css={{ width: 16, height: 16 }} />
