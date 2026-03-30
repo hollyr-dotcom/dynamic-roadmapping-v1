@@ -167,7 +167,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
       {CARDS.filter((card) => !dismissed.has(card.id)).map((card) => (
         <div
           key={card.id}
-          className="group relative rounded-[24px] bg-white overflow-hidden transition-shadow duration-200 hover:shadow-[0_4px_24px_rgba(34,36,40,0.10)]"
+          className="group relative rounded-[12px] bg-white overflow-hidden transition-shadow duration-200 hover:shadow-[0_4px_24px_rgba(34,36,40,0.10)]"
           style={{ border: '0.5px solid #e0e2e8', paddingBottom: 80 }}
         >
           <div className="p-6 flex flex-col gap-3">
