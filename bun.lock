@@ -7,8 +7,10 @@
       "dependencies": {
         "@lottiefiles/dotlottie-react": "^0.18.6",
         "@mirohq/design-system": "^1.2.15",
+        "@stitches/react": "^1.2.8",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
+        "simple-icons": "^16.12.0",
       },
       "devDependencies": {
         "@eslint/js": "^9.39.1",
@@ -37,14 +39,14 @@
       "name": "@spaces/sidebar",
       "version": "0.0.0",
       "dependencies": {
-        "@spaces/shared": "workspace:*",
+        "@spaces/shared": "file:../shared",
       },
     },
     "packages/spaces-table": {
       "name": "@spaces/spaces-table",
       "version": "0.0.0",
       "dependencies": {
-        "@spaces/shared": "workspace:*",
+        "@spaces/shared": "file:../shared",
         "simple-icons": "^16.12.0",
       },
     },
@@ -1193,6 +1195,10 @@
     "@radix-ui/react-tooltip/@radix-ui/react-slot": ["@radix-ui/react-slot@1.2.3", "", { "dependencies": { "@radix-ui/react-compose-refs": "1.1.2" }, "peerDependencies": { "@types/react": "*", "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc" }, "optionalPeers": ["@types/react"] }, "sha512-aeNmHnBxbi2St0au6VBVC7JXFlhLlOnvIIlePNniyUNAClzmtAUEY8/pBiK3iHjufOlwA+c20/8jngo7xcrg8A=="],
 
     "@radix-ui/react-tooltip/@radix-ui/react-use-controllable-state": ["@radix-ui/react-use-controllable-state@1.2.2", "", { "dependencies": { "@radix-ui/react-use-effect-event": "0.0.2", "@radix-ui/react-use-layout-effect": "1.1.1" }, "peerDependencies": { "@types/react": "*", "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc" }, "optionalPeers": ["@types/react"] }, "sha512-BjasUjixPFdS+NKkypcyyN5Pmg83Olst0+c6vGov0diwTEo6mgdqVR6hxcEgFuh4QrAs7Rc+9KuGJ9TVCj0Zzg=="],
+
+    "@spaces/sidebar/@spaces/shared": ["@spaces/shared@file:packages/shared", {}],
+
+    "@spaces/spaces-table/@spaces/shared": ["@spaces/shared@file:packages/shared", {}],
 
     "@typescript-eslint/eslint-plugin/ignore": ["ignore@7.0.5", "", {}, "sha512-Hs59xBNfUIunMFgWAbGX5cq6893IbWg4KnrjbYwX3tx0ztorVgTDA6B2sxf8ejHJ4wz8BqGUMYlnzNBer5NvGg=="],
 
