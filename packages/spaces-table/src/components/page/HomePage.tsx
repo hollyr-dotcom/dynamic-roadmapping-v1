@@ -32,7 +32,6 @@ import {
 } from '@mirohq/design-system'
 import { JiraLogo } from '../JiraLogo'
 
-const imgLogotype = '/images/miro-logotype.svg'
 const imgFlowchart = '/images/template-flowchart.svg'
 const imgMindMap = '/images/template-mindmap.svg'
 const imgAvatar = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=48&h=48&fit=crop&crop=face'
@@ -732,7 +731,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
 
         {/* Top bar */}
         <div className="flex items-center justify-between px-7 py-3 bg-white border-b border-[#ebecf0] shrink-0">
-          <img src={imgLogotype} alt="miro" style={{ width: '74px', height: '26px' }} />
+          <img src="/miro-logo.svg" alt="miro" style={{ width: '64px', height: '20px' }} />
           <div className="flex items-center gap-2">
             <div className="relative">
               <div className="w-[46px] h-[46px] flex items-center justify-center rounded-lg">
