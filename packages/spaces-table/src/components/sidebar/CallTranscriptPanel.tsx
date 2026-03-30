@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { InputSearch } from '@mirohq/design-system'
 
 const AVATAR_COLORS: Record<string, { bg: string; fg: string }> = {
-  '#D1F09F': { bg: '#DBFAAD', fg: '#608521' },
+  '#D1F09F': { bg: '#ADF0C7', fg: '#067429' },
   '#d4bbff': { bg: '#E8DFFF', fg: '#5936B0' },
   '#ffd4b2': { bg: '#FFE5CC', fg: '#A0522D' },
 }

@@ -56,7 +56,7 @@ function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: numb
 }
 
 const MDS_AVATAR_COLORS: Record<string, { bg: string; fg: string }> = {
-  '#D1F09F': { bg: '#DBFAAD', fg: '#608521' },
+  '#D1F09F': { bg: '#ADF0C7', fg: '#067429' },
   '#d4bbff': { bg: '#E8DFFF', fg: '#5936B0' },
   '#ffd4b2': { bg: '#FFE5CC', fg: '#A0522D' },
 }
@@ -881,7 +881,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             date={callCard.date}
             transcript={callCard.transcript}
             onBack={() => setCallCard(null)}
-            highlightColor={callCard.borderColor === '#d4bbff' ? '#EFEDFD' : callCard.borderColor === '#D1F09F' ? '#F1FECF' : '#f1f2f5'}
+            highlightColor={callCard.borderColor === '#d4bbff' ? '#EFE9FF' : callCard.borderColor === '#D1F09F' ? '#EAFAEA' : '#FFF0E0'}
             avatarColor={callCard.borderColor}
           />
         )}
@@ -889,14 +889,14 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           <AppStoreReviewDetail
             card={selectedFeedbackCard}
             onBack={() => setSelectedFeedbackCard(null)}
-            highlightColor={selectedFeedbackCard.borderColor === '#D1F09F' ? '#F1FECF' : selectedFeedbackCard.borderColor === '#d4bbff' ? '#EFEDFD' : '#f1f2f5'}
+            highlightColor={selectedFeedbackCard.borderColor === '#D1F09F' ? '#EAFAEA' : selectedFeedbackCard.borderColor === '#d4bbff' ? '#EFE9FF' : '#FFF0E0'}
           />
         )}
         {selectedFeedbackCard?.source === 'SurveyMonkey' && (
           <SurveyFeedbackDetail
             card={selectedFeedbackCard}
             onBack={() => setSelectedFeedbackCard(null)}
-            highlightColor={selectedFeedbackCard.borderColor === '#ffd4b2' ? '#FFEEDE' : '#f1f2f5'}
+            highlightColor={'#FFF0E0'}
           />
         )}
         {selectedFeedbackCard && !isStoreReview(selectedFeedbackCard.source) && selectedFeedbackCard.source !== 'SurveyMonkey' && (
@@ -905,7 +905,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             onBack={() => setSelectedFeedbackCard(null)}
             onClose={onClose}
             onAddToBoard={onAddToBoard}
-            highlightColor={selectedFeedbackCard.borderColor === '#d4bbff' ? '#EFEDFD' : '#f1f2f5'}
+            highlightColor={selectedFeedbackCard.borderColor === '#D1F09F' ? '#EAFAEA' : selectedFeedbackCard.borderColor === '#d4bbff' ? '#EFE9FF' : '#FFF0E0'}
           />
         )}
       </div>
@@ -1843,7 +1843,7 @@ function FeedbackCard({
         <div className="flex items-center gap-1">
           <button
             ref={menuButtonRef}
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-white transition-colors"
             onClick={e => { e.stopPropagation(); setMenuOpen(o => !o) }}
           >
             <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
@@ -1856,7 +1856,7 @@ function FeedbackCard({
             }}
             onMouseLeave={() => setTooltipVisible(false)}
           >
-            <button onClick={e => { e.stopPropagation(); onDismiss() }} aria-label="Remove signal" className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
+            <button onClick={e => { e.stopPropagation(); onDismiss() }} aria-label="Remove signal" className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-white transition-colors">
               <IconCross css={{ width: 16, height: 16 }} />
             </button>
           </div>
@@ -1903,7 +1903,7 @@ function FeedbackCard({
             <span style={{ fontSize: 14, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: 'white', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{date}</span>
             {source && <SourceLogoChip source={source} />}
             {companies[0] && <CompanyLogo name={companies[0]} size={24} />}
-            <div className="flex items-center gap-0.5 ml-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-1 ml-auto" onClick={e => e.stopPropagation()}>
               {[
                 { key: 'up', label: 'Relevant', active: thumbsUp, onClick: () => { setThumbsUp(v => !v); setThumbsDown(false) } },
                 { key: 'down', label: 'Irrelevant', active: thumbsDown, onClick: () => { setThumbsDown(v => !v); setThumbsUp(false) } },
@@ -1916,8 +1916,8 @@ function FeedbackCard({
                     setThumbTooltip({ label, pos: { top: r.top - 4, left: r.left + r.width / 2 } })
                   }}
                   onMouseLeave={() => setThumbTooltip(null)}
-                  className="w-6 h-6 flex items-center justify-center rounded transition-colors hover:bg-[#F1F2F5]"
-                  style={{ color: active ? '#222428' : '#aeb2c0' }}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors hover:bg-white"
+                  style={{ color: active ? '#222428' : '#656B81' }}
                 >
                   <span style={{ transform: key === 'down' ? 'rotate(180deg)' : undefined, display: 'inline-flex' }}>
                     <IconThumbsUp css={{ width: 16, height: 16 }} />
