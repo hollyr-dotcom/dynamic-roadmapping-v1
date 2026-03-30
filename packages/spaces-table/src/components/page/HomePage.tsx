@@ -33,7 +33,6 @@ import {
 import { JiraLogo } from '../JiraLogo'
 
 // Stable placeholder images (Figma asset URLs expire every 7 days — use these instead)
-const imgLogotype = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 74 26' width='74' height='26'%3E%3Ctext x='0' y='21' font-family='Arial%2Csans-serif' font-size='23' font-weight='bold' fill='%234262FF'%3Emiro%3C/text%3E%3C/svg%3E"
 const imgFlowchart = 'https://placehold.co/200x150/e8f0fe/4262ff?text=Flowchart'
 const imgMindMap = 'https://placehold.co/200x150/f0e8fe/7b3fe4?text=Mind+Map'
 const imgAvatar = 'https://i.pravatar.cc/150?img=3'
@@ -733,7 +732,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
 
         {/* Top bar */}
         <div className="flex items-center justify-between px-7 py-3 bg-white border-b border-[#ebecf0] shrink-0">
-          <img src={imgLogotype} alt="miro" style={{ width: '74px', height: '26px' }} />
+          <img src="/miro-logo.svg" alt="miro" style={{ width: '64px', height: '20px' }} />
           <div className="flex items-center gap-2">
             <div className="relative">
               <div className="w-[46px] h-[46px] flex items-center justify-center rounded-lg">

@@ -484,7 +484,7 @@ export function App() {
           />
         </div>
         {/* Scroll area — vertical + horizontal, table header sticks below toolbar */}
-        <div ref={scrollRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden page-scroll flex flex-col${pageTransitioning ? ' page-transitioning-out' : ''}`} style={{ paddingRight: (activePage === 'overview' && isRightOpen) ? (panelLayout === 'Half-screen' ? Math.round(window.innerWidth * 0.5) : 400) : 0, transition: 'padding-right 0.45s cubic-bezier(0.16,1,0.3,1)' }}>
+        <div ref={scrollRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden page-scroll flex flex-col${pageTransitioning ? ' page-transitioning-out' : ''}`} style={{ paddingRight: (activePage === 'overview' && isRightOpen) ? 400 : 0, transition: 'padding-right 0.45s cubic-bezier(0.16,1,0.3,1)' }}>
           <div className="sticky left-0" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
             <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} centered={activePage === 'overview'} />
           </div>
@@ -544,12 +544,12 @@ export function App() {
       <div
         className="fixed top-0 right-0 h-full z-50 transition-transform duration-[450ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{
-          width: activeSidebar === 'row-detail' ? (panelLayout === 'Half-screen' ? Math.round(window.innerWidth * 0.5) : panelLayout === 'Fullscreen' ? window.innerWidth - 48 : panelLayout === 'Center' ? 720 + 48 : 376 + 24) : activeSidebar === 'ai-sidekick' ? 420 + 36 : 320,
+          width: activeSidebar === 'row-detail' ? (panelLayout === 'Fullscreen' ? window.innerWidth - 48 : panelLayout === 'Center' ? 720 + 48 : 460 + 24) : activeSidebar === 'ai-sidekick' ? 420 + 36 : 320,
           transform: (isRightOpen && !(activeSidebar === 'row-detail' && (panelLayout === 'Center' || panelLayout === 'Fullscreen'))) ? 'translateX(0)' : 'translateX(100%)',
         }}
       >
         {activeSidebar === 'row-detail' ? (
-          <div className="h-full py-6 flex" style={{ paddingLeft: panelLayout === 'Half-screen' ? 0 : 12, paddingRight: panelLayout === 'Half-screen' ? 0 : 12 }}>
+          <div className="h-full py-6 flex" style={{ paddingLeft: 12, paddingRight: 12 }}>
             <div
               className="flex-1 overflow-hidden rounded-xl"
               style={{ boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)' }}

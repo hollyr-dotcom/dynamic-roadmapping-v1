@@ -90,8 +90,8 @@ interface RowDetailPanelProps {
   timelineDates?: { startDate: string; endDate: string }
   onCompanyFilter?: (name: string) => void
   activeCompanyFilter?: string[] | null
-  selectedLayout?: 'Center' | 'Right' | 'Half-screen' | 'Fullscreen'
-  onLayoutChange?: (layout: 'Center' | 'Right' | 'Half-screen' | 'Fullscreen') => void
+  selectedLayout?: 'Center' | 'Right' | 'Fullscreen'
+  onLayoutChange?: (layout: 'Center' | 'Right' | 'Fullscreen') => void
   hideInsightCallout?: boolean
   overrideSummary?: string
 }
@@ -347,10 +347,10 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
   const [layoutOpen, setLayoutOpen] = useState(false)
   const [layoutPos, setLayoutPos] = useState<{ top: number; right: number } | null>(null)
-  const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Half-screen' | 'Fullscreen'>('Right')
+  const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
   const selectedLayout = selectedLayoutProp ?? layoutInternal
-  const setSelectedLayout = (l: 'Center' | 'Right' | 'Half-screen' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
-  const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 48 : selectedLayout === 'Half-screen' ? Math.round(window.innerWidth * 0.5) : 376
+  const setSelectedLayout = (l: 'Center' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
+  const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 48 : 460
   const layoutButtonRef = useRef<HTMLButtonElement>(null)
   const layoutMenuRef = useRef<HTMLDivElement>(null)
 
@@ -520,12 +520,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
                     <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
                     <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
-                  </svg>
-                )}
-                {selectedLayout === 'Half-screen' && (
-                  <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
-                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                    <rect x="6.5" y="1.5" width="6" height="9" rx="0.8" fill="currentColor"/>
                   </svg>
                 )}
                 {selectedLayout === 'Fullscreen' && (
@@ -1079,7 +1073,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           className="fixed z-[9999] bg-white flex flex-col rounded-[8px]"
           style={{ top: layoutPos.top, right: layoutPos.right, padding: '16px 12px', gap: 4, boxShadow: '0px 0px 12px rgba(34,36,40,0.04), 0px 2px 8px rgba(34,36,40,0.12)' }}
         >
-          {(['Right', 'Half-screen', 'Center', 'Fullscreen'] as const).map(option => (
+          {(['Right', 'Center', 'Fullscreen'] as const).map(option => (
             <button
               key={option}
               className={`flex items-center w-full rounded-[4px] transition-colors text-left ${selectedLayout === option ? 'bg-[#F1F2F5]' : 'hover:bg-[#F1F2F5]'}`}
@@ -1097,12 +1091,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
                     <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
                     <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="#222428"/>
-                  </svg>
-                )}
-                {option === 'Half-screen' && (
-                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
-                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
-                    <rect x="6.5" y="1.5" width="6" height="9" rx="0.8" fill="#222428"/>
                   </svg>
                 )}
                 {option === 'Fullscreen' && (
@@ -1803,7 +1791,7 @@ function FeedbackCard({
   return (
     <div
       className="w-full rounded-xl flex flex-col gap-2 p-5 cursor-pointer relative"
-      style={{ border: `2px solid ${borderColor}`, boxShadow: hovered ? '0 8px 24px rgba(34,36,40,0.08)' : 'none', transition: 'box-shadow 0.2s ease' }}
+      style={{ backgroundColor: borderColor === '#D1F09F' ? '#EAFAEA' : borderColor === '#d4bbff' ? '#EFE9FF' : '#FFF0E0', boxShadow: hovered ? '0 8px 24px rgba(34,36,40,0.08)' : 'none', transition: 'box-shadow 0.2s ease' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setThumbTooltip(null) }}
       onClick={onViewCall ?? onSelect}
@@ -1917,8 +1905,8 @@ function FeedbackCard({
       {/* Source + company + thumbs — smooth slide-in on hover using CSS grid trick */}
       <div style={{ display: 'grid', gridTemplateRows: hovered ? '1fr' : '0fr', transition: 'grid-template-rows 0.25s ease' }}>
         <div style={{ overflow: 'hidden' }}>
-          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '4px 0 0 0', gap: 8, height: 24, isolation: 'isolate' }}>
-            <span style={{ fontSize: 14, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{date}</span>
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '4px 0 4px 0', gap: 8, height: 28, isolation: 'isolate' }}>
+            <span style={{ fontSize: 14, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: 'white', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{date}</span>
             {source && <SourceLogoChip source={source} />}
             {companies[0] && <CompanyLogo name={companies[0]} size={24} />}
             <div className="flex items-center gap-0.5 ml-auto" onClick={e => e.stopPropagation()}>
