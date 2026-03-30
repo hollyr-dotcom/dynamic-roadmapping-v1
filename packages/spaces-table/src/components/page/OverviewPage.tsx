@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { SpaceRow } from '@spaces/shared'
-import { Button, Chip, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard } from '@mirohq/design-system'
+import { Button, Chip, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard, IconInformationMarkCircle } from '@mirohq/design-system'
 import {
   IconChartLine,
   IconChartProgress,
@@ -159,7 +159,7 @@ function CardIcon({ type }: { type: CardIcon }) {
   return null
 }
 
-export function OverviewPage({ onDiveDeeper, onAddToRoadmap }: { onDiveDeeper?: (cardId: string) => void; onAddToRoadmap?: (cardId: string) => void }) {
+export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: { onDiveDeeper?: (cardId: string) => void; onAddToRoadmap?: (cardId: string) => void; onReprioritize?: () => void }) {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
 
   return (
@@ -179,7 +179,12 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap }: { onDiveDeeper?: 
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <Chip removable={false} css={{ backgroundColor: MATCH_TAG_STYLE[card.matchTag].bg, color: MATCH_TAG_STYLE[card.matchTag].text, fontWeight: 700, borderRadius: 6, fontFamily: "'Roobert PRO', sans-serif", fontSize: 14 }}>{card.matchTag}</Chip>
-                  <Chip removable={false} css={{ backgroundColor: confidenceTagStyle(card.confidence).bg, color: confidenceTagStyle(card.confidence).text, fontWeight: 700, borderRadius: 6, fontFamily: "'Roobert PRO', sans-serif", fontSize: 14 }}>{card.confidence} confidence</Chip>
+                  <Chip removable={false} css={{ backgroundColor: confidenceTagStyle(card.confidence).bg, color: confidenceTagStyle(card.confidence).text, fontWeight: 700, borderRadius: 6, fontFamily: "'Roobert PRO', sans-serif", fontSize: 14 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      {card.confidence} confidence
+                      <IconInformationMarkCircle css={{ width: 16, height: 16, flexShrink: 0 }} />
+                    </span>
+                  </Chip>
                 </div>
               </div>
               <div className="flex items-center gap-1">
@@ -226,7 +231,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap }: { onDiveDeeper?: 
             <Button
               variant="primary"
               size="medium"
-              onPress={() => { if (card.primaryAction === 'Add to roadmap') { onAddToRoadmap?.(card.id); setDismissed(prev => new Set(prev).add(card.id)) } }}
+              onPress={() => { if (card.primaryAction === 'Add to roadmap') { onAddToRoadmap?.(card.id); setDismissed(prev => new Set(prev).add(card.id)) } else if (card.primaryAction === 'Reprioritize') { onReprioritize?.() } else if (card.primaryAction === 'Review evidence') { onDiveDeeper?.(card.id) } }}
             >
               <Button.IconSlot>
                 {card.primaryAction === 'Add to roadmap' ? <IconPlus /> : card.primaryAction === 'Reprioritize' ? <IconTimelineFormat /> : <IconEyeOpen />}
