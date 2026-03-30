@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { SpaceRow } from '@spaces/shared'
-import { Button, Chip, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard, IconInformationMarkCircle } from '@mirohq/design-system'
+import { Button, Chip, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard, IconInformationMarkCircle, IconTriangleSquareCircle, IconLightbulb, IconGift } from '@mirohq/design-system'
 import {
   IconChartLine,
   IconChartProgress,
@@ -50,8 +50,8 @@ function confidenceBorderColor(confidence: string): string {
 function confidenceTagStyle(confidence: string): { bg: string; text: string } {
   const pct = parseInt(confidence)
   if (pct >= 95) return { bg: '#DCFFF1', text: '#1C6B4A' } // green subtle
-  if (pct >= 88) return { bg: '#C6DCFF', text: '#0055CC' } // blue subtle
-  if (pct >= 80) return { bg: '#FFF0B3', text: '#7F5F01' } // yellow subtle
+  if (pct >= 88) return { bg: '#DAEAFF', text: '#0055CC' } // blue subtle
+  if (pct >= 80) return { bg: '#FFF8D6', text: '#7F5F01' } // yellow subtle
   return { bg: '#FFE2BD', text: '#A54800' }                 // orange subtle
 }
 
@@ -87,7 +87,7 @@ type MatchTag = 'Demand change' | 'Priority mismatch' | 'Unmatched demand' | 'Ne
 
 const MATCH_TAG_STYLE: Record<MatchTag, { bg: string; text: string }> = {
   'Demand change':    { bg: '#F8D3AF', text: '#A54800' },
-  'Priority mismatch': { bg: '#FBBEEA', text: '#7B2F6E' },
+  'Priority mismatch': { bg: '#FDD3F2', text: '#7B2F6E' },
   'Unmatched demand': { bg: '#EFE9FF', text: '#3D25A0' },
   'New evidence':     { bg: '#EAFAEA', text: '#067429' },
 }
@@ -175,12 +175,12 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-6">
                 <div className="flex items-center justify-center shrink-0" style={{ color: '#222428' }}>
-                  <CardIcon type={card.icon} />
+                  {card.matchTag === 'Priority mismatch' ? <IconTriangleSquareCircle size="medium" /> : card.matchTag === 'Unmatched demand' ? <IconLightbulb size="medium" /> : card.matchTag === 'New evidence' ? <IconGift size="medium" /> : <CardIcon type={card.icon} />}
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Chip removable={false} css={{ backgroundColor: MATCH_TAG_STYLE[card.matchTag].bg, color: MATCH_TAG_STYLE[card.matchTag].text, fontWeight: 700, borderRadius: 6, fontFamily: "'Roobert PRO', sans-serif", fontSize: 14 }}>{card.matchTag}</Chip>
-                  <Chip removable={false} css={{ backgroundColor: confidenceTagStyle(card.confidence).bg, color: confidenceTagStyle(card.confidence).text, fontWeight: 700, borderRadius: 6, fontFamily: "'Roobert PRO', sans-serif", fontSize: 14 }}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  <Chip removable={false} css={{ backgroundColor: MATCH_TAG_STYLE[card.matchTag].bg, color: MATCH_TAG_STYLE[card.matchTag].text, fontWeight: 700, borderRadius: 6, fontFamily: "'Roobert PRO', sans-serif", fontSize: 12 }}>{card.matchTag}</Chip>
+                  <Chip removable={false} css={{ backgroundColor: confidenceTagStyle(card.confidence).bg, color: confidenceTagStyle(card.confidence).text, fontWeight: 700, borderRadius: 6, fontFamily: "'Roobert PRO', sans-serif", fontSize: 12 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
                       {card.confidence} confidence
                       <IconInformationMarkCircle css={{ width: 16, height: 16, flexShrink: 0 }} />
                     </span>

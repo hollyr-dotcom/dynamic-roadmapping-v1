@@ -56,7 +56,7 @@ function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: numb
 }
 
 const MDS_AVATAR_COLORS: Record<string, { bg: string; fg: string }> = {
-  '#D1F09F': { bg: '#DBFAAD', fg: '#608521' },
+  '#D1F09F': { bg: '#ADF0C7', fg: '#067429' },
   '#d4bbff': { bg: '#E8DFFF', fg: '#5936B0' },
   '#ffd4b2': { bg: '#FFE5CC', fg: '#A0522D' },
 }
@@ -886,7 +886,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             date={callCard.date}
             transcript={callCard.transcript}
             onBack={() => setCallCard(null)}
-            highlightColor={callCard.borderColor === '#d4bbff' ? '#EFEDFD' : callCard.borderColor === '#D1F09F' ? '#F1FECF' : '#f1f2f5'}
+            highlightColor={callCard.borderColor === '#d4bbff' ? '#EFE9FF' : callCard.borderColor === '#D1F09F' ? '#EAFAEA' : '#FFF0E0'}
             avatarColor={callCard.borderColor}
           />
         )}
@@ -894,14 +894,14 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           <AppStoreReviewDetail
             card={selectedFeedbackCard}
             onBack={() => setSelectedFeedbackCard(null)}
-            highlightColor={selectedFeedbackCard.borderColor === '#D1F09F' ? '#F1FECF' : selectedFeedbackCard.borderColor === '#d4bbff' ? '#EFEDFD' : '#f1f2f5'}
+            highlightColor={selectedFeedbackCard.borderColor === '#D1F09F' ? '#EAFAEA' : selectedFeedbackCard.borderColor === '#d4bbff' ? '#EFE9FF' : '#FFF0E0'}
           />
         )}
         {selectedFeedbackCard?.source === 'SurveyMonkey' && (
           <SurveyFeedbackDetail
             card={selectedFeedbackCard}
             onBack={() => setSelectedFeedbackCard(null)}
-            highlightColor={selectedFeedbackCard.borderColor === '#ffd4b2' ? '#FFEEDE' : '#f1f2f5'}
+            highlightColor={'#FFF0E0'}
           />
         )}
         {selectedFeedbackCard && !isStoreReview(selectedFeedbackCard.source) && selectedFeedbackCard.source !== 'SurveyMonkey' && (
@@ -910,7 +910,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             onBack={() => setSelectedFeedbackCard(null)}
             onClose={onClose}
             onAddToBoard={onAddToBoard}
-            highlightColor={selectedFeedbackCard.borderColor === '#d4bbff' ? '#EFEDFD' : '#f1f2f5'}
+            highlightColor={selectedFeedbackCard.borderColor === '#D1F09F' ? '#EAFAEA' : selectedFeedbackCard.borderColor === '#d4bbff' ? '#EFE9FF' : '#FFF0E0'}
           />
         )}
       </div>
