@@ -12,6 +12,8 @@ import {
   IconPen,
   IconSquaresTwoOverlap,
   IconTrash,
+  IconInsights,
+  Switch,
   Tooltip,
 } from '@mirohq/design-system'
 import { MENU_WIDTH } from './ViewTabsToolbar'
@@ -77,6 +79,7 @@ export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, v
 
   const [isFocused, setIsFocused] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [enrichmentOn, setEnrichmentOn] = useState(true)
 
   return (
     <div
@@ -160,7 +163,7 @@ export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, v
               <IconDotsThree color="icon-neutrals-subtle" />
             </IconButton>
           </DropdownMenu.Trigger>
-          <DropdownMenu.Content side="bottom" align="start" alignOffset={-12} css={{ minWidth: MENU_WIDTH, zIndex: 30 }}>
+          <DropdownMenu.Content side="bottom" align="start" alignOffset={-12} css={{ minWidth: 260, zIndex: 9999 }}>
             <DropdownMenu.Item>
               <DropdownMenu.IconSlot><IconStar /></DropdownMenu.IconSlot>
               Set as default view
@@ -177,6 +180,12 @@ export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, v
             <DropdownMenu.Item>
               <DropdownMenu.IconSlot><IconInformationMarkCircle /></DropdownMenu.IconSlot>
               Info
+            </DropdownMenu.Item>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item onSelect={e => { e.preventDefault(); setEnrichmentOn(v => !v) }}>
+              <DropdownMenu.IconSlot><IconInsights /></DropdownMenu.IconSlot>
+              <span style={{ flex: 1 }}>Toggle enrichment</span>
+              <Switch checked={enrichmentOn} onCheckedChange={setEnrichmentOn} css={{ pointerEvents: 'none' }} />
             </DropdownMenu.Item>
             <DropdownMenu.Separator />
             <DropdownMenu.Item>
