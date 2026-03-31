@@ -29,7 +29,7 @@ const TAG_BG: Record<string, string> = {
 function IconThreeColumnsVertical() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2"  y="4" width="5" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="2"  y="4" width="5" height="16" rx="1.5" fill="#3C3F4A" />
       <rect x="9.5" y="4" width="5" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
       <rect x="17" y="4" width="5" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
     </svg>

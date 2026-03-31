@@ -469,7 +469,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const adjRevenue = Math.round(row.estRevenue * remainingFraction)
 
   const panelContent = (
-    <div className="flex flex-col bg-white overflow-hidden relative" style={{ width: panelWidth, height: '100%', fontFamily: 'Open Sans, sans-serif', borderRadius: selectedLayout !== 'Right' ? 8 : 0, boxShadow: selectedLayout !== 'Right' ? '0px 8px 32px rgba(34,36,40,0.16), 0px 1px 4px rgba(34,36,40,0.08)' : 'none', transition: 'width 0.5s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+    <div className="flex flex-col overflow-hidden relative" style={{ width: panelWidth, height: '100%', backgroundColor: 'white', fontFamily: 'Open Sans, sans-serif', borderRadius: selectedLayout !== 'Right' ? 8 : 0, boxShadow: selectedLayout !== 'Right' ? '0px 8px 32px rgba(34,36,40,0.16), 0px 1px 4px rgba(34,36,40,0.08)' : 'none', transition: 'width 0.5s cubic-bezier(0.16, 1, 0.3, 1)' }}>
 
 
       {/* ── Header ──────────────────────────────────────── */}
@@ -547,24 +547,58 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         </div>
       </div>
 
-      {/* ── Tabs ── */}
+      {/* ── Tab bar ── */}
+      <div className="flex gap-1 px-3 pt-3 pb-1 shrink-0" style={{ pointerEvents: 'auto' }}>
+        {['Details', 'Insights', 'Comments'].map(tab => (
+          <button
+            key={tab}
+            onPointerDown={e => { e.stopPropagation(); setActiveTab(tab) }}
+            className="mr-1 px-2 py-1 rounded-lg text-[14px] font-semibold transition-colors"
+            style={{
+              fontFamily: 'Open Sans, sans-serif',
+              color: activeTab === tab ? '#4262FF' : '#656B81',
+              backgroundColor: activeTab === tab ? '#F2F4FC' : 'transparent',
+              pointerEvents: 'auto',
+              cursor: 'pointer',
+            }}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Tabs content ── */}
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
-        <div className="flex gap-1 px-3 pt-3 pb-1 shrink-0">
-          {['Details', 'Insights', 'Comments'].map(tab => (
-            <button
-              key={tab}
-              onClick={e => { e.stopPropagation(); setActiveTab(tab) }}
-              className="mr-1 px-2 py-1 rounded-lg text-[14px] font-semibold transition-colors"
-              style={{
-                fontFamily: 'Open Sans, sans-serif',
-                color: activeTab === tab ? '#4262FF' : '#656B81',
-                backgroundColor: activeTab === tab ? '#F2F4FC' : 'transparent',
-              }}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+
+        {/* Low-confidence Insights callout */}
+        {activeTab === 'Details' && !insightDismissed && (row.id === '1' || row.id === 'r1') && (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              padding: 16,
+              gap: 12,
+              background: '#F2F4FC',
+              borderRadius: 8,
+              position: 'relative',
+              marginLeft: selectedLayout !== 'Right' ? 24 : 20,
+              marginRight: selectedLayout !== 'Right' ? 24 : 20,
+              marginTop: 16,
+              marginBottom: 4,
+              flexShrink: 0,
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, paddingRight: 20 }}>
+              <p className="text-[14px] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1", color: '#1a1b1e', margin: 0 }}>
+                Low-confidence Insights
+              </p>
+              <p style={{ fontSize: 14, color: '#222428', lineHeight: 1.5, margin: 0 }}>
+                Only a title is given, with no details on what the "{row.title}" does—leaving its purpose, use cases, and target users unclear.
+              </p>
+            </div>
+          </div>
+        )}
 
       {/* ── Content (sliding panels) ─────────────────── */}
       <div className="flex-1 min-h-0 overflow-hidden relative">
@@ -626,31 +660,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               )}
             </FieldRow>
 
-            {/* Low-confidence Insights callout */}
-            {!insightDismissed && (row.id === '1' || row.id === 'r1') && (
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'flex-start',
-                  padding: 16,
-                  gap: 12,
-                  background: '#F2F4FC',
-                  borderRadius: 8,
-                  position: 'relative',
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, paddingRight: 20 }}>
-                  <p className="text-[14px] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1", color: '#1a1b1e', margin: 0 }}>
-                    Low-confidence Insights
-                  </p>
-                  <p style={{ fontSize: 14, color: '#222428', lineHeight: 1.5, margin: 0 }}>
-                    Only a title is given, with no details on what the "{row.title}" does—leaving its purpose, use cases, and target users unclear.
-                  </p>
-                </div>
-              </div>
-            )}
-
             {/* Status */}
             <FieldRow label="Status">
               <div
@@ -683,20 +692,23 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             {/* Companies */}
             {(() => {
               const allCompanies = [...new Set([...row.companies, ...Object.keys(COMPANY_INFO)])]
-              const MAX_VISIBLE = 4
-              const overflow = allCompanies.length - MAX_VISIBLE
+              const COLLAPSED = 4
+              const EXPANDED_FIRST_ROW = 8
+              const visibleCount = companiesExpanded ? EXPANDED_FIRST_ROW : COLLAPSED
+              const overflow = allCompanies.length - COLLAPSED
+              const overflowExpanded = allCompanies.length - EXPANDED_FIRST_ROW
               return (
                 <FieldRow label="Companies" alignStart>
                   <div className="flex flex-col gap-0 py-1 w-full">
                     <div className="flex flex-wrap gap-2">
-                      {allCompanies.slice(0, MAX_VISIBLE).map(name => (
+                      {allCompanies.slice(0, visibleCount).map(name => (
                         <CompanyLogo key={name} name={name} size={32} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
                       ))}
-                      {overflow > 0 && !companiesExpanded && (
+                      {!companiesExpanded && overflow > 0 && (
                         <button
                           onClick={() => setCompaniesExpanded(true)}
-                          className="inline-flex items-center h-[28px] px-2 rounded-lg text-[13px] font-semibold transition-colors"
-                          style={{ backgroundColor: '#F1F2F5', color: '#656B81' }}
+                          className="inline-flex items-center justify-center transition-colors"
+                          style={{ backgroundColor: '#F1F2F5', color: '#656B81', height: 32, minWidth: 32, padding: '0 8px', borderRadius: 8, fontSize: 13, fontWeight: 600, flexShrink: 0 }}
                         >
                           +{overflow}
                         </button>
@@ -705,13 +717,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     {/* Accordion overflow */}
                     <div style={{ maxHeight: companiesExpanded ? 200 : 0, overflow: 'hidden', transition: 'max-height 0.3s cubic-bezier(0.16,1,0.3,1)' }}>
                       <div className="flex flex-wrap gap-2 pt-2">
-                        {allCompanies.slice(MAX_VISIBLE).map(name => (
+                        {overflowExpanded > 0 && allCompanies.slice(EXPANDED_FIRST_ROW).map(name => (
                           <CompanyLogo key={name} name={name} size={32} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
                         ))}
                         <button
                           onClick={() => setCompaniesExpanded(false)}
-                          className="inline-flex items-center h-[28px] px-2 rounded-lg text-[13px] font-semibold transition-colors"
-                          style={{ backgroundColor: '#E0E2E8', color: '#656B81' }}
+                          className="inline-flex items-center justify-center transition-colors"
+                          style={{ backgroundColor: '#E0E2E8', color: '#656B81', height: 32, width: 32, borderRadius: 8, fontSize: 16, flexShrink: 0 }}
                         >
                           −
                         </button>
@@ -725,7 +737,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </>
         )}
 
-        {activeTab === 'Insights' && <div className="flex flex-col gap-8 pb-6">
+        {activeTab === 'Insights' && <div className="flex flex-col gap-8 pb-6" style={{ paddingTop: 16 }}>
 
             {/* Summary */}
             <InsightSection label="Summary">
@@ -857,7 +869,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             )}
           </div>}
 
-        {activeTab === 'Comments' && <div className="flex flex-col gap-4 pb-6">
+        {activeTab === 'Comments' && <div className="flex flex-col gap-4 pb-6" style={{ paddingTop: 16 }}>
             {comments.map((c, i) => (
               <div key={i} className="flex gap-3">
                 <img src={`https://i.pravatar.cc/32?img=${c.avatarImg}`} alt="" className="w-8 h-8 rounded-full shrink-0 object-cover" />
@@ -912,7 +924,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       </div>
       {/* ── Company panel ─── */}
-      <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: selectedLayout !== 'Right' ? 48 : 12 }}>
+      <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: selectedLayout !== 'Right' ? 48 : 16 }}>
         {selectedCompany && (
           <CompanyDetailView
             company={selectedCompany}
@@ -1708,7 +1720,7 @@ function AppStoreReviewDetail({
   return (
     <div
       className="panel-scroll"
-      style={{ flex: 1, overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+      style={{ flex: 1, overflowY: 'auto', padding: '16px 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
       {/* ── Sticky header ── */}
       <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 0' }}>
@@ -2212,7 +2224,7 @@ function SurveyFeedbackDetail({
   return (
     <div
       className="panel-scroll"
-      style={{ height: '100%', overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+      style={{ height: '100%', overflowY: 'auto', padding: '16px 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
       {/* ── Sticky header ── */}
       <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 0' }}>
@@ -2391,7 +2403,7 @@ function FeedbackCardDetailView({
   return (
     <><div
       className="panel-scroll"
-      style={{ height: '100%', overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+      style={{ height: '100%', overflowY: 'auto', padding: '16px 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
       {/* ── Sticky header ── */}
       <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 0' }}>
