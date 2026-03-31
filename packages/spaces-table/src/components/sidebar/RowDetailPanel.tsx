@@ -299,7 +299,7 @@ function generateFeedbackCards(row: SpaceRow) {
 }
 
 export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, overrideSummary }: RowDetailPanelProps) {
-  const [activeTab, setActiveTab] = useState('Insights')
+  const [activeTab, setActiveTab] = useState('Details')
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
 
@@ -547,11 +547,24 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         </div>
       </div>
 
-      {/* 4px spacer */}
-      <div className="h-1 shrink-0" />
-
-      {/* 4px spacer */}
-      <div className="h-1 shrink-0" />
+      {/* ── Tabs ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        <div className="flex gap-1 px-3 pt-3 pb-1 shrink-0">
+          {['Details', 'Insights', 'Comments'].map(tab => (
+            <button
+              key={tab}
+              onClick={e => { e.stopPropagation(); setActiveTab(tab) }}
+              className="mr-1 px-2 py-1 rounded-lg text-[14px] font-semibold transition-colors"
+              style={{
+                fontFamily: 'Open Sans, sans-serif',
+                color: activeTab === tab ? '#4262FF' : '#656B81',
+                backgroundColor: activeTab === tab ? '#F2F4FC' : 'transparent',
+              }}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
 
       {/* ── Content (sliding panels) ─────────────────── */}
       <div className="flex-1 min-h-0 overflow-hidden relative">
@@ -612,6 +625,31 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 </div>
               )}
             </FieldRow>
+
+            {/* Low-confidence Insights callout */}
+            {!insightDismissed && (row.id === '1' || row.id === 'r1') && (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  padding: 16,
+                  gap: 12,
+                  background: '#F2F4FC',
+                  borderRadius: 8,
+                  position: 'relative',
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, paddingRight: 20 }}>
+                  <p className="text-[14px] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1", color: '#1a1b1e', margin: 0 }}>
+                    Low-confidence Insights
+                  </p>
+                  <p style={{ fontSize: 14, color: '#222428', lineHeight: 1.5, margin: 0 }}>
+                    Only a title is given, with no details on what the "{row.title}" does—leaving its purpose, use cases, and target users unclear.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Status */}
             <FieldRow label="Status">
@@ -687,32 +725,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </>
         )}
 
-        <div className="flex flex-col gap-8 pb-6">
-
-            {/* Low-confidence Insights callout — only for AI portfolio advisor row */}
-            {!hideInsightCallout && !insightDismissed && (row.id === '1' || row.id === 'r1') && (
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'flex-start',
-                  padding: 16,
-                  gap: 12,
-                  background: '#F2F4FC',
-                  borderRadius: 8,
-                  position: 'relative',
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, paddingRight: 20 }}>
-                  <p className="text-[14px] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1", color: '#1a1b1e', margin: 0 }}>
-                    Low-confidence Insights
-                  </p>
-                  <p style={{ fontSize: 14, color: '#222428', lineHeight: 1.5, margin: 0 }}>
-                    The title or description may be too brief to reliably match to customer feedback. Improving context will increase matching accuracy.
-                  </p>
-                </div>
-              </div>
-            )}
+        {activeTab === 'Insights' && <div className="flex flex-col gap-8 pb-6">
 
             {/* Summary */}
             <InsightSection label="Summary">
@@ -842,9 +855,41 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 </div>
               </>
             )}
-          </div>
+          </div>}
 
-        {activeTab === 'Updates' && (
+        {activeTab === 'Comments' && <div className="flex flex-col gap-4 pb-6">
+            {comments.map((c, i) => (
+              <div key={i} className="flex gap-3">
+                <img src={`https://i.pravatar.cc/32?img=${c.avatarImg}`} alt="" className="w-8 h-8 rounded-full shrink-0 object-cover" />
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[13px] font-semibold text-[#222428]" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>{c.name}</span>
+                    <span className="text-[12px] text-[#9DA3B4]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{c.time}</span>
+                  </div>
+                  <p className="text-[14px] text-[#3C3F4A] leading-[1.5]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{c.text}</p>
+                </div>
+              </div>
+            ))}
+            <div className="flex gap-2 mt-2">
+              <textarea
+                value={commentText}
+                onChange={e => setCommentText(e.target.value)}
+                placeholder="Add a comment..."
+                rows={2}
+                className="flex-1 text-[14px] rounded-lg border border-[#e0e2e8] px-3 py-2 outline-none resize-none focus:border-[#4262FF]"
+                style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
+              />
+              <button
+                onClick={() => { if (!commentText.trim()) return; setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }]); setCommentText('') }}
+                className="px-3 py-2 rounded-lg text-[13px] font-semibold text-white transition-colors"
+                style={{ backgroundColor: '#4262FF', fontFamily: 'Open Sans, sans-serif', alignSelf: 'flex-end' }}
+              >
+                Post
+              </button>
+            </div>
+          </div>}
+
+        {false && (
           <div className="flex flex-col">
             {[
               { text: 'Prioritized this signal as an idea', date: 'May 21, 2026' },
@@ -865,7 +910,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </div>
         )}
 
-        {activeTab === 'Jira' && <JiraForm row={row} />}
       </div>
       {/* ── Company panel ─── */}
       <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: selectedLayout !== 'Right' ? 48 : 12 }}>
@@ -916,6 +960,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       </div>
       </div>{/* end slider */}
       </div>{/* end overflow wrapper */}
+      </div>{/* end tabs */}
 
       {/* ── Chat overlay (full-panel, avoids slider height-shift glitch) ─── */}
       {selectedPrompt && (
@@ -1906,7 +1951,7 @@ function FeedbackCard({
       <div style={{ display: 'grid', gridTemplateRows: hovered ? '1fr' : '0fr', transition: 'grid-template-rows 0.25s ease' }}>
         <div style={{ overflow: 'hidden' }}>
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '4px 0 4px 0', gap: 8, height: 28, isolation: 'isolate' }}>
-            <span style={{ fontSize: 14, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: 'white', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{date}</span>
+            <span style={{ fontSize: 14, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{date}</span>
             {source && <SourceLogoChip source={source} />}
             {companies[0] && <CompanyLogo name={companies[0]} size={24} />}
             <div className="flex items-center gap-1 ml-auto" onClick={e => e.stopPropagation()}>
