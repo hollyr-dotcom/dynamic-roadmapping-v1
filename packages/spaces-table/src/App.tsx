@@ -436,8 +436,34 @@ export function App() {
   const sortedViewData = [...baseViewData].sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 5) - (PRIORITY_ORDER[b.priority] ?? 5))
   const viewData = companyFilter.length > 0 ? sortedViewData.filter(r => companyFilter.some(f => r.companies?.includes(f))) : sortedViewData
 
+  const variantToggle = (
+    <div className="fixed bottom-4 left-4 z-[9999] flex items-center gap-1 rounded-lg bg-[#1a1b1e] p-1" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+      {([
+        { id: 'hidden' as const, label: 'A: Hidden' },
+        { id: 'disabled' as const, label: 'B: Disabled' },
+      ]).map(({ id, label }) => (
+        <button
+          key={id}
+          onClick={() => setEmptyVariant(id)}
+          className="text-[12px] font-medium rounded-md transition-colors"
+          style={{
+            padding: '6px 12px',
+            border: 'none',
+            cursor: 'pointer',
+            background: emptyVariant === id ? '#4262FF' : 'transparent',
+            color: emptyVariant === id ? '#fff' : '#9ca3af',
+            fontFamily: 'Open Sans, sans-serif',
+          }}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  )
+
   if (view === 'home') {
-    return <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv', name?: string) => {
+    return <>
+      <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv', name?: string) => {
       if (name) setSpaceName(name)
       setView('app')
       setActivePage('backlog')
@@ -452,6 +478,8 @@ export function App() {
         setTimeout(() => setShowShareDialog(true), 400)
       }
     }} />
+      {variantToggle}
+    </>
   }
 
   return (
@@ -737,29 +765,7 @@ export function App() {
         />
       )}
 
-      {/* Variant toggle */}
-      <div className="fixed bottom-4 left-4 z-[9999] flex items-center gap-1 rounded-lg bg-[#1a1b1e] p-1" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
-        {([
-          { id: 'hidden' as const, label: 'A: Hidden' },
-          { id: 'disabled' as const, label: 'B: Disabled' },
-        ]).map(({ id, label }) => (
-          <button
-            key={id}
-            onClick={() => setEmptyVariant(id)}
-            className="text-[12px] font-medium rounded-md transition-colors"
-            style={{
-              padding: '6px 12px',
-              border: 'none',
-              cursor: 'pointer',
-              background: emptyVariant === id ? '#4262FF' : 'transparent',
-              color: emptyVariant === id ? '#fff' : '#9ca3af',
-              fontFamily: 'Open Sans, sans-serif',
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      {variantToggle}
 
     </div>
   )
