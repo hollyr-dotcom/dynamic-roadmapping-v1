@@ -69,7 +69,7 @@ const ROADMAP_KANBAN_COLUMNS: Priority[] = ['now', 'next', 'later']
 export function App() {
   const [scrollFade, setScrollFade] = useState(0)
   const [view, setView] = useState<'home' | 'app'>('home')
-  const [emptyVariant, setEmptyVariant] = useState<'hidden' | 'disabled'>('hidden')
+  const [emptyVariant] = useState<'hidden' | 'disabled'>('disabled')
   const [spaceName, setSpaceName] = useState('Project Galaxy')
   const [showInsightsModal, setShowInsightsModal] = useState(false)
   const [showInsightsToast, setShowInsightsToast] = useState(false)
@@ -436,34 +436,8 @@ export function App() {
   const sortedViewData = [...baseViewData].sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 5) - (PRIORITY_ORDER[b.priority] ?? 5))
   const viewData = companyFilter.length > 0 ? sortedViewData.filter(r => companyFilter.some(f => r.companies?.includes(f))) : sortedViewData
 
-  const variantToggle = (
-    <div className="fixed bottom-4 left-4 z-[9999] flex items-center gap-1 rounded-lg bg-[#1a1b1e] p-1" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
-      {([
-        { id: 'hidden' as const, label: 'A: Hidden' },
-        { id: 'disabled' as const, label: 'B: Disabled' },
-      ]).map(({ id, label }) => (
-        <button
-          key={id}
-          onClick={() => setEmptyVariant(id)}
-          className="text-[12px] font-medium rounded-md transition-colors"
-          style={{
-            padding: '6px 12px',
-            border: 'none',
-            cursor: 'pointer',
-            background: emptyVariant === id ? '#4262FF' : 'transparent',
-            color: emptyVariant === id ? '#fff' : '#9ca3af',
-            fontFamily: 'Open Sans, sans-serif',
-          }}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
-  )
-
   if (view === 'home') {
-    return <>
-      <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv', name?: string) => {
+    return <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv', name?: string) => {
       if (name) setSpaceName(name)
       setView('app')
       setActivePage('backlog')
@@ -478,8 +452,6 @@ export function App() {
         setTimeout(() => setShowShareDialog(true), 400)
       }
     }} />
-      {variantToggle}
-    </>
   }
 
   return (
@@ -520,9 +492,12 @@ export function App() {
             <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} showImportPopover={showImportPopover} onDismissImportPopover={() => setShowImportPopover(false)} hideControls={emptyVariant === 'hidden' && !hasData} disableControls={emptyVariant === 'disabled' && !hasData} />
           </div>
 
-          {/* Type-based view renderer */}
+          {/* Type-based view renderer — show empty state for any view type when no data */}
+          {!hasData ? (
+            <DataTable key="empty" data={[]} fields={pageFields} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={() => { setShowSharePopover(false); setHasData(true); setBacklogData([{ id: 'new-1', title: '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]); setTimeout(() => setShowImportPopover(true), 800) }} activePage={activePage} />
+          ) : (<>
           {activeTabConfig?.type === 'table' && (
-              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={() => { setShowSharePopover(false); setHasData(true); setBacklogData([{ id: 'new-1', title: '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]); setTimeout(() => setShowImportPopover(true), 800) }} />
+              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={() => { setShowSharePopover(false); setHasData(true); setBacklogData([{ id: 'new-1', title: '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]); setTimeout(() => setShowImportPopover(true), 800) }} activePage={activePage} />
           )}
           {activeTabConfig?.type === 'kanban' && (
             <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onCardSelectedChange={setKanbanCardSelected} />
@@ -530,6 +505,7 @@ export function App() {
           {activeTabConfig?.type === 'timeline' && (
             <TimelinePlaceholder key={activeTab} data={roadmapItems} parentScrollRef={scrollRef} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onBarSelectedChange={setKanbanCardSelected} ghostRowId={ghostRowId ?? undefined} onBarPlaced={(rowId, startDate, endDate) => { setSelectedRowDates({ startDate, endDate }); setGhostRowId(null) }} />
           )}
+          </>)}
         </div>
       </div>
       </div>
@@ -764,8 +740,6 @@ export function App() {
           onDismiss={() => { setShowMoveSnackbar(false); setMovedRow(null) }}
         />
       )}
-
-      {variantToggle}
 
     </div>
   )
