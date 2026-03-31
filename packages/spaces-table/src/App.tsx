@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { Button, IconButton, IconCross } from '@mirohq/design-system'
+import { ShareSpaceDialog } from './components/page/ShareSpaceDialog'
 import { sampleData, fields, roadmapData, roadmapFields } from '@spaces/shared'
 import type { Priority, SpaceRow, Status } from '@spaces/shared'
 import { TopNavBar } from './components/page/TopNavBar'
@@ -68,10 +69,12 @@ const ROADMAP_KANBAN_COLUMNS: Priority[] = ['now', 'next', 'later']
 export function App() {
   const [scrollFade, setScrollFade] = useState(0)
   const [view, setView] = useState<'home' | 'app'>('home')
+  const [spaceName, setSpaceName] = useState('Project Galaxy')
   const [showInsightsModal, setShowInsightsModal] = useState(false)
   const [showInsightsToast, setShowInsightsToast] = useState(false)
   const [showImportPopover, setShowImportPopover] = useState(false)
   const [showSharePopover, setShowSharePopover] = useState(false)
+  const [showShareDialog, setShowShareDialog] = useState(false)
   const [activePage, setActivePage] = useState<PageId>('backlog')
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
   const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
@@ -433,17 +436,19 @@ export function App() {
   const viewData = companyFilter.length > 0 ? sortedViewData.filter(r => companyFilter.some(f => r.companies?.includes(f))) : sortedViewData
 
   if (view === 'home') {
-    return <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv') => {
+    return <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv', name?: string) => {
+      if (name) setSpaceName(name)
       setView('app')
       setActivePage('backlog')
       setActiveTab('all-items')
+      setActiveSidebar('space-menu')
       if (importSource) {
         setHasData(false)
         setPendingToast(true)
         setTimeout(() => setPendingImport(importSource), 300)
       } else {
         setHasData(false)
-        setTimeout(() => setShowSharePopover(true), 500)
+        setTimeout(() => setShowShareDialog(true), 400)
       }
     }} />
   }
@@ -463,13 +468,14 @@ export function App() {
       <div
         className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden transition-[padding-left] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{ paddingLeft: isLeftOpen ? (jiraPanelOpen ? 400 : 320) : 0 }}
-        onClick={isLeftOpen ? () => { setActiveSidebar(null); setJiraPanelOpen(false) } : undefined}
+        onClick={isLeftOpen && hasData ? () => { setActiveSidebar(null); setJiraPanelOpen(false) } : undefined}
       >
         <div onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
           <TopNavBar
             borderOpacity={scrollFade}
             scrollFade={scrollFade}
             databaseTitle={databaseTitle}
+            spaceName={spaceName}
             isMenuOpen={isLeftOpen}
             onToggleMenu={() => toggleSidebar('space-menu')}
             showSharePopover={showSharePopover}
@@ -516,7 +522,7 @@ export function App() {
           </div>
         ) : (
           <SidebarShell side="left" onClose={closeSidebar} showClose={false} width={320}>
-            <SpaceMenu onClose={closeSidebar} activePage={activePage} onPageChange={switchPage} onGoHome={() => { closeSidebar(); setView('home') }} />
+            <SpaceMenu onClose={closeSidebar} activePage={activePage} onPageChange={switchPage} onGoHome={() => { closeSidebar(); setView('home') }} spaceName={spaceName} />
           </SidebarShell>
         )}
       </div>
@@ -643,6 +649,14 @@ export function App() {
 
       {/* Canvas floating nav panels */}
       <CanvasNavPanels isOpen={canvasOpen} databaseTitle={databaseTitle} />
+
+      {/* Share space dialog */}
+      {showShareDialog && (
+        <ShareSpaceDialog
+          spaceName={spaceName}
+          onContinue={() => setShowShareDialog(false)}
+        />
+      )}
 
       {/* Jira auth dialog */}
       {showJiraAuth && (

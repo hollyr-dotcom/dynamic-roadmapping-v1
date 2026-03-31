@@ -12,13 +12,14 @@ interface TopNavBarProps {
   borderOpacity: number
   scrollFade: number
   databaseTitle: string
+  spaceName?: string
   isMenuOpen: boolean
   onToggleMenu: () => void
   showSharePopover?: boolean
   onDismissSharePopover?: () => void
 }
 
-export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen, onToggleMenu, showSharePopover, onDismissSharePopover }: TopNavBarProps) {
+export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, spaceName, isMenuOpen, onToggleMenu, showSharePopover, onDismissSharePopover }: TopNavBarProps) {
   const shareBtnRef = useRef<HTMLSpanElement>(null)
   const [shareBtnRect, setShareBtnRect] = useState<{ x: number; y: number; right: number } | null>(null)
 
@@ -61,7 +62,7 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
             className="font-heading font-semibold text-[#222428] leading-none select-none"
             style={{ fontSize: '14px' }}
           >
-            Project Galaxy
+            {spaceName || 'Project Galaxy'}
           </span>
 
           {/* Breadcrumb: chevron + database title — fades in on scroll */}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { SpaceRow, FieldDefinition } from '@spaces/shared'
-import { Button, IconPlus, IconSquareArrowIn, IconFileSpreadsheet, IconChevronDown, DropdownMenu } from '@mirohq/design-system'
+import { Button, IconPlus, IconSquareArrowIn, IconFileSpreadsheet, IconChevronDown, IconRocket, IconInsights, Switch, DropdownMenu } from '@mirohq/design-system'
 import { JiraLogo } from '../JiraLogo'
 import { TableHeader } from './TableHeader'
 import { TableRow } from './TableRow'
@@ -66,18 +66,21 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
     setSelectedRowId((prev) => (prev === rowId ? null : rowId))
   }, [])
 
+  const [enrichInsights, setEnrichInsights] = useState(true)
+
   if (data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-32 item-enter" style={{ animationDelay: '80ms' }}>
-        <div className="w-12 h-12 rounded-xl bg-[#f1f2f5] flex items-center justify-center mb-4">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <rect x="3" y="3" width="18" height="18" rx="2" stroke="#7D8297" strokeWidth="1.5"/>
-            <path d="M3 9h18M9 9v12" stroke="#7D8297" strokeWidth="1.5"/>
-          </svg>
+        <div className="w-16 h-16 rounded-2xl bg-[#e8ecff] flex items-center justify-center mb-5">
+          <IconRocket css={{ width: 32, height: 32, color: '#4262FF' }} />
         </div>
         <h3 className="text-[16px] font-semibold text-[#1a1b1e] mb-1" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>Start building your roadmap</h3>
         <p className="text-[14px] text-[#7D8297] mb-6" style={{ fontFamily: 'Open Sans, sans-serif' }}>Add records manually or import from your tools</p>
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="large" onPress={onAddRecord}>
+            <Button.IconSlot><IconPlus /></Button.IconSlot>
+            <Button.Label>Add record</Button.Label>
+          </Button>
           <DropdownMenu>
             <DropdownMenu.Trigger asChild>
               <Button variant="primary" size="large">
@@ -97,10 +100,20 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
               </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu>
-          <Button variant="ghost" size="large" onPress={onAddRecord}>
-            <Button.IconSlot><IconPlus /></Button.IconSlot>
-            <Button.Label>Add record</Button.Label>
-          </Button>
+        </div>
+
+        {/* Insights toggle */}
+        <div
+          className="flex items-center gap-3 mt-8 px-5 py-3 rounded-xl cursor-pointer transition-colors hover:bg-[#f8f9fa]"
+          style={{ border: '1px solid #e9eaef' }}
+          onClick={() => setEnrichInsights(v => !v)}
+        >
+          <IconInsights css={{ width: 20, height: 20, color: '#7D8297', shrink: 0 }} />
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[14px] font-semibold text-[#1a1b1e]" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>Enrich with Insights</span>
+            <span className="text-[12px] text-[#7D8297]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Auto-enrich records with customer signals</span>
+          </div>
+          <Switch checked={enrichInsights} onChange={setEnrichInsights} />
         </div>
       </div>
     )
