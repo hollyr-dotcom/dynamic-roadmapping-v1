@@ -100,7 +100,7 @@ function hashName(name: string): number {
 
 // --- Background colours ---
 
-const BG_DEFAULT = 'white'
+const BG_DEFAULT = '#F1F2F5'
 const BG_ROW_HOVER = '#E9EAEF'
 const BG_TAG_HOVER = '#E0E1E6'
 

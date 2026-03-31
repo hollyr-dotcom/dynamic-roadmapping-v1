@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { SpaceRow } from '@spaces/shared'
-import { Button, Chip, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard, IconInformationMarkCircle, IconTriangleSquareCircle, IconLightbulb, IconGift } from '@mirohq/design-system'
+import { Button, Chip, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard, IconInformationMarkCircle, IconEyeOpen } from '@mirohq/design-system'
 import {
   IconChartLine,
   IconChartProgress,
@@ -14,7 +14,6 @@ import {
   IconCross,
   IconPlus,
   IconTimelineFormat,
-  IconEyeOpen,
   IconArrowRight as _IconArrowRight,
 } from '@mirohq/design-system'
 
@@ -25,6 +24,16 @@ export const TAG_BG: Record<string, string> = {
   Urgent: '#FFD8F4',
   Strengthening: '#F8D3AF',
   Weakening: '#DEDAFF',
+}
+
+function IconThreeColumnsVertical() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2"  y="4" width="5" height="16" rx="1.5" fill="#3C3F4A" />
+      <rect x="9.5" y="4" width="5" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="17" y="4" width="5" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  )
 }
 
 function GiftIcon() {
@@ -83,13 +92,14 @@ export const OVERVIEW_ROWS: Record<string, SpaceRow> = {
 
 type CardIcon = 'chart-line' | 'chart-progress' | 'sparks' | 'lightning' | 'chat'
 
-type MatchTag = 'Demand change' | 'Priority mismatch' | 'Unmatched demand' | 'New evidence'
+type MatchTag = 'Growing evidence' | 'Fading evidence' | 'New evidence' | 'Missing with roadmap' | 'Weak evidence'
 
 const MATCH_TAG_STYLE: Record<MatchTag, { bg: string; text: string }> = {
-  'Demand change':    { bg: '#F8D3AF', text: '#A54800' },
-  'Priority mismatch': { bg: '#FDD3F2', text: '#7B2F6E' },
-  'Unmatched demand': { bg: '#EFE9FF', text: '#3D25A0' },
-  'New evidence':     { bg: '#EAFAEA', text: '#067429' },
+  'Growing evidence':    { bg: '#EAFAEA', text: '#067429' },
+  'Fading evidence':     { bg: '#EFE9FF', text: '#3D25A0' },
+  'New evidence':        { bg: '#E7F0FF', text: '#0055CC' },
+  'Missing with roadmap': { bg: '#FDD3F2', text: '#7B2F6E' },
+  'Weak evidence':       { bg: '#FFF8D6', text: '#7F5F01' },
 }
 
 const CARDS: {
@@ -106,10 +116,10 @@ const CARDS: {
   {
     id: '1',
     icon: 'lightning',
-    tags: ['Urgent', 'Customer'],
-    matchTag: 'Priority mismatch',
+    tags: ['Customer'],
+    matchTag: 'Growing evidence',
     title: 'Accelerate large-table performance improvements — boards become unusable at ~100+ rows',
-    description: '~793 projected monthly mentions make this the highest-volume theme in March. It correlates directly to an existing P0 roadmap item that may need to be pulled forward.',
+    description: '~793 projected monthly mentions make this the highest-volume theme in March, up 23% month-over-month. It correlates directly to an existing P0 roadmap item that may need to be pulled forward.',
     confidence: '90%',
     primaryAction: 'Reprioritize',
     secondaryAction: 'Dive deeper',
@@ -117,10 +127,10 @@ const CARDS: {
   {
     id: '2',
     icon: 'chart-progress',
-    tags: ['New', 'Customer'],
-    matchTag: 'Unmatched demand',
+    tags: ['Customer'],
+    matchTag: 'Missing with roadmap',
     title: 'Fix paste and CSV import fidelity — especially the 5-row truncation bug',
-    description: 'Paste from Excel, Google Sheets, CSV, and Confluence is broken for ~652 projected monthly mentions. This foundational gap isn\'t covered by any existing roadmap item.',
+    description: 'Paste from Excel, Google Sheets, CSV, and Confluence is broken for ~652 projected monthly mentions. No existing roadmap item addresses paste or import fidelity.',
     confidence: '88%',
     primaryAction: 'Add to roadmap',
     secondaryAction: 'Dive deeper',
@@ -128,10 +138,10 @@ const CARDS: {
   {
     id: '3',
     icon: 'chart-line',
-    tags: ['Customer', 'Market'],
-    matchTag: 'Unmatched demand',
+    tags: ['Customer'],
+    matchTag: 'Growing evidence',
     title: 'Add rich text editing inside table cells (bullets, bold, links)',
-    description: '~874 projected monthly mentions make rich text the single highest-volume theme in March. Current cells are plain text only, breaking use cases like mini-specs, meeting notes, and workshop content.',
+    description: '~874 projected monthly mentions make rich text the single highest-volume theme in March, rising for three consecutive months. Current cells are plain text only, breaking use cases like mini-specs, meeting notes, and workshop content.',
     confidence: '85%',
     primaryAction: 'Add to roadmap',
     secondaryAction: 'Dive deeper',
@@ -139,10 +149,10 @@ const CARDS: {
   {
     id: '4',
     icon: 'sparks',
-    tags: ['Urgent', 'Customer'],
-    matchTag: 'New evidence',
+    tags: ['Customer'],
+    matchTag: 'Weak evidence',
     title: 'Rein in AI table creation — make it suggestion-only with preview and opt-in controls',
-    description: 'AI-generated tables overwrite existing content with no preview or confirmation, and the pattern is emerging across multiple enterprise accounts. More evidence needed before scoping a fix.',
+    description: 'Only ~241 mentions across 89 customers so far — low volume relative to other themes. Reports are scattered with no clear pattern yet. Not enough signal to scope work confidently.',
     confidence: '83%',
     primaryAction: 'Review evidence',
     secondaryAction: 'Dive deeper',
@@ -175,7 +185,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-6">
                 <div className="flex items-center justify-center shrink-0" style={{ color: '#222428' }}>
-                  {card.matchTag === 'Priority mismatch' ? <IconTriangleSquareCircle size="medium" /> : card.matchTag === 'Unmatched demand' ? <IconLightbulb size="medium" /> : card.matchTag === 'New evidence' ? <IconGift size="medium" /> : <CardIcon type={card.icon} />}
+                  {card.matchTag === 'Growing evidence' ? <IconChartLine size="medium" /> : card.matchTag === 'Fading evidence' ? <IconArrowDown size="medium" /> : card.matchTag === 'New evidence' ? <IconSparks size="medium" /> : card.matchTag === 'Missing with roadmap' ? <IconExclamationPointCircle size="medium" /> : card.matchTag === 'Weak evidence' ? <IconThreeColumnsVertical /> : <CardIcon type={card.icon} />}
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <Chip removable={false} css={{ backgroundColor: MATCH_TAG_STYLE[card.matchTag].bg, color: MATCH_TAG_STYLE[card.matchTag].text, fontWeight: 700, borderRadius: 6, fontFamily: "'Roobert PRO', sans-serif", fontSize: 12 }}>{card.matchTag}</Chip>

@@ -30,7 +30,7 @@ const SOURCE_DATA: Record<string, SourceEntry | null> = {
 export function SourceLogoChip({ source }: { source: string }) {
   const [hovered, setHovered] = useState(false)
   const data = SOURCE_DATA[source]
-  const bg = hovered ? '#E0E1E6' : 'white'
+  const bg = hovered ? '#E0E1E6' : '#F1F2F5'
 
   let icon: React.ReactNode
   if (source === 'Gong') {
