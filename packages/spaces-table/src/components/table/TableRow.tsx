@@ -188,7 +188,7 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
                   }}
                 >
                   <button
-                    onClick={() => { setOpenPopoverField(null); onRowClick?.(row) }}
+                    onMouseDown={(e) => { e.preventDefault(); setOpenPopoverField(null); onRowClick?.(row) }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
