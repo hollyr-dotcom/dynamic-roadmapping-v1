@@ -254,7 +254,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
     }
   }
 
-  const visibleTabs = tabs.filter(t => !overflowTabIds.has(t.id))
+  const visibleTabs = hideControls ? tabs.slice(0, 1) : tabs.filter(t => !overflowTabIds.has(t.id))
   const overflowTabs = tabs.filter(t => overflowTabIds.has(t.id))
   const hasOverflow = overflowTabs.length > 0
   const activeInOverflow = overflowTabIds.has(activeTab)
@@ -294,6 +294,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
                     >
                       <Tabs.Trigger
                         value={tab.id}
+                        disabled={disableControls && tab.id !== tabs[0]?.id}
                         onDoubleClick={() => { if (tab.id === activeTab) startEditing(tab) }}
                         css={
                           editingTabId === tab.id
@@ -532,7 +533,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
         })()}
 
         {/* New View + button — hover-reveal, stays visible while menu is open */}
-        <div className={`shrink-0 transition-all duration-200 ease-out ${
+        {!hideControls && !disableControls && <div className={`shrink-0 transition-all duration-200 ease-out ${
           isAddMenuOpen
             ? 'opacity-100 scale-100 translate-x-0'
             : 'opacity-0 scale-[0.85] -translate-x-1.5 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:translate-x-0 group-hover:pointer-events-auto'
@@ -568,7 +569,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
             </DropdownMenu>
             <Tooltip.Content side="top" sideOffset={4}>Add a view</Tooltip.Content>
           </Tooltip>
-        </div>
+        </div>}
       </div>
 
       {/* Company filter chips */}

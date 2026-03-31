@@ -69,6 +69,7 @@ const ROADMAP_KANBAN_COLUMNS: Priority[] = ['now', 'next', 'later']
 export function App() {
   const [scrollFade, setScrollFade] = useState(0)
   const [view, setView] = useState<'home' | 'app'>('home')
+  const [emptyVariant, setEmptyVariant] = useState<'hidden' | 'disabled'>('hidden')
   const [spaceName, setSpaceName] = useState('Project Galaxy')
   const [showInsightsModal, setShowInsightsModal] = useState(false)
   const [showInsightsToast, setShowInsightsToast] = useState(false)
@@ -470,7 +471,7 @@ export function App() {
         style={{ paddingLeft: isLeftOpen ? (jiraPanelOpen ? 400 : 320) : 0 }}
         onClick={isLeftOpen && hasData ? () => { setActiveSidebar(null); setJiraPanelOpen(false) } : undefined}
       >
-        <div onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
+        <div onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)} onClick={e => e.stopPropagation()}>
           <TopNavBar
             borderOpacity={scrollFade}
             scrollFade={scrollFade}
@@ -484,11 +485,11 @@ export function App() {
         </div>
         {/* Scroll area — vertical + horizontal, table header sticks below toolbar */}
         <div ref={scrollRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-auto page-scroll flex flex-col${pageTransitioning ? ' page-transitioning-out' : ''}`}>
-          <div className="sticky left-0" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
+          <div className="sticky left-0" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)} onClick={e => e.stopPropagation()}>
             <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} />
           </div>
-          <div className={`sticky top-0 left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
-            <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} showImportPopover={showImportPopover} onDismissImportPopover={() => setShowImportPopover(false)} disableControls={!hasData} />
+          <div className={`sticky top-0 left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)} onClick={e => e.stopPropagation()}>
+            <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} showImportPopover={showImportPopover} onDismissImportPopover={() => setShowImportPopover(false)} hideControls={emptyVariant === 'hidden' && !hasData} disableControls={emptyVariant === 'disabled' && !hasData} />
           </div>
 
           {/* Type-based view renderer */}
@@ -735,6 +736,30 @@ export function App() {
           onDismiss={() => { setShowMoveSnackbar(false); setMovedRow(null) }}
         />
       )}
+
+      {/* Variant toggle */}
+      <div className="fixed bottom-4 left-4 z-[9999] flex items-center gap-1 rounded-lg bg-[#1a1b1e] p-1" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+        {([
+          { id: 'hidden' as const, label: 'A: Hidden' },
+          { id: 'disabled' as const, label: 'B: Disabled' },
+        ]).map(({ id, label }) => (
+          <button
+            key={id}
+            onClick={() => setEmptyVariant(id)}
+            className="text-[12px] font-medium rounded-md transition-colors"
+            style={{
+              padding: '6px 12px',
+              border: 'none',
+              cursor: 'pointer',
+              background: emptyVariant === id ? '#4262FF' : 'transparent',
+              color: emptyVariant === id ? '#fff' : '#9ca3af',
+              fontFamily: 'Open Sans, sans-serif',
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
     </div>
   )

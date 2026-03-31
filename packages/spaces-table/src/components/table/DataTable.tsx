@@ -104,7 +104,7 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
 
         {/* Insights toggle */}
         <div
-          className="flex items-center gap-3 mt-8 px-5 py-3 rounded-xl cursor-pointer transition-colors hover:bg-[#f8f9fa]"
+          className="flex items-center gap-3 mt-12 px-5 py-3 rounded-xl cursor-pointer transition-colors hover:bg-[#f8f9fa]"
           style={{ border: '1px solid #e9eaef' }}
           onClick={() => setEnrichInsights(v => !v)}
         >
