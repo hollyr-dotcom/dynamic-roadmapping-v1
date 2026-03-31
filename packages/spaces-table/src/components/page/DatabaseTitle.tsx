@@ -4,6 +4,7 @@ import {
   IconDotsThree,
   IconArrowsOutSimple,
   IconArrowUpRight,
+  IconFileSpreadsheet,
   DropdownMenu,
   IconStar,
   IconLink,
@@ -15,6 +16,13 @@ import {
   Tooltip,
 } from '@mirohq/design-system'
 import { MENU_WIDTH } from './ViewTabsToolbar'
+import { JiraLogo } from '../JiraLogo'
+
+function RobotIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M72,104a16,16,0,1,1,16,16A16,16,0,0,1,72,104Zm96,16a16,16,0,1,0-16-16A16,16,0,0,0,168,120Zm68-40V192a36,36,0,0,1-36,36H56a36,36,0,0,1-36-36V80A36,36,0,0,1,56,44h60V16a12,12,0,0,1,24,0V44h60A36,36,0,0,1,236,80Zm-24,0a12,12,0,0,0-12-12H56A12,12,0,0,0,44,80V192a12,12,0,0,0,12,12H200a12,12,0,0,0,12-12Zm-12,82a30,30,0,0,1-30,30H86a30,30,0,0,1,0-60h84A30,30,0,0,1,200,162Zm-80-6v12h16V156ZM86,168H96V156H86a6,6,0,0,0,0,12Zm90-6a6,6,0,0,0-6-6H160v12h10A6,6,0,0,0,176,162Z" /></svg>
+  )
+}
 
 interface DatabaseTitleProps {
   opacity: number
@@ -25,9 +33,13 @@ interface DatabaseTitleProps {
   onExitCanvas?: () => void
   syncCount?: number
   syncing?: boolean
+  onImportSource?: (source: 'jira' | 'miro' | 'csv') => void
+  showImportPopover?: boolean
+  onDismissImportPopover?: () => void
+  disableControls?: boolean
 }
 
-export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, variant = 'page', onExitCanvas, syncCount = 0, syncing = false }: DatabaseTitleProps) {
+export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, variant = 'page', onExitCanvas, syncCount = 0, syncing = false, onImportSource, showImportPopover, onDismissImportPopover, disableControls }: DatabaseTitleProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const measureRef = useRef<HTMLSpanElement>(null)
   const [draft, setDraft] = useState(title)
@@ -76,6 +88,17 @@ export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, v
 
   const [isFocused, setIsFocused] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [isImportMenuOpen, setIsImportMenuOpen] = useState(false)
+  const importBtnRef = useRef<HTMLSpanElement>(null)
+  const [importBtnRect, setImportBtnRect] = useState<DOMRect | null>(null)
+
+  useEffect(() => {
+    if (showImportPopover && importBtnRef.current) {
+      const r = importBtnRef.current.getBoundingClientRect()
+      setImportBtnRect(r)
+    }
+    if (!showImportPopover) setImportBtnRect(null)
+  }, [showImportPopover])
 
   return (
     <div
@@ -146,10 +169,48 @@ export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, v
         </div>
       )}
 
+      {/* Import agents button */}
+      {variant === 'page' && (
+        <div className={`translate-y-1 transition-all duration-200 ease-out ${
+          isFocused
+            ? 'opacity-0 scale-[0.85] pointer-events-none'
+            : menuOpen || isImportMenuOpen || showImportPopover
+              ? 'opacity-100 scale-100'
+              : 'opacity-0 scale-[0.85] group-hover/title:opacity-100 group-hover/title:scale-100'
+        }`}>
+          <span ref={importBtnRef} className="inline-flex">
+            <DropdownMenu onOpen={() => { setIsImportMenuOpen(true); if (showImportPopover) onDismissImportPopover?.() }} onClose={() => setIsImportMenuOpen(false)}>
+              <Tooltip>
+                <Tooltip.Trigger asChild>
+                  <DropdownMenu.Trigger asChild>
+                    <IconButton aria-label="Import agents" variant="ghost" size="medium" css={isImportMenuOpen ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}>
+                      <RobotIcon />
+                    </IconButton>
+                  </DropdownMenu.Trigger>
+                </Tooltip.Trigger>
+                <Tooltip.Content side="top" sideOffset={4}>
+                  Import agents
+                </Tooltip.Content>
+              </Tooltip>
+              <DropdownMenu.Content side="bottom" align="start" alignOffset={-12} css={{ minWidth: MENU_WIDTH, zIndex: 30 }}>
+                <DropdownMenu.Item onSelect={() => onImportSource?.('jira')}>
+                  <DropdownMenu.IconSlot><JiraLogo size={20} /></DropdownMenu.IconSlot>
+                  Jira
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={() => onImportSource?.('csv')}>
+                  <DropdownMenu.IconSlot><IconFileSpreadsheet /></DropdownMenu.IconSlot>
+                  CSV
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu>
+          </span>
+        </div>
+      )}
+
       <div className={`translate-y-1 transition-all duration-200 ease-out ${
         isFocused
           ? 'opacity-0 scale-[0.85] pointer-events-none'
-          : menuOpen
+          : menuOpen || isImportMenuOpen || showImportPopover
             ? 'opacity-100 scale-100'
             : 'opacity-0 scale-[0.85] group-hover/title:opacity-100 group-hover/title:scale-100'
       }`}>
@@ -193,6 +254,48 @@ export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, v
           </DropdownMenu.Content>
         </DropdownMenu>
       </div>
+
+      {/* Import agents popover */}
+      {showImportPopover && importBtnRect && (
+        <div
+          className="import-popover-tip-center"
+          data-import-popover
+          style={{
+            position: 'fixed',
+            top: importBtnRect.y + 10,
+            left: importBtnRect.x,
+            zIndex: 9999,
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#44464F' }} />
+            <div style={{ width: 1, height: 16, background: '#44464F' }} />
+          </div>
+          <div
+            style={{
+              position: 'relative',
+              background: '#2B2D33',
+              borderRadius: 8,
+              padding: '14px 40px 16px 16px',
+              color: '#fff',
+              width: 260,
+              boxShadow: '0 2px 8px rgba(34,36,40,0.12), 0 0 12px rgba(34,36,40,0.04)',
+            }}
+          >
+            <button
+              onClick={onDismissImportPopover}
+              style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 4, lineHeight: 0, color: 'rgba(255,255,255,0.5)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.8)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}
+              aria-label="Close"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+            </button>
+            <p className="font-heading font-semibold text-[16px] leading-snug mb-1">Import agents</p>
+            <p className="font-body text-[14px] leading-snug text-white/60">Add agents that automatically sync and import records from your tools.</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

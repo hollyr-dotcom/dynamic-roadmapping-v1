@@ -12,7 +12,7 @@ import {
   IconFunnel,
   IconArrowsDownUp,
   IconHorizontalBlocks,
-  IconSquareArrowIn,
+
   IconFileSpreadsheet,
   IconColumnsThree,
   IconPlus,
@@ -648,33 +648,6 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
           <Tooltip.Content side="top" sideOffset={4}>Sort</Tooltip.Content>
         </Tooltip>
 
-        <span ref={importBtnRef} className="inline-flex">
-          <DropdownMenu onOpen={() => { if (!disableControls) { setIsImportMenuOpen(true); if (showImportPopover) onDismissImportPopover?.() } }} onClose={() => setIsImportMenuOpen(false)}>
-            <Tooltip>
-              <Tooltip.Trigger asChild>
-                <DropdownMenu.Trigger asChild>
-                  <IconButton aria-label="Import" variant="ghost" size="medium" disabled={disableControls} css={isImportMenuOpen ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}>
-                    <IconSquareArrowIn css={{ transform: 'rotate(180deg)' }} />
-                  </IconButton>
-                </DropdownMenu.Trigger>
-              </Tooltip.Trigger>
-              <Tooltip.Content side="top" sideOffset={4}>
-                Import
-                <Tooltip.Hotkey>⌘ + I</Tooltip.Hotkey>
-              </Tooltip.Content>
-            </Tooltip>
-            <DropdownMenu.Content side="bottom" align="center" css={{ minWidth: 180 }}>
-              <DropdownMenu.Item onSelect={() => onImportSource?.('jira')}>
-                <DropdownMenu.IconSlot><JiraLogo size={20} /></DropdownMenu.IconSlot>
-                Jira
-              </DropdownMenu.Item>
-<DropdownMenu.Item onSelect={() => onImportSource?.('csv')}>
-                <DropdownMenu.IconSlot><IconFileSpreadsheet /></DropdownMenu.IconSlot>
-                CSV
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu>
-        </span>
         </>)}
 
         {!hideControls && (
@@ -780,47 +753,6 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
         )
       })()}
 
-      {/* Import tip popover */}
-      {showImportPopover && importBtnRect && (
-        <div
-          className="import-popover-tip-center"
-          data-import-popover
-          style={{
-            position: 'fixed',
-            top: importBtnRect.y + 10,
-            left: importBtnRect.x,
-            zIndex: 9999,
-          }}
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#44464F' }} />
-            <div style={{ width: 1, height: 16, background: '#44464F' }} />
-          </div>
-          <div
-            style={{
-              position: 'relative',
-              background: '#2B2D33',
-              borderRadius: 8,
-              padding: '14px 40px 16px 16px',
-              color: '#fff',
-              width: 240,
-              boxShadow: '0 2px 8px rgba(34,36,40,0.12), 0 0 12px rgba(34,36,40,0.04)',
-            }}
-          >
-            <button
-              onClick={onDismissImportPopover}
-              style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 4, lineHeight: 0, color: 'rgba(255,255,255,0.5)' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.8)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}
-              aria-label="Close"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-            </button>
-            <p className="font-heading font-semibold text-[16px] leading-snug mb-1">Import</p>
-            <p className="font-body text-[14px] leading-snug text-white/60">Add more items from Jira, or upload a CSV.</p>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
