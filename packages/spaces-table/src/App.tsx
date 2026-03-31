@@ -69,6 +69,7 @@ const ROADMAP_KANBAN_COLUMNS: Priority[] = ['now', 'next', 'later']
 export function App() {
   const [scrollFade, setScrollFade] = useState(0)
   const [view, setView] = useState<'home' | 'app'>('home')
+  const [isInitialLoad, setIsInitialLoad] = useState(false)
   const [emptyVariant] = useState<'hidden' | 'disabled'>('disabled')
   const [spaceName, setSpaceName] = useState('Project Galaxy')
   const [showInsightsModal, setShowInsightsModal] = useState(false)
@@ -178,6 +179,11 @@ export function App() {
       return clamped
     })
   }, [])
+
+  // Reset initial load flag after first app render so page-switch animations work
+  useEffect(() => {
+    if (view === 'app' && isInitialLoad) setIsInitialLoad(false)
+  }, [view, isInitialLoad])
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -439,6 +445,7 @@ export function App() {
   if (view === 'home') {
     return <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv', name?: string) => {
       if (name) setSpaceName(name)
+      setIsInitialLoad(true)
       setView('app')
       setActivePage('backlog')
       setActiveTab('all-items')
@@ -494,7 +501,7 @@ export function App() {
 
           {/* Type-based view renderer — show empty state for any view type when no data */}
           {!hasData ? (
-            <DataTable key="empty" data={[]} fields={pageFields} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={() => { setShowSharePopover(false); setHasData(true); setBacklogData([{ id: 'new-1', title: '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]); setTimeout(() => setShowImportPopover(true), 800) }} activePage={activePage} />
+            <DataTable key={`empty-${activePage}`} data={[]} fields={pageFields} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={() => { setShowSharePopover(false); setHasData(true); setBacklogData([{ id: 'new-1', title: '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]); setTimeout(() => setShowImportPopover(true), 800) }} activePage={activePage} animateIn={!isInitialLoad} />
           ) : (<>
           {activeTabConfig?.type === 'table' && (
               <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={() => { setShowSharePopover(false); setHasData(true); setBacklogData([{ id: 'new-1', title: '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]); setTimeout(() => setShowImportPopover(true), 800) }} activePage={activePage} />

@@ -8,12 +8,12 @@ interface ShareSpaceDialogProps {
 export function ShareSpaceDialog({ spaceName, onContinue }: ShareSpaceDialogProps) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center dialog-backdrop-enter"
       style={{ backgroundColor: 'rgba(99,107,130,0.55)' }}
       onClick={onContinue}
     >
       <div
-        className="bg-white flex flex-col relative"
+        className="bg-white flex flex-col relative dialog-card-enter"
         style={{
           borderRadius: 16,
           width: 560,

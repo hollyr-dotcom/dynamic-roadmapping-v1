@@ -33,12 +33,15 @@ interface DataTableProps {
   onImportSource?: (source: 'jira' | 'miro' | 'csv') => void
   onAddRecord?: () => void
   activePage?: 'backlog' | 'roadmap'
+  animateIn?: boolean
 }
 
-export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete, onMoveToRoadmap, showMoveToRoadmap, onImportSource, onAddRecord, activePage = 'roadmap' }: DataTableProps) {
+export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete, onMoveToRoadmap, showMoveToRoadmap, onImportSource, onAddRecord, activePage = 'roadmap', animateIn = true }: DataTableProps) {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const tableRef = useRef<HTMLDivElement>(null)
   const hasImportedRef = useRef(false)
+  // Freeze animateIn at mount — prevents CSS animation from triggering if prop changes later
+  const animateInRef = useRef(animateIn)
   if (isImporting) hasImportedRef.current = true
 
   // Deselect when clicking outside the table
@@ -73,12 +76,12 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
     const PageIcon = activePage === 'backlog' ? IconLightbulb : IconRocket
     const heading = activePage === 'backlog' ? 'Start adding ideas to your backlog' : 'Start building your roadmap'
     return (
-      <div className="flex flex-col items-center justify-center py-32 item-enter" style={{ animationDelay: '80ms' }}>
+      <div className={`flex flex-col items-center justify-center py-32${animateInRef.current ? ' item-enter' : ''}`} style={animateInRef.current ? { animationDelay: '80ms' } : undefined}>
         <div className="w-16 h-16 rounded-2xl bg-[#e8ecff] flex items-center justify-center mb-5">
           <PageIcon css={{ width: 32, height: 32, color: '#4262FF' }} />
         </div>
         <h3 className="text-[18px] font-semibold text-[#1a1b1e] mb-1" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>{heading}</h3>
-        <p className="text-[16px] text-[#7D8297] mb-6" style={{ fontFamily: 'Open Sans, sans-serif' }}>Add records manually or import from your tools</p>
+        <p className="text-[14px] text-[#7D8297] mb-6" style={{ fontFamily: 'Open Sans, sans-serif' }}>Add records manually or import from your tools</p>
         <div className="flex items-center gap-3">
           <DropdownMenu>
             <DropdownMenu.Trigger asChild>
