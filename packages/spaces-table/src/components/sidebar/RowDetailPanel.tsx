@@ -1347,8 +1347,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         </div>
       </div>
     )}
-    </div>{/* end content row */}
-    </div>{/* end outer wrapper */}
+    </div>
+    </div>
   )
 
   if (selectedLayout === 'Center' || selectedLayout === 'Fullscreen') {
