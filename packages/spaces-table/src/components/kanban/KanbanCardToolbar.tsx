@@ -1,13 +1,14 @@
 import { useLayoutEffect, useRef, useState } from 'react'
-import { IconButton, IconArrowsOutSimple, IconChatLinesTwo, IconMap, IconDotsThreeVertical, Tooltip } from '@mirohq/design-system'
+import { IconButton, IconArrowsOutSimple, IconChatLinesTwo, IconMap, IconDotsThreeVertical, IconSparksFilled, Tooltip } from '@mirohq/design-system'
 
 interface KanbanCardToolbarProps {
   onOpenSidePanel: () => void
   onMoveToRoadmap?: () => void
+  onOpenSidekick?: () => void
   cardColor?: string
 }
 
-export function KanbanCardToolbar({ onOpenSidePanel, onMoveToRoadmap, cardColor }: KanbanCardToolbarProps) {
+export function KanbanCardToolbar({ onOpenSidePanel, onMoveToRoadmap, onOpenSidekick, cardColor }: KanbanCardToolbarProps) {
   const ref = useRef<HTMLDivElement>(null)
   const [offsetX, setOffsetX] = useState(0)
 
@@ -59,6 +60,17 @@ export function KanbanCardToolbar({ onOpenSidePanel, onMoveToRoadmap, cardColor 
         </Tooltip.Trigger>
         <Tooltip.Content side="top" sideOffset={4}>Open comments</Tooltip.Content>
       </Tooltip>
+
+      {onOpenSidekick && (
+        <Tooltip>
+          <Tooltip.Trigger asChild>
+            <IconButton aria-label="Ask Sidekick" variant="ghost" size="medium" onPress={onOpenSidekick}>
+              <IconSparksFilled />
+            </IconButton>
+          </Tooltip.Trigger>
+          <Tooltip.Content side="top" sideOffset={4}>Ask Sidekick</Tooltip.Content>
+        </Tooltip>
+      )}
 
       {onMoveToRoadmap && (
         <Tooltip>
