@@ -4,6 +4,7 @@ import { IconPlus, IconFileSpreadsheet, IconLightbulb } from '@mirohq/design-sys
 import { JiraLogo } from '../JiraLogo'
 import { TableHeader } from './TableHeader'
 import { TableRow } from './TableRow'
+import { AddToBoardPopover } from './AddToBoardPopover'
 
 const IMPORT_INITIAL_DELAY = 100
 const IMPORT_ROW_DURATION = 200
@@ -35,9 +36,10 @@ interface DataTableProps {
   activePage?: 'backlog' | 'roadmap'
   animateIn?: boolean
   onEmptyInteract?: () => void
+  onAddToBoard?: (rowId: string, prompt: string) => void
 }
 
-export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete, onMoveToRoadmap, showMoveToRoadmap, onImportSource, onAddRecord, activePage = 'roadmap', animateIn = true, onEmptyInteract }: DataTableProps) {
+export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete, onMoveToRoadmap, showMoveToRoadmap, onImportSource, onAddRecord, activePage = 'roadmap', animateIn = true, onEmptyInteract, onAddToBoard }: DataTableProps) {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const tableRef = useRef<HTMLDivElement>(null)
   const hasImportedRef = useRef(false)
@@ -70,6 +72,16 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
     e.stopPropagation()
     setSelectedRowId((prev) => (prev === rowId ? null : rowId))
   }, [])
+
+  const [addToBoardState, setAddToBoardState] = useState<{ row: SpaceRow; rect: DOMRect } | null>(null)
+
+  const handleAddToBoardClick = useCallback((rowId: string, rect: DOMRect) => {
+    const row = data.find(r => r.id === rowId)
+    if (row) {
+      setSelectedRowId(null)
+      setAddToBoardState({ row, rect })
+    }
+  }, [data])
 
   const [newItemTitle, setNewItemTitle] = useState('')
   const [newItemFocused, setNewItemFocused] = useState(false)
@@ -174,10 +186,24 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
               importDelay={isImporting ? getRowDelay(idx, data.length) : undefined}
               onMoveToRoadmap={onMoveToRoadmap}
               showMoveToRoadmap={showMoveToRoadmap}
+              onAddToBoard={onAddToBoard ? handleAddToBoardClick : undefined}
+              isHighlighted={addToBoardState?.row.id === row.id}
             />
           ))}
         </tbody>
       </table>
+
+      {addToBoardState && onAddToBoard && (
+        <AddToBoardPopover
+          row={addToBoardState.row}
+          anchorRect={addToBoardState.rect}
+          onClose={() => setAddToBoardState(null)}
+          onConfirm={(rowId, prompt) => {
+            onAddToBoard(rowId, prompt)
+            setAddToBoardState(null)
+          }}
+        />
+      )}
     </div>
   )
 }

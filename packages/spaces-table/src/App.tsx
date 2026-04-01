@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { Button, IconButton, IconCross } from '@mirohq/design-system'
 import { ShareSpaceDialog } from './components/page/ShareSpaceDialog'
 import { sampleData, fields, roadmapData, roadmapFields } from '@spaces/shared'
-import type { Priority, SpaceRow, Status } from '@spaces/shared'
+import type { Priority, SpaceRow, Status, FieldDefinition } from '@spaces/shared'
 import { TopNavBar } from './components/page/TopNavBar'
 import { DatabaseTitle } from './components/page/DatabaseTitle'
 import { ViewTabsToolbar, type SidebarId, type TabConfig, type ViewType } from './components/page/ViewTabsToolbar'
@@ -24,17 +24,21 @@ import { CanvasOverlay } from './components/canvas/CanvasOverlay'
 import { CanvasTableWidget } from './components/canvas/CanvasTableWidget'
 import { CanvasNavPanels } from './components/canvas/CanvasNavPanels'
 import { CanvasFeedbackCard, type FeedbackCardData } from './components/canvas/CanvasFeedbackCard'
+import { CanvasRecordCard } from './components/canvas/CanvasRecordCard'
 import { MoveToRoadmapSnackbar } from './components/page/MoveToRoadmapSnackbar'
 
 type PageId = 'backlog' | 'roadmap'
 
 interface CanvasWidget {
   id: string
-  type?: 'table' | 'feedback-card'
+  type?: 'table' | 'feedback-card' | 'record-card'
   activeTab: string
   x: number
   y: number
   feedbackCard?: FeedbackCardData
+  recordRow?: SpaceRow
+  recordFields?: FieldDefinition[]
+  recordPrompt?: string
 }
 
 interface PageConfig {
@@ -112,6 +116,8 @@ export function App() {
   const [widgets, setWidgets] = useState<CanvasWidget[]>([])
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null)
   const [smoothPanning, setSmoothPanning] = useState(false)
+  const [boardName, setBoardName] = useState<string | null>(null)
+  const [boards, setBoards] = useState<{ id: string; name: string }[]>([])
   const [updatedRows, setUpdatedRows] = useState<Set<string>>(new Set())
   const [insightsAllDots, setInsightsAllDots] = useState(false)
   const [syncShimmering, setSyncShimmering] = useState(false)
@@ -404,6 +410,46 @@ export function App() {
     setUpdatedRows(prev => new Set([...prev, id]))
   }, [])
 
+  const handleAddRecordToBoard = useCallback((rowId: string, prompt: string) => {
+    const row = backlogData.find(r => r.id === rowId) ?? roadmapItems.find(r => r.id === rowId)
+    if (!row) return
+
+    // Generate board name from prompt
+    const PROMPT_TO_BOARD: Record<string, string> = {
+      'Write a PRD': 'PRD Board',
+      'Explore insights': 'Insights Board',
+      'Estimate with team': 'Estimation Board',
+    }
+    const name = PROMPT_TO_BOARD[prompt] || `${prompt} Board`
+    const boardId = `board-${Date.now()}`
+
+    const cardWidget: CanvasWidget = {
+      id: `record-${Date.now()}`,
+      type: 'record-card',
+      activeTab: '',
+      x: window.innerWidth / 2 - 170,
+      y: 200,
+      recordRow: row,
+      recordFields: activePage === 'backlog' ? fields : roadmapFields,
+      recordPrompt: prompt,
+    }
+
+    setBoardName(name)
+    setBoards(prev => [...prev, { id: boardId, name }])
+
+    if (!canvasOpen) {
+      setWidgets([cardWidget])
+      setCanvasOpen(true)
+      setPanX(0)
+      setPanY(0)
+      setZoom(1)
+      setSelectedWidgetId(null)
+    } else {
+      setWidgets(prev => [...prev, cardWidget])
+    }
+    setActiveSidebar('space-menu')
+  }, [backlogData, roadmapItems, canvasOpen, activePage])
+
   const handleAddToBoard = useCallback((cardData: FeedbackCardData) => {
     const cardWidget: CanvasWidget = {
       id: `feedback-${Date.now()}`,
@@ -509,7 +555,7 @@ export function App() {
             <DataTable key={`empty-${activePage}`} data={[]} fields={pageFields} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={(title) => { closeSidebar(); setShowSharePopover(false); setHasData(true); if (activePage === 'roadmap') { setRoadmapItems([{ id: 'new-1', title: title || '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'now', status: 'planning' }]) } else { setBacklogData([{ id: 'new-1', title: title || '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]) }; setTimeout(() => setShowImportPopover(true), 800) }} activePage={activePage} animateIn={!isInitialLoad} onEmptyInteract={closeSidebar} />
           ) : (<>
           {activeTabConfig?.type === 'table' && (
-              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={(title) => { setShowSharePopover(false); setHasData(true); setBacklogData([{ id: 'new-1', title: title || '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]); setTimeout(() => setShowImportPopover(true), 800) }} activePage={activePage} />
+              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={(title) => { setShowSharePopover(false); setHasData(true); setBacklogData([{ id: 'new-1', title: title || '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]); setTimeout(() => setShowImportPopover(true), 800) }} activePage={activePage} onAddToBoard={handleAddRecordToBoard} />
           )}
           {activeTabConfig?.type === 'kanban' && (
             <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onCardSelectedChange={setKanbanCardSelected} />
@@ -525,8 +571,9 @@ export function App() {
 
       {/* Left sidebar — fixed overlay, slides in over the top nav */}
       <div
-        className="fixed top-0 left-0 h-full z-50 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className="fixed top-0 left-0 h-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{
+          zIndex: canvasOpen ? 110 : 50,
           width: jiraPanelOpen ? 376 + 24 : 320,
           transform: isLeftOpen ? 'translateX(0)' : 'translateX(-100%)',
         }}
@@ -539,7 +586,7 @@ export function App() {
           </div>
         ) : (
           <SidebarShell side="left" onClose={closeSidebar} showClose={false} width={320}>
-            <SpaceMenu onClose={closeSidebar} activePage={activePage} onPageChange={switchPage} onGoHome={() => { closeSidebar(); setView('home') }} spaceName={spaceName} />
+            <SpaceMenu onClose={closeSidebar} activePage={activePage} onPageChange={switchPage} onGoHome={() => { closeSidebar(); setView('home') }} spaceName={spaceName} boards={boards} activeBoardId={canvasOpen && boardName ? boards.find(b => b.name === boardName)?.id : undefined} />
           </SidebarShell>
         )}
       </div>
@@ -601,7 +648,7 @@ export function App() {
       />
 
       {/* Canvas table widgets */}
-      {widgets.filter(w => w.type !== 'feedback-card').map(widget => {
+      {widgets.filter(w => w.type === 'table' || (!w.type)).map(widget => {
         const widgetTabConfig = currentTabs.find(t => t.id === widget.activeTab)
         const widgetViewData = widget.activeTab === 'done' ? pageData.filter(r => r.status === 'done') : pageData
         return (
@@ -664,8 +711,24 @@ export function App() {
         />
       ))}
 
+      {/* Record cards on canvas */}
+      {widgets.filter(w => w.type === 'record-card' && w.recordRow).map(widget => (
+        <CanvasRecordCard
+          key={widget.id}
+          widget={widget}
+          panX={panX}
+          panY={panY}
+          zoom={zoom}
+          isOpen={canvasOpen}
+          selected={selectedWidgetId === widget.id}
+          onSelect={() => setSelectedWidgetId(widget.id)}
+          onMove={(x, y) => handleWidgetMove(widget.id, x, y)}
+          smoothPanning={smoothPanning}
+        />
+      ))}
+
       {/* Canvas floating nav panels */}
-      <CanvasNavPanels isOpen={canvasOpen} databaseTitle={databaseTitle} />
+      <CanvasNavPanels isOpen={canvasOpen} databaseTitle={databaseTitle} onMenuClick={() => setActiveSidebar(activeSidebar === 'space-menu' ? null : 'space-menu')} isMenuOpen={canvasOpen && activeSidebar === 'space-menu'} boardName={boardName ?? undefined} />
 
       {/* Share space dialog */}
       {showShareDialog && (

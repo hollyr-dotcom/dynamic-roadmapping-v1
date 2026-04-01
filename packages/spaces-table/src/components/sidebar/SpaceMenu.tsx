@@ -8,6 +8,7 @@ import {
   IconLightbulb,
   IconRocket,
   IconPlus,
+  IconBoard,
 } from '@mirohq/design-system'
 
 const pages = [
@@ -21,9 +22,11 @@ interface SpaceMenuProps {
   onPageChange: (id: string) => void
   onGoHome?: () => void
   spaceName?: string
+  boards?: { id: string; name: string }[]
+  activeBoardId?: string
 }
 
-export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome, spaceName }: SpaceMenuProps) {
+export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome, spaceName, boards, activeBoardId }: SpaceMenuProps) {
   return (
     <div className="flex flex-col h-full pt-2 px-3">
       {/* Top bar: Home | Search + Close */}
@@ -116,21 +119,48 @@ export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome, spaceNa
           </IconButton>
         </div>
 
+        {/* Board entries */}
+        {boards && boards.length > 0 && (
+          <div className="flex flex-col gap-0.5 mt-1">
+            {boards.map(board => {
+              const isActive = board.id === activeBoardId
+              return (
+                <button
+                  key={board.id}
+                  className={`flex items-center gap-[3px] w-full rounded-lg px-3 py-2 text-left transition-colors ${
+                    isActive ? 'bg-[#F3F4F6]' : 'hover:bg-[#F1F2F5]'
+                  }`}
+                >
+                  <IconBoard size="medium" css={{ color: '#222428', flexShrink: 0 }} />
+                  <span
+                    className={`font-body text-[#222428] leading-none select-none ${isActive ? 'font-semibold' : ''}`}
+                    style={{ fontSize: '14px' }}
+                  >
+                    {board.name}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        )}
+
         {/* Empty state */}
-        <div className="flex-1 flex flex-col items-center justify-center px-8 pb-6">
-          <span
-            className="font-body font-semibold text-[#656B81] text-center leading-[1.4]"
-            style={{ fontSize: '12px' }}
-          >
-            Pinned content
-          </span>
-          <span
-            className="font-body text-[#656B81] text-center leading-[1.4] mt-1"
-            style={{ fontSize: '12px' }}
-          >
-            Add important boards and formats to share with your team
-          </span>
-        </div>
+        {(!boards || boards.length === 0) && (
+          <div className="flex-1 flex flex-col items-center justify-center px-8 pb-6">
+            <span
+              className="font-body font-semibold text-[#656B81] text-center leading-[1.4]"
+              style={{ fontSize: '12px' }}
+            >
+              Pinned content
+            </span>
+            <span
+              className="font-body text-[#656B81] text-center leading-[1.4] mt-1"
+              style={{ fontSize: '12px' }}
+            >
+              Add important boards and formats to share with your team
+            </span>
+          </div>
+        )}
       </div>
     </div>
   )

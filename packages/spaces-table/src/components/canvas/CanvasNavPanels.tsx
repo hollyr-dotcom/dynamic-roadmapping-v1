@@ -4,6 +4,7 @@ import {
   IconLinesThreeHorizontal,
   IconBell,
   IconChevronRightSmall,
+  IconBoard,
 } from '@mirohq/design-system'
 
 const avatars = [
@@ -12,48 +13,69 @@ const avatars = [
   { name: 'TS', img: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=56&h=56&fit=crop&crop=face' },
 ]
 
+const SIDEBAR_WIDTH = 320
+
 interface CanvasNavPanelsProps {
   isOpen: boolean
   databaseTitle: string
+  onMenuClick?: () => void
+  isMenuOpen?: boolean
+  boardName?: string
 }
 
-export function CanvasNavPanels({ isOpen, databaseTitle }: CanvasNavPanelsProps) {
+export function CanvasNavPanels({ isOpen, databaseTitle, onMenuClick, isMenuOpen, boardName }: CanvasNavPanelsProps) {
   return (
     <>
       {/* Left panel: menu + breadcrumb */}
       <div
-        className="fixed top-2 left-2 h-10 flex items-center bg-white rounded-lg pl-2 pr-4 gap-2 transition-opacity duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className="fixed top-2 h-10 flex items-center bg-white rounded-lg gap-2 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{
+          left: isMenuOpen ? SIDEBAR_WIDTH + 8 : 8,
+          padding: isMenuOpen ? '0 16px' : '0 16px 0 4px',
           zIndex: 100,
           opacity: isOpen ? 1 : 0,
           pointerEvents: isOpen ? 'auto' : 'none',
           boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
         }}
       >
-        <IconButton aria-label="Menu" variant="ghost" size="medium">
-          <IconLinesThreeHorizontal />
-        </IconButton>
+        {!isMenuOpen && (
+          <IconButton aria-label="Menu" variant="ghost" size="medium" onPress={onMenuClick} css={{ width: 32, height: 32, padding: 4, minWidth: 'auto', minHeight: 'auto', '& svg': { width: 24, height: 24 } }}>
+            <IconLinesThreeHorizontal />
+          </IconButton>
+        )}
 
-        <div className="flex items-center" style={{ gap: '2px' }}>
-          <span
-            className="font-heading font-semibold text-[#222428] leading-none select-none"
-            style={{ fontSize: '14px' }}
-          >
-            Project Galaxy
-          </span>
-          <span
-            className="flex items-center"
-            style={{ gap: '2px', color: '#B3B9C4' }}
-          >
-            <IconChevronRightSmall size="small" />
+        {boardName ? (
+          <div className="flex items-center" style={{ gap: '6px' }}>
+            <IconBoard css={{ width: 24, height: 24, color: '#222428', flexShrink: 0 }} />
             <span
               className="font-heading font-semibold text-[#222428] leading-none select-none"
               style={{ fontSize: '14px' }}
             >
-              {databaseTitle}
+              {boardName}
             </span>
-          </span>
-        </div>
+          </div>
+        ) : (
+          <div className="flex items-center" style={{ gap: '2px' }}>
+            <span
+              className="font-heading font-semibold text-[#222428] leading-none select-none"
+              style={{ fontSize: '14px' }}
+            >
+              Project Galaxy
+            </span>
+            <span
+              className="flex items-center"
+              style={{ gap: '2px', color: '#B3B9C4' }}
+            >
+              <IconChevronRightSmall size="small" />
+              <span
+                className="font-heading font-semibold text-[#222428] leading-none select-none"
+                style={{ fontSize: '14px' }}
+              >
+                {databaseTitle}
+              </span>
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Right panel: bell + avatars + share */}
@@ -66,7 +88,7 @@ export function CanvasNavPanels({ isOpen, databaseTitle }: CanvasNavPanelsProps)
           boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
         }}
       >
-        <IconButton aria-label="Notifications" variant="ghost" size="medium">
+        <IconButton aria-label="Notifications" variant="ghost" size="medium" css={{ width: 32, height: 32, padding: 4, minWidth: 'auto', minHeight: 'auto', '& svg': { width: 24, height: 24 } }}>
           <IconBell />
         </IconButton>
 
