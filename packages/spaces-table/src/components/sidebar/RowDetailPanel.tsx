@@ -1155,27 +1155,30 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             )}
           </div>
 
-          {/* Input — same style as comments tab */}
-          <div className="shrink-0 flex items-center gap-1.5" style={{ padding: '10px 16px', borderTop: '1px solid #E9EAEF' }}>
-            <input
-              autoFocus
-              value={sidekickInput}
-              onChange={e => setSidekickInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); sendSidekick(sidekickInput) } }}
-              placeholder="Ask about your roadmap..."
-              className="flex-1 text-[14px] outline-none bg-transparent min-w-0"
-              style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
-            />
-            <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
-              <IconSmileyPlus css={{ width: 20, height: 20 }} />
-            </button>
-            <button
-              onClick={() => sendSidekick(sidekickInput)}
-              className="shrink-0 transition-colors"
-              style={{ color: sidekickInput.trim() ? '#4262FF' : '#9DA3B4' }}
-            >
-              <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
-            </button>
+          {/* Input — matches comments tab exactly */}
+          <div className="shrink-0" style={{ padding: '10px 16px 16px' }}>
+            <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white' }}>
+              <textarea
+                autoFocus
+                value={sidekickInput}
+                onChange={e => setSidekickInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSidekick(sidekickInput) } }}
+                placeholder="Ask about your roadmap..."
+                rows={2}
+                className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none"
+                style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
+              />
+              <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors self-end mb-0.5">
+                <IconSmileyPlus css={{ width: 20, height: 20 }} />
+              </button>
+              <button
+                onClick={() => sendSidekick(sidekickInput)}
+                className="shrink-0 transition-colors self-end mb-0.5"
+                style={{ color: sidekickInput.trim() ? '#4262FF' : '#9DA3B4' }}
+              >
+                <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
+              </button>
+            </div>
           </div>
 
         </div>
