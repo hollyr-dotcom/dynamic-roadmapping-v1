@@ -266,7 +266,7 @@ packages/
     src/components/table/ (index, DataTable, TableHeader, TableRow, CellRenderer)
     src/components/table/cells/ (TextCell, NumberCell, CurrencyCell, AvatarStackCell, StatusCell)
     src/components/kanban/ (index, KanbanBoard, KanbanColumn, KanbanCard)
-    src/components/canvas/ (CanvasOverlay, CanvasPillButton, CanvasNavPanels, CanvasTableWidget)
+    src/components/canvas/ (CanvasOverlay, CanvasPillButton, CanvasNavPanels, CanvasTableWidget, CanvasRecordCard)
     src/components/timeline/ (index, TimelinePlaceholder)
     src/lib/filterParser.ts
     src/App.tsx, main.tsx, index.css
@@ -364,6 +364,24 @@ docs/plans/
 
 **Next:**
 - Wire import source cards to actual import flows per source
+
+### Immediate — Add to Board (`feature-add-to-board`)
+
+**Done:**
+- **"Add to board" menu item** in table row context menu — `IconBoard`, positioned in same group as "Move to roadmap" (no separator between them), above the "Add record" group
+- **AddToBoardPopover** (`AddToBoardPopover.tsx`) — prompt UI matching Figma design: `#fafafc` container with 16px radius, record reference tab (centered, `#f1f2f5` bg, rounded top corners, Jira logo + key + truncated title), prompt textarea ("What's your board for?"), three quick-prompt pills ("Write a PRD", "Explore insights", "Estimate with team") with toggle/swap behaviour, full-width primary "Add to board" button; click-outside + Escape to dismiss; entrance animation (fade + scale 150ms); positioned above/below the row's first cell with viewport clamping; row stays highlighted (`row-selected` class) while popover is open
+- **CanvasRecordCard** (`CanvasRecordCard.tsx`) — renders `KanbanCard` on canvas with drag-to-reposition, click-to-select, Miro-style selection border (blue outline + corner handles); priority-based border colour; same pointer event pattern as `CanvasFeedbackCard` (3px drag threshold, zoom-aware world-space movement)
+- **Board name from prompt** — "Write a PRD" → "PRD Board", "Explore insights" → "Insights Board", "Estimate with team" → "Estimation Board"; custom text → "{text} Board"
+- **Canvas opens with card only** — no table widget alongside; widget type filter updated to only render `type: 'table'` as table widgets
+- **Sidebar auto-opens** on board creation — space menu slides in over the canvas
+- **Floating nav bar** shows `IconBoard` (24px) + board name instead of "Project Galaxy > Backlog" breadcrumb when `boardName` is set; falls back to breadcrumb otherwise
+- **SpaceMenu board entries** — boards appear under "Add content" with `IconBoard` + name; active board highlighted with `bg-[#F3F4F6]` + semibold (same as active page); empty state ("Pinned content") only shows when no boards exist
+- **Canvas nav panel polish** — hamburger button: 32px with 24px icon, 4px even padding; hides when sidebar open with smooth left-shift on breadcrumb bar; bell button: same 32px/24px treatment; space menu sidebar overlays canvas at z-110 (above canvas z-60 overlay and z-70-80 widgets)
+
+**Next:**
+- Design board canvas content based on prompt selection (PRD template, insights layout, estimation grid)
+- Wire "Add to board" from kanban card toolbar and timeline bar toolbar
+- Board persistence across page switches
 
 ### Other immediate
 - **Sync mode communication** — design how read-only vs two-way sync modes are communicated to users on canvas widgets (sync indicator, UI affordances, state differences)
