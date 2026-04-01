@@ -473,7 +473,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     <div
       style={{
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: 'column',
         height: '100%',
         width: selectedLayout !== 'Right' ? panelWidth + COMMENTS_WIDTH : panelWidth,
         backgroundColor: 'white',
@@ -483,11 +483,9 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         overflow: 'hidden',
       }}
     >
-    <div className="flex flex-col overflow-hidden relative" style={{ width: panelWidth, height: '100%', flexShrink: 0 }}>
 
-
-      {/* ── Header ──────────────────────────────────────── */}
-      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12 }}>
+      {/* ── Header (full width) ──────────────────────────── */}
+      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: selectedLayout !== 'Right' ? '1px solid #E9EAEF' : 'none' }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {!hideInsightCallout && <JiraLogo size={18} />}
           <p
@@ -560,6 +558,10 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </Tooltip>
         </div>
       </div>
+
+      {/* ── Content row (main panel + comments panel) ── */}
+      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+      <div className="flex flex-col overflow-hidden relative" style={{ width: panelWidth, height: '100%', flexShrink: 0 }}>
 
       {/* ── Tab bar ── */}
       <div className="flex gap-1 px-3 pt-3 pb-1 shrink-0" style={{ pointerEvents: 'auto' }}>
@@ -1273,27 +1275,14 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           backgroundColor: 'white',
         }}
       >
-        {/* Header */}
-        <div
-          className="flex items-center justify-between shrink-0"
-          style={{ padding: '12px 16px', borderBottom: '1px solid #E9EAEF' }}
-        >
-          <div className="flex items-center gap-1">
-            <span
-              className="text-[14px] font-semibold text-[#222428]"
-              style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}
-            >
-              Comments
-            </span>
-            <IconChevronDown css={{ width: 14, height: 14, color: '#656B81' }} />
-          </div>
-          <button
-            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
-            style={{ fontFamily: 'Open Sans, sans-serif' }}
+        {/* Comments label */}
+        <div className="shrink-0" style={{ padding: '12px 16px 4px 16px' }}>
+          <span
+            className="text-[14px] font-semibold text-[#222428]"
+            style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}
           >
-            <IconSparksFilled css={{ width: 14, height: 14 }} />
-            Summarize
-          </button>
+            Comments
+          </span>
         </div>
 
         {/* Comment list */}
@@ -1358,7 +1347,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         </div>
       </div>
     )}
-    </div>
+    </div>{/* end content row */}
+    </div>{/* end outer wrapper */}
   )
 
   if (selectedLayout === 'Center' || selectedLayout === 'Fullscreen') {
