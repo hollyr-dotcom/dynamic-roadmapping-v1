@@ -1342,39 +1342,39 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         </div>
 
         {/* Input */}
-        <div
-          className="shrink-0 flex items-center gap-1.5"
-          style={{ padding: '10px 16px', borderTop: '1px solid #E9EAEF' }}
-        >
-          <input
-            value={commentText}
-            onChange={e => setCommentText(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault()
+        <div className="shrink-0" style={{ padding: '10px 16px 24px 16px' }}>
+          <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white' }}>
+            <textarea
+              value={commentText}
+              onChange={e => setCommentText(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  if (!commentText.trim()) return
+                  setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }])
+                  setCommentText('')
+                }
+              }}
+              placeholder="Leave a reply. Use @ to mention."
+              rows={2}
+              className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none"
+              style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
+            />
+            <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
+              <IconSmileyPlus css={{ width: 20, height: 20 }} />
+            </button>
+            <button
+              onClick={() => {
                 if (!commentText.trim()) return
                 setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }])
                 setCommentText('')
-              }
-            }}
-            placeholder="Leave a reply. Use @ to mention."
-            className="flex-1 text-[14px] outline-none bg-transparent min-w-0"
-            style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
-          />
-          <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
-            <IconSmileyPlus css={{ width: 20, height: 20 }} />
-          </button>
-          <button
-            onClick={() => {
-              if (!commentText.trim()) return
-              setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }])
-              setCommentText('')
-            }}
-            className="shrink-0 transition-colors"
-            style={{ color: commentText.trim() ? '#4262FF' : '#9DA3B4' }}
-          >
-            <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
-          </button>
+              }}
+              className="shrink-0 transition-colors"
+              style={{ color: commentText.trim() ? '#4262FF' : '#9DA3B4' }}
+            >
+              <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
+            </button>
+          </div>
         </div>
       </div>
     )}
