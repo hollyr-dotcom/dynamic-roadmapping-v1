@@ -1039,24 +1039,26 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       {/* ── Comment input bar (Details / Jira / Insights tabs) ─── */}
       {['Details', 'Jira', 'Insights'].includes(activeTab) && !selectedCompany && !callCard && !selectedFeedbackCard && !selectedPrompt && !showSidekick && (
-        <div
-          className="shrink-0 flex items-center gap-1.5"
-          style={{ padding: '10px 16px', borderTop: '1px solid #E9EAEF' }}
-        >
-          <input
-            readOnly
+        <div className="shrink-0" style={{ padding: '10px 16px 16px' }}>
+          <div
+            className="flex items-center gap-1.5"
+            style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}
             onClick={() => setShowSidekick(true)}
-            onFocus={() => setShowSidekick(true)}
-            placeholder="Leave a reply. Use @ to mention."
-            className="flex-1 text-[14px] outline-none bg-transparent min-w-0 cursor-text"
-            style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0' }}
-          />
-          <button onClick={() => setShowSidekick(true)} className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
-            <IconSmileyPlus css={{ width: 20, height: 20 }} />
-          </button>
-          <button onClick={() => setShowSidekick(true)} className="shrink-0 text-[#9DA3B4]">
-            <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
-          </button>
+          >
+            <textarea
+              readOnly
+              placeholder="Leave a reply. Use @ to mention."
+              rows={2}
+              className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none cursor-text"
+              style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0' }}
+            />
+            <button onClick={e => { e.stopPropagation(); setShowSidekick(true) }} className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors self-end mb-0.5">
+              <IconSmileyPlus css={{ width: 20, height: 20 }} />
+            </button>
+            <button onClick={e => { e.stopPropagation(); setShowSidekick(true) }} className="shrink-0 text-[#9DA3B4] self-end mb-0.5">
+              <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
+            </button>
+          </div>
         </div>
       )}
 
