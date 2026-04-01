@@ -1155,40 +1155,27 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             )}
           </div>
 
-          {/* Input area */}
-          <div style={{ flexShrink: 0, padding: '0 24px 16px', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ background: '#F1F2F5', borderRadius: '8px 8px 0 0', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <svg viewBox="0 0 24 24" fill="none" width="16" height="16" style={{ flexShrink: 0, color: '#656B81' }}>
-                <path fill="currentColor" fillRule="evenodd" d="M17.167 4.7H14.9V3h2.267A2.833 2.833 0 0 1 20 5.833V8.1h-1.7V5.833c0-.521-.612-1.133-1.133-1.133Zm1.133 8.5V9.8H20v3.4h-1.7ZM4.7 14.9v2.267c0 .521.753 1.133 1.275 1.133H8.1V20H5.833A2.833 2.833 0 0 1 3 17.167V14.9h1.7Zm13.6 2.267V14.9H20v2.267A2.833 2.833 0 0 1 17.167 20H14.9v-1.7h2.267c.521 0 1.133-.612 1.133-1.133ZM9.8 18.3h3.4V20H9.8v-1.7ZM14 3v11H3V6a3 3 0 0 1 3-3h8Zm-9 9h7V5H6a1 1 0 0 0-1 1v6Z" clipRule="evenodd" />
-              </svg>
-              <span style={{ fontSize: 12, color: '#222428', lineHeight: 1.5, fontFamily: 'Open Sans, sans-serif' }}>Select objects on the canvas to add context</span>
-            </div>
-            <div style={{ border: '1px solid #E0E2E8', borderRadius: '0 0 8px 8px', background: 'white' }}>
-              <div style={{ padding: '12px 16px 4px' }}>
-                <textarea
-                  autoFocus
-                  value={sidekickInput}
-                  onChange={e => setSidekickInput(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSidekick(sidekickInput) } }}
-                  placeholder="Ask about your roadmap..."
-                  rows={1}
-                  style={{ width: '100%', border: 'none', outline: 'none', resize: 'none', fontSize: 14, color: '#222428', lineHeight: 1.4, fontFamily: 'Open Sans, sans-serif', background: 'transparent', minHeight: 24, maxHeight: 120, overflow: 'auto' }}
-                />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 8px 8px' }}>
-                <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="Add">
-                  <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path fill="currentColor" d="M13 4v7h7v2h-7v7h-2v-7H4v-2h7V4h2Z" /></svg>
-                </button>
-                <button
-                  onClick={() => sendSidekick(sidekickInput)}
-                  style={{ background: sidekickInput.trim() ? 'linear-gradient(42deg, #322BFE 0%, #6E3CFE 27%, #A34CFF 55%, #D05DFF 82%, #F66EFF 109%)' : '#E9EAEF', borderRadius: 20, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: sidekickInput.trim() ? 'pointer' : 'default', transition: 'background 0.15s', border: 'none' }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M1.5 7L12.5 7M12.5 7L7.5 2M12.5 7L7.5 12" stroke={sidekickInput.trim() ? 'white' : '#AEB2C0'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
-              </div>
-            </div>
+          {/* Input — same style as comments tab */}
+          <div className="shrink-0 flex items-center gap-1.5" style={{ padding: '10px 16px', borderTop: '1px solid #E9EAEF' }}>
+            <input
+              autoFocus
+              value={sidekickInput}
+              onChange={e => setSidekickInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); sendSidekick(sidekickInput) } }}
+              placeholder="Ask about your roadmap..."
+              className="flex-1 text-[14px] outline-none bg-transparent min-w-0"
+              style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
+            />
+            <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
+              <IconSmileyPlus css={{ width: 20, height: 20 }} />
+            </button>
+            <button
+              onClick={() => sendSidekick(sidekickInput)}
+              className="shrink-0 transition-colors"
+              style={{ color: sidekickInput.trim() ? '#4262FF' : '#9DA3B4' }}
+            >
+              <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
+            </button>
           </div>
 
         </div>
