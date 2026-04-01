@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { SpaceRow, FieldDefinition } from '@spaces/shared'
-import { IconFileSpreadsheet, IconInsights, IconPlus, IconSquareArrowIn, DropdownMenu } from '@mirohq/design-system'
+import { IconPlus, IconFileSpreadsheet, IconLightbulb } from '@mirohq/design-system'
 import { JiraLogo } from '../JiraLogo'
 import { TableHeader } from './TableHeader'
 import { TableRow } from './TableRow'
@@ -30,16 +30,14 @@ interface DataTableProps {
   onImportComplete?: () => void
   onMoveToRoadmap?: (rowId: string) => void
   showMoveToRoadmap?: boolean
-  onImportSource?: (source: 'jira' | 'miro' | 'csv') => void
+  onImportSource?: (source: 'jira' | 'csv' | 'backlog') => void
   onAddRecord?: (title?: string) => void
   activePage?: 'backlog' | 'roadmap'
   animateIn?: boolean
-  onAgentAdded?: (agentName: string) => void
-  spaceName?: string
   onEmptyInteract?: () => void
 }
 
-export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete, onMoveToRoadmap, showMoveToRoadmap, onImportSource, onAddRecord, activePage = 'roadmap', animateIn = true, onAgentAdded, spaceName, onEmptyInteract }: DataTableProps) {
+export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete, onMoveToRoadmap, showMoveToRoadmap, onImportSource, onAddRecord, activePage = 'roadmap', animateIn = true, onEmptyInteract }: DataTableProps) {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const tableRef = useRef<HTMLDivElement>(null)
   const hasImportedRef = useRef(false)
@@ -74,33 +72,10 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
   }, [])
 
   const [newItemTitle, setNewItemTitle] = useState('')
+  const [newItemFocused, setNewItemFocused] = useState(false)
   const newItemInputRef = useRef<HTMLInputElement>(null)
-  const [addedAgents, setAddedAgents] = useState<Set<string>>(new Set())
-  const [exitingAgents, setExitingAgents] = useState<Set<string>>(new Set())
-  const agentsContainerRef = useRef<HTMLDivElement>(null)
-  const agentsMinHeight = useRef<number | undefined>(undefined)
-
-  const AGENTS = [
-    { id: 'insights', label: 'Insights', description: 'Auto-enrich records with customer signals' },
-    { id: 'jira',     label: 'Jira',     description: 'Sync issues from your Jira projects' },
-    { id: 'csv',      label: 'CSV',      description: 'Auto-import new records from a spreadsheet' },
-  ]
-
-  const handleAddAgent = (id: string, label: string) => {
-    // Lock the container height on first removal so scroll area doesn't shrink
-    if (agentsMinHeight.current === undefined && agentsContainerRef.current) {
-      agentsMinHeight.current = agentsContainerRef.current.offsetHeight
-    }
-    setExitingAgents(prev => new Set(prev).add(id))
-    setTimeout(() => {
-      setAddedAgents(prev => new Set(prev).add(id))
-      setExitingAgents(prev => { const s = new Set(prev); s.delete(id); return s })
-      onAgentAdded?.(label)
-    }, 320)
-  }
 
   if (data.length === 0) {
-    const visibleAgents = AGENTS.filter(a => !addedAgents.has(a.id))
     return (
       <div
         className={`flex-1 flex flex-col min-h-full${animateInRef.current ? ' item-enter' : ''}`}
@@ -109,13 +84,13 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
         {/* Centered content — two sections */}
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-[400px] flex flex-col items-center" style={{ paddingBottom: 160 }}>
-            {/* Section 1: Add an idea */}
-            <h3 className="text-[18px] font-semibold text-[#1a1b1e] mb-3 text-center" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>
-              {activePage === 'backlog' ? 'Add your first idea' : 'Add your first roadmap item'}
+
+            {/* Section 1: Start with a new idea */}
+            <h3 className="text-[18px] font-semibold text-[#1a1b1e] mb-4 text-center" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>
+              {activePage === 'roadmap' ? 'Add a new roadmap item' : 'Start with a new idea'}
             </h3>
             <div
-              className="group/idea w-full flex items-center gap-2 px-4 py-3 rounded-xl mb-10 cursor-text"
-              style={{ border: '1px solid #e9eaef' }}
+              className="group/idea w-full flex items-center gap-2 px-4 py-3 rounded-xl mb-14 cursor-text bg-[#f1f2f5]"
               onClick={() => newItemInputRef.current?.focus()}
             >
               <input
@@ -123,95 +98,58 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
                 type="text"
                 value={newItemTitle}
                 onChange={e => setNewItemTitle(e.target.value)}
-                onFocus={() => onEmptyInteract?.()}
+                onFocus={() => { setNewItemFocused(true); onEmptyInteract?.() }}
+                onBlur={() => setNewItemFocused(false)}
                 onKeyDown={e => { if (e.key === 'Enter' && newItemTitle.trim()) onAddRecord?.(newItemTitle.trim()) }}
-                placeholder={activePage === 'backlog' ? 'What are you thinking about?' : 'Add a title...'}
+                placeholder={activePage === 'roadmap' ? 'Write a title' : 'Write a roadmap idea'}
                 className="flex-1 text-[14px] text-[#1a1b1e] placeholder:text-[#AEB2C0] bg-transparent outline-none"
                 style={{ fontFamily: "'Noto Sans', sans-serif" }}
               />
-              <DropdownMenu>
-                <DropdownMenu.Trigger asChild>
-                  <button
-                    className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-[#7D8297] opacity-0 group-hover/idea:opacity-100 transition-opacity duration-150 hover:bg-[#f1f2f5] hover:text-[#1a1b1e] active:bg-[#e6e7ea]"
-                    onClick={e => e.stopPropagation()}
-                  >
-                    <IconSquareArrowIn css={{ width: 16, height: 16, transform: 'rotate(180deg)' }} />
-                  </button>
-                </DropdownMenu.Trigger>
-                <DropdownMenu.Content side="bottom" align="end" css={{ minWidth: 180 }}>
-                  <DropdownMenu.Item onSelect={() => onImportSource?.('jira')}>
-                    <DropdownMenu.IconSlot><JiraLogo size={20} /></DropdownMenu.IconSlot>
-                    Jira
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item onSelect={() => onImportSource?.('csv')}>
-                    <DropdownMenu.IconSlot><IconFileSpreadsheet /></DropdownMenu.IconSlot>
-                    CSV
-                  </DropdownMenu.Item>
-                </DropdownMenu.Content>
-              </DropdownMenu>
               <button
-                className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-colors ${newItemTitle.trim() ? 'bg-[#4262FF] text-white hover:bg-[#3350e0] active:bg-[#2b44c7]' : 'bg-[#e9eaef] text-[#AEB2C0]'}`}
+                className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-150 ${newItemTitle.trim() ? 'opacity-100 bg-[#4262FF] text-white hover:bg-[#3350e0] active:bg-[#2b44c7]' : 'opacity-0 pointer-events-none'}`}
                 onClick={e => { e.stopPropagation(); if (newItemTitle.trim()) onAddRecord?.(newItemTitle.trim()) }}
               >
                 <IconPlus css={{ width: 14, height: 14 }} />
               </button>
             </div>
 
-            {/* Section 2: Add import agents */}
-            {visibleAgents.length > 0 && (<>
-            <h3 className="text-[18px] font-semibold text-[#1a1b1e] mb-3 text-center" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>
-              Add import agents
+            {/* Section 2: Add existing ideas */}
+            <h3 className="text-[18px] font-semibold text-[#1a1b1e] mb-4 text-center" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>
+              {activePage === 'roadmap' ? 'Add existing roadmap items' : 'Add existing ideas'}
             </h3>
-              <div ref={agentsContainerRef} className="w-full flex flex-col gap-3" style={{ minHeight: agentsMinHeight.current }}>
-                {AGENTS.map(agent => {
-                  if (addedAgents.has(agent.id)) return null
-                  const isExiting = exitingAgents.has(agent.id)
-                  return (
-                    <div
-                      key={agent.id}
-                      className={`group flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer${isExiting ? ' agent-exit' : ''}`}
-                      style={{ border: '1px solid #e9eaef' }}
-                      onClick={() => handleAddAgent(agent.id, agent.label)}
-                    >
-                      {/* Icon + text */}
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="shrink-0 w-5 h-5 flex items-center justify-center">
-                          {agent.id === 'insights' && <IconInsights css={{ width: 20, height: 20, color: '#222428' }} />}
-                          {agent.id === 'jira' && <JiraLogo size={20} />}
-                          {agent.id === 'csv' && <IconFileSpreadsheet css={{ width: 20, height: 20, color: '#222428' }} />}
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-[14px] font-semibold text-[#1a1b1e]" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>
-                            {agent.label}
-                          </span>
-                          <span className="text-[12px] text-[#7D8297]" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-                            {agent.description}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Plus button — no border, shows hover bg whenever the card is hovered */}
-                      <button
-                        className="opacity-0 group-hover:opacity-100 group-hover:bg-[#f1f2f5] group-hover:text-[#1a1b1e] transition-opacity duration-150 shrink-0 ml-3 w-8 h-8 flex items-center justify-center rounded-full text-[#7D8297] hover:bg-[#e6e7ea] active:bg-[#dcdde0]"
-                        onClick={() => handleAddAgent(agent.id, agent.label)}
-                      >
-                        <IconPlus css={{ width: 14, height: 14 }} />
-                      </button>
+            <div className="w-full flex flex-col gap-0">
+              {([
+                ...(activePage === 'roadmap' ? [{ id: 'backlog', label: 'Move idea from backlog' }] : []),
+                { id: 'jira', label: 'Import Jira issues' },
+                { id: 'csv',  label: 'Upload CSV' },
+              ] as const).map(source => (
+                <div
+                  key={source.id}
+                  className="group flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer hover:bg-[#f1f2f5] transition-colors"
+                  onClick={() => onImportSource?.(source.id)}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="shrink-0 w-5 h-5 flex items-center justify-center">
+                      {source.id === 'backlog' && <IconLightbulb css={{ width: 20, height: 20, color: '#222428' }} />}
+                      {source.id === 'jira' && <JiraLogo size={20} />}
+                      {source.id === 'csv' && <IconFileSpreadsheet css={{ width: 20, height: 20, color: '#222428' }} />}
                     </div>
-                  )
-                })}
-              </div>
-            </>)}
+                    <span className="text-[14px] text-[#1a1b1e]" style={{ fontFamily: "'Noto Sans', sans-serif" }}>
+                      {source.label}
+                    </span>
+                  </div>
+                  <button
+                    className="shrink-0 ml-3 w-8 h-8 flex items-center justify-center rounded-full bg-white border border-[#e9eaef] text-[#1a1b1e] group-hover:bg-[#4262FF] group-hover:border-transparent group-hover:text-white transition-colors"
+                    onClick={e => { e.stopPropagation(); onImportSource?.(source.id) }}
+                  >
+                    <IconPlus css={{ width: 14, height: 14 }} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
           </div>
         </div>
-
-        {/* Fixed bottom fade — 0% at top, 100% white at viewport bottom; cards scroll under it */}
-        {visibleAgents.length > 0 && (
-          <div
-            className="fixed bottom-0 left-0 right-0 pointer-events-none z-30"
-            style={{ height: 120, background: 'linear-gradient(to bottom, transparent, white)' }}
-          />
-        )}
       </div>
     )
   }

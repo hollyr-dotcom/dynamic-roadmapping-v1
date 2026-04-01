@@ -14,6 +14,7 @@ import {
   IconHorizontalBlocks,
 
   IconFileSpreadsheet,
+  IconSquareArrowIn,
   IconColumnsThree,
   IconPlus,
   IconTable,
@@ -647,6 +648,32 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
           </Tooltip.Trigger>
           <Tooltip.Content side="top" sideOffset={4}>Sort</Tooltip.Content>
         </Tooltip>
+
+        <DropdownMenu onOpen={() => setIsImportMenuOpen(true)} onClose={() => setIsImportMenuOpen(false)}>
+          <Tooltip>
+            <Tooltip.Trigger asChild>
+              <DropdownMenu.Trigger asChild>
+                <IconButton aria-label="Import" variant="ghost" size="medium" disabled={disableControls} css={isImportMenuOpen ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}>
+                  <IconSquareArrowIn css={{ transform: 'rotate(180deg)' }} />
+                </IconButton>
+              </DropdownMenu.Trigger>
+            </Tooltip.Trigger>
+            <Tooltip.Content side="top" sideOffset={4}>
+              Import
+              <Tooltip.Hotkey>⌘ + I</Tooltip.Hotkey>
+            </Tooltip.Content>
+          </Tooltip>
+          <DropdownMenu.Content side="bottom" align="end" css={{ minWidth: MENU_WIDTH }}>
+            <DropdownMenu.Item onSelect={() => onImportSource?.('jira')}>
+              <DropdownMenu.IconSlot><JiraLogo size={20} /></DropdownMenu.IconSlot>
+              Jira
+            </DropdownMenu.Item>
+            <DropdownMenu.Item onSelect={() => onImportSource?.('csv')}>
+              <DropdownMenu.IconSlot><IconFileSpreadsheet /></DropdownMenu.IconSlot>
+              CSV
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu>
 
         </>)}
 
