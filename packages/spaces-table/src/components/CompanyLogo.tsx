@@ -3,10 +3,9 @@ import { Tooltip } from '@mirohq/design-system'
 
 // --- SVG path data from Simple Icons (viewBox 0 0 24 24) ---
 
-interface CompanyBrand {
-  color: string
-  svgPath: string
-}
+type CompanyBrand =
+  | { color: string; svgPath: string; paths?: never }
+  | { paths: { color: string; d: string }[]; color?: never; svgPath?: never }
 
 const COMPANY_DATA: Record<string, CompanyBrand> = {
   Figma: {
@@ -66,8 +65,16 @@ const COMPANY_DATA: Record<string, CompanyBrand> = {
     svgPath: 'M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z',
   },
   Slack: {
-    color: '#4A154B',
-    svgPath: 'M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z',
+    paths: [
+      { color: '#36C5F0', d: 'M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52z' },
+      { color: '#36C5F0', d: 'M8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312z' },
+      { color: '#2EB67D', d: 'M6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313z' },
+      { color: '#2EB67D', d: 'M15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52z' },
+      { color: '#E01E5A', d: 'M8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834z' },
+      { color: '#E01E5A', d: 'M17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312z' },
+      { color: '#ECB22E', d: 'M18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834z' },
+      { color: '#ECB22E', d: 'M15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z' },
+    ],
   },
   Jira: {
     color: '#0052CC',
@@ -121,13 +128,16 @@ interface CompanyLogoProps {
 export function CompanyLogo({ name, size = 32, showName, onClick, hovered, inline, noTooltip }: CompanyLogoProps) {
   const [tagHovered, setTagHovered] = useState(false)
   const brand = COMPANY_DATA[name]
-  const iconColor = brand?.color ?? FALLBACK_COLOR
-  const svgPath = brand?.svgPath ?? FALLBACK_SHAPES[hashName(name) % FALLBACK_SHAPES.length]
   const iconSize = Math.min(Math.round(size * 0.5), 20)
+  const svgSize = inline ? size : iconSize
 
-  const icon = (
-    <svg width={inline ? size : iconSize} height={inline ? size : iconSize} viewBox="0 0 24 24" fill={iconColor} style={{ display: 'block', flexShrink: 0 }}>
-      <path d={svgPath} />
+  const icon = brand && 'paths' in brand && brand.paths ? (
+    <svg width={svgSize} height={svgSize} viewBox="0 0 24 24" style={{ display: 'block', flexShrink: 0 }}>
+      {brand.paths.map((p, i) => <path key={i} d={p.d} fill={p.color} />)}
+    </svg>
+  ) : (
+    <svg width={svgSize} height={svgSize} viewBox="0 0 24 24" fill={brand?.color ?? FALLBACK_COLOR} style={{ display: 'block', flexShrink: 0 }}>
+      <path d={brand?.svgPath ?? FALLBACK_SHAPES[hashName(name) % FALLBACK_SHAPES.length]} />
     </svg>
   )
 
