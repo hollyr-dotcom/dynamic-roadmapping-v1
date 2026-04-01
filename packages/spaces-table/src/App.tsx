@@ -81,7 +81,10 @@ export function App() {
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
   const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
   const [pendingImport, setPendingImport] = useState<'jira' | 'miro' | 'csv' | null>(null)
-  const [hasData, setHasData] = useState(true)
+  const [backlogHasData, setBacklogHasData] = useState(true)
+  const [roadmapHasData, setRoadmapHasData] = useState(true)
+  const hasData = activePage === 'backlog' ? backlogHasData : roadmapHasData
+  const setHasData = (val: boolean) => activePage === 'backlog' ? setBacklogHasData(val) : setRoadmapHasData(val)
   const [backlogData, setBacklogData] = useState<SpaceRow[]>(sampleData)
   const [roadmapItems, setRoadmapItems] = useState<SpaceRow[]>(roadmapData)
   const [activeTab, setActiveTab] = useState('all-items')
@@ -451,11 +454,13 @@ export function App() {
       setActiveTab('all-items')
       setActiveSidebar('space-menu')
       if (importSource) {
-        setHasData(false)
+        setBacklogHasData(false)
+        setRoadmapHasData(false)
         setPendingToast(true)
         setTimeout(() => setPendingImport(importSource), 300)
       } else {
-        setHasData(false)
+        setBacklogHasData(false)
+        setRoadmapHasData(false)
         setTimeout(() => setShowShareDialog(true), 400)
       }
     }} />
@@ -724,7 +729,7 @@ export function App() {
       {/* Jira import modal */}
       {pendingImport === 'jira' && !showJiraAuth && (
         <JiraImportModal
-          onImport={() => { setPendingImport(null); setBacklogData(sampleData); setHasData(true); setIsImporting(true) }}
+          onImport={() => { setPendingImport(null); setIsImporting(true); if (activePage === 'roadmap') { setRoadmapHasData(true); setRoadmapItems(roadmapData) } else { setBacklogHasData(true); setBacklogData(sampleData) } }}
           onClose={() => { setPendingImport(null) }}
         />
       )}
