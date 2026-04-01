@@ -549,7 +549,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       {/* ── Tab bar ── */}
       <div className="flex gap-1 px-3 pt-3 pb-1 shrink-0" style={{ pointerEvents: 'auto' }}>
-        {['Details', 'Insights', 'Comments'].map(tab => (
+        {['Details', 'Jira', 'Insights', 'Comments'].map(tab => (
           <button
             key={tab}
             onPointerDown={e => { e.stopPropagation(); setActiveTab(tab) }}
@@ -571,7 +571,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
 
         {/* Low-confidence Insights callout */}
-        {activeTab === 'Details' && !insightDismissed && (row.id === '1' || row.id === 'r1') && (
+        {activeTab === 'Details' && !insightDismissed && row.id === '1' && (
           <div
             style={{
               display: 'flex',
@@ -735,6 +735,10 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             })()}
 
           </>
+        )}
+
+        {activeTab === 'Jira' && (
+          <JiraForm row={row} />
         )}
 
         {activeTab === 'Insights' && <div className="flex flex-col gap-8 pb-6" style={{ paddingTop: 16 }}>
