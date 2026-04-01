@@ -350,7 +350,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
   const selectedLayout = selectedLayoutProp ?? layoutInternal
   const setSelectedLayout = (l: 'Center' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
-  const COMMENTS_WIDTH = 320
+  const COMMENTS_WIDTH = selectedLayout === 'Fullscreen' ? 420 : 320
   const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 48 - COMMENTS_WIDTH : 460
   const layoutButtonRef = useRef<HTMLButtonElement>(null)
   const layoutMenuRef = useRef<HTMLDivElement>(null)
