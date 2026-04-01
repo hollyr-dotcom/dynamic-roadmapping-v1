@@ -38,8 +38,8 @@ import {
   IconStackedCircles as _IconStackedCircles,
   IconPlusBox as _IconPlusBox,
   IconUser as _IconUser,
-  IconSmileyPlus as _IconSmileyPlus,
-  IconPaperPlaneFilledRight as _IconPaperPlaneFilledRight,
+  IconSmileyPlus,
+  IconPaperPlaneFilledRight,
   IconBookmark as _IconBookmark,
 } from '@mirohq/design-system'
 import { JiraLogo } from '../JiraLogo'
