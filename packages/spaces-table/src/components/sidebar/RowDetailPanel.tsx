@@ -1288,13 +1288,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         {/* Comment list */}
         <div className="flex-1 overflow-y-auto panel-scroll" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {comments.map((c, i) => (
-            <div key={i} className="flex gap-3">
+            <div key={i} className="group flex gap-3 relative">
               <img
                 src={`https://i.pravatar.cc/32?img=${c.avatarImg}`}
                 alt=""
                 className="w-8 h-8 rounded-full shrink-0 object-cover"
               />
-              <div className="flex flex-col gap-0.5">
+              <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span
                     className="text-[13px] font-semibold text-[#222428]"
@@ -1316,33 +1316,46 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   {c.text}
                 </p>
               </div>
+              <button className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 self-start mt-0.5 text-[#9DA3B4] hover:text-[#656B81]">
+                <IconSmileyPlus css={{ width: 18, height: 18 }} />
+              </button>
             </div>
           ))}
         </div>
 
         {/* Input */}
         <div
-          className="shrink-0 flex gap-2"
-          style={{ padding: '12px 16px', borderTop: '1px solid #E9EAEF' }}
+          className="shrink-0 flex items-center gap-1.5"
+          style={{ padding: '10px 16px', borderTop: '1px solid #E9EAEF' }}
         >
-          <textarea
+          <input
             value={commentText}
             onChange={e => setCommentText(e.target.value)}
-            placeholder="Leave a comment..."
-            rows={2}
-            className="flex-1 text-[14px] rounded-lg border border-[#E0E2E8] px-3 py-2 outline-none resize-none focus:border-[#4262FF]"
+            onKeyDown={e => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                if (!commentText.trim()) return
+                setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }])
+                setCommentText('')
+              }
+            }}
+            placeholder="Leave a reply. Use @ to mention."
+            className="flex-1 text-[14px] outline-none bg-transparent min-w-0"
             style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
           />
+          <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
+            <IconSmileyPlus css={{ width: 20, height: 20 }} />
+          </button>
           <button
             onClick={() => {
               if (!commentText.trim()) return
               setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }])
               setCommentText('')
             }}
-            className="px-3 py-2 rounded-lg text-[13px] font-semibold text-white transition-colors self-end"
-            style={{ backgroundColor: '#4262FF', fontFamily: 'Open Sans, sans-serif' }}
+            className="shrink-0 transition-colors"
+            style={{ color: commentText.trim() ? '#4262FF' : '#9DA3B4' }}
           >
-            Post
+            <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
           </button>
         </div>
       </div>
