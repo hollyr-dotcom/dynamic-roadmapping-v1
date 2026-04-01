@@ -300,6 +300,7 @@ function generateFeedbackCards(row: SpaceRow) {
 
 export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, overrideSummary }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
+  const [showSidekick, setShowSidekick] = useState(false)
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
 
@@ -1011,6 +1012,107 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       </div>{/* end slider */}
       </div>{/* end overflow wrapper */}
       </div>{/* end tabs */}
+
+      {/* ── Comment input bar (Details / Jira / Insights tabs) ─── */}
+      {['Details', 'Jira', 'Insights'].includes(activeTab) && !selectedCompany && !callCard && !selectedFeedbackCard && !selectedPrompt && !showSidekick && (
+        <div
+          className="shrink-0 flex items-center gap-1.5"
+          style={{ padding: '10px 16px', borderTop: '1px solid #E9EAEF' }}
+        >
+          <input
+            readOnly
+            onClick={() => setShowSidekick(true)}
+            onFocus={() => setShowSidekick(true)}
+            placeholder="Leave a reply. Use @ to mention."
+            className="flex-1 text-[14px] outline-none bg-transparent min-w-0 cursor-text"
+            style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0' }}
+          />
+          <button onClick={() => setShowSidekick(true)} className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
+            <IconSmileyPlus css={{ width: 20, height: 20 }} />
+          </button>
+          <button onClick={() => setShowSidekick(true)} className="shrink-0 text-[#9DA3B4]">
+            <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
+          </button>
+        </div>
+      )}
+
+      {/* ── Sidekick overlay ─── */}
+      {showSidekick && (
+        <div className="absolute inset-0 z-10 bg-white flex flex-col">
+          {/* Header */}
+          <div
+            className="flex items-center gap-2 h-12 shrink-0"
+            style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: '1px solid #E9EAEF' }}
+          >
+            <button
+              onClick={() => setShowSidekick(false)}
+              className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+            >
+              <IconChevronLeft css={{ width: 16, height: 16 }} />
+            </button>
+            <p
+              className="text-[14px] font-semibold text-[#222428]"
+              style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}
+            >
+              Comments
+            </p>
+          </div>
+          {/* Comment list */}
+          <div className="flex-1 overflow-y-auto panel-scroll" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {comments.map((c, i) => (
+              <div key={i} className="group flex gap-3 relative">
+                <img src={`https://i.pravatar.cc/32?img=${c.avatarImg}`} alt="" className="w-8 h-8 rounded-full shrink-0 object-cover" />
+                <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[13px] font-semibold text-[#222428]" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>{c.name}</span>
+                    <span className="text-[12px] text-[#9DA3B4]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{c.time}</span>
+                  </div>
+                  <p className="text-[14px] text-[#3C3F4A] leading-[1.5]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{c.text}</p>
+                </div>
+                <button className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 self-start mt-0.5 text-[#9DA3B4] hover:text-[#656B81]">
+                  <IconSmileyPlus css={{ width: 18, height: 18 }} />
+                </button>
+              </div>
+            ))}
+          </div>
+          {/* Input */}
+          <div
+            className="shrink-0 flex items-center gap-1.5"
+            style={{ padding: '10px 16px', borderTop: '1px solid #E9EAEF' }}
+          >
+            <input
+              autoFocus
+              value={commentText}
+              onChange={e => setCommentText(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  if (!commentText.trim()) return
+                  setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }])
+                  setCommentText('')
+                }
+              }}
+              placeholder="Leave a reply. Use @ to mention."
+              className="flex-1 text-[14px] outline-none bg-transparent min-w-0"
+              style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
+            />
+            <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
+              <IconSmileyPlus css={{ width: 20, height: 20 }} />
+            </button>
+            <button
+              onClick={() => {
+                if (!commentText.trim()) return
+                setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }])
+                setCommentText('')
+              }}
+              className="shrink-0 transition-colors"
+              style={{ color: commentText.trim() ? '#4262FF' : '#9DA3B4' }}
+            >
+              <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Chat overlay (full-panel, avoids slider height-shift glitch) ─── */}
       {selectedPrompt && (
