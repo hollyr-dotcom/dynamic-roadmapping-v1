@@ -301,6 +301,11 @@ function generateFeedbackCards(row: SpaceRow) {
 export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, overrideSummary }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   const [showSidekick, setShowSidekick] = useState(false)
+  const [sidekickMessages, setSidekickMessages] = useState<Array<{ role: 'user' | 'ai'; text: string }>>([])
+  const [sidekickInput, setSidekickInput] = useState('')
+  const [sidekickTyping, setSidekickTyping] = useState(false)
+  const sidekickResponseIdx = useRef(0)
+  const sidekickBottomRef = useRef<HTMLDivElement>(null)
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
 
@@ -1050,49 +1055,68 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             >
               <IconChevronLeft css={{ width: 16, height: 16 }} />
             </button>
-            <p
-              className="text-[14px] font-semibold text-[#222428]"
-              style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}
-            >
-              Comments
+            <p className="text-[14px] font-semibold text-[#222428]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>
+              Customer Insights Agent
             </p>
           </div>
-          {/* Comment list */}
-          <div className="flex-1 overflow-y-auto panel-scroll" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {comments.map((c, i) => (
-              <div key={i} className="group flex gap-3 relative">
-                <img src={`https://i.pravatar.cc/32?img=${c.avatarImg}`} alt="" className="w-8 h-8 rounded-full shrink-0 object-cover" />
-                <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[13px] font-semibold text-[#222428]" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>{c.name}</span>
-                    <span className="text-[12px] text-[#9DA3B4]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{c.time}</span>
-                  </div>
-                  <p className="text-[14px] text-[#3C3F4A] leading-[1.5]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{c.text}</p>
-                </div>
-                <button className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 self-start mt-0.5 text-[#9DA3B4] hover:text-[#656B81]">
-                  <IconSmileyPlus css={{ width: 18, height: 18 }} />
-                </button>
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto panel-scroll px-4 py-4 flex flex-col gap-3">
+            {sidekickMessages.length === 0 && (
+              <div className="flex flex-col gap-2 my-auto">
+                <p className="text-[20px] text-[#222428] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
+                  Ask me anything
+                </p>
+                <p className="text-[14px] text-[#656B81] leading-[1.5]" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  I can surface customer feedback, signals, and insights related to this item.
+                </p>
               </div>
+            )}
+            {sidekickMessages.map((msg, i) => (
+              msg.role === 'user' ? (
+                <div key={i} className="flex justify-end">
+                  <div className="max-w-[85%] rounded-lg px-4 py-3 text-[14px] leading-[1.57] text-[#3C3F4A]" style={{ backgroundColor: '#F1F2F5', fontFamily: 'Open Sans, sans-serif' }}>
+                    {msg.text}
+                  </div>
+                </div>
+              ) : (
+                <div key={i} className="flex justify-start">
+                  <p className="text-[14px] leading-[1.57] text-[#222428]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{msg.text}</p>
+                </div>
+              )
             ))}
+            {sidekickTyping && (
+              <p className="text-[13px] text-[#656B81]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Thinking…</p>
+            )}
+            <div ref={sidekickBottomRef} />
           </div>
-          {/* Input */}
-          <div
-            className="shrink-0 flex items-center gap-1.5"
-            style={{ padding: '10px 16px', borderTop: '1px solid #E9EAEF' }}
-          >
+          {/* Input — matches comments section style */}
+          <div className="shrink-0 flex items-center gap-1.5" style={{ padding: '10px 16px', borderTop: '1px solid #E9EAEF' }}>
             <input
               autoFocus
-              value={commentText}
-              onChange={e => setCommentText(e.target.value)}
+              value={sidekickInput}
+              onChange={e => setSidekickInput(e.target.value)}
               onKeyDown={e => {
                 if (e.key === 'Enter') {
                   e.preventDefault()
-                  if (!commentText.trim()) return
-                  setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }])
-                  setCommentText('')
+                  const text = sidekickInput.trim()
+                  if (!text) return
+                  setSidekickInput('')
+                  setSidekickMessages(m => [...m, { role: 'user', text }])
+                  setSidekickTyping(true)
+                  setTimeout(() => {
+                    setSidekickTyping(false)
+                    const responses = [
+                      `Based on signals for "${row.title}", I found ${row.mentions} total mentions across ${row.customers} customers. The top themes are workflow friction and missing automation. Would you like me to pull the latest feedback?`,
+                      `This item has an estimated ARR impact of $${row.estRevenue}K. Companies like ${row.companies.slice(0, 2).join(' and ')} have flagged it as a priority in recent calls.`,
+                      `Confidence is high across all signal types for this item — calls, surveys, and support tickets all point to the same core need. I'd recommend moving this to "Now" if it isn't already.`,
+                    ]
+                    setSidekickMessages(m => [...m, { role: 'ai', text: responses[sidekickResponseIdx.current % responses.length] }])
+                    sidekickResponseIdx.current++
+                    setTimeout(() => sidekickBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+                  }, 1000)
                 }
               }}
-              placeholder="Leave a reply. Use @ to mention."
+              placeholder="Ask anything..."
               className="flex-1 text-[14px] outline-none bg-transparent min-w-0"
               style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
             />
@@ -1101,12 +1125,25 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             </button>
             <button
               onClick={() => {
-                if (!commentText.trim()) return
-                setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }])
-                setCommentText('')
+                const text = sidekickInput.trim()
+                if (!text) return
+                setSidekickInput('')
+                setSidekickMessages(m => [...m, { role: 'user', text }])
+                setSidekickTyping(true)
+                setTimeout(() => {
+                  setSidekickTyping(false)
+                  const responses = [
+                    `Based on signals for "${row.title}", I found ${row.mentions} total mentions across ${row.customers} customers. The top themes are workflow friction and missing automation.`,
+                    `This item has an estimated ARR impact of $${row.estRevenue}K. Companies like ${row.companies.slice(0, 2).join(' and ')} have flagged it as a priority.`,
+                    `Confidence is high across all signal types for this item. I'd recommend moving this to "Now" if it isn't already.`,
+                  ]
+                  setSidekickMessages(m => [...m, { role: 'ai', text: responses[sidekickResponseIdx.current % responses.length] }])
+                  sidekickResponseIdx.current++
+                  setTimeout(() => sidekickBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+                }, 1000)
               }}
               className="shrink-0 transition-colors"
-              style={{ color: commentText.trim() ? '#4262FF' : '#9DA3B4' }}
+              style={{ color: sidekickInput.trim() ? '#4262FF' : '#9DA3B4' }}
             >
               <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
             </button>
