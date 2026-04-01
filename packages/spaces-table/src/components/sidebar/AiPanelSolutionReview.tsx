@@ -101,7 +101,7 @@ function PanelHeader({ onClose }: { onClose?: () => void }) {
         <IconButton aria-label="History" variant="ghost" size="medium" onPress={() => {}}><IconClockCounterClockwise /></IconButton>
         <IconButton aria-label="Library" variant="ghost" size="medium" onPress={() => {}}><IconSquaresFour /></IconButton>
         <IconButton aria-label="More" variant="ghost" size="medium" onPress={() => {}}><IconDotsThreeVertical /></IconButton>
-        <IconButton aria-label="Close" variant="ghost" size="medium" onPress={() => { onClose?.(); (window as any).__closeAiPanel?.(); }}><IconCross /></IconButton>
+        <button onClick={() => onClose?.()} className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors shrink-0" aria-label="Close"><IconCross css={{ width: 16, height: 16 }} /></button>
       </div>
     </div>
   );

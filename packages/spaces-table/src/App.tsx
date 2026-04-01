@@ -491,11 +491,12 @@ export function App() {
             showShareTooltip={showShareTooltip}
           />
         </div>
-        {/* Scroll area — database title scrolls away, tabs stick under header */}
-        <div ref={scrollRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-y-auto overflow-x-auto page-scroll flex flex-col${pageTransitioning ? ' page-transitioning-out' : ''}`}>
-          <div className="sticky left-0 z-[9999]" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
-            <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} centered={activePage === 'overview'} />
-          </div>
+        {/* Database title — outside scroll container so its dropdown isn't clipped by overflow-x-hidden */}
+        <div className="sticky left-0 z-[45]" style={{ paddingRight: (activePage === 'overview' && isRightOpen) ? 400 : 0, transition: 'padding-right 0.45s cubic-bezier(0.16,1,0.3,1)' }} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
+          <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} centered={activePage === 'overview'} />
+        </div>
+        {/* Scroll area — vertical + horizontal, table header sticks below toolbar */}
+        <div ref={scrollRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden page-scroll flex flex-col${pageTransitioning ? ' page-transitioning-out' : ''}`} style={{ paddingRight: (activePage === 'overview' && isRightOpen) ? 400 : 0, transition: 'padding-right 0.45s cubic-bezier(0.16,1,0.3,1)' }}>
           {activePage !== 'overview' && (
             <div className={`sticky top-0 left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
               <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} />
