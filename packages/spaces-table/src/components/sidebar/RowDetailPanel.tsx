@@ -467,6 +467,25 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   }
 
 
+  const sendSidekick = (text: string) => {
+    const trimmed = text.trim()
+    if (!trimmed) return
+    setSidekickInput('')
+    setSidekickMessages(m => [...m, { role: 'user', text: trimmed }])
+    setSidekickTyping(true)
+    setTimeout(() => {
+      setSidekickTyping(false)
+      const responses = [
+        `Based on signals for "${row.title}", I found ${row.mentions} total mentions across ${row.customers} customers. Top themes are workflow friction and missing automation — would you like me to pull the latest feedback?`,
+        `This item has an estimated ARR impact of $${row.estRevenue}K. Companies like ${row.companies.slice(0, 2).join(' and ')} have flagged it as a priority in recent calls.`,
+        `Confidence is high across all signal types for this item — calls, surveys, and support tickets all point to the same core need. I'd recommend moving this to "Now" if it isn't already.`,
+      ]
+      setSidekickMessages(m => [...m, { role: 'ai', text: responses[sidekickResponseIdx.current % responses.length] }])
+      sidekickResponseIdx.current++
+      setTimeout(() => sidekickBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+    }, 1000)
+  }
+
   const chip = PRIORITY_CHIP[row.priority] ?? PRIORITY_CHIP.icebox
   const priorityLabel = PRIORITY_LABELS[row.priority] ?? row.priority
 
@@ -1043,111 +1062,135 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       {/* ── Sidekick overlay ─── */}
       {showSidekick && (
-        <div className="absolute inset-0 z-10 bg-white flex flex-col">
+        <div style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', flexDirection: 'column', height: '100%', width: '100%', background: 'white', overflow: 'hidden' }}>
+
+          {/* Gradient defs */}
+          <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }}>
+            <defs>
+              <linearGradient id="sk-gradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientTransform="rotate(42)">
+                <stop offset="0%" stopColor="#322BFE" />
+                <stop offset="27%" stopColor="#6E3CFE" />
+                <stop offset="55%" stopColor="#A34CFF" />
+                <stop offset="82%" stopColor="#D05DFF" />
+                <stop offset="100%" stopColor="#F66EFF" />
+              </linearGradient>
+            </defs>
+          </svg>
+
           {/* Header */}
-          <div
-            className="flex items-center gap-2 h-12 shrink-0"
-            style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: '1px solid #E9EAEF' }}
-          >
-            <button
-              onClick={() => setShowSidekick(false)}
-              className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
-            >
-              <IconChevronLeft css={{ width: 16, height: 16 }} />
-            </button>
-            <p className="text-[14px] font-semibold text-[#222428]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>
-              Customer Insights Agent
-            </p>
-          </div>
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto panel-scroll px-4 py-4 flex flex-col gap-3">
-            {sidekickMessages.length === 0 && (
-              <div className="flex flex-col gap-2 my-auto">
-                <p className="text-[20px] text-[#222428] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
-                  Ask me anything
-                </p>
-                <p className="text-[14px] text-[#656B81] leading-[1.5]" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-                  I can surface customer feedback, signals, and insights related to this item.
-                </p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 24, paddingRight: 12, height: 56, flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontSize: 16, fontWeight: 600, color: '#222428', fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01'" }}>Sidekick</span>
+              <svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path fill="currentColor" d="M6.707 9.293 12 14.586l5.293-5.293 1.414 1.414-6 6h-1.414l-6-6 1.414-1.414Z" /></svg>
+              <div style={{ background: '#F1F2F5', borderRadius: 4, padding: '0 6px', height: 20, display: 'flex', alignItems: 'center', marginLeft: 4 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#222428', fontFamily: 'Open Sans, sans-serif' }}>AI Beta</span>
               </div>
-            )}
-            {sidekickMessages.map((msg, i) => (
-              msg.role === 'user' ? (
-                <div key={i} className="flex justify-end">
-                  <div className="max-w-[85%] rounded-lg px-4 py-3 text-[14px] leading-[1.57] text-[#3C3F4A]" style={{ backgroundColor: '#F1F2F5', fontFamily: 'Open Sans, sans-serif' }}>
-                    {msg.text}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="New chat" onClick={() => { setSidekickMessages([]); setSidekickInput('') }}>
+                <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path fill="currentColor" d="M3 18V6a3 3 0 0 1 3-3h7v2H6a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7h2v7a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3ZM18.543 1.543a2.768 2.768 0 1 1 3.914 3.914l-5.839 5.839-3.422.684-1.176-1.176.684-3.422 5.839-5.839Zm2.5 1.414c-.3-.3-.786-.3-1.086 0l-5.411 5.41-.272 1.358 1.358-.272 5.411-5.41c.3-.3.3-.786 0-1.086Z" /></svg>
+              </button>
+              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="History">
+                <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path fill="currentColor" d="M13 3a9 9 0 1 1 0 18v-2a7 7 0 1 0-7-7v.586l1.293-1.293 1.414 1.414-3 3H4.293l-3-3 1.414-1.414L4 12.586V12a9 9 0 0 1 9-9Zm3.707 6.707-1.777 1.776a2 2 0 1 1-1.414-1.414l1.777-1.776 1.414 1.414Z" /></svg>
+              </button>
+              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="Library">
+                <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path fill="currentColor" d="m10 13 1 1v6l-1 1H4l-1-1v-6l1-1h6Zm-5 6h4v-4H5v4Zm5-16 1 1v6l-1 1H4l-1-1V4l1-1h6ZM5 9h4V5H5v4Zm15-6 1 1v6l-1 1h-6l-1-1V4l1-1h6Zm-5 6h4V5h-4v4Zm5 4 1 1v6l-1 1h-6l-1-1v-6l1-1h6Zm-5 6h4v-4h-4v4Z" /></svg>
+              </button>
+              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="More">
+                <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path fill="currentColor" d="M12 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" /></svg>
+              </button>
+              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="Close" onClick={() => setShowSidekick(false)}>
+                <IconCross css={{ width: 20, height: 20 }} />
+              </button>
+            </div>
+          </div>
+
+          {/* Body */}
+          <div style={{ flex: '1 1 0%', overflowY: 'auto', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+            <div style={{ flex: '1 1 0%' }} />
+            {sidekickMessages.length === 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '0 24px 24px' }}>
+                {/* Avatar row */}
+                <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                  <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', width: 72, height: 44, borderRadius: 22, background: '#F1F2F5' }} />
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    <div style={{ width: 48, height: 48, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'linear-gradient(42deg, #322BFE 0%, #6E3CFE 27%, #A34CFF 55%, #D05DFF 82%, #F66EFF 109%)' }}>
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M8.678 3.207c.325-1.368 2.319-1.37 2.644 0l.026.142.042.255c.49 2.625 2.599 4.662 5.26 5.046 1.554.224 1.562 2.473 0 2.698-2.747.394-4.906 2.552-5.302 5.3-.224 1.562-2.474 1.554-2.698 0-.396-2.747-2.554-4.906-5.302-5.3-1.559-.225-1.556-2.474 0-2.699l.256-.042c2.625-.49 4.662-2.599 5.046-5.26l.028-.14Z" fill="white" />
+                        <path d="M3.5 14c0 1.38 1.12 2.5 2.5 2.5v1c-1.38 0-2.5 1.12-2.5 2.5h-1c0-1.38-1.12-2.5-2.5-2.5v-1c1.38 0 2.5-1.12 2.5-2.5h1Z" fill="white" />
+                        <path d="M17.5 0c0 1.38 1.12 2.5 2.5 2.5v1c-1.38 0-2.5 1.12-2.5 2.5h-1c0-1.38-1.12-2.5-2.5-2.5v-1c1.38 0 2.5-1.12 2.5-2.5h1Z" fill="white" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div style={{ position: 'relative', zIndex: 1, width: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path fill="currentColor" d="M6.707 9.293 12 14.586l5.293-5.293 1.414 1.414-6 6h-1.414l-6-6 1.414-1.414Z" /></svg>
                   </div>
                 </div>
-              ) : (
-                <div key={i} className="flex justify-start">
-                  <p className="text-[14px] leading-[1.57] text-[#222428]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{msg.text}</p>
+                <span style={{ fontSize: 20, fontWeight: 600, color: '#656B81', lineHeight: 1.4, fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01'" }}>Hey Holly,</span>
+                <span style={{ fontSize: 14, color: '#222428', lineHeight: 1.5, fontFamily: 'Open Sans, sans-serif' }}>I scanned your Roadmap and Backlog. Here's what I found:</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {['Am I betting on the right things for Q2?', 'Deep dive into my top roadmap item', 'What happens if I swap a Q2 item?'].map(chip => (
+                    <div key={chip} onClick={() => sendSidekick(chip)} style={{ background: 'white', border: '1px solid #E0E2E8', borderRadius: 8, padding: '6px 12px', fontSize: 14, color: '#222428', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', fontFamily: 'Open Sans, sans-serif' }}>
+                      {chip}
+                    </div>
+                  ))}
                 </div>
-              )
-            ))}
-            {sidekickTyping && (
-              <p className="text-[13px] text-[#656B81]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Thinking…</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '0 24px 24px' }}>
+                {sidekickMessages.map((msg, i) => (
+                  msg.role === 'user' ? (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <div style={{ maxWidth: '85%', borderRadius: 8, padding: '12px 16px', fontSize: 14, lineHeight: 1.57, color: '#3C3F4A', backgroundColor: '#F1F2F5', fontFamily: 'Open Sans, sans-serif' }}>{msg.text}</div>
+                    </div>
+                  ) : (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                      <p style={{ fontSize: 14, lineHeight: 1.57, color: '#222428', fontFamily: 'Open Sans, sans-serif', margin: 0 }}>{msg.text}</p>
+                    </div>
+                  )
+                ))}
+                {sidekickTyping && <p style={{ fontSize: 13, color: '#656B81', fontFamily: 'Open Sans, sans-serif', margin: 0 }}>Thinking…</p>}
+                <div ref={sidekickBottomRef} />
+              </div>
             )}
-            <div ref={sidekickBottomRef} />
           </div>
-          {/* Input — matches comments section style */}
-          <div className="shrink-0 flex items-center gap-1.5" style={{ padding: '10px 16px', borderTop: '1px solid #E9EAEF' }}>
-            <input
-              autoFocus
-              value={sidekickInput}
-              onChange={e => setSidekickInput(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  const text = sidekickInput.trim()
-                  if (!text) return
-                  setSidekickInput('')
-                  setSidekickMessages(m => [...m, { role: 'user', text }])
-                  setSidekickTyping(true)
-                  setTimeout(() => {
-                    setSidekickTyping(false)
-                    const responses = [
-                      `Based on signals for "${row.title}", I found ${row.mentions} total mentions across ${row.customers} customers. The top themes are workflow friction and missing automation. Would you like me to pull the latest feedback?`,
-                      `This item has an estimated ARR impact of $${row.estRevenue}K. Companies like ${row.companies.slice(0, 2).join(' and ')} have flagged it as a priority in recent calls.`,
-                      `Confidence is high across all signal types for this item — calls, surveys, and support tickets all point to the same core need. I'd recommend moving this to "Now" if it isn't already.`,
-                    ]
-                    setSidekickMessages(m => [...m, { role: 'ai', text: responses[sidekickResponseIdx.current % responses.length] }])
-                    sidekickResponseIdx.current++
-                    setTimeout(() => sidekickBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
-                  }, 1000)
-                }
-              }}
-              placeholder="Ask anything..."
-              className="flex-1 text-[14px] outline-none bg-transparent min-w-0"
-              style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
-            />
-            <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
-              <IconSmileyPlus css={{ width: 20, height: 20 }} />
-            </button>
-            <button
-              onClick={() => {
-                const text = sidekickInput.trim()
-                if (!text) return
-                setSidekickInput('')
-                setSidekickMessages(m => [...m, { role: 'user', text }])
-                setSidekickTyping(true)
-                setTimeout(() => {
-                  setSidekickTyping(false)
-                  const responses = [
-                    `Based on signals for "${row.title}", I found ${row.mentions} total mentions across ${row.customers} customers. The top themes are workflow friction and missing automation.`,
-                    `This item has an estimated ARR impact of $${row.estRevenue}K. Companies like ${row.companies.slice(0, 2).join(' and ')} have flagged it as a priority.`,
-                    `Confidence is high across all signal types for this item. I'd recommend moving this to "Now" if it isn't already.`,
-                  ]
-                  setSidekickMessages(m => [...m, { role: 'ai', text: responses[sidekickResponseIdx.current % responses.length] }])
-                  sidekickResponseIdx.current++
-                  setTimeout(() => sidekickBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
-                }, 1000)
-              }}
-              className="shrink-0 transition-colors"
-              style={{ color: sidekickInput.trim() ? '#4262FF' : '#9DA3B4' }}
-            >
-              <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
-            </button>
+
+          {/* Input area */}
+          <div style={{ flexShrink: 0, padding: '0 24px 16px', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ background: '#F1F2F5', borderRadius: '8px 8px 0 0', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <svg viewBox="0 0 24 24" fill="none" width="16" height="16" style={{ flexShrink: 0, color: '#656B81' }}>
+                <path fill="currentColor" fillRule="evenodd" d="M17.167 4.7H14.9V3h2.267A2.833 2.833 0 0 1 20 5.833V8.1h-1.7V5.833c0-.521-.612-1.133-1.133-1.133Zm1.133 8.5V9.8H20v3.4h-1.7ZM4.7 14.9v2.267c0 .521.753 1.133 1.275 1.133H8.1V20H5.833A2.833 2.833 0 0 1 3 17.167V14.9h1.7Zm13.6 2.267V14.9H20v2.267A2.833 2.833 0 0 1 17.167 20H14.9v-1.7h2.267c.521 0 1.133-.612 1.133-1.133ZM9.8 18.3h3.4V20H9.8v-1.7ZM14 3v11H3V6a3 3 0 0 1 3-3h8Zm-9 9h7V5H6a1 1 0 0 0-1 1v6Z" clipRule="evenodd" />
+              </svg>
+              <span style={{ fontSize: 12, color: '#222428', lineHeight: 1.5, fontFamily: 'Open Sans, sans-serif' }}>Select objects on the canvas to add context</span>
+            </div>
+            <div style={{ border: '1px solid #E0E2E8', borderRadius: '0 0 8px 8px', background: 'white' }}>
+              <div style={{ padding: '12px 16px 4px' }}>
+                <textarea
+                  autoFocus
+                  value={sidekickInput}
+                  onChange={e => setSidekickInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSidekick(sidekickInput) } }}
+                  placeholder="Ask about your roadmap..."
+                  rows={1}
+                  style={{ width: '100%', border: 'none', outline: 'none', resize: 'none', fontSize: 14, color: '#222428', lineHeight: 1.4, fontFamily: 'Open Sans, sans-serif', background: 'transparent', minHeight: 24, maxHeight: 120, overflow: 'auto' }}
+                />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 8px 8px' }}>
+                <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="Add">
+                  <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path fill="currentColor" d="M13 4v7h7v2h-7v7h-2v-7H4v-2h7V4h2Z" /></svg>
+                </button>
+                <button
+                  onClick={() => sendSidekick(sidekickInput)}
+                  style={{ background: sidekickInput.trim() ? 'linear-gradient(42deg, #322BFE 0%, #6E3CFE 27%, #A34CFF 55%, #D05DFF 82%, #F66EFF 109%)' : '#E9EAEF', borderRadius: 20, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: sidekickInput.trim() ? 'pointer' : 'default', transition: 'background 0.15s', border: 'none' }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M1.5 7L12.5 7M12.5 7L7.5 2M12.5 7L7.5 12" stroke={sidekickInput.trim() ? 'white' : '#AEB2C0'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
+
         </div>
       )}
 
