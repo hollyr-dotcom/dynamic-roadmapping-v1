@@ -360,6 +360,8 @@ docs/plans/
 - **New roadmap items** from text input added to `roadmapItems` state with `status: 'planning'` and `priority: 'now'` (was incorrectly writing to `backlogData`)
 - **JiraIdCell** returns null when no value — prevents stray Jira logo on manually created rows
 
+- **Per-page data isolation** — replaced single `hasData` flag with `backlogHasData` / `roadmapHasData`; importing on one page no longer reveals data on the other; both pages start empty on creation; each import only marks its own page as populated
+
 **Next:**
 - Wire import source cards to actual import flows per source
 
