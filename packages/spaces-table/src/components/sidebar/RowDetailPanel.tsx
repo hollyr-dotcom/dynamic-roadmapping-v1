@@ -350,7 +350,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
   const selectedLayout = selectedLayoutProp ?? layoutInternal
   const setSelectedLayout = (l: 'Center' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
-  const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 48 : 460
+  const COMMENTS_WIDTH = 320
+  const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 48 - COMMENTS_WIDTH : 460
   const layoutButtonRef = useRef<HTMLButtonElement>(null)
   const layoutMenuRef = useRef<HTMLDivElement>(null)
 
@@ -469,7 +470,20 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const adjRevenue = Math.round(row.estRevenue * remainingFraction)
 
   const panelContent = (
-    <div className="flex flex-col overflow-hidden relative" style={{ width: panelWidth, height: '100%', backgroundColor: 'white', fontFamily: 'Open Sans, sans-serif', borderRadius: selectedLayout !== 'Right' ? 8 : 0, boxShadow: selectedLayout !== 'Right' ? '0px 8px 32px rgba(34,36,40,0.16), 0px 1px 4px rgba(34,36,40,0.08)' : 'none', transition: 'width 0.5s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        height: '100%',
+        width: selectedLayout !== 'Right' ? panelWidth + COMMENTS_WIDTH : panelWidth,
+        backgroundColor: 'white',
+        fontFamily: 'Open Sans, sans-serif',
+        borderRadius: selectedLayout !== 'Right' ? 8 : 0,
+        boxShadow: selectedLayout !== 'Right' ? '0px 8px 32px rgba(34,36,40,0.16), 0px 1px 4px rgba(34,36,40,0.08)' : 'none',
+        overflow: 'hidden',
+      }}
+    >
+    <div className="flex flex-col overflow-hidden relative" style={{ width: panelWidth, height: '100%', flexShrink: 0 }}>
 
 
       {/* ── Header ──────────────────────────────────────── */}
@@ -549,7 +563,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       {/* ── Tab bar ── */}
       <div className="flex gap-1 px-3 pt-3 pb-1 shrink-0" style={{ pointerEvents: 'auto' }}>
-        {['Details', 'Jira', 'Insights', 'Comments'].map(tab => (
+        {(selectedLayout === 'Right' ? ['Details', 'Jira', 'Insights', 'Comments'] : ['Details', 'Jira', 'Insights']).map(tab => (
           <button
             key={tab}
             onPointerDown={e => { e.stopPropagation(); setActiveTab(tab) }}
@@ -1244,7 +1258,107 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         </div>,
         document.body
       )}
-    </div>
+    </div>{/* end main panel */}
+
+    {/* ── Comments panel (Center / Fullscreen only) ── */}
+    {selectedLayout !== 'Right' && (
+      <div
+        style={{
+          width: COMMENTS_WIDTH,
+          flexShrink: 0,
+          borderLeft: '1px solid #E9EAEF',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          backgroundColor: 'white',
+        }}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between shrink-0"
+          style={{ padding: '12px 16px', borderBottom: '1px solid #E9EAEF' }}
+        >
+          <div className="flex items-center gap-1">
+            <span
+              className="text-[14px] font-semibold text-[#222428]"
+              style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}
+            >
+              Comments
+            </span>
+            <IconChevronDown css={{ width: 14, height: 14, color: '#656B81' }} />
+          </div>
+          <button
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+            style={{ fontFamily: 'Open Sans, sans-serif' }}
+          >
+            <IconSparksFilled css={{ width: 14, height: 14 }} />
+            Summarize
+          </button>
+        </div>
+
+        {/* Comment list */}
+        <div className="flex-1 overflow-y-auto panel-scroll" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {comments.map((c, i) => (
+            <div key={i} className="flex gap-3">
+              <img
+                src={`https://i.pravatar.cc/32?img=${c.avatarImg}`}
+                alt=""
+                className="w-8 h-8 rounded-full shrink-0 object-cover"
+              />
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="text-[13px] font-semibold text-[#222428]"
+                    style={{ fontFamily: "'Roobert PRO', sans-serif" }}
+                  >
+                    {c.name}
+                  </span>
+                  <span
+                    className="text-[12px] text-[#9DA3B4]"
+                    style={{ fontFamily: 'Open Sans, sans-serif' }}
+                  >
+                    {c.time}
+                  </span>
+                </div>
+                <p
+                  className="text-[14px] text-[#3C3F4A] leading-[1.5]"
+                  style={{ fontFamily: 'Open Sans, sans-serif' }}
+                >
+                  {c.text}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Input */}
+        <div
+          className="shrink-0 flex gap-2"
+          style={{ padding: '12px 16px', borderTop: '1px solid #E9EAEF' }}
+        >
+          <textarea
+            value={commentText}
+            onChange={e => setCommentText(e.target.value)}
+            placeholder="Leave a comment..."
+            rows={2}
+            className="flex-1 text-[14px] rounded-lg border border-[#E0E2E8] px-3 py-2 outline-none resize-none focus:border-[#4262FF]"
+            style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
+          />
+          <button
+            onClick={() => {
+              if (!commentText.trim()) return
+              setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }])
+              setCommentText('')
+            }}
+            className="px-3 py-2 rounded-lg text-[13px] font-semibold text-white transition-colors self-end"
+            style={{ backgroundColor: '#4262FF', fontFamily: 'Open Sans, sans-serif' }}
+          >
+            Post
+          </button>
+        </div>
+      </div>
+    )}
+    </div>{/* end outer flex-row wrapper */}
   )
 
   if (selectedLayout === 'Center' || selectedLayout === 'Fullscreen') {
