@@ -510,7 +510,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     >
 
       {/* ── Header (full width) ──────────────────────────── */}
-      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: selectedLayout !== 'Right' ? '1px solid #E9EAEF' : 'none' }}>
+      {!showSidekick && <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: selectedLayout !== 'Right' ? '1px solid #E9EAEF' : 'none' }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {!hideInsightCallout && <JiraLogo size={18} />}
           <p
@@ -582,7 +582,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             </Tooltip.Portal>
           </Tooltip>
         </div>
-      </div>
+      </div>}
 
       {/* ── Content row (main panel + comments panel) ── */}
       <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, overflow: 'hidden' }}>
@@ -1080,8 +1080,15 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </svg>
 
           {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 24, paddingRight: 12, height: 56, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 12, paddingRight: 12, height: 56, flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <button
+                onClick={() => setShowSidekick(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors shrink-0"
+                aria-label="Back"
+              >
+                <IconChevronLeft css={{ width: 20, height: 20 }} />
+              </button>
               <span style={{ fontSize: 16, fontWeight: 600, color: '#222428', fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01'" }}>Sidekick</span>
               <svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path fill="currentColor" d="M6.707 9.293 12 14.586l5.293-5.293 1.414 1.414-6 6h-1.414l-6-6 1.414-1.414Z" /></svg>
               <div style={{ background: '#F1F2F5', borderRadius: 4, padding: '0 6px', height: 20, display: 'flex', alignItems: 'center', marginLeft: 4 }}>
