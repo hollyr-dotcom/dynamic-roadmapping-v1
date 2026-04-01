@@ -94,9 +94,6 @@ interface RowDetailPanelProps {
   onLayoutChange?: (layout: 'Center' | 'Right' | 'Fullscreen') => void
   hideInsightCallout?: boolean
   overrideSummary?: string
-  hideStatusBlocking?: boolean
-  hideComments?: boolean
-  hideJira?: boolean
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -301,7 +298,7 @@ function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, overrideSummary, hideStatusBlocking = false, hideComments = false, hideJira = false }: RowDetailPanelProps) {
+export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, overrideSummary }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
@@ -354,7 +351,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const selectedLayout = selectedLayoutProp ?? layoutInternal
   const setSelectedLayout = (l: 'Center' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
   const COMMENTS_WIDTH = selectedLayout === 'Fullscreen' ? 420 : 320
-  const panelWidth = selectedLayout === 'Fullscreen' || selectedLayout === 'Center' ? window.innerWidth - 48 - COMMENTS_WIDTH : 460
+  const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 48 - COMMENTS_WIDTH : 460
   const layoutButtonRef = useRef<HTMLButtonElement>(null)
   const layoutMenuRef = useRef<HTMLDivElement>(null)
 
@@ -568,7 +565,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       {/* ── Tab bar ── */}
       <div className="flex gap-1 px-3 pt-3 pb-4 shrink-0" style={{ pointerEvents: 'auto' }}>
-        {(selectedLayout === 'Right' ? ['Details', 'Jira', 'Insights', 'Comments'] : ['Details', 'Jira', 'Insights']).filter(tab => !(hideComments && tab === 'Comments') && !(hideJira && tab === 'Jira')).map(tab => (
+        {(selectedLayout === 'Right' ? ['Details', 'Jira', 'Insights', 'Comments'] : ['Details', 'Jira', 'Insights']).map(tab => (
           <button
             key={tab}
             onPointerDown={e => { e.stopPropagation(); setActiveTab(tab) }}
@@ -680,25 +677,21 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             </FieldRow>
 
             {/* Status */}
-            {!hideStatusBlocking && (
-              <FieldRow label="Status">
-                <div
-                  className="inline-flex items-center rounded-[6px] px-2"
-                  style={{ backgroundColor: chip.bg, color: chip.color, height: 28 }}
-                >
-                  <span className="text-[14px] leading-[20px]" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-                    {priorityLabel}
-                  </span>
-                </div>
-              </FieldRow>
-            )}
+            <FieldRow label="Status">
+              <div
+                className="inline-flex items-center rounded-[6px] px-2"
+                style={{ backgroundColor: chip.bg, color: chip.color, height: 28 }}
+              >
+                <span className="text-[14px] leading-[20px]" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  {priorityLabel}
+                </span>
+              </div>
+            </FieldRow>
 
             {/* Blocking */}
-            {!hideStatusBlocking && (
-              <FieldRow label="Blocking">
-                <span className="text-[14px] text-[#222428] leading-[1.4] px-2">—</span>
-              </FieldRow>
-            )}
+            <FieldRow label="Blocking">
+              <span className="text-[14px] text-[#222428] leading-[1.4] px-2">—</span>
+            </FieldRow>
 
             {/* Start / End dates (timeline only) */}
             {timelineDates && (
