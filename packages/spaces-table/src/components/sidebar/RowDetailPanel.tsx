@@ -1047,7 +1047,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           >
             <textarea
               readOnly
-              placeholder="Leave a reply. Use @ to mention."
+              placeholder="What should we do next?"
               rows={2}
               className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none cursor-text"
               style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0' }}
