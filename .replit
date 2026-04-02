@@ -51,5 +51,5 @@ externalPort = 3001
 
 [deployment]
 deploymentTarget = "static"
-build = ["bash", "-c", "cp .bun.lock bun.lock 2>/dev/null; bun install && bun run --filter @spaces/spaces-table build"]
+build = ["bash", "-c", "cd packages/spaces-table && npx vite build"]
 publicDir = "packages/spaces-table/dist"
