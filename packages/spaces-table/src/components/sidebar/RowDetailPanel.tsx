@@ -94,6 +94,7 @@ interface RowDetailPanelProps {
   selectedLayout?: 'Halfscreen' | 'Right' | 'Fullscreen'
   onLayoutChange?: (layout: 'Halfscreen' | 'Right' | 'Fullscreen') => void
   hideInsightCallout?: boolean
+  hideComments?: boolean
   overrideSummary?: string
   onOpenSidekick?: () => void
 }
@@ -300,7 +301,7 @@ function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, overrideSummary, onOpenSidekick }: RowDetailPanelProps) {
+export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, hideComments = false, overrideSummary, onOpenSidekick }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   const [showSidekick, setShowSidekick] = useState(false)
   const [insightDismissed, setInsightDismissed] = useState(false)
@@ -620,7 +621,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       {/* ── Tab bar ── */}
       <div className="flex gap-1 px-3 pt-3 pb-4 shrink-0" style={{ pointerEvents: 'auto' }}>
-        {(selectedLayout === 'Fullscreen' ? ['Details', 'Jira', 'Insights'] : ['Details', 'Jira', 'Insights', 'Comments']).map(tab => (
+        {(selectedLayout === 'Fullscreen' || hideComments ? ['Details', 'Jira', 'Insights'] : ['Details', 'Jira', 'Insights', 'Comments']).map(tab => (
           <button
             key={tab}
             onPointerDown={e => { e.stopPropagation(); setActiveTab(tab) }}
