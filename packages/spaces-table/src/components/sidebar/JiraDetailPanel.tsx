@@ -413,6 +413,46 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
           </div>
         )}
       </div>
+
+      {layoutOpen && layoutPos && createPortal(
+        <div
+          ref={layoutMenuRef}
+          className="fixed z-[9999] bg-white flex flex-col rounded-[8px]"
+          style={{ top: layoutPos.top, right: layoutPos.right, padding: '16px 12px', gap: 4, boxShadow: '0px 0px 12px rgba(34,36,40,0.04), 0px 2px 8px rgba(34,36,40,0.12)' }}
+        >
+          {(['Right', 'Center', 'Fullscreen'] as const).map(option => (
+            <button
+              key={option}
+              className={`flex items-center w-full rounded-[4px] transition-colors text-left ${selectedLayout === option ? 'bg-[#F1F2F5]' : 'hover:bg-[#F1F2F5]'}`}
+              style={{ padding: '0 8px 0 0', gap: 0 }}
+              onClick={() => { setSelectedLayout(option); setLayoutOpen(false) }}
+            >
+              <span className="flex items-center justify-end shrink-0" style={{ padding: '12px 0 12px 8px' }}>
+                {option === 'Right' && (
+                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
+                    <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="#222428"/>
+                  </svg>
+                )}
+                {option === 'Center' && (
+                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
+                    <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="#222428"/>
+                  </svg>
+                )}
+                {option === 'Fullscreen' && (
+                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
+                    <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="#222428"/>
+                  </svg>
+                )}
+              </span>
+              <span style={{ fontFamily: 'Open Sans, sans-serif', fontSize: 14, color: '#222428', paddingLeft: 8, paddingTop: 10, paddingBottom: 10, fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>{option}</span>
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
     </div>
   )
 }

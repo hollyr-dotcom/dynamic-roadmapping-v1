@@ -39,6 +39,13 @@ Current image files:
 - `icon-people.svg` — People icon (unused, available for future use)
 - `insights-icon.svg` — Insights modal icon
 
+## Build Fix Patterns
+- `tsconfig.app.json`: `noUnusedLocals: false`, `noUnusedParameters: false` — prevents bulk unused-variable errors from upstream code
+- `&&` narrowing → use ternary; `JSX.Element` namespace → `React.JSX.Element`
+- Icon style props → `@ts-expect-error`; `Record<FieldType, X>` missing keys → `Partial<Record<FieldType, X>>`
+- `onPress` handler type → `(e: any) =>`
+- ViewTabsToolbar "View settings" button: `onPress` must be wired to `onToggleSidebar('view-settings')`
+
 ## GitHub Pull Workflow
 - Pull: `git pull origin main --no-rebase --no-edit`
 - After pull, fix `packages/spaces-table/package.json`: change `workspace:*` to `file:../shared` for `@spaces/shared`
