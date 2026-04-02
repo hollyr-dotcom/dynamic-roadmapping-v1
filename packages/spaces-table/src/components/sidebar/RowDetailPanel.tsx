@@ -2108,7 +2108,7 @@ function FeedbackCard({
           }}>{category}</span>
         </span>
         <div className="flex-1" />
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1" style={{ opacity: hovered || menuOpen ? 1 : 0, transition: 'opacity 0.2s ease' }}>
           <button
             ref={menuButtonRef}
             className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-white transition-colors"
@@ -2161,8 +2161,8 @@ function FeedbackCard({
             {companies[0] && <CompanyLogo name={companies[0]} size={24} />}
             <div className="flex items-center gap-1 ml-auto" onClick={e => e.stopPropagation()}>
               {[
-                { key: 'up', label: 'Relevant', active: thumbsUp, onClick: () => { setThumbsUp(v => !v); setThumbsDown(false) } },
-                { key: 'down', label: 'Irrelevant', active: thumbsDown, onClick: () => { setThumbsDown(v => !v); setThumbsUp(false) } },
+                { key: 'up', label: 'More relevant', active: thumbsUp, onClick: () => { setThumbsUp(v => !v); setThumbsDown(false) } },
+                { key: 'down', label: 'Less relevant', active: thumbsDown, onClick: () => { setThumbsDown(v => !v); setThumbsUp(false) } },
               ].map(({ key, label, active, onClick: handleClick }) => (
                 <button
                   key={key}
