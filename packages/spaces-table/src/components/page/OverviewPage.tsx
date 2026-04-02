@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { SpaceRow } from '@spaces/shared'
+import { companyARR } from '@spaces/shared'
 import { Button, Chip, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard, IconInformationMarkCircle, IconTriangleSquareCircle, IconLightbulb, IconGift, IconEyeOpen } from '@mirohq/design-system'
 import {
   IconChartLine,
@@ -90,6 +91,32 @@ export const OVERVIEW_ROWS: Record<string, SpaceRow> = {
   '4': { id: 'ov4', title: 'Rein in AI table creation — make it suggestion-only with preview and opt-in controls', description: 'AI-generated tables appear instantly and unexpectedly overwrite existing content without warning or preview, eroding trust in the AI feature.', mentions: 241, customers: 89, estRevenue: 1900, companies: ['Slack', 'Airbnb', 'Google', 'Spotify'], priority: 'now' },
 }
 
+// Register top-requester data for overview rows so buildFlow2 can render "Top requesters"
+companyARR['ov1'] = [
+  { company: 'Atlassian', arr: 240, contacts: 15 },
+  { company: 'Stripe',    arr: 200, contacts: 8  },
+  { company: 'Figma',     arr: 85,  contacts: 12 },
+  { company: 'Notion',    arr: 48,  contacts: 6  },
+]
+companyARR['ov2'] = [
+  { company: 'Google',   arr: 500, contacts: 22 },
+  { company: 'Dropbox',  arr: 95,  contacts: 9  },
+  { company: 'Asana',    arr: 62,  contacts: 7  },
+  { company: 'Linear',   arr: 32,  contacts: 5  },
+]
+companyARR['ov3'] = [
+  { company: 'Miro',      arr: 110, contacts: 18 },
+  { company: 'Atlassian', arr: 240, contacts: 14 },
+  { company: 'Notion',    arr: 48,  contacts: 11 },
+  { company: 'Figma',     arr: 85,  contacts: 9  },
+]
+companyARR['ov4'] = [
+  { company: 'Slack',   arr: 145, contacts: 10 },
+  { company: 'Google',  arr: 500, contacts: 7  },
+  { company: 'Airbnb',  arr: 120, contacts: 5  },
+  { company: 'Spotify', arr: 175, contacts: 4  },
+]
+
 type CardIcon = 'chart-line' | 'chart-progress' | 'sparks' | 'lightning' | 'chat'
 
 type MatchTag = 'Growing evidence' | 'Fading evidence' | 'New evidence' | 'Missing with roadmap' | 'Weak evidence'
@@ -102,7 +129,7 @@ const MATCH_TAG_STYLE: Record<MatchTag, { bg: string; text: string }> = {
   'Weak evidence':       { bg: '#FFF8D6', text: '#7F5F01' },
 }
 
-const CARDS: {
+export const CARDS: {
   id: string
   icon: CardIcon
   tags: string[]

@@ -26,7 +26,7 @@ import { CanvasTableWidget } from './components/canvas/CanvasTableWidget'
 import { CanvasNavPanels } from './components/canvas/CanvasNavPanels'
 import { CanvasFeedbackCard, type FeedbackCardData } from './components/canvas/CanvasFeedbackCard'
 import { MoveToRoadmapSnackbar } from './components/page/MoveToRoadmapSnackbar'
-import { OverviewPage, OVERVIEW_CARD_SUMMARIES, OVERVIEW_ROWS } from './components/page/OverviewPage'
+import { OverviewPage, OVERVIEW_CARD_SUMMARIES, OVERVIEW_ROWS, CARDS as OVERVIEW_CARDS } from './components/page/OverviewPage'
 
 type PageId = 'overview' | 'backlog' | 'roadmap'
 
@@ -114,6 +114,8 @@ export function App() {
   const [newColumnMenuOpen, setNewColumnMenuOpen] = useState(false)
   const [sidekickFocusItemId, setSidekickFocusItemId] = useState<string | undefined>(undefined)
   const [sidekickSource, setSidekickSource] = useState<'toolbar' | 'panel'>('toolbar')
+  const [sidekickContextMessage, setSidekickContextMessage] = useState<string | undefined>(undefined)
+  const [sidekickKey, setSidekickKey] = useState(0)
   const [canvasOpen, setCanvasOpen] = useState(false)
   const [navHovered, setNavHovered] = useState(false)
   const [kanbanCardSelected, setKanbanCardSelected] = useState(false)
@@ -531,7 +533,18 @@ export function App() {
             </div>
           )}
 
-          {activePage === 'overview' && <OverviewPage onDiveDeeper={(cardId) => { setOverviewCardId(cardId); setSelectedRow(OVERVIEW_ROWS[cardId] ?? backlogData[0]); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onAddToRoadmap={(cardId) => { const row = OVERVIEW_ROWS[cardId]; if (row) { setMovedRow(row); setRoadmapItems(prev => [...prev, { ...row, id: `r-ov-${cardId}`, status: 'planning', priority: 'next' }]); setShowMoveSnackbar(true) } }} onReprioritize={() => { setActivePage('backlog'); setDatabaseTitle('Backlog'); setActiveTab('prioritization') }} />}
+          {activePage === 'overview' && <OverviewPage onDiveDeeper={(cardId) => {
+                  const row = OVERVIEW_ROWS[cardId] ?? backlogData[0]
+                  const card = OVERVIEW_CARDS.find(c => c.id === cardId)
+                  const msg = card
+                    ? `I'm looking at a "${card.matchTag}" signal for "${row.title}" (${card.confidence} confidence). ${card.description} Walk me through the impact and top customers requesting this.`
+                    : `Tell me about ${row.title}`
+                  setSidekickFocusItemId(row.id)
+                  setSidekickContextMessage(msg)
+                  setSidekickKey(k => k + 1)
+                  setSidekickSource('toolbar')
+                  setActiveSidebar('ai-sidekick')
+                }} onAddToRoadmap={(cardId) => { const row = OVERVIEW_ROWS[cardId]; if (row) { setMovedRow(row); setRoadmapItems(prev => [...prev, { ...row, id: `r-ov-${cardId}`, status: 'planning', priority: 'next' }]); setShowMoveSnackbar(true) } }} onReprioritize={() => { setActivePage('backlog'); setDatabaseTitle('Backlog'); setActiveTab('prioritization') }} />}
 
           {/* Type-based view renderer — show empty state for any view type when no data */}
           {activePage !== 'overview' && !hasData ? (
@@ -609,9 +622,11 @@ export function App() {
               onClick={isCenter ? (e: React.MouseEvent) => e.stopPropagation() : undefined}
             >
               <AiPanelSolutionReview
+                key={sidekickKey}
                 onClose={closeSidebar}
                 activePage={activePage}
                 focusItemId={sidekickFocusItemId}
+                contextUserMessage={sidekickContextMessage}
                 layoutButton={
                   <Tooltip>
                     <Tooltip.Trigger asChild>

@@ -17,6 +17,7 @@ import {
 } from "@mirohq/design-system";
 import { roadmapData, sampleData, companyARR, customerQuotes, itemDependencies } from "@spaces/shared";
 import type { SpaceRow } from "@spaces/shared";
+import { OVERVIEW_ROWS } from "../page/OverviewPage";
 
 /* ─── Escher-style AI avatar (gradient circle + sparkle icon) ─── */
 function AgentAvatar({ size = 40 }: { size?: number }) {
@@ -467,9 +468,11 @@ function ImpactCard({ title, type, items }: { title: string; type: 'lose' | 'gai
   );
 }
 
-/* ─── Helper: get item by ID from both tables ─── */
+/* ─── Helper: get item by ID from both tables + overview rows ─── */
 function getItem(id: string): SpaceRow | undefined {
-  return roadmapData.find(r => r.id === id) || sampleData.find(r => r.id === id);
+  return roadmapData.find(r => r.id === id)
+    || sampleData.find(r => r.id === id)
+    || Object.values(OVERVIEW_ROWS).find(r => r.id === id);
 }
 
 /* ─── Helper: get Q2 items (priority: now, not done) ─── */
@@ -1013,7 +1016,7 @@ interface Message {
   loadingSteps?: string[];
 }
 
-function PanelBody({ activePage, focusItemId }: { activePage?: string; focusItemId?: string }) {
+function PanelBody({ activePage, focusItemId, contextUserMessage }: { activePage?: string; focusItemId?: string; contextUserMessage?: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -1032,10 +1035,11 @@ function PanelBody({ activePage, focusItemId }: { activePage?: string; focusItem
       const item = getItem(focusItemId);
       if (item) {
         const content = buildFlow2(focusItemId);
-        addAiResponse(content, `Tell me about ${shortTitle(item.title, 40)}`);
+        const userText = contextUserMessage ?? `Tell me about ${shortTitle(item.title, 40)}`;
+        addAiResponse(content, userText);
       }
     }
-  }, [focusItemId]);
+  }, [focusItemId, contextUserMessage]);
 
   // Track if user has scrolled up manually
   const userScrolledUpRef = useRef(false);
@@ -1438,12 +1442,12 @@ function PanelInput({ onSend }: { onSend: (text: string) => void }) {
 }
 
 /* ─── Main export ─── */
-export default function AiPanelSolutionReview({ onClose, activePage, focusItemId, onBack, layoutButton }: { onClose?: () => void; activePage?: string; focusItemId?: string; onBack?: () => void; layoutButton?: React.ReactNode } = {}) {
+export default function AiPanelSolutionReview({ onClose, activePage, focusItemId, onBack, layoutButton, contextUserMessage }: { onClose?: () => void; activePage?: string; focusItemId?: string; onBack?: () => void; layoutButton?: React.ReactNode; contextUserMessage?: string } = {}) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", maxWidth: "100%", background: "#fff", borderRadius: 8 }}>
       <AiGradientDefs />
       <PanelHeader onClose={onClose} onBack={onBack} layoutButton={layoutButton} />
-      <PanelBody activePage={activePage} focusItemId={focusItemId} />
+      <PanelBody activePage={activePage} focusItemId={focusItemId} contextUserMessage={contextUserMessage} />
     </div>
   );
 }
