@@ -962,7 +962,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         )}
 
       {activeTab !== 'Comments' && (
-        <div style={{ position: 'sticky', bottom: 0, paddingTop: 16, paddingBottom: 16, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, background: 'white' }} onClick={() => onOpenSidekick?.()}>
+        <div style={{ position: 'sticky', bottom: 0, paddingTop: 16, paddingBottom: 16, background: 'white' }} onClick={() => onOpenSidekick?.()}>
           <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}>
             <textarea
               readOnly
