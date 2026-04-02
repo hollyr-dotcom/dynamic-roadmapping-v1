@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { Button, IconButton, IconCross } from '@mirohq/design-system'
+import { Button, IconButton, IconCross, Tooltip } from '@mirohq/design-system'
 import { ShareSpaceDialog } from './components/page/ShareSpaceDialog'
 import { sampleData, fields, roadmapData, roadmapFields } from '@spaces/shared'
 import type { Priority, SpaceRow, Status } from '@spaces/shared'
@@ -113,6 +113,7 @@ export function App() {
   const [initialCompany, setInitialCompany] = useState<string | undefined>(undefined)
   const [newColumnMenuOpen, setNewColumnMenuOpen] = useState(false)
   const [sidekickFocusItemId, setSidekickFocusItemId] = useState<string | undefined>(undefined)
+  const [sidekickSource, setSidekickSource] = useState<'toolbar' | 'panel'>('toolbar')
   const [canvasOpen, setCanvasOpen] = useState(false)
   const [navHovered, setNavHovered] = useState(false)
   const [kanbanCardSelected, setKanbanCardSelected] = useState(false)
@@ -135,8 +136,8 @@ export function App() {
   const [pageTransitioning, setPageTransitioning] = useState(false)
   const [ghostRowId, setGhostRowId] = useState<string | null>(null)
   const [companyFilter, setCompanyFilter] = useState<string[]>([])
-  const [panelLayout, setPanelLayout] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
-  const [sidekickLayout, setSidekickLayout] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
+  const [panelLayout, setPanelLayout] = useState<'Halfscreen' | 'Right' | 'Fullscreen'>('Right')
+  const [sidekickLayout, setSidekickLayout] = useState<'Halfscreen' | 'Right' | 'Fullscreen'>('Right')
   const [sidekickLayoutOpen, setSidekickLayoutOpen] = useState(false)
   const sidekickLayoutBtnRef = useRef<HTMLButtonElement>(null)
   const [sidekickLayoutPos, setSidekickLayoutPos] = useState({ top: 0, right: 0 })
@@ -526,7 +527,7 @@ export function App() {
           </div>
           {activePage !== 'overview' && (
             <div className={`sticky top-0 left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
-              <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} showImportPopover={showImportPopover} onDismissImportPopover={() => setShowImportPopover(false)} hideControls={emptyVariant === 'hidden' && !hasData} disableControls={emptyVariant === 'disabled' && !hasData} />
+              <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} showImportPopover={showImportPopover} onDismissImportPopover={() => setShowImportPopover(false)} hideControls={emptyVariant === 'hidden' && !hasData} disableControls={emptyVariant === 'disabled' && !hasData} onOpenAiSidekick={() => { setSidekickSource('toolbar'); toggleSidebar('ai-sidekick') }} />
             </div>
           )}
 
@@ -574,8 +575,8 @@ export function App() {
 
       {/* AI Sidekick — rendered outside the sliding sidebar to avoid white flash on exit */}
       {(() => {
-        const skWidth = sidekickLayout === 'Fullscreen' ? window.innerWidth - 48 : sidekickLayout === 'Center' ? 720 : 400;
-        const isCenter = sidekickLayout === 'Center' || sidekickLayout === 'Fullscreen';
+        const skWidth = sidekickLayout === 'Fullscreen' ? window.innerWidth * 0.75 : sidekickLayout === 'Halfscreen' ? 720 : 400;
+        const isCenter = sidekickLayout === 'Halfscreen' || sidekickLayout === 'Fullscreen';
         return (
           <>
           <div
@@ -612,36 +613,41 @@ export function App() {
                 activePage={activePage}
                 focusItemId={sidekickFocusItemId}
                 layoutButton={
-                  <button
-                    ref={sidekickLayoutBtnRef}
-                    aria-label="Panel layout"
-                    style={{ height: 24, display: 'flex', alignItems: 'center', gap: 2, padding: '0 4px', borderRadius: 4, color: '#656B81', border: 'none', background: 'transparent', cursor: 'pointer' }}
-                    className="hover:bg-[#F1F2F5] transition-colors"
-                    onClick={() => {
-                      const r = sidekickLayoutBtnRef.current?.getBoundingClientRect()
-                      if (r) setSidekickLayoutPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
-                      setSidekickLayoutOpen(o => !o)
-                    }}
-                  >
-                    {sidekickLayout === 'Center' && (
-                      <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
-                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                        <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
-                      </svg>
-                    )}
-                    {sidekickLayout === 'Right' && (
-                      <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
-                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                        <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
-                      </svg>
-                    )}
-                    {sidekickLayout === 'Fullscreen' && (
-                      <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
-                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                        <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="currentColor"/>
-                      </svg>
-                    )}
-                  </button>
+                  <Tooltip>
+                    <Tooltip.Trigger asChild>
+                      <button
+                        ref={sidekickLayoutBtnRef}
+                        aria-label="Panel layout"
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, border: 'none', cursor: 'pointer', color: '#656B81' }}
+                        className="w-8 h-8 rounded-lg hover:bg-[#F1F2F5] transition-colors shrink-0"
+                        onClick={() => {
+                          const r = sidekickLayoutBtnRef.current?.getBoundingClientRect()
+                          if (r) setSidekickLayoutPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+                          setSidekickLayoutOpen(o => !o)
+                        }}
+                      >
+                        {sidekickLayout === 'Halfscreen' && (
+                          <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                            <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                            <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
+                          </svg>
+                        )}
+                        {sidekickLayout === 'Right' && (
+                          <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                            <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                            <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
+                          </svg>
+                        )}
+                        {sidekickLayout === 'Fullscreen' && (
+                          <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                            <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                            <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="currentColor"/>
+                          </svg>
+                        )}
+                      </button>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content side="top" sideOffset={4}>Panel view</Tooltip.Content>
+                  </Tooltip>
                 }
               />
             </div>
@@ -654,14 +660,14 @@ export function App() {
                 className="fixed z-[10002] bg-white rounded-lg py-1"
                 style={{ top: sidekickLayoutPos.top, right: sidekickLayoutPos.right, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', minWidth: 140 }}
               >
-                {(['Right', 'Center', 'Fullscreen'] as const).map(layout => (
+                {(['Right', 'Halfscreen', 'Fullscreen'] as const).map(layout => (
                   <button
                     key={layout}
                     className="w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-[#F1F2F5] transition-colors"
                     style={{ border: 'none', background: sidekickLayout === layout ? '#F1F2F5' : 'transparent', cursor: 'pointer', color: '#222428' }}
                     onClick={() => { setSidekickLayout(layout); setSidekickLayoutOpen(false) }}
                   >
-                    {layout === 'Center' && (
+                    {layout === 'Halfscreen' && (
                       <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
                         <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
                         <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
@@ -679,7 +685,7 @@ export function App() {
                         <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="currentColor"/>
                       </svg>
                     )}
-                    {layout}
+                    {layout === 'Halfscreen' ? (sidekickSource === 'toolbar' ? 'Center' : 'Halfscreen') : layout}
                   </button>
                 ))}
               </div>
@@ -699,10 +705,11 @@ export function App() {
 
       {/* Right sidebar — fixed overlay, slides in over the top nav */}
       <div
-        className="fixed top-0 right-0 h-full z-50 transition-transform duration-[450ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className="fixed top-0 right-0 h-full z-50"
         style={{
-          width: activeSidebar === 'row-detail' ? (panelLayout === 'Fullscreen' ? window.innerWidth - 48 : panelLayout === 'Center' ? 720 + 48 : 460 + 24) : activeSidebar === 'ai-sidekick' ? 0 : 320,
-          transform: (isRightOpen && activeSidebar !== 'ai-sidekick' && !(activeSidebar === 'row-detail' && (panelLayout === 'Center' || panelLayout === 'Fullscreen'))) ? 'translateX(0)' : 'translateX(100%)',
+          width: activeSidebar === 'row-detail' ? (panelLayout === 'Fullscreen' ? window.innerWidth * 0.75 : panelLayout === 'Halfscreen' ? window.innerWidth * 0.5 + 24 : 460 + 24) : activeSidebar === 'ai-sidekick' ? 0 : 320,
+          transform: (isRightOpen && activeSidebar !== 'ai-sidekick' && !(activeSidebar === 'row-detail' && panelLayout === 'Fullscreen')) ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 450ms cubic-bezier(0.16,1,0.3,1), width 450ms cubic-bezier(0.16,1,0.3,1)',
           pointerEvents: isRightOpen && activeSidebar !== 'ai-sidekick' ? 'auto' : 'none',
         }}
       >
@@ -714,7 +721,7 @@ export function App() {
             >
               {isJiraDetailOpen && selectedJiraRow
                 ? <JiraDetailPanel row={selectedJiraRow} onClose={() => { setIsJiraDetailOpen(false); closeSidebar() }} />
-                : selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} initialCompany={initialCompany} onAddToBoard={handleAddToBoard} onRowUpdated={handleRowUpdated} timelineDates={selectedRowDates} onCompanyFilter={handleCompanyFilter} activeCompanyFilter={companyFilter.length > 0 ? companyFilter : null} selectedLayout={panelLayout} onLayoutChange={setPanelLayout} hideInsightCallout={activePage === 'overview'} overrideSummary={activePage === 'overview' && overviewCardId ? OVERVIEW_CARD_SUMMARIES[overviewCardId] : undefined} onOpenSidekick={() => { setActiveSidebar('ai-sidekick'); setSidekickFocusItemId(selectedRow.id) }} />
+                : selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} initialCompany={initialCompany} onAddToBoard={handleAddToBoard} onRowUpdated={handleRowUpdated} timelineDates={selectedRowDates} onCompanyFilter={handleCompanyFilter} activeCompanyFilter={companyFilter.length > 0 ? companyFilter : null} selectedLayout={panelLayout} onLayoutChange={setPanelLayout} hideInsightCallout={activePage === 'overview'} overrideSummary={activePage === 'overview' && overviewCardId ? OVERVIEW_CARD_SUMMARIES[overviewCardId] : undefined} onOpenSidekick={() => { setSidekickSource('panel'); setActiveSidebar('ai-sidekick'); setSidekickFocusItemId(selectedRow.id) }} />
               }
             </div>
           </div>

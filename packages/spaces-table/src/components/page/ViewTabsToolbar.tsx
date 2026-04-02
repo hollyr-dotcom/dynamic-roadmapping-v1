@@ -73,9 +73,10 @@ interface ViewTabsToolbarProps {
   onDismissImportPopover?: () => void
   hideControls?: boolean
   disableControls?: boolean
+  onOpenAiSidekick?: () => void
 }
 
-export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange, onDuplicateWidget, variant = 'page', companyFilter, onClearCompanyFilter, onImportSource, showImportPopover, onDismissImportPopover, hideControls, disableControls }: ViewTabsToolbarProps) {
+export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange, onDuplicateWidget, variant = 'page', companyFilter, onClearCompanyFilter, onImportSource, showImportPopover, onDismissImportPopover, hideControls, disableControls, onOpenAiSidekick }: ViewTabsToolbarProps) {
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
   const [isImportMenuOpen, setIsImportMenuOpen] = useState(false)
   const importBtnRef = useRef<HTMLSpanElement>(null)
@@ -264,7 +265,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
     <div
       className={`group sticky top-0 left-0 z-30 bg-white flex items-center gap-4 shrink-0 ${variant === 'widget' ? 'pl-0 pr-0 pt-2 pb-4' : 'pl-14 pt-4 pb-6'}`}
       style={variant === 'page' ? {
-        paddingRight: activeSidebar === 'row-detail' ? 376 + 24 + 12 : activeSidebar === 'ai-sidekick' ? 400 + 8 + 60 : (activeSidebar && activeSidebar !== 'space-menu') ? 320 + 12 : 48,
+        paddingRight: activeSidebar === 'row-detail' ? 376 + 24 + 12 : (activeSidebar && activeSidebar !== 'space-menu' && activeSidebar !== 'ai-sidekick') ? 320 + 12 : 48,
         transition: 'padding-right 300ms cubic-bezier(0.16,1,0.3,1)',
       } : undefined}
     >
@@ -629,7 +630,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
               variant="ghost"
               size="medium"
               disabled={disableControls}
-              onPress={variant !== 'widget' ? () => onToggleSidebar('ai-sidekick') : undefined}
+              onPress={variant !== 'widget' ? () => onOpenAiSidekick ? onOpenAiSidekick() : onToggleSidebar('ai-sidekick') : undefined}
               css={activeSidebar === 'ai-sidekick' && variant !== 'widget' ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}
             >
               <IconSparksFilled />
