@@ -2116,18 +2116,6 @@ function FeedbackCard({
           >
             <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
           </button>
-          <div className="relative"
-            onMouseEnter={e => {
-              const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
-              setTooltipPos({ top: r.top - 4, right: window.innerWidth - r.right })
-              setTooltipVisible(true)
-            }}
-            onMouseLeave={() => setTooltipVisible(false)}
-          >
-            <button onClick={e => { e.stopPropagation(); onDismiss() }} aria-label="Remove signal" className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-white transition-colors">
-              <IconCross css={{ width: 16, height: 16 }} />
-            </button>
-          </div>
         </div>
       </div>
         )
