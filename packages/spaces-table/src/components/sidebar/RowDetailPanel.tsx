@@ -1465,35 +1465,42 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="More">
               <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path fill="currentColor" d="M12 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" /></svg>
             </button>
-            <button
-              ref={layoutButtonRef}
-              aria-label="Panel layout"
-              className="h-8 flex items-center gap-0.5 px-2 rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
-              onClick={() => {
-                const r = layoutButtonRef.current?.getBoundingClientRect()
-                if (r) setLayoutPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
-                setLayoutOpen(o => !o)
-              }}
-            >
-              {selectedLayout === 'Center' && (
-                <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
-                  <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                  <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
-                </svg>
-              )}
-              {selectedLayout === 'Right' && (
-                <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
-                  <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                  <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
-                </svg>
-              )}
-              {selectedLayout === 'Fullscreen' && (
-                <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
-                  <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                  <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="currentColor"/>
-                </svg>
-              )}
-            </button>
+            <Tooltip>
+              <Tooltip.Trigger asChild>
+                <button
+                  ref={layoutButtonRef}
+                  aria-label="Panel layout"
+                  className="h-6 flex items-center gap-0.5 px-1 rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+                  onClick={() => {
+                    const r = layoutButtonRef.current?.getBoundingClientRect()
+                    if (r) setLayoutPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+                    setLayoutOpen(o => !o)
+                  }}
+                >
+                  {selectedLayout === 'Center' && (
+                    <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                      <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                      <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
+                    </svg>
+                  )}
+                  {selectedLayout === 'Right' && (
+                    <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                      <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                      <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
+                    </svg>
+                  )}
+                  {selectedLayout === 'Fullscreen' && (
+                    <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                      <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                      <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="currentColor"/>
+                    </svg>
+                  )}
+                </button>
+              </Tooltip.Trigger>
+              <Tooltip.Portal>
+                <Tooltip.Content side="top" sideOffset={4}>Panel view</Tooltip.Content>
+              </Tooltip.Portal>
+            </Tooltip>
             <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="Close" onClick={() => onClose()}>
               <IconCross css={{ width: 20, height: 20 }} />
             </button>
