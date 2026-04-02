@@ -43,6 +43,7 @@ import {
   IconBookmark,
 } from '@mirohq/design-system'
 import { JiraLogo } from '../JiraLogo'
+import AiPanelSolutionReview from './AiPanelSolutionReview'
 
 function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
   const size = (props as { width?: number }).width ?? 24
@@ -303,6 +304,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const [activeTab, setActiveTab] = useState('Details')
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
+  const [showSidekick, setShowSidekick] = useState(false)
 
   useEffect(() => {
     if (initialCompany) setSelectedCompany(initialCompany)
@@ -563,6 +565,23 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       {/* ── Content row (main panel + comments panel) ── */}
       <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, overflow: 'hidden' }}>
       <div className="flex flex-col overflow-hidden relative" style={{ width: panelWidth, height: '100%', flexShrink: 0 }}>
+
+      {showSidekick && (
+        <div className="flex flex-col h-full overflow-hidden" style={{ position: 'absolute', inset: 0, zIndex: 20, background: 'white' }}>
+          <div className="flex items-center shrink-0 px-3 pt-3 pb-2">
+            <button
+              onClick={() => setShowSidekick(false)}
+              className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-[#F2F4FC] transition-colors"
+              style={{ cursor: 'pointer' }}
+            >
+              <IconChevronLeft css={{ width: 20, height: 20, color: '#656B81' }} />
+            </button>
+          </div>
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <AiPanelSolutionReview onClose={() => setShowSidekick(false)} focusItemId={row.id} />
+          </div>
+        </div>
+      )}
 
       {/* ── Tab bar ── */}
       <div className="flex gap-1 px-3 pt-3 pb-4 shrink-0" style={{ pointerEvents: 'auto' }}>
@@ -962,7 +981,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         )}
 
       {activeTab !== 'Comments' && (
-        <div style={{ position: 'sticky', bottom: 0, marginTop: 'auto', paddingTop: 16, paddingBottom: 24, background: 'white' }} onClick={() => onOpenSidekick?.()}>
+        <div style={{ position: 'sticky', bottom: 0, marginTop: 'auto', paddingTop: 16, paddingBottom: 24, background: 'white' }} onClick={() => setShowSidekick(true)}>
           <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}>
             <textarea
               readOnly
