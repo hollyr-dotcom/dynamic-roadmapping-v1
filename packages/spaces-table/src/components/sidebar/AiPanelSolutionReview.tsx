@@ -1203,7 +1203,7 @@ function PanelBody({ activePage, focusItemId }: { activePage?: string; focusItem
                 </span>
 
                 {/* Suggested prompts — one per flow, short and crisp */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
                   <PromptPill
                     label="Am I betting on the right things for Q2?"
                     onClick={() => handlePillClick({ label: "Am I betting on the right things for Q2?", key: "flow1-initial" })}
