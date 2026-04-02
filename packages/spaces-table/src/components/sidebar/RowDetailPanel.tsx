@@ -932,7 +932,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 </div>
               ))}
             </div>
-            <div className="shrink-0" style={{ padding: '16px' }}>
+            <div className="shrink-0" style={{ padding: '16px 0' }}>
               <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white' }}>
                 <textarea
                   value={commentText}
