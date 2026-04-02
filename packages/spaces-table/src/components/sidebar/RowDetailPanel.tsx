@@ -531,7 +531,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 {selectedLayout === 'Halfscreen' && (
                   <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
                     <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                    <rect x="5.5" y="2.5" width="6" height="7" rx="0.8" fill="currentColor"/>
+                    <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
                   </svg>
                 )}
                 {selectedLayout === 'Right' && (
@@ -1067,7 +1067,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       </div>{/* end tabs */}
 
       {/* ── Comment input bar (Details / Jira / Insights tabs) ─── */}
-      {['Details', 'Jira', 'Insights'].includes(activeTab) && !selectedCompany && !callCard && !selectedFeedbackCard && !selectedPrompt && !showSidekick && (
+      {!selectedCompany && !callCard && !selectedFeedbackCard && !selectedPrompt && !showSidekick && (
         <div className="shrink-0" style={{ padding: '16px' }}>
           <div
             className="flex items-center gap-1.5"
@@ -1261,7 +1261,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 {option === 'Halfscreen' && (
                   <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
                     <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
-                    <rect x="5.5" y="2.5" width="6" height="7" rx="0.8" fill="#222428"/>
+                    <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="#222428"/>
                   </svg>
                 )}
                 {option === 'Fullscreen' && (
@@ -1362,14 +1362,15 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         style={{
           width: COMMENTS_WIDTH,
           flexShrink: 0,
-          borderLeft: '1px solid #E9EAEF',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
           backgroundColor: 'white',
+          position: 'relative',
         }}
       >
-        {/* Comments label */}
+        {/* Left border that stops at the bottom of the reply input */}
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 16, width: 1, backgroundColor: '#E9EAEF', pointerEvents: 'none' }} />
         <div className="shrink-0" style={{ padding: '12px 16px 4px 16px' }}>
           <span
             className="text-[14px] font-semibold text-[#222428]"
@@ -1379,8 +1380,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </span>
         </div>
 
-        {/* Comment list */}
-        <div className="flex-1 overflow-y-auto panel-scroll" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="flex-1 overflow-y-auto panel-scroll min-h-0" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {comments.map((c, i) => (
             <div key={i} className="group flex gap-3 relative">
               <img
@@ -1417,7 +1417,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           ))}
         </div>
 
-        {/* Input */}
         <div className="shrink-0" style={{ padding: '16px' }}>
           <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white' }}>
             <textarea

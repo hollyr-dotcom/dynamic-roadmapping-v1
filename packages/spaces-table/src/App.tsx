@@ -657,35 +657,39 @@ export function App() {
             <>
               <div className="fixed inset-0 z-[10001]" onClick={() => setSidekickLayoutOpen(false)} />
               <div
-                className="fixed z-[10002] bg-white rounded-lg py-1"
-                style={{ top: sidekickLayoutPos.top, right: sidekickLayoutPos.right, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', minWidth: 140 }}
+                className="fixed z-[10002] bg-white flex flex-col rounded-[8px]"
+                style={{ top: sidekickLayoutPos.top, right: sidekickLayoutPos.right, padding: '16px 12px', gap: 4, boxShadow: '0px 0px 12px rgba(34,36,40,0.04), 0px 2px 8px rgba(34,36,40,0.12)' }}
               >
                 {(['Right', 'Halfscreen', 'Fullscreen'] as const).map(layout => (
                   <button
                     key={layout}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-[#F1F2F5] transition-colors"
-                    style={{ border: 'none', background: sidekickLayout === layout ? '#F1F2F5' : 'transparent', cursor: 'pointer', color: '#222428' }}
+                    className={`flex items-center w-full rounded-[4px] transition-colors text-left ${sidekickLayout === layout ? 'bg-[#F1F2F5]' : 'hover:bg-[#F1F2F5]'}`}
+                    style={{ border: 'none', padding: '0 8px 0 0', gap: 0, cursor: 'pointer' }}
                     onClick={() => { setSidekickLayout(layout); setSidekickLayoutOpen(false) }}
                   >
-                    {layout === 'Halfscreen' && (
-                      <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
-                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                        <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
-                      </svg>
-                    )}
-                    {layout === 'Right' && (
-                      <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
-                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                        <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
-                      </svg>
-                    )}
-                    {layout === 'Fullscreen' && (
-                      <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
-                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                        <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="currentColor"/>
-                      </svg>
-                    )}
-                    {layout === 'Halfscreen' ? (sidekickSource === 'toolbar' ? 'Center' : 'Halfscreen') : layout}
+                    <span className="flex items-center justify-end shrink-0" style={{ padding: '12px 0 12px 8px' }}>
+                      {layout === 'Right' && (
+                        <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                          <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
+                          <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="#222428"/>
+                        </svg>
+                      )}
+                      {layout === 'Halfscreen' && (
+                        <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                          <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
+                          <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="#222428"/>
+                        </svg>
+                      )}
+                      {layout === 'Fullscreen' && (
+                        <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                          <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
+                          <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="#222428"/>
+                        </svg>
+                      )}
+                    </span>
+                    <span style={{ fontFamily: 'Open Sans, sans-serif', fontSize: 14, color: '#222428', paddingLeft: 8, paddingTop: 10, paddingBottom: 10, fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
+                      {layout === 'Halfscreen' ? (sidekickSource === 'toolbar' ? 'Center' : 'Halfscreen') : layout}
+                    </span>
                   </button>
                 ))}
               </div>
