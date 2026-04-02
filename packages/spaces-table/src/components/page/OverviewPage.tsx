@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { SpaceRow } from '@spaces/shared'
+import { companyARR } from '@spaces/shared'
 import { Button, Chip, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard, IconInformationMarkCircle, IconTriangleSquareCircle, IconLightbulb, IconGift, IconEyeOpen } from '@mirohq/design-system'
 import {
   IconChartLine,
@@ -90,6 +91,32 @@ export const OVERVIEW_ROWS: Record<string, SpaceRow> = {
   '4': { id: 'ov4', title: 'Rein in AI table creation — make it suggestion-only with preview and opt-in controls', description: 'AI-generated tables appear instantly and unexpectedly overwrite existing content without warning or preview, eroding trust in the AI feature.', mentions: 241, customers: 89, estRevenue: 1900, companies: ['Slack', 'Airbnb', 'Google', 'Spotify'], priority: 'now' },
 }
 
+// Register top-requester data for overview rows so buildFlow2 can render "Top requesters"
+companyARR['ov1'] = [
+  { company: 'Atlassian', arr: 240, contacts: 15 },
+  { company: 'Stripe',    arr: 200, contacts: 8  },
+  { company: 'Figma',     arr: 85,  contacts: 12 },
+  { company: 'Notion',    arr: 48,  contacts: 6  },
+]
+companyARR['ov2'] = [
+  { company: 'Google',   arr: 500, contacts: 22 },
+  { company: 'Dropbox',  arr: 95,  contacts: 9  },
+  { company: 'Asana',    arr: 62,  contacts: 7  },
+  { company: 'Linear',   arr: 32,  contacts: 5  },
+]
+companyARR['ov3'] = [
+  { company: 'Miro',      arr: 110, contacts: 18 },
+  { company: 'Atlassian', arr: 240, contacts: 14 },
+  { company: 'Notion',    arr: 48,  contacts: 11 },
+  { company: 'Figma',     arr: 85,  contacts: 9  },
+]
+companyARR['ov4'] = [
+  { company: 'Slack',   arr: 145, contacts: 10 },
+  { company: 'Google',  arr: 500, contacts: 7  },
+  { company: 'Airbnb',  arr: 120, contacts: 5  },
+  { company: 'Spotify', arr: 175, contacts: 4  },
+]
+
 type CardIcon = 'chart-line' | 'chart-progress' | 'sparks' | 'lightning' | 'chat'
 
 type MatchTag = 'Growing evidence' | 'Fading evidence' | 'New evidence' | 'Missing with roadmap' | 'Weak evidence'
@@ -102,7 +129,7 @@ const MATCH_TAG_STYLE: Record<MatchTag, { bg: string; text: string }> = {
   'Weak evidence':       { bg: '#FFF8D6', text: '#7F5F01' },
 }
 
-const CARDS: {
+export const CARDS: {
   id: string
   icon: CardIcon
   tags: string[]
@@ -178,29 +205,18 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
         <div
           key={card.id}
           className="group relative rounded-[24px] bg-white overflow-hidden transition-shadow duration-200 hover:shadow-[0_4px_24px_rgba(34,36,40,0.10)]"
-          style={{ border: '0.5px solid #e0e2e8', paddingBottom: 80 }}
+          style={{ border: '0.5px solid #e0e2e8', paddingBottom: 64 }}
         >
-          <div className="p-6 flex flex-col gap-3">
-            {/* Icon + tags + close row */}
+          <div className="p-6 flex flex-col gap-2">
+            {/* Icon + close row */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <div className="flex items-center justify-center shrink-0" style={{ color: '#222428' }}>
-                  {card.matchTag === 'Growing evidence' ? <IconChartLine size="medium" /> : card.matchTag === 'Fading evidence' ? <IconArrowDown size="medium" /> : card.matchTag === 'New evidence' ? <IconSparks size="medium" /> : card.matchTag === 'Missing with roadmap' ? <IconExclamationPointCircle size="medium" /> : card.matchTag === 'Weak evidence' ? <IconThreeColumnsVertical /> : <CardIcon type={card.icon} />}
-                </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Chip removable={false} css={{ backgroundColor: MATCH_TAG_STYLE[card.matchTag].bg, color: MATCH_TAG_STYLE[card.matchTag].text, fontWeight: 700, borderRadius: 6, fontFamily: "'Roobert PRO', sans-serif", fontSize: 12 }}>{card.matchTag}</Chip>
-                  <Chip removable={false} css={{ backgroundColor: confidenceTagStyle(card.confidence).bg, color: confidenceTagStyle(card.confidence).text, fontWeight: 700, borderRadius: 6, fontFamily: "'Roobert PRO', sans-serif", fontSize: 12 }}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
-                      {card.confidence} confidence
-                      <IconInformationMarkCircle css={{ width: 16, height: 16, flexShrink: 0 }} />
-                    </span>
-                  </Chip>
-                </div>
+              <div className="flex items-center justify-center shrink-0" style={{ color: '#222428' }}>
+                {card.matchTag === 'Growing evidence' ? <IconChartLine size="medium" /> : card.matchTag === 'Fading evidence' ? <IconArrowDown size="medium" /> : card.matchTag === 'New evidence' ? <IconSparks size="medium" /> : card.matchTag === 'Missing with roadmap' ? <IconExclamationPointCircle size="medium" /> : card.matchTag === 'Weak evidence' ? <IconThreeColumnsVertical /> : <CardIcon type={card.icon} />}
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 <DropdownMenu>
                   <DropdownMenu.Trigger asChild>
-                    <button className="w-7 h-7 flex items-center justify-center rounded-full text-[#9da3b4] hover:bg-[#F1F2F5] hover:text-[#222428] transition-colors">
+                    <button className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
                       <IconDotsThreeVertical size="small" />
                     </button>
                   </DropdownMenu.Trigger>
@@ -217,7 +233,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
                 </DropdownMenu>
                 <button
                   onClick={() => setDismissed(prev => new Set(prev).add(card.id))}
-                  className="w-7 h-7 flex items-center justify-center rounded-full text-[#9da3b4] hover:bg-[#F1F2F5] hover:text-[#222428] transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
                 >
                   <IconCross size="small" />
                 </button>
@@ -234,10 +250,21 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
               {card.description}
             </p>
 
+            {/* Chips — below description */}
+            <div className="flex items-center gap-2 flex-wrap mt-1">
+              <Chip removable={false} css={{ backgroundColor: MATCH_TAG_STYLE[card.matchTag].bg, color: MATCH_TAG_STYLE[card.matchTag].text, fontWeight: 700, borderRadius: 6, fontFamily: "'Roobert PRO', sans-serif", fontSize: 12 }}>{card.matchTag}</Chip>
+              <Chip removable={false} css={{ backgroundColor: confidenceTagStyle(card.confidence).bg, color: confidenceTagStyle(card.confidence).text, fontWeight: 700, borderRadius: 6, fontFamily: "'Roobert PRO', sans-serif", fontSize: 12 }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
+                  {card.confidence} confidence
+                  <IconInformationMarkCircle css={{ width: 16, height: 16, flexShrink: 0 }} />
+                </span>
+              </Chip>
+            </div>
+
           </div>
 
           {/* Hover-reveal actions */}
-          <div className="absolute bottom-5 left-6 flex items-center gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-[transform,opacity] duration-300 ease-out">
+          <div className="absolute bottom-6 left-6 flex items-center gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-[transform,opacity] duration-300 ease-out">
             <Button
               variant="primary"
               size="medium"

@@ -13,9 +13,11 @@ import {
   IconSparks,
   IconSparksFilled,
   IconInsights,
+  Tooltip,
 } from "@mirohq/design-system";
 import { roadmapData, sampleData, companyARR, customerQuotes, itemDependencies } from "@spaces/shared";
 import type { SpaceRow } from "@spaces/shared";
+import { OVERVIEW_ROWS } from "../page/OverviewPage";
 
 /* ─── Escher-style AI avatar (gradient circle + sparkle icon) ─── */
 function AgentAvatar({ size = 40 }: { size?: number }) {
@@ -89,13 +91,18 @@ function PanelHeader({ onClose, onBack, layoutButton }: { onClose?: () => void; 
     >
       <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
         {onBack && (
-          <button
-            onClick={onBack}
-            style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: 4, border: "none", background: "transparent", cursor: "pointer", color: "#656B81", marginRight: 4 }}
-            className="hover:bg-[#F1F2F5] transition-colors"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path fill="currentColor" d="M15.707 6.707 10.414 12l5.293 5.293-1.414 1.414-6-6v-1.414l6-6 1.414 1.414Z"/></svg>
-          </button>
+          <Tooltip>
+            <Tooltip.Trigger asChild>
+              <button
+                onClick={onBack}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: 4, border: "none", background: "transparent", cursor: "pointer", color: "#656B81", marginRight: 4 }}
+                className="hover:bg-[#F1F2F5] transition-colors"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path fill="currentColor" d="M15.707 6.707 10.414 12l5.293 5.293-1.414 1.414-6-6v-1.414l6-6 1.414 1.414Z"/></svg>
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Content side="top" sideOffset={4}>Back</Tooltip.Content>
+          </Tooltip>
         )}
         <span style={{ fontSize: 16, fontWeight: 600, color: "#222428", fontFamily: "var(--font-roobert)", fontFeatureSettings: "'ss01'" }}>
           Sidekick
@@ -106,12 +113,16 @@ function PanelHeader({ onClose, onBack, layoutButton }: { onClose?: () => void; 
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", position: "relative", zIndex: 10 }}>
-        <IconButton aria-label="New chat" variant="ghost" size="medium" onPress={() => {}}><IconSquarePencil /></IconButton>
-        <IconButton aria-label="History" variant="ghost" size="medium" onPress={() => {}}><IconClockCounterClockwise /></IconButton>
-        <IconButton aria-label="Library" variant="ghost" size="medium" onPress={() => {}}><IconSquaresFour /></IconButton>
-        <IconButton aria-label="More" variant="ghost" size="medium" onPress={() => {}}><IconDotsThreeVertical /></IconButton>
-        {layoutButton}
-        <button onClick={() => onClose?.()} className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors shrink-0" aria-label="Close"><IconCross css={{ width: 16, height: 16 }} /></button>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Tooltip><Tooltip.Trigger asChild><IconButton aria-label="New chat" variant="ghost" size="medium" onPress={() => {}}><IconSquarePencil /></IconButton></Tooltip.Trigger><Tooltip.Content side="top" sideOffset={4}>New chat</Tooltip.Content></Tooltip>
+          <Tooltip><Tooltip.Trigger asChild><IconButton aria-label="History" variant="ghost" size="medium" onPress={() => {}}><IconClockCounterClockwise /></IconButton></Tooltip.Trigger><Tooltip.Content side="top" sideOffset={4}>History</Tooltip.Content></Tooltip>
+          <Tooltip><Tooltip.Trigger asChild><IconButton aria-label="Library" variant="ghost" size="medium" onPress={() => {}}><IconSquaresFour /></IconButton></Tooltip.Trigger><Tooltip.Content side="top" sideOffset={4}>Library</Tooltip.Content></Tooltip>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {layoutButton}
+          <Tooltip><Tooltip.Trigger asChild><IconButton aria-label="More" variant="ghost" size="medium" onPress={() => {}}><IconDotsThreeVertical /></IconButton></Tooltip.Trigger><Tooltip.Content side="top" sideOffset={4}>More</Tooltip.Content></Tooltip>
+          <Tooltip><Tooltip.Trigger asChild><button onClick={() => onClose?.()} className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors shrink-0" aria-label="Close"><IconCross css={{ width: 16, height: 16 }} /></button></Tooltip.Trigger><Tooltip.Content side="top" sideOffset={4}>Close</Tooltip.Content></Tooltip>
+        </div>
       </div>
     </div>
   );
@@ -457,9 +468,11 @@ function ImpactCard({ title, type, items }: { title: string; type: 'lose' | 'gai
   );
 }
 
-/* ─── Helper: get item by ID from both tables ─── */
+/* ─── Helper: get item by ID from both tables + overview rows ─── */
 function getItem(id: string): SpaceRow | undefined {
-  return roadmapData.find(r => r.id === id) || sampleData.find(r => r.id === id);
+  return roadmapData.find(r => r.id === id)
+    || sampleData.find(r => r.id === id)
+    || Object.values(OVERVIEW_ROWS).find(r => r.id === id);
 }
 
 /* ─── Helper: get Q2 items (priority: now, not done) ─── */
@@ -1003,7 +1016,7 @@ interface Message {
   loadingSteps?: string[];
 }
 
-function PanelBody({ activePage, focusItemId }: { activePage?: string; focusItemId?: string }) {
+function PanelBody({ activePage, focusItemId, contextUserMessage }: { activePage?: string; focusItemId?: string; contextUserMessage?: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -1022,10 +1035,11 @@ function PanelBody({ activePage, focusItemId }: { activePage?: string; focusItem
       const item = getItem(focusItemId);
       if (item) {
         const content = buildFlow2(focusItemId);
-        addAiResponse(content, `Tell me about ${shortTitle(item.title, 40)}`);
+        const userText = contextUserMessage ?? `Tell me about ${shortTitle(item.title, 40)}`;
+        addAiResponse(content, userText);
       }
     }
-  }, [focusItemId]);
+  }, [focusItemId, contextUserMessage]);
 
   // Track if user has scrolled up manually
   const userScrolledUpRef = useRef(false);
@@ -1428,12 +1442,12 @@ function PanelInput({ onSend }: { onSend: (text: string) => void }) {
 }
 
 /* ─── Main export ─── */
-export default function AiPanelSolutionReview({ onClose, activePage, focusItemId, onBack, layoutButton }: { onClose?: () => void; activePage?: string; focusItemId?: string; onBack?: () => void; layoutButton?: React.ReactNode } = {}) {
+export default function AiPanelSolutionReview({ onClose, activePage, focusItemId, onBack, layoutButton, contextUserMessage }: { onClose?: () => void; activePage?: string; focusItemId?: string; onBack?: () => void; layoutButton?: React.ReactNode; contextUserMessage?: string } = {}) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", maxWidth: "100%", background: "#fff", borderRadius: 8 }}>
       <AiGradientDefs />
       <PanelHeader onClose={onClose} onBack={onBack} layoutButton={layoutButton} />
-      <PanelBody activePage={activePage} focusItemId={focusItemId} />
+      <PanelBody activePage={activePage} focusItemId={focusItemId} contextUserMessage={contextUserMessage} />
     </div>
   );
 }

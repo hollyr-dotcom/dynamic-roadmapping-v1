@@ -91,9 +91,10 @@ interface RowDetailPanelProps {
   timelineDates?: { startDate: string; endDate: string }
   onCompanyFilter?: (name: string) => void
   activeCompanyFilter?: string[] | null
-  selectedLayout?: 'Center' | 'Right' | 'Fullscreen'
-  onLayoutChange?: (layout: 'Center' | 'Right' | 'Fullscreen') => void
+  selectedLayout?: 'Halfscreen' | 'Right' | 'Fullscreen'
+  onLayoutChange?: (layout: 'Halfscreen' | 'Right' | 'Fullscreen') => void
   hideInsightCallout?: boolean
+  hideComments?: boolean
   overrideSummary?: string
   onOpenSidekick?: () => void
 }
@@ -158,8 +159,8 @@ const INSIGHT_SUMMARIES: Record<string, string> = {
   '18': 'Gamified savings challenges appear in 5 mentions from 7 accounts, driven by younger users at Shopify and Airbnb. Feedback describes the current savings experience as transactional and uninspiring — badges, streaks, and challenges are seen as motivators that could meaningfully improve goal completion rates, with $30K in projected revenue impact.',
 }
 
-const AVATAR_NO_PHOTO = 'https://www.figma.com/api/mcp/asset/4d11fed8-3b68-4a90-b907-9999522076d0'
-const AVATAR_VECTOR = 'https://www.figma.com/api/mcp/asset/2e063fe9-0a1a-4f85-a78f-1882b257cad9'
+const AVATAR_NO_PHOTO = '/avatar.png'
+const AVATAR_VECTOR = '/avatar.png'
 
 // Per-card impact weights — must sum to 1.0
 const CARD_WEIGHTS = [0.13, 0.12, 0.10, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06, 0.05, 0.05, 0.04, 0.03, 0.02, 0.01]
@@ -300,7 +301,7 @@ function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, overrideSummary, onOpenSidekick }: RowDetailPanelProps) {
+export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, hideComments = false, overrideSummary, onOpenSidekick }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   const [showSidekick, setShowSidekick] = useState(false)
   const [insightDismissed, setInsightDismissed] = useState(false)
@@ -350,11 +351,11 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
   const [layoutOpen, setLayoutOpen] = useState(false)
   const [layoutPos, setLayoutPos] = useState<{ top: number; right: number } | null>(null)
-  const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
+  const [layoutInternal, setLayoutInternal] = useState<'Halfscreen' | 'Right' | 'Fullscreen'>('Right')
   const selectedLayout = selectedLayoutProp ?? layoutInternal
-  const setSelectedLayout = (l: 'Center' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
+  const setSelectedLayout = (l: 'Halfscreen' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
   const COMMENTS_WIDTH = 420
-  const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 48 - COMMENTS_WIDTH : 460
+  const panelWidth = selectedLayout === 'Halfscreen' ? window.innerWidth * 0.5 : selectedLayout === 'Fullscreen' ? window.innerWidth * 0.75 - COMMENTS_WIDTH : 460
   const layoutButtonRef = useRef<HTMLButtonElement>(null)
   const layoutMenuRef = useRef<HTMLDivElement>(null)
 
@@ -479,7 +480,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        width: selectedLayout !== 'Right' ? panelWidth + COMMENTS_WIDTH : panelWidth,
+        width: selectedLayout === 'Fullscreen' ? panelWidth + COMMENTS_WIDTH : panelWidth,
         backgroundColor: 'white',
         fontFamily: 'Open Sans, sans-serif',
         borderRadius: selectedLayout !== 'Right' ? 8 : 0,
@@ -491,7 +492,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       {/* ── Header (full width) ──────────────────────────── */}
       {!showSidekick && (
-      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: selectedLayout !== 'Right' ? '1px solid #E9EAEF' : 'none' }}>
+      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: 'none' }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {!hideInsightCallout && <JiraLogo size={18} />}
           <p
@@ -528,7 +529,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   setLayoutOpen(o => !o)
                 }}
               >
-                {selectedLayout === 'Center' && (
+                {selectedLayout === 'Halfscreen' && (
                   <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
                     <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
                     <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
@@ -585,7 +586,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                       setLayoutOpen(o => !o)
                     }}
                   >
-                    {selectedLayout === 'Center' && (
+                    {selectedLayout === 'Halfscreen' && (
                       <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
                         <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
                         <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
@@ -620,7 +621,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       {/* ── Tab bar ── */}
       <div className="flex gap-1 px-3 pt-3 pb-4 shrink-0" style={{ pointerEvents: 'auto' }}>
-        {(selectedLayout === 'Right' ? ['Details', 'Jira', 'Insights', 'Comments'] : ['Details', 'Jira', 'Insights']).map(tab => (
+        {(selectedLayout === 'Fullscreen' || hideComments ? ['Details', 'Jira', 'Insights'] : ['Details', 'Jira', 'Insights', 'Comments']).map(tab => (
           <button
             key={tab}
             onPointerDown={e => { e.stopPropagation(); setActiveTab(tab) }}
@@ -1012,22 +1013,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </div>
         )}
 
-      {activeTab !== 'Comments' && (
-        <div style={{ position: 'sticky', bottom: 0, marginTop: 'auto', paddingTop: 16, paddingBottom: 24, background: 'white' }} onClick={() => setShowSidekick(true)}>
-          <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}>
-            <textarea
-              readOnly
-              placeholder="What should we do next?"
-              rows={2}
-              className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none cursor-text"
-              style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0' }}
-            />
-            <button className="shrink-0 text-[#9DA3B4]">
-              <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
-            </button>
-          </div>
-        </div>
-      )}
 
       </div>
 
@@ -1083,7 +1068,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       </div>{/* end tabs */}
 
       {/* ── Comment input bar (Details / Jira / Insights tabs) ─── */}
-      {['Details', 'Jira', 'Insights'].includes(activeTab) && !selectedCompany && !callCard && !selectedFeedbackCard && !selectedPrompt && !showSidekick && (
+      {!selectedCompany && !callCard && !selectedFeedbackCard && !selectedPrompt && !showSidekick && (
         <div className="shrink-0" style={{ padding: '16px' }}>
           <div
             className="flex items-center gap-1.5"
@@ -1103,7 +1088,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </div>
         </div>
       )}
-
 
       {/* ── Chat overlay (full-panel, avoids slider height-shift glitch) ─── */}
       {selectedPrompt && (
@@ -1261,7 +1245,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           className="fixed z-[9999] bg-white flex flex-col rounded-[8px]"
           style={{ top: layoutPos.top, right: layoutPos.right, padding: '16px 12px', gap: 4, boxShadow: '0px 0px 12px rgba(34,36,40,0.04), 0px 2px 8px rgba(34,36,40,0.12)' }}
         >
-          {(['Right', 'Center', 'Fullscreen'] as const).map(option => (
+          {(['Right', 'Halfscreen', 'Fullscreen'] as const).map(option => (
             <button
               key={option}
               className={`flex items-center w-full rounded-[4px] transition-colors text-left ${selectedLayout === option ? 'bg-[#F1F2F5]' : 'hover:bg-[#F1F2F5]'}`}
@@ -1275,7 +1259,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="#222428"/>
                   </svg>
                 )}
-                {option === 'Center' && (
+                {option === 'Halfscreen' && (
                   <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
                     <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
                     <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="#222428"/>
@@ -1373,20 +1357,21 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       )}
     </div>{/* end main panel */}
 
-    {/* ── Comments panel (Center / Fullscreen only) ── */}
-    {selectedLayout !== 'Right' && !showSidekick && (
+    {/* ── Comments panel (Fullscreen only) ── */}
+    {selectedLayout === 'Fullscreen' && !showSidekick && (
       <div
         style={{
           width: COMMENTS_WIDTH,
           flexShrink: 0,
-          borderLeft: '1px solid #E9EAEF',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
           backgroundColor: 'white',
+          position: 'relative',
         }}
       >
-        {/* Comments label */}
+        {/* Left border that stops at the bottom of the reply input */}
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 16, width: 1, backgroundColor: '#E9EAEF', pointerEvents: 'none' }} />
         <div className="shrink-0" style={{ padding: '12px 16px 4px 16px' }}>
           <span
             className="text-[14px] font-semibold text-[#222428]"
@@ -1396,8 +1381,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </span>
         </div>
 
-        {/* Comment list */}
-        <div className="flex-1 overflow-y-auto panel-scroll" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="flex-1 overflow-y-auto panel-scroll min-h-0" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {comments.map((c, i) => (
             <div key={i} className="group flex gap-3 relative">
               <img
@@ -1434,7 +1418,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           ))}
         </div>
 
-        {/* Input */}
         <div className="shrink-0" style={{ padding: '16px' }}>
           <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white' }}>
             <textarea
@@ -1473,7 +1456,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     </div>
   )
 
-  if (selectedLayout === 'Center' || selectedLayout === 'Fullscreen') {
+  if (selectedLayout === 'Fullscreen') {
     return createPortal(
       <div
         className="center-overlay-enter fixed inset-0 z-[200] flex items-center justify-center py-[24px]"
@@ -1880,15 +1863,7 @@ function FeedbackPrompt({ onSubmit, onClose }: { onSubmit: () => void; onClose: 
       className="w-full rounded-xl p-4 flex flex-col gap-3 relative"
       style={{ backgroundColor: '#F2F4FC' }}
     >
-      <button
-        onClick={onClose}
-        className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#E2E6F7] transition-colors"
-        aria-label="Close"
-      >
-        <IconCross css={{ width: 14, height: 14 }} />
-      </button>
-
-      <p className="text-[16px] text-[#222428] pr-8 leading-[1.5]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
+      <p className="text-[16px] text-[#222428] leading-[1.5]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
         Share your feedback?
       </p>
 
@@ -2133,7 +2108,7 @@ function FeedbackCard({
           }}>{category}</span>
         </span>
         <div className="flex-1" />
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1" style={{ opacity: hovered || menuOpen ? 1 : 0, transition: 'opacity 0.2s ease' }}>
           <button
             ref={menuButtonRef}
             className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-white transition-colors"
@@ -2141,18 +2116,6 @@ function FeedbackCard({
           >
             <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
           </button>
-          <div className="relative"
-            onMouseEnter={e => {
-              const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
-              setTooltipPos({ top: r.top - 4, right: window.innerWidth - r.right })
-              setTooltipVisible(true)
-            }}
-            onMouseLeave={() => setTooltipVisible(false)}
-          >
-            <button onClick={e => { e.stopPropagation(); onDismiss() }} aria-label="Remove signal" className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-white transition-colors">
-              <IconCross css={{ width: 16, height: 16 }} />
-            </button>
-          </div>
         </div>
       </div>
         )
@@ -2198,8 +2161,8 @@ function FeedbackCard({
             {companies[0] && <CompanyLogo name={companies[0]} size={24} />}
             <div className="flex items-center gap-1 ml-auto" onClick={e => e.stopPropagation()}>
               {[
-                { key: 'up', label: 'Relevant', active: thumbsUp, onClick: () => { setThumbsUp(v => !v); setThumbsDown(false) } },
-                { key: 'down', label: 'Irrelevant', active: thumbsDown, onClick: () => { setThumbsDown(v => !v); setThumbsUp(false) } },
+                { key: 'up', label: 'More relevant', active: thumbsUp, onClick: () => { setThumbsUp(v => !v); setThumbsDown(false) } },
+                { key: 'down', label: 'Less relevant', active: thumbsDown, onClick: () => { setThumbsDown(v => !v); setThumbsUp(false) } },
               ].map(({ key, label, active, onClick: handleClick }) => (
                 <button
                   key={key}
