@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback } from 'react'
 import type { SpaceRow, FieldDefinition, Priority } from '@spaces/shared'
-import { KanbanCard } from '../kanban/KanbanCard'
+import { Tooltip } from '@mirohq/design-system'
+import { JiraLogo } from '../JiraLogo'
+import { CompanyLogo } from '../CompanyLogo'
 
 const PRIORITY_BORDER: Record<Priority, string> = {
   now: '#b5ecff',
@@ -137,11 +139,90 @@ export function CanvasRecordCard({
         onPointerUp={handlePointerUp}
       >
         {selected && <SelectionBorder />}
-        <KanbanCard
-          row={row}
-          fields={cardFields}
-          borderColor={borderColor}
-        />
+        <div
+          className="rounded-lg bg-white overflow-hidden"
+          style={{
+            border: `1.5px solid ${borderColor}`,
+            borderBottomWidth: 6,
+            boxShadow: '0px 2px 4px rgba(34,36,40,0.08)',
+            borderRadius: 8,
+          }}
+        >
+          {/* Card content */}
+          <div className="px-4 py-3">
+            <p
+              className="font-body text-sm font-normal text-[#222428] leading-snug m-0 overflow-hidden"
+              style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}
+            >
+              {row.title}
+            </p>
+
+            <div className="flex flex-wrap gap-2 mt-2">
+              {cardFields.filter(field => field.id !== 'description').map(field => {
+                const value = row[field.id as keyof SpaceRow]
+                if (field.type === 'jiraId') {
+                  if (!value) return null
+                  return (
+                    <span key={field.id} className="inline-flex items-center gap-1.5 font-body text-[#222428] rounded whitespace-nowrap min-w-0" style={{ fontSize: 12, height: 26, padding: '4px 8px', backgroundColor: '#F1F2F5', maxWidth: '100%' }}>
+                      <JiraLogo size={14} />
+                      <span className="truncate">{String(value)}</span>
+                    </span>
+                  )
+                }
+                if (field.type === 'avatars') return null
+                let displayText: string
+                switch (field.type) {
+                  case 'currency': displayText = (value as number) === 0 ? '—' : `$${value}K`; break
+                  case 'number': displayText = (value as number).toLocaleString(); break
+                  default: displayText = String(value)
+                }
+                return (
+                  <span key={field.id} className="inline-flex items-center gap-1.5 font-body text-[#222428] rounded whitespace-nowrap min-w-0" style={{ fontSize: 12, height: 26, padding: '4px 8px', backgroundColor: '#F1F2F5', maxWidth: '100%' }}>
+                    <span className="text-[#656B81] shrink-0">{field.label}</span>
+                    <span className="truncate">{displayText}</span>
+                  </span>
+                )
+              })}
+              {row.companies.length > 0 && (
+                <Tooltip>
+                  <Tooltip.Trigger asChild>
+                    <span className="inline-flex items-center rounded whitespace-nowrap" style={{ height: 26, padding: '0 8px', backgroundColor: '#F1F2F5', gap: 6 }}>
+                      {row.companies.slice(0, 3).map(name => (
+                        <CompanyLogo key={name} name={name} size={12} inline />
+                      ))}
+                      {row.companies.length > 3 && (
+                        <span className="font-body text-[#656B81]" style={{ fontSize: 12, marginLeft: 2 }}>+{row.companies.length - 3}</span>
+                      )}
+                    </span>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content side="top" sideOffset={4}>
+                    {row.companies.length} {row.companies.length === 1 ? 'company' : 'companies'}
+                  </Tooltip.Content>
+                </Tooltip>
+              )}
+            </div>
+          </div>
+
+          {/* Source bar */}
+          {row.jiraKey && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '6px 16px 10px',
+            }}>
+              <JiraLogo size={20} />
+              <span style={{
+                fontSize: 12,
+                fontFamily: "'Noto Sans', sans-serif",
+                color: '#656B81',
+                lineHeight: 1.4,
+              }}>
+                Fin-AI
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

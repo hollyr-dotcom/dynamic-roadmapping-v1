@@ -4,8 +4,9 @@ import {
   IconLinesThreeHorizontal,
   IconBell,
   IconChevronRightSmall,
-  IconBoard,
+  IconDotsThreeVertical,
 } from '@mirohq/design-system'
+import { BoardIcon } from '../BoardIcons'
 
 const avatars = [
   { name: 'MK', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=56&h=56&fit=crop&crop=face' },
@@ -21,9 +22,10 @@ interface CanvasNavPanelsProps {
   onMenuClick?: () => void
   isMenuOpen?: boolean
   boardName?: string
+  boardIconIndex?: number
 }
 
-export function CanvasNavPanels({ isOpen, databaseTitle, onMenuClick, isMenuOpen, boardName }: CanvasNavPanelsProps) {
+export function CanvasNavPanels({ isOpen, databaseTitle, onMenuClick, isMenuOpen, boardName, boardIconIndex = 0 }: CanvasNavPanelsProps) {
   return (
     <>
       {/* Left panel: menu + breadcrumb */}
@@ -31,7 +33,7 @@ export function CanvasNavPanels({ isOpen, databaseTitle, onMenuClick, isMenuOpen
         className="fixed top-2 h-10 flex items-center bg-white rounded-lg gap-2 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{
           left: isMenuOpen ? SIDEBAR_WIDTH + 8 : 8,
-          padding: isMenuOpen ? '0 16px' : '0 16px 0 4px',
+          padding: isMenuOpen ? '0 4px 0 12px' : '0 4px 0 4px',
           zIndex: 100,
           opacity: isOpen ? 1 : 0,
           pointerEvents: isOpen ? 'auto' : 'none',
@@ -46,13 +48,16 @@ export function CanvasNavPanels({ isOpen, databaseTitle, onMenuClick, isMenuOpen
 
         {boardName ? (
           <div className="flex items-center" style={{ gap: '6px' }}>
-            <IconBoard css={{ width: 24, height: 24, color: '#222428', flexShrink: 0 }} />
+            <div style={{ flexShrink: 0 }}><BoardIcon index={boardIconIndex} /></div>
             <span
               className="font-heading font-semibold text-[#222428] leading-none select-none"
               style={{ fontSize: '14px' }}
             >
               {boardName}
             </span>
+            <IconButton aria-label="Board options" variant="ghost" size="medium" css={{ width: 32, height: 32, padding: 4, minWidth: 'auto', minHeight: 'auto', '& svg': { width: 16, height: 16 } }}>
+              <IconDotsThreeVertical />
+            </IconButton>
           </div>
         ) : (
           <div className="flex items-center" style={{ gap: '2px' }}>
@@ -80,8 +85,9 @@ export function CanvasNavPanels({ isOpen, databaseTitle, onMenuClick, isMenuOpen
 
       {/* Right panel: bell + avatars + share */}
       <div
-        className="fixed top-2 right-2 h-10 flex items-center bg-white rounded-lg px-2 gap-2 transition-opacity duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className="fixed top-2 right-2 h-10 flex items-center bg-white rounded-lg gap-2 transition-opacity duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{
+          padding: '0 4px',
           zIndex: 100,
           opacity: isOpen ? 1 : 0,
           pointerEvents: isOpen ? 'auto' : 'none',

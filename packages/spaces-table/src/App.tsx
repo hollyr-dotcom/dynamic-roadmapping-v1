@@ -26,12 +26,17 @@ import { CanvasNavPanels } from './components/canvas/CanvasNavPanels'
 import { CanvasFeedbackCard, type FeedbackCardData } from './components/canvas/CanvasFeedbackCard'
 import { CanvasRecordCard } from './components/canvas/CanvasRecordCard'
 import { MoveToRoadmapSnackbar } from './components/page/MoveToRoadmapSnackbar'
+import { getRandomBoardIconIndex } from './components/BoardIcons'
+import { CanvasDocumentWidget } from './components/canvas/CanvasDocumentWidget'
+import { CanvasConnectionLine } from './components/canvas/CanvasConnectionLine'
+import { generatePRD, type DocumentContent } from './components/canvas/generatePRD'
+import { FlowProgressCard } from './components/canvas/FlowProgressCard'
 
 type PageId = 'backlog' | 'roadmap'
 
 interface CanvasWidget {
   id: string
-  type?: 'table' | 'feedback-card' | 'record-card'
+  type?: 'table' | 'feedback-card' | 'record-card' | 'document'
   activeTab: string
   x: number
   y: number
@@ -39,6 +44,8 @@ interface CanvasWidget {
   recordRow?: SpaceRow
   recordFields?: FieldDefinition[]
   recordPrompt?: string
+  documentContent?: DocumentContent
+  linkedWidgetId?: string
 }
 
 interface PageConfig {
@@ -117,7 +124,10 @@ export function App() {
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null)
   const [smoothPanning, setSmoothPanning] = useState(false)
   const [boardName, setBoardName] = useState<string | null>(null)
-  const [boards, setBoards] = useState<{ id: string; name: string }[]>([])
+  const [boardIconIndex, setBoardIconIndex] = useState<number>(0)
+  const [flowStreaming, setFlowStreaming] = useState(false)
+  const [flowProgress, setFlowProgress] = useState(0)
+  const [boards, setBoards] = useState<{ id: string; name: string; iconIndex: number }[]>([])
   const [updatedRows, setUpdatedRows] = useState<Set<string>>(new Set())
   const [insightsAllDots, setInsightsAllDots] = useState(false)
   const [syncShimmering, setSyncShimmering] = useState(false)
@@ -414,38 +424,68 @@ export function App() {
     const row = backlogData.find(r => r.id === rowId) ?? roadmapItems.find(r => r.id === rowId)
     if (!row) return
 
-    // Generate board name from prompt
-    const PROMPT_TO_BOARD: Record<string, string> = {
-      'Write a PRD': 'PRD Board',
-      'Explore insights': 'Insights Board',
-      'Estimate with team': 'Estimation Board',
+    // Generate board name from prompt + record title
+    const shortTitle = row.title.length > 30 ? row.title.slice(0, 30).trimEnd() + '…' : row.title
+    const PROMPT_PREFIX: Record<string, string> = {
+      'Write a PRD': 'PRD',
+      'Explore insights': 'Insights',
+      'Estimate with team': 'Estimation',
     }
-    const name = PROMPT_TO_BOARD[prompt] || `${prompt} Board`
+    const prefix = PROMPT_PREFIX[prompt] || prompt
+    const name = `${prefix}: ${shortTitle}`
     const boardId = `board-${Date.now()}`
+    const iconIdx = getRandomBoardIconIndex()
+
+    const widgetId = `record-${Date.now()}`
+    const docWidgetId = `doc-${Date.now()}`
+    // Position card left of centre, doc to its right
+    const sidebarW = 320
+    const visibleW = window.innerWidth - sidebarW
+    const cardW = 340
+    const cardH = 160
+    const docGap = 120
+    const docW = 600
+    const totalW = cardW + docGap + docW
+    // At zoom 0.7, world coords are scaled down — offset so content clears the sidebar
+    const zoomLevel = 0.7
+    const startX = (sidebarW / zoomLevel) + ((visibleW / zoomLevel) - totalW) / 2
 
     const cardWidget: CanvasWidget = {
-      id: `record-${Date.now()}`,
+      id: widgetId,
       type: 'record-card',
       activeTab: '',
-      x: window.innerWidth / 2 - 170,
-      y: 200,
+      x: startX,
+      y: (window.innerHeight - cardH) / 2,
       recordRow: row,
       recordFields: activePage === 'backlog' ? fields : roadmapFields,
       recordPrompt: prompt,
     }
 
+    const prdContent = generatePRD(row, prompt)
+    const docWidget: CanvasWidget = {
+      id: docWidgetId,
+      type: 'document',
+      activeTab: '',
+      x: startX + cardW + docGap,
+      y: cardWidget.y - 20,
+      documentContent: prdContent,
+      linkedWidgetId: widgetId,
+    }
+
     setBoardName(name)
-    setBoards(prev => [...prev, { id: boardId, name }])
+    setBoardIconIndex(iconIdx)
+    setBoards(prev => [...prev, { id: boardId, name, iconIndex: iconIdx }])
 
     if (!canvasOpen) {
-      setWidgets([cardWidget])
+      setWidgets([cardWidget, docWidget])
       setCanvasOpen(true)
       setPanX(0)
       setPanY(0)
-      setZoom(1)
-      setSelectedWidgetId(null)
+      setZoom(0.7)
+      setSelectedWidgetId(widgetId)
     } else {
-      setWidgets(prev => [...prev, cardWidget])
+      setWidgets(prev => [...prev, cardWidget, docWidget])
+      setSelectedWidgetId(widgetId)
     }
     setActiveSidebar('space-menu')
   }, [backlogData, roadmapItems, canvasOpen, activePage])
@@ -727,8 +767,56 @@ export function App() {
         />
       ))}
 
+      {/* Document widgets on canvas */}
+      {widgets.filter(w => w.type === 'document' && w.documentContent).map(widget => (
+        <CanvasDocumentWidget
+          key={widget.id}
+          widget={widget}
+          panX={panX}
+          panY={panY}
+          zoom={zoom}
+          isOpen={canvasOpen}
+          selected={selectedWidgetId === widget.id}
+          onSelect={() => setSelectedWidgetId(widget.id)}
+          onMove={(x, y) => handleWidgetMove(widget.id, x, y)}
+          smoothPanning={smoothPanning}
+          onStreamingChange={(streaming, progress) => { setFlowStreaming(streaming); setFlowProgress(progress) }}
+        />
+      ))}
+
+      {/* Connection lines between linked widgets */}
+      {widgets.filter(w => w.type === 'document' && w.linkedWidgetId).map(docWidget => {
+        const sourceWidget = widgets.find(w => w.id === docWidget.linkedWidgetId)
+        if (!sourceWidget) return null
+        return (
+          <CanvasConnectionLine
+            key={`line-${docWidget.id}`}
+            fromX={sourceWidget.x}
+            fromY={sourceWidget.y}
+            fromWidth={340}
+            fromHeight={160}
+            toX={docWidget.x}
+            toY={docWidget.y}
+            toHeight={400}
+            panX={panX}
+            panY={panY}
+            zoom={zoom}
+            isOpen={canvasOpen}
+            smoothPanning={smoothPanning}
+          />
+        )
+      })}
+
       {/* Canvas floating nav panels */}
-      <CanvasNavPanels isOpen={canvasOpen} databaseTitle={databaseTitle} onMenuClick={() => setActiveSidebar(activeSidebar === 'space-menu' ? null : 'space-menu')} isMenuOpen={canvasOpen && activeSidebar === 'space-menu'} boardName={boardName ?? undefined} />
+      <CanvasNavPanels isOpen={canvasOpen} databaseTitle={databaseTitle} onMenuClick={() => setActiveSidebar(activeSidebar === 'space-menu' ? null : 'space-menu')} isMenuOpen={canvasOpen && activeSidebar === 'space-menu'} boardName={boardName ?? undefined} boardIconIndex={boardIconIndex} />
+
+      {/* Flow progress card */}
+      <FlowProgressCard
+        visible={canvasOpen && flowStreaming}
+        progress={flowProgress}
+        onStop={() => setFlowStreaming(false)}
+        onClose={() => setFlowStreaming(false)}
+      />
 
       {/* Share space dialog */}
       {showShareDialog && (

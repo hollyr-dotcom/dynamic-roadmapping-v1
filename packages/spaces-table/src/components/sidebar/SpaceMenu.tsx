@@ -8,8 +8,8 @@ import {
   IconLightbulb,
   IconRocket,
   IconPlus,
-  IconBoard,
 } from '@mirohq/design-system'
+import { BoardIcon } from '../BoardIcons'
 
 const pages = [
   { id: 'backlog', label: 'Backlog', icon: IconLightbulb },
@@ -22,7 +22,7 @@ interface SpaceMenuProps {
   onPageChange: (id: string) => void
   onGoHome?: () => void
   spaceName?: string
-  boards?: { id: string; name: string }[]
+  boards?: { id: string; name: string; iconIndex: number }[]
   activeBoardId?: string
 }
 
@@ -75,7 +75,7 @@ export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome, spaceNa
       <div className="flex flex-col gap-1 mt-[18px]">
         {pages.map((page) => {
           const Icon = page.icon
-          const isActive = page.id === activePage
+          const isActive = !activeBoardId && page.id === activePage
           return (
             <button
               key={page.id}
@@ -112,7 +112,7 @@ export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome, spaceNa
             className="font-body text-[#656B81] leading-none"
             style={{ fontSize: '14px' }}
           >
-            Add content
+            {boards && boards.length > 0 ? 'Boards and formats' : 'Add content'}
           </span>
           <IconButton aria-label="Add content" variant="ghost" size="medium">
             <IconPlus />
@@ -127,14 +127,14 @@ export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome, spaceNa
               return (
                 <button
                   key={board.id}
-                  className={`flex items-center gap-[3px] w-full rounded-lg px-3 py-2 text-left transition-colors ${
+                  className={`flex items-center gap-3 w-full rounded-lg px-2 h-10 text-left transition-colors duration-150 ${
                     isActive ? 'bg-[#F3F4F6]' : 'hover:bg-[#F1F2F5]'
                   }`}
                 >
-                  <IconBoard size="medium" css={{ color: '#222428', flexShrink: 0 }} />
+                  <div style={{ flexShrink: 0 }}><BoardIcon index={board.iconIndex} /></div>
                   <span
-                    className={`font-body text-[#222428] leading-none select-none ${isActive ? 'font-semibold' : ''}`}
-                    style={{ fontSize: '14px' }}
+                    className="font-body text-[#222428] leading-[1.3] select-none truncate"
+                    style={{ fontSize: '14px', minWidth: 0 }}
                   >
                     {board.name}
                   </span>
