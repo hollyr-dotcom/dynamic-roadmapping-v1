@@ -1,13 +1,16 @@
+import { useState } from 'react'
 import {
   IconButton,
   IconHouse,
   IconMagnifyingGlass,
   IconCross,
   IconChevronUpDown,
+  IconChevronRight,
   IconDotsThreeVertical,
   IconLightbulb,
   IconRocket,
   IconPlus,
+  IconSparksFilled,
 } from '@mirohq/design-system'
 import { BoardIcon } from '../BoardIcons'
 
@@ -15,6 +18,12 @@ const pages = [
   { id: 'backlog', label: 'Backlog', icon: IconLightbulb },
   { id: 'roadmap', label: 'Roadmap', icon: IconRocket },
 ]
+
+interface SidekickBoard {
+  id: string
+  name: string
+  feedbackCard: unknown
+}
 
 interface SpaceMenuProps {
   onClose: () => void
@@ -24,9 +33,66 @@ interface SpaceMenuProps {
   spaceName?: string
   boards?: { id: string; name: string; iconIndex: number }[]
   activeBoardId?: string
+  sidekickBoards?: SidekickBoard[]
+  onSidekickBoardClick?: (board: SidekickBoard) => void
+  activeSidekickBoardId?: string
 }
 
-export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome, spaceName, boards, activeBoardId }: SpaceMenuProps) {
+function CollapsibleSection({
+  title,
+  children,
+  defaultOpen = false,
+}: {
+  title: string
+  children: React.ReactNode
+  defaultOpen?: boolean
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen)
+  const [isHovered, setIsHovered] = useState(false)
+
+  return (
+    <div className="mt-1">
+      <div
+        className="flex items-center h-8 rounded-lg px-2 cursor-pointer hover:bg-[#F1F2F5] transition-colors duration-150 group"
+        onClick={() => setIsOpen(!isOpen)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <span
+          className="text-[#656B81] transition-transform duration-200 mr-1"
+          style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)', display: 'inline-flex' }}
+        >
+          <IconChevronRight size="small" />
+        </span>
+        <span
+          className="font-body font-semibold text-[#1A1B1E] leading-none flex-1 select-none"
+          style={{ fontSize: '14px' }}
+        >
+          {title}
+        </span>
+        <div
+          className="flex items-center gap-0.5 transition-opacity duration-150"
+          style={{ opacity: isHovered ? 1 : 0 }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <IconButton aria-label="Add" variant="ghost" size="small">
+            <IconPlus />
+          </IconButton>
+          <IconButton aria-label="Options" variant="ghost" size="small">
+            <IconDotsThreeVertical />
+          </IconButton>
+        </div>
+      </div>
+      {isOpen && (
+        <div className="flex flex-col gap-0.5 mt-0.5">
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome, spaceName, boards, activeBoardId, sidekickBoards, onSidekickBoardClick, activeSidekickBoardId }: SpaceMenuProps) {
   return (
     <div className="flex flex-col h-full pt-2 px-3">
       {/* Top bar: Home | Search + Close */}
@@ -142,6 +208,35 @@ export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome, spaceNa
               )
             })}
           </div>
+        )}
+
+        {/* Sidekick-created boards */}
+        {sidekickBoards && sidekickBoards.length > 0 && (
+          <CollapsibleSection title="Created with Sidekick" defaultOpen>
+            {sidekickBoards.map(board => {
+              const isActive = board.id === activeSidekickBoardId
+              return (
+                <button
+                  key={board.id}
+                  onClick={() => onSidekickBoardClick?.(board)}
+                  className={`flex items-center gap-3 w-full rounded-lg px-2 h-10 text-left transition-colors duration-150 ${
+                    isActive ? 'bg-[#F3F4F6]' : 'hover:bg-[#F1F2F5]'
+                  }`}
+                  style={{ paddingLeft: '28px' }}
+                >
+                  <span className="text-[#656B81]">
+                    <IconSparksFilled size="small" />
+                  </span>
+                  <span
+                    className="font-body text-[#222428] leading-[1.3] select-none truncate"
+                    style={{ fontSize: '14px', minWidth: 0 }}
+                  >
+                    {board.name}
+                  </span>
+                </button>
+              )
+            })}
+          </CollapsibleSection>
         )}
 
         {/* Empty state */}
