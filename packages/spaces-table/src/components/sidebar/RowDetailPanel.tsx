@@ -585,7 +585,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       </div>
 
       {/* ── Tabs content ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden', paddingBottom: activeTab !== 'Comments' ? 80 : 0 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
 
         {/* Low-confidence Insights callout */}
         {activeTab === 'Details' && !insightDismissed && row.id === '1' && (
@@ -964,23 +964,19 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       </div>
 
       {activeTab !== 'Comments' && (
-        <div
-          onClick={() => onOpenSidekick?.()}
-          className="absolute bottom-0 left-0 right-0"
-          style={{ padding: '0 16px 16px 16px', background: 'white', cursor: 'pointer', zIndex: 10 }}
-        >
+        <div className="shrink-0" style={{ padding: 16 }} onClick={() => onOpenSidekick?.()}>
           <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}>
             <textarea
               readOnly
               placeholder="What should we do next?"
               rows={2}
               className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none cursor-text"
-              style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0', pointerEvents: 'none' }}
+              style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0' }}
             />
-            <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors" style={{ pointerEvents: 'none' }}>
+            <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
               <IconSmileyPlus css={{ width: 20, height: 20 }} />
             </button>
-            <button className="shrink-0 text-[#9DA3B4]" style={{ pointerEvents: 'none' }}>
+            <button className="shrink-0 text-[#9DA3B4]">
               <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
             </button>
           </div>
