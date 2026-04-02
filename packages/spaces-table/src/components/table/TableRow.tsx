@@ -187,7 +187,7 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
                   }}
                 >
                   <button
-                    onClick={() => onRowClick?.(row)}
+                    onClick={(e) => { e.stopPropagation(); onRowClick?.(row) }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
