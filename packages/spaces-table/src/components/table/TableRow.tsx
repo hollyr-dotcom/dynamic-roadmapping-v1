@@ -1,4 +1,5 @@
 
+import { useState } from 'react'
 import type { FieldDefinition, SpaceRow } from '@spaces/shared'
 import { IconDotsSixVertical, IconChatPlus, DropdownMenu, IconSquaresTwoOverlap, IconTrash, IconArrowsOutSimple, IconMap, IconChatLinesTwo, Popover, IconInsights } from '@mirohq/design-system'
 
@@ -96,6 +97,7 @@ function RowContextMenu({ onClose, onOpenSidePanel, onMoveToRoadmap, showMoveToR
 }
 
 export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDeselect, onRowClick, onCompanyClick, isUpdated, importDelay, onMoveToRoadmap, showMoveToRoadmap }: TableRowProps) {
+  const [openFieldId, setOpenFieldId] = useState<string | null>(null)
 
   const importStyle = importDelay !== undefined ? {
     opacity: 0,
@@ -161,7 +163,7 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
                 <CellRenderer field={field} row={row} onAvatarChipClick={onCompanyClick ? (name) => onCompanyClick(row, name) : undefined} />
               </div>
             ) : (
-              <Popover onOpen={() => {}} onClose={() => {}}>
+              <Popover open={openFieldId === field.id} onOpen={() => setOpenFieldId(field.id)} onClose={() => setOpenFieldId(null)}>
                 <Popover.Trigger asChild>
                   <div style={{ width: '100%' }} onClick={(e) => e.stopPropagation()}>
                     <CellRenderer field={field} row={row} onAvatarChipClick={onCompanyClick ? (name) => onCompanyClick(row, name) : undefined} />
@@ -187,7 +189,7 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
                   }}
                 >
                   <button
-                    onClick={(e) => { e.stopPropagation(); onRowClick?.(row) }}
+                    onClick={(e) => { e.stopPropagation(); setOpenFieldId(null); onRowClick?.(row) }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
