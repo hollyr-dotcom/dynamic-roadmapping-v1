@@ -23,28 +23,26 @@ import {
   IconCard,
   IconEyeOpen,
   IconSquarePencil,
+  IconPlanet,
+  IconBoard,
+  IconCursorFilled,
+  IconUser,
+  IconOrgChart,
   Input,
 } from '@mirohq/design-system'
 import { JiraLogo } from '../JiraLogo'
 
-// Figma asset URLs (valid for 7 days — refreshed 2026-03-21)
-const imgBoardIconTable = 'https://www.figma.com/api/mcp/asset/d7b60294-cc30-4857-8d54-a7653877ba6e'
-const imgLogotype = 'https://www.figma.com/api/mcp/asset/80edae33-8543-4004-9cd9-3c2683b456f7'
-const imgFlowchart = 'https://www.figma.com/api/mcp/asset/a4dddbd5-d73c-4e7c-8197-74a7c5d867b0'
-const imgMindMap = 'https://www.figma.com/api/mcp/asset/77a865ad-4463-4519-9320-6831a30db731'
-const imgAvatar = 'https://www.figma.com/api/mcp/asset/99ca612c-bb8f-43e3-9e2d-03c360402bab'
-const imgAvatar1 = 'https://www.figma.com/api/mcp/asset/a84e9247-5ce5-4dbd-a4df-6d7306575fe6'
-const imgTeamLogo = 'https://www.figma.com/api/mcp/asset/44bfeb43-b76c-4d54-95fb-97977f613434'
-const imgIconPlant = 'https://www.figma.com/api/mcp/asset/b30043eb-8310-45fe-938e-7043c16d9b1e'
-const imgIconPaper = 'https://www.figma.com/api/mcp/asset/b2c32c3d-f6c6-4bca-82ea-e939aa8b8fd6'
-const imgIconCursor = 'https://www.figma.com/api/mcp/asset/5aa2aa86-317b-45da-8fbb-ad70ae381e9e'
-const imgIconPeople = 'https://www.figma.com/api/mcp/asset/f41d1387-525d-485b-b551-6283d8fbc72c'
-const imgIconOrgChart = 'https://www.figma.com/api/mcp/asset/84a5a35e-70db-41e7-9170-5a37ac2ad7b8'
-const imgShareAvatar = 'https://www.figma.com/api/mcp/asset/33cf113b-9e21-4dfe-882a-5d61c2dd67ff'
-const imgMiroTeamLogo = 'https://www.figma.com/api/mcp/asset/c9119d54-1298-4f33-a414-9b1ce85ffd9c'
+// Stable placeholder images (Figma asset URLs expire every 7 days — use these instead)
+const imgFlowchart = 'https://placehold.co/200x150/e8f0fe/4262ff?text=Flowchart'
+const imgMindMap = 'https://placehold.co/200x150/f0e8fe/7b3fe4?text=Mind+Map'
+const imgAvatar = 'https://i.pravatar.cc/150?img=3'
+const imgAvatar1 = 'https://i.pravatar.cc/150?img=5'
+const imgTeamLogo = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%234262FF'/%3E%3Ctext x='20' y='26' text-anchor='middle' font-family='Arial%2Csans-serif' font-size='16' font-weight='bold' fill='white'%3EM%3C/text%3E%3C/svg%3E"
+const imgShareAvatar = 'https://i.pravatar.cc/150?img=7'
+const imgMiroTeamLogo = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Ccircle cx='15' cy='15' r='15' fill='%234262FF'/%3E%3Ctext x='15' y='20' text-anchor='middle' font-family='Arial%2Csans-serif' font-size='12' font-weight='bold' fill='white'%3EM%3C/text%3E%3C/svg%3E"
 
 interface HomePageProps {
-  onOpenApp: (importSource?: 'jira' | 'miro' | 'csv', spaceName?: string) => void
+  onOpenApp: (importSource?: 'jira' | 'miro' | 'csv', activePage?: string) => void
 }
 
 const templates = [
@@ -101,12 +99,12 @@ const templates = [
 ]
 
 const boards = [
-  { iconImg: imgIconPlant,    name: 'FY25 Product Illustrations...',  modifier: 'Alberta', date: 'Today', space: '',                classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 3 },
-  { iconImg: imgIconPaper,    name: 'Design Reviews - FY25 Q4',       modifier: 'Alberta', date: 'Today', space: 'Product Design',   classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
-  { iconImg: imgIconCursor,   name: 'User Testing Prep',               modifier: 'Alberta', date: 'Today', space: "Alberta's Space",  classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 1 },
-  { iconImg: imgIconOrgChart, name: 'Space Overview - Reviews',        modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
-  { iconImg: imgIconPeople,   name: 'Design Review Team Picker',       modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
-  { iconImg: imgIconPeople,   name: 'Design Review Team Picker',       modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
+  { icon: <span style={{ color: '#3BAD6D', display: 'flex' }}><IconPlanet      size="small" /></span>, name: 'FY25 Product Illustrations...',  modifier: 'Alberta', date: 'Today', space: '',                classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 3 },
+  { icon: <span style={{ color: '#4B9EE0', display: 'flex' }}><IconBoard       size="small" /></span>, name: 'Design Reviews - FY25 Q4',       modifier: 'Alberta', date: 'Today', space: 'Product Design',   classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
+  { icon: <span style={{ color: '#F5A623', display: 'flex' }}><IconCursorFilled size="small" /></span>, name: 'User Testing Prep',             modifier: 'Alberta', date: 'Today', space: "Alberta's Space",  classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 1 },
+  { icon: <span style={{ color: '#9B59B6', display: 'flex' }}><IconUser        size="small" /></span>, name: 'Space Overview - Reviews',        modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
+  { icon: <span style={{ color: '#E0587E', display: 'flex' }}><IconOrgChart    size="small" /></span>, name: 'Design Review Team Picker',       modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
+  { icon: <span style={{ color: '#E0587E', display: 'flex' }}><IconOrgChart    size="small" /></span>, name: 'Design Review Team Picker',       modifier: 'Alberta', date: 'Today', space: 'Spaces',           classification: 'INTERNAL', owner: 'Alberta Mcdo...', onlineCount: 0 },
 ]
 
 export function HomePage({ onOpenApp }: HomePageProps) {
@@ -241,7 +239,13 @@ export function HomePage({ onOpenApp }: HomePageProps) {
 
           {yourSpacesExpanded && (
             <div className="flex flex-col gap-0.5 pl-2 mb-1">
-              {['Project Newton', 'Sync Communication', 'Project Newton'].map((name, i) => (
+              <button
+                onClick={() => onOpenApp(undefined, 'overview')}
+                className="flex items-center px-3 py-2 rounded-lg w-full text-left hover:bg-[#F1F2F5] transition-colors"
+              >
+                <span className="text-[14px] text-[#1c1c1c]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Miro Mirage Roadmap</span>
+              </button>
+              {['Sync Communication', 'Project Newton'].map((name, i) => (
                 <div key={i} className="flex items-center px-3 py-2 rounded-lg w-full text-left">
                   <span className="text-[14px] text-[#1c1c1c]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{name}</span>
                 </div>
@@ -317,7 +321,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                     const importSource = importJira ? 'jira' as const : importTables ? 'miro' as const : importCsv ? 'csv' as const : null
                     const name = spaceName
                     setCreateSpaceModalOpen(false); setSpaceName(''); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create')
-                    onOpenApp(importSource ?? undefined, name)
+                    onOpenApp(importSource ?? undefined)
                   }}
                 >
                   <Button.Label>{(importJira || importTables || importCsv) ? 'Create and import' : 'Create'}</Button.Label>
@@ -462,6 +466,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                   onPress={() => { setCreateSpaceModalOpen(false); setSpaceName(''); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create'); onOpenApp() }}
                 >
                   <Button.Label>Continue without inviting</Button.Label>
+                  {/* @ts-expect-error -- MDS IconSlot type mismatch */}
                   <Button.IconSlot placement="end"><IconChevronRight /></Button.IconSlot>
                 </Button>
               </div>
@@ -478,7 +483,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                     { label: 'Configure cards', Icon: IconCard },
                     { label: 'Show imported', Icon: IconEyeOpen },
                     { label: 'Create issue', Icon: IconSquarePencil },
-                  ] as Array<{ label: string; Icon: (props: { css?: Record<string, unknown> }) => JSX.Element }>).map(({ label, Icon }) => (
+                  ] as Array<{ label: string; Icon: (props: { css?: Record<string, unknown> }) => React.JSX.Element }>).map(({ label, Icon }) => (
                     <button key={label} className="hover:bg-[#f1f2f5] transition-colors" style={{ height: 32, padding: '0 10px', borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', fontSize: 16, color: '#222428', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
                       <Icon css={{ width: 16, height: 16, minWidth: 16, minHeight: 16, color: '#222428', flexShrink: 0 }} />
                       {label}
@@ -614,7 +619,9 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                     <div key={i} className="hover:bg-[#f9f9fb] transition-colors" style={{ display: 'flex', alignItems: 'center', height: 76, cursor: 'pointer', flexShrink: 0, borderRadius: 5 }}>
                       {/* Name + subtitle */}
                       <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 15, minWidth: 0, paddingLeft: 15, paddingRight: 30 }}>
-                        <img src={imgBoardIconTable} alt="" style={{ width: 42, height: 42, flexShrink: 0, objectFit: 'contain', padding: 7, boxSizing: 'content-box' }} />
+                        <div style={{ width: 42, height: 42, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <IconTable size="large" />
+                        </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ fontFamily: 'Open Sans, sans-serif', fontWeight: 700, fontSize: 16, color: '#1A1B1E', margin: 0, lineHeight: '1.3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{board.name}</p>
                           <p style={{ fontFamily: 'Open Sans, sans-serif', fontWeight: 400, fontSize: 15, color: '#656B81', margin: 0, lineHeight: '25px' }}>{board.modified}</p>
@@ -666,7 +673,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
 
         {/* Top bar */}
         <div className="flex items-center justify-between px-7 py-3 bg-white border-b border-[#ebecf0] shrink-0">
-          <img src={imgLogotype} alt="miro" style={{ width: '74px', height: '26px' }} />
+          <img src="/miro-logo.svg" alt="miro" style={{ width: '64px', height: '20px' }} />
           <div className="flex items-center gap-2">
             <div className="relative">
               <div className="w-[46px] h-[46px] flex items-center justify-center rounded-lg">
@@ -760,7 +767,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                   {/* Name + icon */}
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-6 h-6 shrink-0 flex items-center justify-center">
-                      <img src={board.iconImg} alt="" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
+                      {board.icon}
                     </div>
                     <div className="min-w-0">
                       <div className="text-[14px] font-semibold text-[#1a1b1e] truncate" style={{ fontFamily: 'Open Sans, sans-serif' }}>{board.name}</div>

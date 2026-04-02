@@ -11,10 +11,12 @@ import {
   IconRocket,
   IconPlus,
   IconSparksFilled,
+  IconRectanglesTwoLinesFour,
 } from '@mirohq/design-system'
 import { BoardIcon } from '../BoardIcons'
 
 const pages = [
+  { id: 'overview', label: 'Overview', icon: IconRectanglesTwoLinesFour },
   { id: 'backlog', label: 'Backlog', icon: IconLightbulb },
   { id: 'roadmap', label: 'Roadmap', icon: IconRocket },
 ]
