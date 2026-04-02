@@ -585,8 +585,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       </div>
 
       {/* ── Tabs content ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflowY: 'auto' }}>
 
         {/* Low-confidence Insights callout */}
         {activeTab === 'Details' && !insightDismissed && row.id === '1' && (
@@ -962,10 +961,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </div>
         )}
 
-      </div>{/* end inner scrollable wrapper */}
-
       {activeTab !== 'Comments' && (
-        <div className="shrink-0" style={{ padding: 16 }} onClick={() => onOpenSidekick?.()}>
+        <div style={{ position: 'sticky', bottom: 0, padding: 16, background: 'white' }} onClick={() => onOpenSidekick?.()}>
           <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}>
             <textarea
               readOnly
@@ -984,7 +981,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         </div>
       )}
 
-      </div>{/* end tabs content outer */}
+      </div>
 
       {/* ── Company panel ─── */}
       <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: selectedLayout !== 'Right' ? 48 : 16 }}>
