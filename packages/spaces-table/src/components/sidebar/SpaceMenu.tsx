@@ -8,9 +8,11 @@ import {
   IconLightbulb,
   IconRocket,
   IconPlus,
+  IconRectanglesTwoLinesFour,
 } from '@mirohq/design-system'
 
 const pages = [
+  { id: 'overview', label: 'Overview', icon: IconRectanglesTwoLinesFour },
   { id: 'backlog', label: 'Backlog', icon: IconLightbulb },
   { id: 'roadmap', label: 'Roadmap', icon: IconRocket },
 ]

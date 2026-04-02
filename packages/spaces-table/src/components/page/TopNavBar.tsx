@@ -5,6 +5,7 @@ import {
   IconLinesThreeHorizontal,
   IconBell,
   IconChevronRightSmall,
+  Tooltip,
 } from '@mirohq/design-system'
 
 
@@ -22,6 +23,7 @@ interface TopNavBarProps {
 export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, spaceName, isMenuOpen, onToggleMenu, showSharePopover, onDismissSharePopover }: TopNavBarProps) {
   const shareBtnRef = useRef<HTMLSpanElement>(null)
   const [shareBtnRect, setShareBtnRect] = useState<{ x: number; y: number; right: number } | null>(null)
+  const [tooltipOpen, setTooltipOpen] = useState(false)
 
   useEffect(() => {
     if (showSharePopover && shareBtnRef.current) {
@@ -100,7 +102,13 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, spaceName,
         />
 
         <span ref={shareBtnRef} className="inline-flex">
-          <Button size="medium" onPress={() => { if (showSharePopover) onDismissSharePopover?.() }}>Share</Button>
+          {/* @ts-expect-error -- MDS Tooltip controlled props */}
+          <Tooltip open={tooltipOpen} onOpenChange={setTooltipOpen}>
+            <Tooltip.Trigger asChild>
+              <Button size="medium" onPress={() => { if (showSharePopover) onDismissSharePopover?.() }}>Share</Button>
+            </Tooltip.Trigger>
+            <Tooltip.Content side="left">Share space with your team</Tooltip.Content>
+          </Tooltip>
         </span>
       </div>
 

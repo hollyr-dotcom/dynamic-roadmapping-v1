@@ -12,6 +12,8 @@ import {
   IconPen,
   IconSquaresTwoOverlap,
   IconTrash,
+  IconInsights,
+  Switch,
   Tooltip,
 } from '@mirohq/design-system'
 import { MENU_WIDTH } from './ViewTabsToolbar'
@@ -26,9 +28,10 @@ interface DatabaseTitleProps {
   syncCount?: number
   syncing?: boolean
   disableControls?: boolean
+  centered?: boolean
 }
 
-export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, variant = 'page', onExitCanvas, syncCount = 0, syncing = false, disableControls }: DatabaseTitleProps) {
+export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, variant = 'page', onExitCanvas, syncCount = 0, syncing = false, disableControls, centered = false }: DatabaseTitleProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const measureRef = useRef<HTMLSpanElement>(null)
   const [draft, setDraft] = useState(title)
@@ -77,10 +80,11 @@ export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, v
 
   const [isFocused, setIsFocused] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [enrichmentOn, setEnrichmentOn] = useState(true)
 
   return (
     <div
-      className={`group/title sticky left-0 z-30 flex items-center gap-1 pb-1 shrink-0 ${variant === 'widget' ? 'px-0' : 'px-14'}`}
+      className={`group/title sticky left-0 z-30 flex items-center gap-1 pb-1 shrink-0 ${variant === 'widget' ? 'px-0' : 'px-14'} ${centered ? 'justify-center' : ''}`}
       style={{ paddingTop: variant === 'widget' ? 0 : '28px', opacity: variant === 'widget' ? opacity : 1 - scrollFade }}
     >
       {/* Hidden span to measure text width */}
@@ -160,7 +164,7 @@ export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, v
               <IconDotsThree color="icon-neutrals-subtle" />
             </IconButton>
           </DropdownMenu.Trigger>
-          <DropdownMenu.Content side="bottom" align="start" alignOffset={-12} css={{ minWidth: MENU_WIDTH, zIndex: 30 }}>
+          <DropdownMenu.Content side="bottom" align="start" alignOffset={-12} css={{ minWidth: 260, zIndex: 9999 }}>
             <DropdownMenu.Item>
               <DropdownMenu.IconSlot><IconStar /></DropdownMenu.IconSlot>
               Set as default view
@@ -177,6 +181,13 @@ export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, v
             <DropdownMenu.Item>
               <DropdownMenu.IconSlot><IconInformationMarkCircle /></DropdownMenu.IconSlot>
               Info
+            </DropdownMenu.Item>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item onSelect={e => { e.preventDefault(); setEnrichmentOn(v => !v) }}>
+              <DropdownMenu.IconSlot><IconInsights /></DropdownMenu.IconSlot>
+              <span style={{ flex: 1 }}>Toggle enrichment</span>
+              {/* @ts-expect-error -- MDS Switch type mismatch */}
+              <Switch checked={enrichmentOn} onCheckedChange={setEnrichmentOn} css={{ pointerEvents: 'none' }} />
             </DropdownMenu.Item>
             <DropdownMenu.Separator />
             <DropdownMenu.Item>

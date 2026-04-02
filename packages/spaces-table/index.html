@@ -8,6 +8,26 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet" />
+    <style>
+      @keyframes typingBounce {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-4px); }
+      }
+      @keyframes fadeSlideIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      @keyframes dotPulse {
+        0%, 20% { opacity: 0; }
+        40% { opacity: 1; }
+        100% { opacity: 1; }
+      }
+      .gradient-sparkle svg { fill: url(#ai-sparkle-gradient); }
+    </style>
   </head>
   <body>
     <div id="root"></div>

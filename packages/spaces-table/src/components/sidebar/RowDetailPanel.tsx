@@ -22,6 +22,7 @@ import {
   IconLink,
   IconGlobe,
   IconArrowUp,
+  IconThumbsUp,
   IconSlidersX,
   IconStickyNote,
   IconChevronRight,
@@ -42,6 +43,7 @@ import {
   IconBookmark,
 } from '@mirohq/design-system'
 import { JiraLogo } from '../JiraLogo'
+import AiPanelSolutionReview from './AiPanelSolutionReview'
 
 function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
   const size = (props as { width?: number }).width ?? 24
@@ -55,12 +57,12 @@ function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: numb
 }
 
 const MDS_AVATAR_COLORS: Record<string, { bg: string; fg: string }> = {
-  '#D1F09F': { bg: '#DBFAAD', fg: '#608521' },
+  '#D1F09F': { bg: '#ADF0C7', fg: '#067429' },
   '#d4bbff': { bg: '#E8DFFF', fg: '#5936B0' },
   '#ffd4b2': { bg: '#FFE5CC', fg: '#A0522D' },
 }
 function MdsAvatar({ color }: { color?: string }) {
-  const { bg, fg } = (color && MDS_AVATAR_COLORS[color]) ?? { bg: '#F1F2F5', fg: '#656B81' }
+  const { bg, fg } = (color ? MDS_AVATAR_COLORS[color] : undefined) ?? { bg: '#F1F2F5', fg: '#656B81' }
   return (
     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
       <path d="M0 20C0 8.95431 8.95431 0 20 0C31.0457 0 40 8.95431 40 20C40 31.0457 31.0457 40 20 40C8.95431 40 0 31.0457 0 20Z" fill={bg}/>
@@ -91,6 +93,9 @@ interface RowDetailPanelProps {
   activeCompanyFilter?: string[] | null
   selectedLayout?: 'Center' | 'Right' | 'Fullscreen'
   onLayoutChange?: (layout: 'Center' | 'Right' | 'Fullscreen') => void
+  hideInsightCallout?: boolean
+  overrideSummary?: string
+  onOpenSidekick?: () => void
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -110,7 +115,6 @@ const PRIORITY_CHIP: Record<string, { bg: string; color: string }> = {
   icebox: { bg: '#dad8d8', color: '#222428' },
 }
 
-const TABS = ['Details', 'Insights', 'Comments', 'Jira']
 
 const FEEDBACK_FILTER_SUB_OPTIONS: Record<string, string[]> = {
   'Company':   ['Spotify', 'Stripe', 'Linear', 'Atlassian', 'Notion', 'Shopify', 'Dropbox', 'Google', 'Apple'],
@@ -296,8 +300,9 @@ function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange }: RowDetailPanelProps) {
+export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, overrideSummary, onOpenSidekick }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
+  const [showSidekick, setShowSidekick] = useState(false)
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
 
@@ -348,7 +353,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
   const selectedLayout = selectedLayoutProp ?? layoutInternal
   const setSelectedLayout = (l: 'Center' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
-  const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 48 : 376
+  const COMMENTS_WIDTH = 420
+  const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 48 - COMMENTS_WIDTH : 460
   const layoutButtonRef = useRef<HTMLButtonElement>(null)
   const layoutMenuRef = useRef<HTMLDivElement>(null)
 
@@ -458,6 +464,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   }
 
 
+
   const chip = PRIORITY_CHIP[row.priority] ?? PRIORITY_CHIP.icebox
   const priorityLabel = PRIORITY_LABELS[row.priority] ?? row.priority
 
@@ -467,19 +474,32 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const adjRevenue = Math.round(row.estRevenue * remainingFraction)
 
   const panelContent = (
-    <div className="flex flex-col bg-white overflow-hidden relative" style={{ width: panelWidth, height: '100%', fontFamily: 'Open Sans, sans-serif', borderRadius: selectedLayout !== 'Right' ? 8 : 0, boxShadow: selectedLayout !== 'Right' ? '0px 8px 32px rgba(34,36,40,0.16), 0px 1px 4px rgba(34,36,40,0.08)' : 'none', transition: 'width 0.5s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        width: selectedLayout !== 'Right' ? panelWidth + COMMENTS_WIDTH : panelWidth,
+        backgroundColor: 'white',
+        fontFamily: 'Open Sans, sans-serif',
+        borderRadius: selectedLayout !== 'Right' ? 8 : 0,
+        boxShadow: selectedLayout !== 'Right' ? '0px 8px 32px rgba(34,36,40,0.16), 0px 1px 4px rgba(34,36,40,0.08)' : 'none',
+        overflow: 'hidden',
+        position: 'relative',
+      }}
+    >
 
-
-      {/* ── Header ──────────────────────────────────────── */}
-      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12 }}>
+      {/* ── Header (full width) ──────────────────────────── */}
+      {!showSidekick && (
+      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: selectedLayout !== 'Right' ? '1px solid #E9EAEF' : 'none' }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <JiraLogo size={18} />
+          {!hideInsightCallout && <JiraLogo size={18} />}
           <p
             className="flex-1 min-w-0 truncate text-[#222428] leading-[1.5]"
             style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: '16px', fontFeatureSettings: "'ss01' 1" }}
-            title={row.jiraKey ?? row.title}
+            title={hideInsightCallout ? row.title : (row.jiraKey ?? row.title)}
           >
-            {row.jiraKey ?? row.title}
+            {hideInsightCallout ? row.title : (row.jiraKey ?? row.title)}
           </p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
@@ -544,21 +564,73 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </Tooltip>
         </div>
       </div>
+      )}
 
-      {/* 4px spacer */}
-      <div className="h-1 shrink-0" />
+      {showSidekick && (
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <AiPanelSolutionReview
+            onClose={onClose}
+            onBack={() => setShowSidekick(false)}
+            focusItemId={row.id}
+            layoutButton={
+              <Tooltip>
+                <Tooltip.Trigger asChild>
+                  <button
+                    ref={layoutButtonRef}
+                    aria-label="Panel layout"
+                    className="h-6 flex items-center gap-0.5 px-1 rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+                    onClick={() => {
+                      const r = layoutButtonRef.current?.getBoundingClientRect()
+                      if (r) setLayoutPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+                      setLayoutOpen(o => !o)
+                    }}
+                  >
+                    {selectedLayout === 'Center' && (
+                      <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                    {selectedLayout === 'Right' && (
+                      <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                    {selectedLayout === 'Fullscreen' && (
+                      <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                  </button>
+                </Tooltip.Trigger>
+                <Tooltip.Portal>
+                  <Tooltip.Content side="top" sideOffset={4}>Panel view</Tooltip.Content>
+                </Tooltip.Portal>
+              </Tooltip>
+            }
+          />
+        </div>
+      )}
 
-      {/* ── Tabs ────────────────────────────────────────── */}
-      <div className="flex shrink-0 pb-5 pt-4 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 20 : 12, paddingRight: selectedLayout !== 'Right' ? 24 : 16 }}>
-        {TABS.map((tab) => (
+      {/* ── Content row (main panel + comments panel) ── */}
+      <div style={{ display: showSidekick ? 'none' : 'flex', flexDirection: 'row', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+      <div className="flex flex-col overflow-hidden relative" style={{ width: panelWidth, height: '100%', flexShrink: 0 }}>
+
+      {/* ── Tab bar ── */}
+      <div className="flex gap-1 px-3 pt-3 pb-4 shrink-0" style={{ pointerEvents: 'auto' }}>
+        {(selectedLayout === 'Right' ? ['Details', 'Jira', 'Insights', 'Comments'] : ['Details', 'Jira', 'Insights']).map(tab => (
           <button
             key={tab}
-            onClick={() => { setActiveTab(tab); if (selectedCompany) setSelectedCompany(null); if (selectedFeedbackCard) setSelectedFeedbackCard(null); if (callCard) setCallCard(null) }}
+            onPointerDown={e => { e.stopPropagation(); setActiveTab(tab) }}
             className="mr-1 px-2 py-1 rounded-lg text-[14px] font-semibold transition-colors"
             style={{
               fontFamily: 'Open Sans, sans-serif',
               color: activeTab === tab ? '#4262FF' : '#656B81',
               backgroundColor: activeTab === tab ? '#F2F4FC' : 'transparent',
+              pointerEvents: 'auto',
+              cursor: 'pointer',
             }}
           >
             {tab}
@@ -566,8 +638,38 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         ))}
       </div>
 
-      {/* 4px spacer */}
-      <div className="h-1 shrink-0" />
+      {/* ── Tabs content ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflowY: 'auto' }}>
+
+        {/* Low-confidence Insights callout */}
+        {activeTab === 'Details' && !insightDismissed && row.id === '1' && (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              padding: 16,
+              gap: 12,
+              background: '#F2F4FC',
+              borderRadius: 8,
+              position: 'relative',
+              marginLeft: selectedLayout !== 'Right' ? 24 : 20,
+              marginRight: selectedLayout !== 'Right' ? 24 : 20,
+              marginTop: 16,
+              marginBottom: 4,
+              flexShrink: 0,
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, paddingRight: 20 }}>
+              <p className="text-[14px] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1", color: '#1a1b1e', margin: 0 }}>
+                Low-confidence Insights
+              </p>
+              <p style={{ fontSize: 14, color: '#222428', lineHeight: 1.5, margin: 0 }}>
+                Only a title is given, with no details on what the "{row.title}" does—leaving its purpose, use cases, and target users unclear.
+              </p>
+            </div>
+          </div>
+        )}
 
       {/* ── Content (sliding panels) ─────────────────── */}
       <div className="flex-1 min-h-0 overflow-hidden relative">
@@ -580,7 +682,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         }}
       >
       {/* ── Main panel ─── */}
-      <div key={activeTab} className="h-full overflow-y-auto panel-scroll flex flex-col gap-2 shrink-0 tab-slide-in" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: 8, overflowAnchor: 'none' }}>
+      <div className="h-full overflow-y-auto panel-scroll flex flex-col gap-2 shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 20, paddingRight: selectedLayout !== 'Right' ? 24 : 20, paddingTop: 8, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -661,20 +763,23 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             {/* Companies */}
             {(() => {
               const allCompanies = [...new Set([...row.companies, ...Object.keys(COMPANY_INFO)])]
-              const MAX_VISIBLE = 4
-              const overflow = allCompanies.length - MAX_VISIBLE
+              const COLLAPSED = 4
+              const EXPANDED_FIRST_ROW = 8
+              const visibleCount = companiesExpanded ? EXPANDED_FIRST_ROW : COLLAPSED
+              const overflow = allCompanies.length - COLLAPSED
+              const overflowExpanded = allCompanies.length - EXPANDED_FIRST_ROW
               return (
                 <FieldRow label="Companies" alignStart>
                   <div className="flex flex-col gap-0 py-1 w-full">
                     <div className="flex flex-wrap gap-2">
-                      {allCompanies.slice(0, MAX_VISIBLE).map(name => (
+                      {allCompanies.slice(0, visibleCount).map(name => (
                         <CompanyLogo key={name} name={name} size={32} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
                       ))}
-                      {overflow > 0 && !companiesExpanded && (
+                      {!companiesExpanded && overflow > 0 && (
                         <button
                           onClick={() => setCompaniesExpanded(true)}
-                          className="inline-flex items-center h-[28px] px-2 rounded-lg text-[13px] font-semibold transition-colors"
-                          style={{ backgroundColor: '#F1F2F5', color: '#656B81' }}
+                          className="inline-flex items-center justify-center transition-colors"
+                          style={{ backgroundColor: '#F1F2F5', color: '#656B81', height: 32, minWidth: 32, padding: '0 8px', borderRadius: 8, fontSize: 13, fontWeight: 600, flexShrink: 0 }}
                         >
                           +{overflow}
                         </button>
@@ -683,13 +788,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     {/* Accordion overflow */}
                     <div style={{ maxHeight: companiesExpanded ? 200 : 0, overflow: 'hidden', transition: 'max-height 0.3s cubic-bezier(0.16,1,0.3,1)' }}>
                       <div className="flex flex-wrap gap-2 pt-2">
-                        {allCompanies.slice(MAX_VISIBLE).map(name => (
+                        {overflowExpanded > 0 && allCompanies.slice(EXPANDED_FIRST_ROW).map(name => (
                           <CompanyLogo key={name} name={name} size={32} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
                         ))}
                         <button
                           onClick={() => setCompaniesExpanded(false)}
-                          className="inline-flex items-center h-[28px] px-2 rounded-lg text-[13px] font-semibold transition-colors"
-                          style={{ backgroundColor: '#E0E2E8', color: '#656B81' }}
+                          className="inline-flex items-center justify-center transition-colors"
+                          style={{ backgroundColor: '#E0E2E8', color: '#656B81', height: 32, width: 32, borderRadius: 8, fontSize: 16, flexShrink: 0 }}
                         >
                           −
                         </button>
@@ -703,69 +808,47 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </>
         )}
 
-        {activeTab === 'Insights' && (
-          <div className="flex flex-col gap-8 pb-6">
+        {activeTab === 'Jira' && (
+          <JiraForm row={row} />
+        )}
 
-            {/* Low-confidence Insights callout — only for AI portfolio advisor row */}
-            {!insightDismissed && (row.id === '1' || row.id === 'r1') && (
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'flex-start',
-                  padding: 16,
-                  gap: 12,
-                  background: '#F2F4FC',
-
-                  borderRadius: 8,
-                  position: 'relative',
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, paddingRight: 20 }}>
-                  <p className="text-[14px] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1", color: '#1a1b1e', margin: 0 }}>
-                    Low-confidence Insights
-                  </p>
-                  <p style={{ fontSize: 14, color: '#222428', lineHeight: 1.5, margin: 0 }}>
-                    The title or description may be too brief to reliably match to customer feedback. Improving context will increase matching accuracy.
-                  </p>
-                </div>
-              </div>
-            )}
+        {activeTab === 'Insights' && <div className="flex flex-col gap-8 pb-6" style={{ paddingTop: 16 }}>
 
             {/* Summary */}
             <InsightSection label="Summary">
               <p className="text-[14px] text-[#222428] leading-[1.5]" style={{ fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
-                {INSIGHT_SUMMARIES[row.id] ?? row.description ?? row.title}
+                {overrideSummary ?? INSIGHT_SUMMARIES[row.id] ?? row.description ?? row.title}
               </p>
             </InsightSection>
 
             {/* Top impacted customers */}
-            <InsightSection label="Top impacted customers">
-              <div className="flex flex-wrap gap-2 mt-2">
-                {row.companies.map(name => (
-                  <CompanyLogo key={name} name={name} size={32} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
-                ))}
+            {row.companies && row.companies.length > 0 && (
+              <InsightSection label="Top impacted customers">
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {row.companies.map(name => (
+                    <CompanyLogo key={name} name={name} size={32} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
+                  ))}
+                </div>
+              </InsightSection>
+            )}
+
+            {/* Impact estimates */}
+            <InsightSection label="Impact estimates">
+              <div className="flex flex-col gap-0 w-full">
+                <div className="flex gap-3">
+                  <StatBox value={row.mentions ?? 0} format={n => String(n)} label="Total Mentions" />
+                  <StatBox value={row.customers ?? 0} format={n => n.toLocaleString()} label="Unique Customers" />
+                </div>
+                <div className="flex gap-3">
+                  <StatBox value={row.customers ?? 0} format={n => n.toLocaleString()} label="Total Users" noPadding />
+                  <StatBox value={row.estRevenue ?? 0} format={n => n > 0 ? `$${n}K` : '—'} label="Impacted Customer ARR" noPadding />
+                </div>
               </div>
             </InsightSection>
 
             {selectedLayout === 'Fullscreen' ? (
               /* ── Fullscreen: two-column layout ── */
               <div className="flex gap-8 items-start">
-                {/* Left: sticky metrics */}
-                <div style={{ position: 'sticky', top: 0, width: 360, flexShrink: 0, paddingRight: 48, paddingTop: 8 }}>
-                  <InsightSection label="Impact estimates">
-                    <div className="flex flex-col gap-0 w-full">
-                      <div className="flex gap-3">
-                        <StatBox value={adjMentions} format={n => String(n)} label="Total Mentions" />
-                        <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Unique Customers" />
-                      </div>
-                      <div className="flex gap-3">
-                        <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" noPadding />
-                        <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Impacted Customer ARR" noPadding />
-                      </div>
-                    </div>
-                  </InsightSection>
-                </div>
 
                 {/* Right: feedback cards */}
                 <div className="flex flex-col gap-3 flex-1 min-w-0">
@@ -788,21 +871,10 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                         </Tooltip.Trigger>
                         <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Filter</Tooltip.Content></Tooltip.Portal>
                       </Tooltip>
-                      <Tooltip>
-                        <Tooltip.Trigger asChild>
-                          <button onClick={() => setShowSavedOnly(v => !v)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F1F2F5] transition-colors" style={{ color: '#222428', background: showSavedOnly ? '#F1F2F5' : undefined }}>
-                            {showSavedOnly
-                              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3h14a1 1 0 0 1 1 1v17.5a.5.5 0 0 1-.8.4L12 17.333 4.8 21.9a.5.5 0 0 1-.8-.4V4a1 1 0 0 1 1-1Z"/></svg>
-                              : <IconBookmark size="small" />
-                            }
-                          </button>
-                        </Tooltip.Trigger>
-                        <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Saved</Tooltip.Content></Tooltip.Portal>
-                      </Tooltip>
                     </div>
                   </div>
                   <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
-                    {showSavedOnly && savedCards.size === 0 ? (
+                    {false ? (
                       <div className="flex items-center justify-center" style={{ paddingTop: 48, paddingBottom: 48 }}>
                         <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center' }}>
                           Save feedback cards to view them here.
@@ -811,7 +883,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     ) : generateFeedbackCards(row).map((card, i) => {
                       const hidden = dismissedCards.has(i) || (showSavedOnly && !savedCards.has(i))
                       return (
-                        <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : 24, overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
+                        <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : ((selectedLayout as string) !== 'Right' ? 24 : 20), overflow: hidden ? 'hidden' : 'visible', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
                           {promptCards.has(i)
                             ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
                             : <FeedbackCard {...card} saved={savedCards.has(i)} onSave={() => setSavedCards(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
@@ -825,18 +897,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             ) : (
               /* ── Center / Right: single column ── */
               <>
-                <InsightSection label="Impact estimates">
-                  <div className="flex flex-col gap-0 w-full">
-                    <div className="flex gap-3">
-                      <StatBox value={adjMentions} format={n => String(n)} label="Total Mentions" />
-                      <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Unique Customers" />
-                    </div>
-                    <div className="flex gap-3">
-                      <StatBox value={adjCustomers} format={n => n.toLocaleString()} label="Total Users" noPadding />
-                      <StatBox value={adjRevenue} format={n => n > 0 ? `$${n}K` : '—'} label="Impacted Customer ARR" noPadding />
-                    </div>
-                  </div>
-                </InsightSection>
 
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center justify-between">
@@ -858,21 +918,10 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                         </Tooltip.Trigger>
                         <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Filter</Tooltip.Content></Tooltip.Portal>
                       </Tooltip>
-                      <Tooltip>
-                        <Tooltip.Trigger asChild>
-                          <button onClick={() => setShowSavedOnly(v => !v)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F1F2F5] transition-colors" style={{ color: '#222428', background: showSavedOnly ? '#F1F2F5' : undefined }}>
-                            {showSavedOnly
-                              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3h14a1 1 0 0 1 1 1v17.5a.5.5 0 0 1-.8.4L12 17.333 4.8 21.9a.5.5 0 0 1-.8-.4V4a1 1 0 0 1 1-1Z"/></svg>
-                              : <IconBookmark size="small" />
-                            }
-                          </button>
-                        </Tooltip.Trigger>
-                        <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Saved</Tooltip.Content></Tooltip.Portal>
-                      </Tooltip>
                     </div>
                   </div>
                   <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
-                    {showSavedOnly && savedCards.size === 0 ? (
+                    {false ? (
                       <div className="flex items-center justify-center" style={{ paddingTop: 48, paddingBottom: 48 }}>
                         <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center' }}>
                           Save feedback cards to view them here.
@@ -881,7 +930,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     ) : generateFeedbackCards(row).map((card, i) => {
                       const hidden = dismissedCards.has(i) || (showSavedOnly && !savedCards.has(i))
                       return (
-                        <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : (selectedLayout === 'Center' ? 24 : 12), overflow: 'hidden', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
+                        <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : ((selectedLayout as string) !== 'Right' ? 24 : 20), overflow: hidden ? 'hidden' : 'visible', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
                           {promptCards.has(i)
                             ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
                             : <FeedbackCard {...card} saved={savedCards.has(i)} onSave={() => setSavedCards(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
@@ -893,10 +942,56 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 </div>
               </>
             )}
-          </div>
-        )}
+          </div>}
 
-        {activeTab === 'Updates' && (
+        {activeTab === 'Comments' && <div className="flex flex-col" style={{ height: '100%' }}>
+            <div className="flex-1 overflow-y-auto panel-scroll flex flex-col gap-4" style={{ paddingTop: 16, paddingBottom: 8 }}>
+              {comments.map((c, i) => (
+                <div key={i} className="group flex gap-3 relative">
+                  <img src={`https://i.pravatar.cc/32?img=${c.avatarImg}`} alt="" className="w-8 h-8 rounded-full shrink-0 object-cover" />
+                  <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[13px] font-semibold text-[#222428]" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>{c.name}</span>
+                      <span className="text-[12px] text-[#9DA3B4]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{c.time}</span>
+                    </div>
+                    <p className="text-[14px] text-[#3C3F4A] leading-[1.5]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{c.text}</p>
+                  </div>
+                  <button className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 self-start mt-0.5 text-[#9DA3B4] hover:text-[#656B81]">
+                    <IconSmileyPlus css={{ width: 18, height: 18 }} />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="shrink-0" style={{ padding: '16px 0' }}>
+              <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white' }}>
+                <textarea
+                  value={commentText}
+                  onChange={e => setCommentText(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      if (!commentText.trim()) return
+                      setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }])
+                      setCommentText('')
+                    }
+                  }}
+                  placeholder="Leave a reply. Use @ to mention."
+                  rows={2}
+                  className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none"
+                  style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
+                />
+                <button
+                  onClick={() => { if (!commentText.trim()) return; setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }]); setCommentText('') }}
+                  className="shrink-0 transition-colors"
+                  style={{ color: commentText.trim() ? '#4262FF' : '#9DA3B4' }}
+                >
+                  <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
+                </button>
+              </div>
+            </div>
+          </div>}
+
+        {false && (
           <div className="flex flex-col">
             {[
               { text: 'Prioritized this signal as an idea', date: 'May 21, 2026' },
@@ -917,93 +1012,27 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </div>
         )}
 
-        {activeTab === 'Comments' && (
-          <div className="flex flex-col" style={{ minHeight: '100%' }}>
-            {/* Resolve toggle */}
-            <div className="flex items-center gap-2 px-2 pb-3">
-              <button
-                onClick={() => setResolved(r => !r)}
-                className="relative shrink-0"
-                style={{ width: 32, height: 18, borderRadius: 999, background: resolved ? '#4262FF' : '#E0E2E8', border: 'none', cursor: 'pointer', padding: 0, transition: 'background 150ms ease' }}
-              >
-                <span style={{ position: 'absolute', top: 2, left: resolved ? 16 : 2, width: 14, height: 14, borderRadius: '50%', background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', transition: 'left 150ms ease' }} />
-              </button>
-              <span className="text-[14px] text-[#222428]" style={{ fontFamily: 'Open Sans, sans-serif' }}>Resolve</span>
-            </div>
-
-            {/* Comment list */}
-            <div className="flex flex-col flex-1 px-2">
-              {comments.map((comment, i) => (
-                <div key={i} className="flex gap-[9px] items-start py-2">
-                  <img
-                    src={`https://i.pravatar.cc/48?img=${comment.avatarImg}`}
-                    alt={comment.name}
-                    className="shrink-0 w-6 h-6 rounded-full object-cover"
-                  />
-                  <div className="flex flex-col gap-[4px] flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[14px] font-semibold text-[#050038] whitespace-nowrap" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>{comment.name}</span>
-                      <span className="text-[12px] text-[#656B81]" style={{ fontFamily: 'Open Sans, sans-serif' }}>{comment.time}</span>
-                    </div>
-                    <p className="text-[14px] text-[#222428] leading-[1.4] m-0" style={{ fontFamily: 'Open Sans, sans-serif' }}>{comment.text}</p>
-                  </div>
-                </div>
-              ))}
-              <div ref={commentsEndRef} />
-            </div>
-
-            {/* Compose box — sticky at bottom */}
-            <div className="sticky bottom-0 bg-white pt-2 pb-4 px-0" style={{ marginTop: 'auto' }}>
-              <div
-                className="flex flex-col rounded-[6px] px-2 py-2"
-                style={{ border: `1px solid ${commentText ? '#4262FF' : '#E0E2E8'}`, transition: 'border-color 150ms ease' }}
-              >
-                <textarea
-                  value={commentText}
-                  onChange={e => setCommentText(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && !e.shiftKey && commentText.trim()) {
-                      e.preventDefault()
-                      const now = new Date()
-                      const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-                      setComments(prev => [...prev, { name: 'You', time: `Today, ${time}`, text: commentText.trim(), avatarImg: 1 }])
-                      setCommentText('')
-                      setTimeout(() => commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
-                    }
-                  }}
-                  placeholder="Leave a comment. Use @ to mention."
-                  rows={3}
-                  className="w-full resize-none text-[14px] text-[#222428] leading-[1.4] px-2 outline-none bg-transparent placeholder-[#7D8297]"
-                  style={{ fontFamily: 'Open Sans, sans-serif', border: 'none', minHeight: 60 }}
-                />
-                <div className="flex items-center justify-end gap-1 pt-1">
-                  <button className="w-10 h-10 flex items-center justify-center rounded-lg text-[#AEB2C0]" style={{ border: 'none', background: 'none', cursor: 'default' }}>
-                    <IconSmileyPlus size="medium" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (!commentText.trim()) return
-                      const now = new Date()
-                      const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-                      setComments(prev => [...prev, { name: 'You', time: `Today, ${time}`, text: commentText.trim(), avatarImg: 1 }])
-                      setCommentText('')
-                      setTimeout(() => commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
-                    }}
-                    className="w-10 h-10 flex items-center justify-center rounded-lg transition-colors"
-                    style={{ border: 'none', background: 'none', color: commentText.trim() ? '#4262FF' : '#AEB2C0', cursor: commentText.trim() ? 'pointer' : 'default' }}
-                  >
-                    <IconPaperPlaneFilledRight size="medium" />
-                  </button>
-                </div>
-              </div>
-            </div>
+      {activeTab !== 'Comments' && (
+        <div style={{ position: 'sticky', bottom: 0, marginTop: 'auto', paddingTop: 16, paddingBottom: 24, background: 'white' }} onClick={() => setShowSidekick(true)}>
+          <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}>
+            <textarea
+              readOnly
+              placeholder="What should we do next?"
+              rows={2}
+              className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none cursor-text"
+              style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0' }}
+            />
+            <button className="shrink-0 text-[#9DA3B4]">
+              <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {activeTab === 'Jira' && <JiraForm row={row} />}
       </div>
+
       {/* ── Company panel ─── */}
-      <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: selectedLayout !== 'Right' ? 48 : 12 }}>
+      <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: selectedLayout !== 'Right' ? 48 : 16 }}>
         {selectedCompany && (
           <CompanyDetailView
             company={selectedCompany}
@@ -1021,7 +1050,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             date={callCard.date}
             transcript={callCard.transcript}
             onBack={() => setCallCard(null)}
-            highlightColor={callCard.borderColor === '#d4bbff' ? '#EFEDFD' : callCard.borderColor === '#D1F09F' ? '#F1FECF' : '#f1f2f5'}
+            highlightColor={callCard.borderColor === '#d4bbff' ? '#EFE9FF' : callCard.borderColor === '#D1F09F' ? '#EAFAEA' : '#FFF0E0'}
             avatarColor={callCard.borderColor}
           />
         )}
@@ -1029,14 +1058,14 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           <AppStoreReviewDetail
             card={selectedFeedbackCard}
             onBack={() => setSelectedFeedbackCard(null)}
-            highlightColor={selectedFeedbackCard.borderColor === '#D1F09F' ? '#F1FECF' : selectedFeedbackCard.borderColor === '#d4bbff' ? '#EFEDFD' : '#f1f2f5'}
+            highlightColor={selectedFeedbackCard.borderColor === '#D1F09F' ? '#EAFAEA' : selectedFeedbackCard.borderColor === '#d4bbff' ? '#EFE9FF' : '#FFF0E0'}
           />
         )}
         {selectedFeedbackCard?.source === 'SurveyMonkey' && (
           <SurveyFeedbackDetail
             card={selectedFeedbackCard}
             onBack={() => setSelectedFeedbackCard(null)}
-            highlightColor={selectedFeedbackCard.borderColor === '#ffd4b2' ? '#FFEEDE' : '#f1f2f5'}
+            highlightColor={'#FFF0E0'}
           />
         )}
         {selectedFeedbackCard && !isStoreReview(selectedFeedbackCard.source) && selectedFeedbackCard.source !== 'SurveyMonkey' && (
@@ -1045,12 +1074,36 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             onBack={() => setSelectedFeedbackCard(null)}
             onClose={onClose}
             onAddToBoard={onAddToBoard}
-            highlightColor={selectedFeedbackCard.borderColor === '#d4bbff' ? '#EFEDFD' : '#f1f2f5'}
+            highlightColor={selectedFeedbackCard.borderColor === '#D1F09F' ? '#EAFAEA' : selectedFeedbackCard.borderColor === '#d4bbff' ? '#EFE9FF' : '#FFF0E0'}
           />
         )}
       </div>
       </div>{/* end slider */}
       </div>{/* end overflow wrapper */}
+      </div>{/* end tabs */}
+
+      {/* ── Comment input bar (Details / Jira / Insights tabs) ─── */}
+      {['Details', 'Jira', 'Insights'].includes(activeTab) && !selectedCompany && !callCard && !selectedFeedbackCard && !selectedPrompt && !showSidekick && (
+        <div className="shrink-0" style={{ padding: '16px' }}>
+          <div
+            className="flex items-center gap-1.5"
+            style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}
+            onClick={() => setShowSidekick(true)}
+          >
+            <textarea
+              readOnly
+              placeholder="Ask about your roadmap."
+              rows={2}
+              className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none cursor-text"
+              style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0' }}
+            />
+            <button onClick={e => { e.stopPropagation(); setShowSidekick(true) }} className="shrink-0 text-[#9DA3B4]">
+              <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
+            </button>
+          </div>
+        </div>
+      )}
+
 
       {/* ── Chat overlay (full-panel, avoids slider height-shift glitch) ─── */}
       {selectedPrompt && (
@@ -1318,6 +1371,105 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         </div>,
         document.body
       )}
+    </div>{/* end main panel */}
+
+    {/* ── Comments panel (Center / Fullscreen only) ── */}
+    {selectedLayout !== 'Right' && !showSidekick && (
+      <div
+        style={{
+          width: COMMENTS_WIDTH,
+          flexShrink: 0,
+          borderLeft: '1px solid #E9EAEF',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          backgroundColor: 'white',
+        }}
+      >
+        {/* Comments label */}
+        <div className="shrink-0" style={{ padding: '12px 16px 4px 16px' }}>
+          <span
+            className="text-[14px] font-semibold text-[#222428]"
+            style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}
+          >
+            Comments
+          </span>
+        </div>
+
+        {/* Comment list */}
+        <div className="flex-1 overflow-y-auto panel-scroll" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {comments.map((c, i) => (
+            <div key={i} className="group flex gap-3 relative">
+              <img
+                src={`https://i.pravatar.cc/32?img=${c.avatarImg}`}
+                alt=""
+                className="w-8 h-8 rounded-full shrink-0 object-cover"
+              />
+              <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="text-[13px] font-semibold text-[#222428]"
+                    style={{ fontFamily: "'Roobert PRO', sans-serif" }}
+                  >
+                    {c.name}
+                  </span>
+                  <span
+                    className="text-[12px] text-[#9DA3B4]"
+                    style={{ fontFamily: 'Open Sans, sans-serif' }}
+                  >
+                    {c.time}
+                  </span>
+                </div>
+                <p
+                  className="text-[14px] text-[#3C3F4A] leading-[1.5]"
+                  style={{ fontFamily: 'Open Sans, sans-serif' }}
+                >
+                  {c.text}
+                </p>
+              </div>
+              <button className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 self-start mt-0.5 text-[#9DA3B4] hover:text-[#656B81]">
+                <IconSmileyPlus css={{ width: 18, height: 18 }} />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Input */}
+        <div className="shrink-0" style={{ padding: '16px' }}>
+          <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white' }}>
+            <textarea
+              value={commentText}
+              onChange={e => setCommentText(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  if (!commentText.trim()) return
+                  setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }])
+                  setCommentText('')
+                }
+              }}
+              placeholder="Leave a reply. Use @ to mention."
+              rows={2}
+              className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none"
+              style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
+            />
+            <button
+              onClick={() => {
+                if (!commentText.trim()) return
+                setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }])
+                setCommentText('')
+              }}
+              className="shrink-0 transition-colors"
+              style={{ color: commentText.trim() ? '#4262FF' : '#9DA3B4' }}
+            >
+              <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </div>
+
     </div>
   )
 
@@ -1776,7 +1928,7 @@ function AppStoreReviewDetail({
   onBack,
   highlightColor = '#f1f2f5',
 }: {
-  card: { title: string; text: string; author: string; date: string; companies: string[]; stars?: number; borderColor?: string }
+  card: { title: string; text: string; author: string; date: string; companies: string[]; stars?: number; borderColor?: string; source?: string }
   onBack: () => void
   highlightColor?: string
 }) {
@@ -1798,7 +1950,7 @@ function AppStoreReviewDetail({
   return (
     <div
       className="panel-scroll"
-      style={{ flex: 1, overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+      style={{ flex: 1, overflowY: 'auto', padding: '16px 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
       {/* ── Sticky header ── */}
       <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 0' }}>
@@ -1900,6 +2052,9 @@ function FeedbackCard({
 }) {
   const [expanded, setExpanded] = useState(false)
   const [hovered, setHovered] = useState(false)
+  const [thumbsUp, setThumbsUp] = useState(false)
+  const [thumbsDown, setThumbsDown] = useState(false)
+  const [thumbTooltip, setThumbTooltip] = useState<{ label: string; pos: { top: number; left: number } } | null>(null)
   const [tooltipVisible, setTooltipVisible] = useState(false)
   const [tooltipPos, setTooltipPos] = useState<{ top: number; right: number } | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -1922,10 +2077,10 @@ function FeedbackCard({
 
   return (
     <div
-      className="w-full rounded-xl flex flex-col gap-2 p-5 cursor-pointer"
-      style={{ border: `2px solid ${borderColor}`, borderBottomWidth: 6 }}
+      className="w-full rounded-xl flex flex-col gap-2 p-5 cursor-pointer relative"
+      style={{ backgroundColor: borderColor === '#D1F09F' ? '#EAFAEA' : borderColor === '#d4bbff' ? '#EFE9FF' : '#FFF0E0', boxShadow: hovered ? '0 8px 24px rgba(34,36,40,0.08)' : 'none', transition: 'box-shadow 0.2s ease' }}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseLeave={() => { setHovered(false); setThumbTooltip(null) }}
       onClick={onViewCall ?? onSelect}
     >
       {/* Card header: icon + category (on hover) + actions */}
@@ -1938,7 +2093,7 @@ function FeedbackCard({
           borderColor === '#D1F09F' ? { bg: '#EAFAEA', text: '#3C3F4A' } :
           borderColor === '#d4bbff' ? { bg: '#EFE9FF', text: '#3C3F4A' } :
           { bg: '#FFF0E0', text: '#3C3F4A' }
-        const iconSize = category === 'User Problem' ? 30 : 26
+        const iconSize = category === 'User Problem' ? 36 : 28
         return (
       <div className="flex items-start gap-2">
         <span style={{
@@ -1960,7 +2115,11 @@ function FeedbackCard({
           transition: 'width 0.25s ease, padding 0.25s ease, gap 0.25s ease',
         }}>
 
-          <Icon css={{ width: iconSize, height: iconSize, flexShrink: 0, color: '#3C3F4A' }} />
+          <div style={{ width: iconSize, height: iconSize, flexShrink: 0, overflow: 'hidden' }}>
+            <div style={{ transform: `scale(${iconSize / 24})`, transformOrigin: '0 0', width: 24, height: 24 }}>
+              <Icon css={{ color: '#3C3F4A' }} />
+            </div>
+          </div>
           <span style={{
             maxWidth: hovered ? 120 : 0,
             opacity: hovered ? 1 : 0,
@@ -1977,7 +2136,7 @@ function FeedbackCard({
         <div className="flex items-center gap-1">
           <button
             ref={menuButtonRef}
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-white transition-colors"
             onClick={e => { e.stopPropagation(); setMenuOpen(o => !o) }}
           >
             <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
@@ -1990,7 +2149,7 @@ function FeedbackCard({
             }}
             onMouseLeave={() => setTooltipVisible(false)}
           >
-            <button onClick={e => { e.stopPropagation(); onDismiss() }} aria-label="Remove signal" className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
+            <button onClick={e => { e.stopPropagation(); onDismiss() }} aria-label="Remove signal" className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-white transition-colors">
               <IconCross css={{ width: 16, height: 16 }} />
             </button>
           </div>
@@ -2020,7 +2179,7 @@ function FeedbackCard({
       </p>
       <span
         className="text-[14px] text-[#222428] cursor-pointer hover:underline"
-        onClick={() => setExpanded(v => !v)}
+        onClick={e => { e.stopPropagation(); setExpanded(v => !v) }}
       >
         {expanded ? 'Show less' : 'Show more'}
       </span>
@@ -2030,24 +2189,39 @@ function FeedbackCard({
         {author}
       </p>
 
-      {/* Source + company — smooth slide-in on hover using CSS grid trick */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateRows: hovered ? '1fr' : '0fr',
-          transition: 'grid-template-rows 0.25s ease',
-        }}
-      >
+      {/* Source + company + thumbs — smooth slide-in on hover using CSS grid trick */}
+      <div style={{ display: 'grid', gridTemplateRows: hovered ? '1fr' : '0fr', transition: 'grid-template-rows 0.25s ease' }}>
         <div style={{ overflow: 'hidden' }}>
-          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: 0, gap: 8, height: 24 }}>
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '4px 0 4px 0', gap: 8, height: 28, isolation: 'isolate' }}>
             <span style={{ fontSize: 14, fontWeight: 400, color: '#3C3F4A', fontFamily: 'Open Sans, sans-serif', background: '#F1F2F5', borderRadius: 6, padding: '0 8px', height: 24, display: 'inline-flex', alignItems: 'center' }}>{date}</span>
             {source && <SourceLogoChip source={source} />}
-            {companies[0] && (
-              <CompanyLogo name={companies[0]} size={24} />
-            )}
+            {companies[0] && <CompanyLogo name={companies[0]} size={24} />}
+            <div className="flex items-center gap-1 ml-auto" onClick={e => e.stopPropagation()}>
+              {[
+                { key: 'up', label: 'Relevant', active: thumbsUp, onClick: () => { setThumbsUp(v => !v); setThumbsDown(false) } },
+                { key: 'down', label: 'Irrelevant', active: thumbsDown, onClick: () => { setThumbsDown(v => !v); setThumbsUp(false) } },
+              ].map(({ key, label, active, onClick: handleClick }) => (
+                <button
+                  key={key}
+                  onClick={handleClick}
+                  onMouseEnter={e => {
+                    const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+                    setThumbTooltip({ label, pos: { top: r.top - 4, left: r.left + r.width / 2 } })
+                  }}
+                  onMouseLeave={() => setThumbTooltip(null)}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors hover:bg-white"
+                  style={{ color: active ? '#222428' : '#656B81' }}
+                >
+                  <span style={{ transform: key === 'down' ? 'rotate(180deg)' : undefined, display: 'inline-flex' }}>
+                    <IconThumbsUp css={{ width: 16, height: 16 }} />
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
+
       {menuOpen && menuPos && createPortal(
         <div
           ref={menuRef}
@@ -2055,7 +2229,6 @@ function FeedbackCard({
           style={{ top: menuPos.top, right: menuPos.right, width: 224, boxShadow: '0px 2px 8px rgba(34,36,40,0.12), 0px 0px 12px rgba(34,36,40,0.04)' }}
         >
           {[
-            { icon: <IconBookmark size="small" />, label: saved ? 'Unsave' : 'Save', onClick: () => { onSave?.(); setMenuOpen(false) } },
             { icon: <IconBoard size="small" />, label: 'Add to board', onClick: () => { onAddToBoard?.(); setMenuOpen(false) } },
             { icon: <IconSquaresTwoOverlap size="small" />, label: 'Copy', onClick: () => setMenuOpen(false) },
             { icon: <IconDocFormat size="small" />, label: 'View in transcript', onClick: () => setMenuOpen(false) },
@@ -2073,6 +2246,18 @@ function FeedbackCard({
         </div>,
         document.body
       )}
+{thumbTooltip && createPortal(
+        <div
+          className="fixed z-[9999] pointer-events-none"
+          style={{ top: thumbTooltip.pos.top, left: thumbTooltip.pos.left, transform: 'translate(-50%, -100%)' }}
+        >
+          <div className="bg-[#2B2D33] text-white text-[12px] leading-none px-2 py-1.5 rounded-md whitespace-nowrap" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+            {thumbTooltip.label}
+          </div>
+        </div>,
+        document.body
+      )}
+
       {tooltipVisible && tooltipPos && createPortal(
         <div
           className="fixed pointer-events-none z-[9999] flex flex-col items-end whitespace-nowrap"
@@ -2269,7 +2454,7 @@ function SurveyFeedbackDetail({
   return (
     <div
       className="panel-scroll"
-      style={{ height: '100%', overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+      style={{ height: '100%', overflowY: 'auto', padding: '16px 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
       {/* ── Sticky header ── */}
       <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 0' }}>
@@ -2448,7 +2633,7 @@ function FeedbackCardDetailView({
   return (
     <><div
       className="panel-scroll"
-      style={{ height: '100%', overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+      style={{ height: '100%', overflowY: 'auto', padding: '16px 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
       {/* ── Sticky header ── */}
       <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 0' }}>

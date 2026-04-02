@@ -52,6 +52,41 @@ function CardIcon({ borderColor }: { borderColor: string }) {
   return <IconHeart css={{ width: 25, height: 25 }} />
 }
 
+function ThumbsIcons({ visible }: { visible: boolean }) {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        bottom: 8,
+        right: 8,
+        display: 'flex',
+        gap: 4,
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 150ms ease',
+        pointerEvents: visible ? 'auto' : 'none',
+        zIndex: 2,
+      }}
+    >
+      <button
+        onClick={e => e.stopPropagation()}
+        style={{ background: 'rgba(255,255,255,0.9)', border: '1px solid #e0e2e8', borderRadius: 4, width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 14H3a1 1 0 01-1-1V8a1 1 0 011-1h2m5-3V3a2 2 0 00-2-2L7 7l-2 1v6h7.5a1 1 0 001-.76l.75-4A1 1 0 0013.25 8H10V4a1 1 0 00-1-1z" stroke="#656B81" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      <button
+        onClick={e => e.stopPropagation()}
+        style={{ background: 'rgba(255,255,255,0.9)', border: '1px solid #e0e2e8', borderRadius: 4, width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M11 2h2a1 1 0 011 1v5a1 1 0 01-1 1h-2M6 11v2a2 2 0 002 2l3-6 2-1V2H6.5a1 1 0 00-1 .76l-.75 4A1 1 0 005.75 8H9v3a1 1 0 01-1 1z" stroke="#656B81" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  )
+}
+
 function SelectionBorder() {
   const blue = '#3859FF'
   const offset = 6
@@ -86,6 +121,7 @@ export function CanvasFeedbackCard({
 }: CanvasFeedbackCardProps) {
   const [widgetX, setWidgetX] = useState(x)
   const [widgetY, setWidgetY] = useState(y)
+  const [isHovered, setIsHovered] = useState(false)
   const dragging = useRef(false)
   const dragStarted = useRef(false)
   const dragStart = useRef({ x: 0, y: 0 })
@@ -152,6 +188,8 @@ export function CanvasFeedbackCard({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onClick={e => e.stopPropagation()}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         {selected && <SelectionBorder />}
 
@@ -161,7 +199,7 @@ export function CanvasFeedbackCard({
             className="flex flex-col rounded-[16px] overflow-clip"
             style={{ backgroundColor: '#ffdc4a', paddingBottom: 6, paddingTop: 2, paddingLeft: 2, paddingRight: 2, fontFamily: 'Open Sans, sans-serif' }}
           >
-            <div className="bg-white rounded-[16px] flex flex-col" style={{ gap: 0 }}>
+            <div className="bg-white rounded-[16px] flex flex-col" style={{ gap: 0, position: 'relative' }}>
               <div className="flex flex-col gap-2" style={{ paddingLeft: 16, paddingRight: 20, paddingTop: 16, paddingBottom: 8 }}>
                 <span style={{ color: data.cardType === 'request' ? '#5E4DB2' : data.cardType === 'problem' ? '#FF8F00' : '#de350b', display: 'flex' }}>
                   {data.cardType === 'request' ? <IconFlag css={{ width: 20, height: 20 }} />
@@ -199,13 +237,14 @@ export function CanvasFeedbackCard({
                   </div>
                 ))}
               </div>
+              <ThumbsIcons visible={isHovered} />
             </div>
           </div>
         ) : (
           /* Classic feedback card style */
           <div
             className="bg-white rounded-xl flex flex-col gap-2 p-5"
-            style={{ border: `2px solid ${data.borderColor}`, borderBottomWidth: 6, fontFamily: 'Open Sans, sans-serif' }}
+            style={{ border: `2px solid ${data.borderColor}`, fontFamily: 'Open Sans, sans-serif', position: 'relative' }}
           >
             <div className="flex items-start gap-2">
               {data.borderColor === '#d4bbff' && (
@@ -241,6 +280,7 @@ export function CanvasFeedbackCard({
                 <Chip key={name} removable={false} css={{ fontSize: 14 }}>{name}</Chip>
               ))}
             </div>
+            <ThumbsIcons visible={isHovered} />
           </div>
         )}
       </div>

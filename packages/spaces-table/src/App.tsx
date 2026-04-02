@@ -16,6 +16,7 @@ import { JiraImportModal } from './components/page/JiraImportModal'
 import { InsightsToast } from './components/page/InsightsToast'
 import { SpaceMenu } from './components/sidebar/SpaceMenu'
 import { InsightsChatPanel } from './components/sidebar/InsightsChatPanel'
+import AiPanelSolutionReview from './components/sidebar/AiPanelSolutionReview'
 import { SidePanel } from './components/sidebar/SidePanel'
 import { RowDetailPanel } from './components/sidebar/RowDetailPanel'
 import { JiraPanel } from './components/sidebar/JiraPanel'
@@ -25,8 +26,9 @@ import { CanvasTableWidget } from './components/canvas/CanvasTableWidget'
 import { CanvasNavPanels } from './components/canvas/CanvasNavPanels'
 import { CanvasFeedbackCard, type FeedbackCardData } from './components/canvas/CanvasFeedbackCard'
 import { MoveToRoadmapSnackbar } from './components/page/MoveToRoadmapSnackbar'
+import { OverviewPage, OVERVIEW_CARD_SUMMARIES, OVERVIEW_ROWS } from './components/page/OverviewPage'
 
-type PageId = 'backlog' | 'roadmap'
+type PageId = 'overview' | 'backlog' | 'roadmap'
 
 interface CanvasWidget {
   id: string
@@ -44,6 +46,13 @@ interface PageConfig {
 }
 
 const PAGE_CONFIGS: Record<PageId, PageConfig> = {
+  overview: {
+    title: 'Overview',
+    tabs: [
+      { id: 'overview', label: 'Overview', type: 'table' },
+    ],
+    defaultTab: 'overview',
+  },
   backlog: {
     title: 'Backlog',
     tabs: [
@@ -89,18 +98,21 @@ export function App() {
   const [roadmapItems, setRoadmapItems] = useState<SpaceRow[]>(roadmapData)
   const [activeTab, setActiveTab] = useState('all-items')
   const [pageTabs, setPageTabs] = useState<Record<PageId, TabConfig[]>>({
+    overview: PAGE_CONFIGS.overview.tabs,
     backlog: PAGE_CONFIGS.backlog.tabs,
     roadmap: PAGE_CONFIGS.roadmap.tabs,
   })
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const [selectedRow, setSelectedRow] = useState<SpaceRow | null>(null)
+  const [overviewCardId, setOverviewCardId] = useState<string | null>(null)
   const [selectedRowDates, setSelectedRowDates] = useState<{ startDate: string; endDate: string } | undefined>(undefined)
   const [selectedJiraRow, setSelectedJiraRow] = useState<SpaceRow | null>(null)
   const [jiraPanelOpen, setJiraPanelOpen] = useState(false)
   const [isJiraDetailOpen, setIsJiraDetailOpen] = useState(false)
   const [initialCompany, setInitialCompany] = useState<string | undefined>(undefined)
   const [newColumnMenuOpen, setNewColumnMenuOpen] = useState(false)
+  const [sidekickFocusItemId, setSidekickFocusItemId] = useState<string | undefined>(undefined)
   const [canvasOpen, setCanvasOpen] = useState(false)
   const [navHovered, setNavHovered] = useState(false)
   const [kanbanCardSelected, setKanbanCardSelected] = useState(false)
@@ -124,6 +136,10 @@ export function App() {
   const [ghostRowId, setGhostRowId] = useState<string | null>(null)
   const [companyFilter, setCompanyFilter] = useState<string[]>([])
   const [panelLayout, setPanelLayout] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
+  const [sidekickLayout, setSidekickLayout] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
+  const [sidekickLayoutOpen, setSidekickLayoutOpen] = useState(false)
+  const sidekickLayoutBtnRef = useRef<HTMLButtonElement>(null)
+  const [sidekickLayoutPos, setSidekickLayoutPos] = useState({ top: 0, right: 0 })
 
   const handleCompanyFilter = useCallback((name: string) => {
     setCompanyFilter(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name])
@@ -252,7 +268,13 @@ export function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [toggleSidebar, canvasOpen, zoom, zoomTo, widgets, selectedWidgetId])
 
-  const closeSidebar = () => { setActiveSidebar(null); setIsJiraDetailOpen(false); setPanelLayout('Right') }
+  const closeSidebar = () => { setActiveSidebar(null); setIsJiraDetailOpen(false); setPanelLayout('Right'); setSidekickFocusItemId(undefined) }
+
+  // Wire up global close for Sidekick panel
+  useEffect(() => {
+    (window as any).__closeAiPanel = closeSidebar
+    return () => { delete (window as any).__closeAiPanel }
+  })
 
   const switchPage = useCallback((pageId: string) => {
     const id = pageId as PageId
@@ -436,7 +458,7 @@ export function App() {
   const isLeftOpen = activeSidebar === 'space-menu' || jiraPanelOpen
   const isRightOpen = activeSidebar === 'ai-sidekick' || activeSidebar === 'view-settings' || activeSidebar === 'row-detail'
   // Dynamic view rendering
-  const currentTabs = pageTabs[activePage]
+  const currentTabs = pageTabs[activePage] ?? pageTabs.backlog
   const activeTabConfig = currentTabs.find(t => t.id === activeTab)
   const pageData = hasData ? (activePage === 'backlog' ? backlogData : roadmapItems) : []
   const pageFields = activePage === 'backlog' ? fields : roadmapFields
@@ -446,12 +468,13 @@ export function App() {
   const viewData = companyFilter.length > 0 ? sortedViewData.filter(r => companyFilter.some(f => r.companies?.includes(f))) : sortedViewData
 
   if (view === 'home') {
-    return <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv', name?: string) => {
-      if (name) setSpaceName(name)
+    return <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv', activePage?: string) => {
       setIsInitialLoad(true)
       setView('app')
-      setActivePage('backlog')
-      setActiveTab('all-items')
+      const page = (activePage && activePage in PAGE_CONFIGS ? activePage : 'backlog') as PageId
+      setActivePage(page)
+      setDatabaseTitle(PAGE_CONFIGS[page].title)
+      setActiveTab(PAGE_CONFIGS[page].defaultTab)
       setActiveSidebar('space-menu')
       if (importSource) {
         setBacklogHasData(false)
@@ -472,15 +495,16 @@ export function App() {
       <div
         className="flex w-full h-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{
-          transform: canvasOpen ? 'scale(0.92)' : 'scale(1)',
+          transform: canvasOpen ? 'scale(0.92)' : undefined,
           opacity: canvasOpen ? 0 : 1,
           pointerEvents: canvasOpen ? 'none' : 'auto',
         }}
       >
-      {/* Main content — shifts right when left sidebar is open */}
+      {/* Main content — shifts right when left sidebar is open.
+          isolate: creates stacking context so sticky z-indexes (z-[9999]) stay below fixed sidebar overlays (z-50) */}
       <div
-        className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden transition-[padding-left] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-        style={{ paddingLeft: isLeftOpen ? (jiraPanelOpen ? 400 : 320) : 0 }}
+        className="isolate flex-1 flex flex-col min-w-0 h-screen overflow-hidden transition-[padding-left] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        style={{ paddingLeft: isLeftOpen ? (jiraPanelOpen ? 400 : 320) : 0, transition: 'padding-left 0.45s cubic-bezier(0.16,1,0.3,1)' }}
         onClick={isLeftOpen && hasData ? () => { setActiveSidebar(null); setJiraPanelOpen(false) } : undefined}
       >
         <div onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)} onClick={e => e.stopPropagation()}>
@@ -495,27 +519,31 @@ export function App() {
             onDismissSharePopover={() => setShowSharePopover(false)}
           />
         </div>
-        {/* Scroll area — vertical + horizontal, table header sticks below toolbar */}
-        <div ref={scrollRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-auto page-scroll flex flex-col${pageTransitioning ? ' page-transitioning-out' : ''}`}>
-          <div className="sticky left-0" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)} onClick={e => e.stopPropagation()}>
-            <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} disableControls={emptyVariant === 'disabled' && !hasData} />
+        {/* Scroll area — database title scrolls away, tabs stick under header */}
+        <div ref={scrollRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-y-auto overflow-x-auto page-scroll flex flex-col${pageTransitioning ? ' page-transitioning-out' : ''}`}>
+          <div className="sticky left-0 z-[45]" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
+            <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} disableControls={emptyVariant === 'disabled' && !hasData} centered={activePage === 'overview'} />
           </div>
-          <div className={`sticky top-0 left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)} onClick={e => e.stopPropagation()}>
-            <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} showImportPopover={showImportPopover} onDismissImportPopover={() => setShowImportPopover(false)} hideControls={emptyVariant === 'hidden' && !hasData} disableControls={emptyVariant === 'disabled' && !hasData} />
-          </div>
+          {activePage !== 'overview' && (
+            <div className={`sticky top-0 left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
+              <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} showImportPopover={showImportPopover} onDismissImportPopover={() => setShowImportPopover(false)} hideControls={emptyVariant === 'hidden' && !hasData} disableControls={emptyVariant === 'disabled' && !hasData} />
+            </div>
+          )}
+
+          {activePage === 'overview' && <OverviewPage onDiveDeeper={(cardId) => { setOverviewCardId(cardId); setSelectedRow(OVERVIEW_ROWS[cardId] ?? backlogData[0]); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onAddToRoadmap={(cardId) => { const row = OVERVIEW_ROWS[cardId]; if (row) { setMovedRow(row); setRoadmapItems(prev => [...prev, { ...row, id: `r-ov-${cardId}`, status: 'planning', priority: 'next' }]); setShowMoveSnackbar(true) } }} onReprioritize={() => { setActivePage('backlog'); setDatabaseTitle('Backlog'); setActiveTab('prioritization') }} />}
 
           {/* Type-based view renderer — show empty state for any view type when no data */}
-          {!hasData ? (
+          {activePage !== 'overview' && !hasData ? (
             <DataTable key={`empty-${activePage}`} data={[]} fields={pageFields} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={(title) => { closeSidebar(); setShowSharePopover(false); setHasData(true); if (activePage === 'roadmap') { setRoadmapItems([{ id: 'new-1', title: title || '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'now', status: 'planning' }]) } else { setBacklogData([{ id: 'new-1', title: title || '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]) }; setTimeout(() => setShowImportPopover(true), 800) }} activePage={activePage} animateIn={!isInitialLoad} onEmptyInteract={closeSidebar} />
           ) : (<>
-          {activeTabConfig?.type === 'table' && (
+          {activePage !== 'overview' && activeTabConfig?.type === 'table' && (
               <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={(title) => { setShowSharePopover(false); setHasData(true); setBacklogData([{ id: 'new-1', title: title || '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]); setTimeout(() => setShowImportPopover(true), 800) }} activePage={activePage} />
           )}
           {activeTabConfig?.type === 'kanban' && (
             <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onCardSelectedChange={setKanbanCardSelected} />
           )}
           {activeTabConfig?.type === 'timeline' && (
-            <TimelinePlaceholder key={activeTab} data={roadmapItems} parentScrollRef={scrollRef} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onBarSelectedChange={setKanbanCardSelected} ghostRowId={ghostRowId ?? undefined} onBarPlaced={(rowId, startDate, endDate) => { setSelectedRowDates({ startDate, endDate }); setGhostRowId(null) }} />
+            <TimelinePlaceholder key={activeTab} data={roadmapItems} parentScrollRef={scrollRef} onRowClick={(row) => { setSidekickFocusItemId(row.id); setActiveSidebar('ai-sidekick') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onBarSelectedChange={setKanbanCardSelected} ghostRowId={ghostRowId ?? undefined} onBarPlaced={(rowId, startDate, endDate) => { setSelectedRowDates({ startDate, endDate }); setGhostRowId(null) }} />
           )}
           </>)}
         </div>
@@ -544,8 +572,125 @@ export function App() {
         )}
       </div>
 
-      {/* Right sidebar backdrop — suppressed during ghost bar placement so the timeline receives pointer events */}
-      {isRightOpen && !ghostRowId && (
+      {/* AI Sidekick — rendered outside the sliding sidebar to avoid white flash on exit */}
+      {(() => {
+        const skWidth = sidekickLayout === 'Fullscreen' ? window.innerWidth - 48 : sidekickLayout === 'Center' ? 720 : 400;
+        const isCenter = sidekickLayout === 'Center' || sidekickLayout === 'Fullscreen';
+        return (
+          <>
+          <div
+            className="fixed z-[10000] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={isCenter ? {
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 24,
+              opacity: activeSidebar === 'ai-sidekick' ? 1 : 0,
+              pointerEvents: activeSidebar === 'ai-sidekick' ? 'auto' : 'none',
+              backgroundColor: 'rgba(0,0,0,0.3)',
+            } : {
+              top: 56,
+              right: 8,
+              bottom: 8,
+              opacity: activeSidebar === 'ai-sidekick' ? 1 : 0,
+              transform: activeSidebar === 'ai-sidekick' ? 'translateX(0)' : 'translateX(16px)',
+              pointerEvents: activeSidebar === 'ai-sidekick' ? 'auto' : 'none',
+            }}
+            onClick={isCenter ? closeSidebar : undefined}
+          >
+            <div
+              className="rounded-xl overflow-hidden h-full"
+              style={{ width: skWidth, boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)', background: '#fff' }}
+              onClick={isCenter ? (e: React.MouseEvent) => e.stopPropagation() : undefined}
+            >
+              <AiPanelSolutionReview
+                onClose={closeSidebar}
+                activePage={activePage}
+                focusItemId={sidekickFocusItemId}
+                layoutButton={
+                  <button
+                    ref={sidekickLayoutBtnRef}
+                    aria-label="Panel layout"
+                    style={{ height: 24, display: 'flex', alignItems: 'center', gap: 2, padding: '0 4px', borderRadius: 4, color: '#656B81', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                    className="hover:bg-[#F1F2F5] transition-colors"
+                    onClick={() => {
+                      const r = sidekickLayoutBtnRef.current?.getBoundingClientRect()
+                      if (r) setSidekickLayoutPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+                      setSidekickLayoutOpen(o => !o)
+                    }}
+                  >
+                    {sidekickLayout === 'Center' && (
+                      <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                    {sidekickLayout === 'Right' && (
+                      <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                    {sidekickLayout === 'Fullscreen' && (
+                      <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                  </button>
+                }
+              />
+            </div>
+          </div>
+
+          {sidekickLayoutOpen && activeSidebar === 'ai-sidekick' && (
+            <>
+              <div className="fixed inset-0 z-[10001]" onClick={() => setSidekickLayoutOpen(false)} />
+              <div
+                className="fixed z-[10002] bg-white rounded-lg py-1"
+                style={{ top: sidekickLayoutPos.top, right: sidekickLayoutPos.right, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', minWidth: 140 }}
+              >
+                {(['Right', 'Center', 'Fullscreen'] as const).map(layout => (
+                  <button
+                    key={layout}
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-[#F1F2F5] transition-colors"
+                    style={{ border: 'none', background: sidekickLayout === layout ? '#F1F2F5' : 'transparent', cursor: 'pointer', color: '#222428' }}
+                    onClick={() => { setSidekickLayout(layout); setSidekickLayoutOpen(false) }}
+                  >
+                    {layout === 'Center' && (
+                      <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                    {layout === 'Right' && (
+                      <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                    {layout === 'Fullscreen' && (
+                      <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                    {layout}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+          </>
+        )
+      })()}
+
+      {/* Right sidebar backdrop — suppressed on overview page and during ghost bar placement */}
+      {isRightOpen && !ghostRowId && activePage !== 'overview' && activeSidebar !== 'ai-sidekick' && (
         <div
           className="fixed inset-0 z-40"
           onClick={closeSidebar}
@@ -556,31 +701,25 @@ export function App() {
       <div
         className="fixed top-0 right-0 h-full z-50 transition-transform duration-[450ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{
-          width: activeSidebar === 'row-detail' ? 376 + 24 : activeSidebar === 'ai-sidekick' ? 420 + 36 : 320,
-          transform: (isRightOpen && !(activeSidebar === 'row-detail' && (panelLayout === 'Center' || panelLayout === 'Fullscreen'))) ? 'translateX(0)' : 'translateX(100%)',
+          width: activeSidebar === 'row-detail' ? (panelLayout === 'Fullscreen' ? window.innerWidth - 48 : panelLayout === 'Center' ? 720 + 48 : 460 + 24) : activeSidebar === 'ai-sidekick' ? 0 : 320,
+          transform: (isRightOpen && activeSidebar !== 'ai-sidekick' && !(activeSidebar === 'row-detail' && (panelLayout === 'Center' || panelLayout === 'Fullscreen'))) ? 'translateX(0)' : 'translateX(100%)',
+          pointerEvents: isRightOpen && activeSidebar !== 'ai-sidekick' ? 'auto' : 'none',
         }}
       >
         {activeSidebar === 'row-detail' ? (
-          <div className="h-full px-3 py-6 flex">
+          <div className="h-full py-6 flex" style={{ paddingLeft: 12, paddingRight: 12 }}>
             <div
               className="flex-1 overflow-hidden rounded-xl"
               style={{ boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)' }}
             >
               {isJiraDetailOpen && selectedJiraRow
                 ? <JiraDetailPanel row={selectedJiraRow} onClose={() => { setIsJiraDetailOpen(false); closeSidebar() }} />
-                : selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} initialCompany={initialCompany} onAddToBoard={handleAddToBoard} onRowUpdated={handleRowUpdated} timelineDates={selectedRowDates} onCompanyFilter={handleCompanyFilter} activeCompanyFilter={companyFilter.length > 0 ? companyFilter : null} selectedLayout={panelLayout} onLayoutChange={setPanelLayout} />
+                : selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} initialCompany={initialCompany} onAddToBoard={handleAddToBoard} onRowUpdated={handleRowUpdated} timelineDates={selectedRowDates} onCompanyFilter={handleCompanyFilter} activeCompanyFilter={companyFilter.length > 0 ? companyFilter : null} selectedLayout={panelLayout} onLayoutChange={setPanelLayout} hideInsightCallout={activePage === 'overview'} overrideSummary={activePage === 'overview' && overviewCardId ? OVERVIEW_CARD_SUMMARIES[overviewCardId] : undefined} onOpenSidekick={() => { setActiveSidebar('ai-sidekick'); setSidekickFocusItemId(selectedRow.id) }} />
               }
             </div>
           </div>
         ) : activeSidebar === 'ai-sidekick' ? (
-          <div className="h-full pl-3 pr-6 py-6 flex">
-            <div
-              className="flex-1 overflow-visible rounded-xl"
-              style={{ boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)' }}
-            >
-              <InsightsChatPanel onClose={closeSidebar} />
-            </div>
-          </div>
+          <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }} />
         ) : (
           <SidebarShell side="right" onClose={closeSidebar} showClose={activeSidebar !== 'view-settings'} width={320}>
             {activeSidebar === 'view-settings' && <SidePanel onClose={closeSidebar} fields={pageFields} />}

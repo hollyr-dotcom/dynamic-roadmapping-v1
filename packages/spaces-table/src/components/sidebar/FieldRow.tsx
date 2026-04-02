@@ -52,7 +52,7 @@ export function FieldRow({ icon: Icon, label, isPrimary = false, visible = true,
             aria-label="Edit field"
             variant="ghost"
             size="medium"
-            onPress={(e) => {
+            onPress={(e: any) => {
               e?.stopPropagation?.()
               onEdit?.()
             }}
@@ -66,7 +66,7 @@ export function FieldRow({ icon: Icon, label, isPrimary = false, visible = true,
             aria-label={visible ? 'Hide field' : 'Show field'}
             variant="ghost"
             size="medium"
-            onPress={(e) => {
+            onPress={(e: any) => {
               e?.stopPropagation?.()
               onToggleVisibility?.()
             }}
