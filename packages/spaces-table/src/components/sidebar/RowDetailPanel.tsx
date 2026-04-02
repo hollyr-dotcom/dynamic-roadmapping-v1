@@ -1502,7 +1502,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               </div>
               <span style={{ fontSize: 20, fontWeight: 600, color: '#656B81', lineHeight: 1.4, fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01'" }}>Hey Holly,</span>
               <span style={{ fontSize: 14, color: '#222428', lineHeight: 1.5, fontFamily: 'Open Sans, sans-serif' }}>I scanned your Roadmap and Backlog. Here's what I found:</span>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start' }}>
                 {['Am I betting on the right things for Q2?', 'Deep dive into my top roadmap item', 'What happens if I swap a Q2 item?'].map(chip => (
                   <div key={chip} onClick={() => sendSidekick(chip)} style={{ background: 'white', border: '1px solid #E0E2E8', borderRadius: 8, padding: '6px 12px', fontSize: 14, color: '#222428', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', fontFamily: 'Open Sans, sans-serif' }}>
                     {chip}
