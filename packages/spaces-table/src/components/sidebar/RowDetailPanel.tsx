@@ -305,7 +305,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const [showSidekick, setShowSidekick] = useState(false)
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
-  const [showSidekick, setShowSidekick] = useState(false)
 
   useEffect(() => {
     if (initialCompany) setSelectedCompany(initialCompany)
