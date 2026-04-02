@@ -1880,15 +1880,7 @@ function FeedbackPrompt({ onSubmit, onClose }: { onSubmit: () => void; onClose: 
       className="w-full rounded-xl p-4 flex flex-col gap-3 relative"
       style={{ backgroundColor: '#F2F4FC' }}
     >
-      <button
-        onClick={onClose}
-        className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#E2E6F7] transition-colors"
-        aria-label="Close"
-      >
-        <IconCross css={{ width: 14, height: 14 }} />
-      </button>
-
-      <p className="text-[16px] text-[#222428] pr-8 leading-[1.5]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
+      <p className="text-[16px] text-[#222428] leading-[1.5]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
         Share your feedback?
       </p>
 
