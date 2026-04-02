@@ -484,6 +484,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         borderRadius: selectedLayout !== 'Right' ? 8 : 0,
         boxShadow: selectedLayout !== 'Right' ? '0px 8px 32px rgba(34,36,40,0.16), 0px 1px 4px rgba(34,36,40,0.08)' : 'none',
         overflow: 'hidden',
+        position: 'relative',
       }}
     >
 
@@ -562,26 +563,80 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         </div>
       </div>
 
-      {/* ── Content row (main panel + comments panel) ── */}
-      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, overflow: 'hidden' }}>
-      <div className="flex flex-col overflow-hidden relative" style={{ width: panelWidth, height: '100%', flexShrink: 0 }}>
-
       {showSidekick && (
-        <div className="flex flex-col h-full overflow-hidden" style={{ position: 'absolute', inset: 0, zIndex: 20, background: 'white' }}>
-          <div className="flex items-center shrink-0 px-3 pt-3 pb-2">
+        <div className="flex flex-col h-full overflow-hidden" style={{ position: 'absolute', inset: 0, zIndex: 30, background: 'white', borderRadius: selectedLayout !== 'Right' ? 8 : 0 }}>
+          <div className="flex items-center gap-2 h-12 shrink-0 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 12, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: selectedLayout !== 'Right' ? '1px solid #E9EAEF' : 'none' }}>
             <button
               onClick={() => setShowSidekick(false)}
-              className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-[#F2F4FC] transition-colors"
+              className="flex items-center justify-center w-6 h-6 rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
               style={{ cursor: 'pointer' }}
             >
-              <IconChevronLeft css={{ width: 20, height: 20, color: '#656B81' }} />
+              <IconChevronLeft css={{ width: 16, height: 16 }} />
             </button>
+            <p
+              className="flex-1 min-w-0 text-[#222428] leading-[1.5]"
+              style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: '16px', fontFeatureSettings: "'ss01' 1" }}
+            >
+              Sidekick
+            </p>
+            <div className="flex items-center gap-1 shrink-0">
+              <Tooltip>
+                <Tooltip.Trigger asChild>
+                  <button
+                    ref={layoutButtonRef}
+                    aria-label="Panel layout"
+                    className="h-6 flex items-center gap-0.5 px-1 rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+                    onClick={() => {
+                      const r = layoutButtonRef.current?.getBoundingClientRect()
+                      if (r) setLayoutPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+                      setLayoutOpen(o => !o)
+                    }}
+                  >
+                    {selectedLayout === 'Center' && (
+                      <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                    {selectedLayout === 'Right' && (
+                      <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                    {selectedLayout === 'Fullscreen' && (
+                      <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                  </button>
+                </Tooltip.Trigger>
+                <Tooltip.Portal>
+                  <Tooltip.Content side="top" sideOffset={4}>Panel view</Tooltip.Content>
+                </Tooltip.Portal>
+              </Tooltip>
+              <Tooltip>
+                <Tooltip.Trigger asChild>
+                  <button aria-label="Close panel" className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors" onClick={onClose}>
+                    <IconCross css={{ width: 16, height: 16 }} />
+                  </button>
+                </Tooltip.Trigger>
+                <Tooltip.Portal>
+                  <Tooltip.Content side="top" sideOffset={4}>Close</Tooltip.Content>
+                </Tooltip.Portal>
+              </Tooltip>
+            </div>
           </div>
           <div className="flex-1 min-h-0 overflow-hidden">
             <AiPanelSolutionReview onClose={() => setShowSidekick(false)} focusItemId={row.id} />
           </div>
         </div>
       )}
+
+      {/* ── Content row (main panel + comments panel) ── */}
+      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+      <div className="flex flex-col overflow-hidden relative" style={{ width: panelWidth, height: '100%', flexShrink: 0 }}>
 
       {/* ── Tab bar ── */}
       <div className="flex gap-1 px-3 pt-3 pb-4 shrink-0" style={{ pointerEvents: 'auto' }}>
