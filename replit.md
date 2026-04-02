@@ -54,6 +54,14 @@ The main content area (`div.isolate` in App.tsx) uses CSS `isolation: isolate` t
 
 **NEVER remove the `isolate` class from the main content wrapper.** Without it, high z-index sticky elements in the scroll area will render above the sidebar panels, blocking all user interaction with side panel tabs and content.
 
+## RowDetailPanel Chat Input (AI Sidekick)
+The "What should we do next?" chat input is absolutely positioned (`absolute bottom-0 left-0 right-0`) inside the main panel column (the "slider" div with `position: relative`). It appears on all tabs EXCEPT Comments (which has its own input). Clicking it opens the AI Sidekick panel via `onOpenSidekick` prop.
+
+**Key structural notes:**
+- The main panel column ("slider") contains: tab bar → tabs content → chat input → company panel → detail panel — all as a horizontal sliding strip clipped by `overflow: hidden`
+- The tabs content div has `paddingBottom: 72px` (non-Comments tabs) to prevent content overlap with the absolutely positioned chat input
+- The inner scroll wrapper `<div>` was removed — only the outer tabs content div remains. The 3 closing `</div>` tags at `{/* end slider */}`, `{/* end overflow wrapper */}`, `{/* end tabs */}` close: main panel column → content row → root panel div
+
 ## GitHub Pull Workflow
 - Pull: `git pull origin main --no-rebase --no-edit`
 - After pull, fix `packages/spaces-table/package.json`: change `workspace:*` to `file:../shared` for `@spaces/shared`

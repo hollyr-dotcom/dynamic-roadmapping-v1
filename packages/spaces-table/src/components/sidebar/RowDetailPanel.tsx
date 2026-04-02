@@ -94,6 +94,7 @@ interface RowDetailPanelProps {
   onLayoutChange?: (layout: 'Center' | 'Right' | 'Fullscreen') => void
   hideInsightCallout?: boolean
   overrideSummary?: string
+  onOpenSidekick?: () => void
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -298,7 +299,7 @@ function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, overrideSummary }: RowDetailPanelProps) {
+export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, overrideSummary, onOpenSidekick }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
@@ -584,8 +585,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       </div>
 
       {/* ── Tabs content ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflowY: activeTab === 'Comments' ? 'hidden' : 'auto', overflowX: 'hidden' }} className={activeTab !== 'Comments' ? 'panel-scroll' : ''}>
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden', paddingBottom: activeTab !== 'Comments' ? 72 : 0 }}>
 
         {/* Low-confidence Insights callout */}
         {activeTab === 'Details' && !insightDismissed && row.id === '1' && (
@@ -962,26 +962,30 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         )}
 
       </div>
+
       {activeTab !== 'Comments' && (
-        <div className="shrink-0" style={{ padding: 16 }}>
-          <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}>
+        <div
+          onClick={() => onOpenSidekick?.()}
+          className="absolute bottom-0 left-0 right-0"
+          style={{ padding: '10px 16px 24px 16px', background: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 12px, white 12px)', cursor: 'pointer', zIndex: 10 }}
+        >
+          <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white' }}>
             <textarea
               readOnly
               placeholder="What should we do next?"
-              rows={2}
-              className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none cursor-text"
-              style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0' }}
+              rows={1}
+              className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none cursor-pointer"
+              style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0', pointerEvents: 'none' }}
             />
-            <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
+            <span className="shrink-0 text-[#9DA3B4]">
               <IconSmileyPlus css={{ width: 20, height: 20 }} />
-            </button>
-            <button className="shrink-0 text-[#9DA3B4]">
+            </span>
+            <span className="shrink-0 text-[#9DA3B4]">
               <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
-            </button>
+            </span>
           </div>
         </div>
       )}
-      </div>
 
       {/* ── Company panel ─── */}
       <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: selectedLayout !== 'Right' ? 48 : 16 }}>
