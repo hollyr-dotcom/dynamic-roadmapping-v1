@@ -606,6 +606,24 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
 
         <Tooltip>
           <Tooltip.Trigger asChild>
+            <IconButton
+              aria-label="Sidekick"
+              variant="ghost"
+              size="medium"
+              onPress={variant !== 'widget' ? () => onToggleSidebar('ai-sidekick') : undefined}
+              css={activeSidebar === 'ai-sidekick' && variant !== 'widget' ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}
+            >
+              <IconSparksFilled />
+            </IconButton>
+          </Tooltip.Trigger>
+          <Tooltip.Content side="top" sideOffset={4}>
+            Sidekick
+            <Tooltip.Hotkey>⌘ + K</Tooltip.Hotkey>
+          </Tooltip.Content>
+        </Tooltip>
+
+        <Tooltip>
+          <Tooltip.Trigger asChild>
             <IconButton aria-label="Group" variant="ghost" size="medium" css={{ borderRadius: 8, cursor: 'default' }}>
               <IconHorizontalBlocks />
             </IconButton>
@@ -673,21 +691,6 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
             View settings
             <Tooltip.Hotkey>⌘ + ,</Tooltip.Hotkey>
           </Tooltip.Content>
-        </Tooltip>
-
-        <Tooltip>
-          <Tooltip.Trigger asChild>
-            <IconButton
-              aria-label="Sidekick"
-              variant="ghost"
-              size="medium"
-              onPress={variant !== 'widget' ? () => onToggleSidebar('ai-sidekick') : undefined}
-              css={activeSidebar === 'ai-sidekick' && variant !== 'widget' ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}
-            >
-              <IconSparksFilled />
-            </IconButton>
-          </Tooltip.Trigger>
-          <Tooltip.Content side="top" sideOffset={4}>Sidekick</Tooltip.Content>
         </Tooltip>
 
         {variant !== 'widget' ? (
