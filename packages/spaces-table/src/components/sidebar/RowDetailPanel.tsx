@@ -1052,10 +1052,10 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none cursor-text"
               style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0' }}
             />
-            <button onClick={e => { e.stopPropagation(); setShowSidekick(true) }} className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors self-end mb-0.5">
+            <button onClick={e => { e.stopPropagation(); setShowSidekick(true) }} className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
               <IconSmileyPlus css={{ width: 20, height: 20 }} />
             </button>
-            <button onClick={e => { e.stopPropagation(); setShowSidekick(true) }} className="shrink-0 text-[#9DA3B4] self-end mb-0.5">
+            <button onClick={e => { e.stopPropagation(); setShowSidekick(true) }} className="shrink-0 text-[#9DA3B4]">
               <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
             </button>
           </div>
@@ -1177,12 +1177,12 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none"
                 style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
               />
-              <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors self-end mb-0.5">
+              <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
                 <IconSmileyPlus css={{ width: 20, height: 20 }} />
               </button>
               <button
                 onClick={() => sendSidekick(sidekickInput)}
-                className="shrink-0 transition-colors self-end mb-0.5"
+                className="shrink-0 transition-colors"
                 style={{ color: sidekickInput.trim() ? '#4262FF' : '#9DA3B4' }}
               >
                 <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
