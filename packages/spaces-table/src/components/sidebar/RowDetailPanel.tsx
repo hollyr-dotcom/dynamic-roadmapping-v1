@@ -1494,7 +1494,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 </svg>
               )}
             </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="Close" onClick={() => setShowSidekick(false)}>
+            <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="Close" onClick={() => onClose()}>
               <IconCross css={{ width: 20, height: 20 }} />
             </button>
           </div>
