@@ -951,9 +951,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none"
                   style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
                 />
-                <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
-                  <IconSmileyPlus css={{ width: 20, height: 20 }} />
-                </button>
                 <button
                   onClick={() => { if (!commentText.trim()) return; setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }]); setCommentText('') }}
                   className="shrink-0 transition-colors"
@@ -1409,9 +1406,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none"
               style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
             />
-            <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
-              <IconSmileyPlus css={{ width: 20, height: 20 }} />
-            </button>
             <button
               onClick={() => {
                 if (!commentText.trim()) return
