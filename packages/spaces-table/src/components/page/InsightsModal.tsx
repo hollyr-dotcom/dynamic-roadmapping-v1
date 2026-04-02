@@ -1,11 +1,12 @@
 import { Button } from '@mirohq/design-system'
 
-// Figma asset URLs (valid 7 days) — node 8391-9816
-const imgBg       = 'https://www.figma.com/api/mcp/asset/d3c8c532-9e7f-4809-9489-65d829fc6ccc'
-const imgBlob     = 'https://www.figma.com/api/mcp/asset/c3318952-8394-4934-8966-1a0e82910fea'
-const imgSparkL   = 'https://www.figma.com/api/mcp/asset/1ee3300e-452a-477f-ac48-7f1a13e1a5c5'
-const imgSparkR   = 'https://www.figma.com/api/mcp/asset/ed044e58-736f-42e8-9f5b-60ff63714a5d'
-const imgCharBody = 'https://www.figma.com/api/mcp/asset/551eb5a5-55ed-480b-aa46-368755426f30'
+// Local public assets for the Amazing reaction illustration
+const imgBlob      = '/reaction-blob.png'
+const imgCharacter = '/reaction-character.svg'
+const imgBody      = '/reaction-body.svg'
+const imgBubbles   = '/reaction-bubbles.svg'
+const imgSparkL    = '/reaction-spark-l.svg'
+const imgSparkR    = '/reaction-spark-r.svg'
 
 interface InsightsModalProps {
   onEnable: () => void
@@ -35,21 +36,24 @@ export function InsightsModal({ onEnable, onSkip }: InsightsModalProps) {
 
         {/* Hero illustration */}
         <div className="relative overflow-hidden shrink-0" style={{ height: 200, background: '#fce4f0' }}>
-          {/* Wide background */}
-          <img alt="" className="absolute max-w-none object-cover pointer-events-none" src={imgBg}
-            style={{ width: '120%', height: '120%', top: '-10%', left: '-10%' }} />
+          {/* Bubbles background */}
+          <img alt="" className="absolute pointer-events-none" src={imgBubbles}
+            style={{ width: '100%', height: '100%', top: 0, left: 0, objectFit: 'cover', opacity: 0.5 }} />
           {/* Spark left */}
           <img alt="" className="absolute pointer-events-none" src={imgSparkL}
-            style={{ width: 56, bottom: 60, left: '28%', transform: 'rotate(-15deg)' }} />
+            style={{ width: 48, bottom: 56, left: '28%', transform: 'rotate(-15deg)' }} />
           {/* Spark right */}
           <img alt="" className="absolute pointer-events-none" src={imgSparkR}
-            style={{ width: 56, bottom: 60, right: '26%', transform: 'rotate(15deg)' }} />
-          {/* Blob character */}
+            style={{ width: 48, bottom: 56, right: '26%', transform: 'rotate(15deg)' }} />
+          {/* Blob */}
           <img alt="" className="absolute pointer-events-none" src={imgBlob}
+            style={{ width: 140, bottom: 0, left: '50%', transform: 'translateX(-50%)' }} />
+          {/* Body overlay */}
+          <img alt="" className="absolute pointer-events-none" src={imgBody}
+            style={{ width: 140, bottom: 0, left: '50%', transform: 'translateX(-50%)' }} />
+          {/* Character face */}
+          <img alt="" className="absolute pointer-events-none" src={imgCharacter}
             style={{ width: 160, bottom: 0, left: '50%', transform: 'translateX(-50%)' }} />
-          {/* Character body / face overlay */}
-          <img alt="" className="absolute pointer-events-none" src={imgCharBody}
-            style={{ width: 180, bottom: 0, left: '50%', transform: 'translateX(-50%)' }} />
           {/* Amazing! text */}
           <p className="absolute pointer-events-none select-none"
             style={{
@@ -57,7 +61,7 @@ export function InsightsModal({ onEnable, onSkip }: InsightsModalProps) {
               fontWeight: 800,
               fontSize: 48,
               color: 'white',
-              bottom: 12,
+              bottom: 10,
               left: '50%',
               transform: 'translateX(-50%) rotate(-14deg)',
               whiteSpace: 'nowrap',
