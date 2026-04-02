@@ -489,7 +489,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     >
 
       {/* ── Header (full width) ──────────────────────────── */}
-      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: selectedLayout !== 'Right' ? '1px solid #E9EAEF' : 'none', display: showSidekick ? 'none' : undefined }}>
+      {!showSidekick && (
+      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: selectedLayout !== 'Right' ? '1px solid #E9EAEF' : 'none' }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {!hideInsightCallout && <JiraLogo size={18} />}
           <p
@@ -562,6 +563,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </Tooltip>
         </div>
       </div>
+      )}
 
       {showSidekick && (
         <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
