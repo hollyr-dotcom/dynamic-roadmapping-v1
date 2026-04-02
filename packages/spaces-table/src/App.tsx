@@ -31,6 +31,7 @@ import { CanvasDocumentWidget } from './components/canvas/CanvasDocumentWidget'
 import { CanvasConnectionLine } from './components/canvas/CanvasConnectionLine'
 import { generatePRD, type DocumentContent } from './components/canvas/generatePRD'
 import { FlowProgressCard } from './components/canvas/FlowProgressCard'
+import BoardSidekickPanel from './components/sidebar/BoardSidekickPanel'
 
 type PageId = 'backlog' | 'roadmap'
 
@@ -130,9 +131,12 @@ export function App() {
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null)
   const [smoothPanning, setSmoothPanning] = useState(false)
   const [boardName, setBoardName] = useState<string | null>(null)
+  const [boardSidekickOpen, setBoardSidekickOpen] = useState(false)
   const [boardIconIndex, setBoardIconIndex] = useState<number>(0)
   const [flowStreaming, setFlowStreaming] = useState(false)
+  const [flowCardMounted, setFlowCardMounted] = useState(false)
   const [flowProgress, setFlowProgress] = useState(0)
+  const [docAccepted, setDocAccepted] = useState(false)
   const [boards, setBoards] = useState<{ id: string; name: string; iconIndex: number }[]>([])
   const [updatedRows, setUpdatedRows] = useState<Set<string>>(new Set())
   const [insightsAllDots, setInsightsAllDots] = useState(false)
@@ -210,6 +214,16 @@ export function App() {
   useEffect(() => {
     if (view === 'app' && isInitialLoad) setIsInitialLoad(false)
   }, [view, isInitialLoad])
+
+  // Keep flow card mounted for exit animation
+  useEffect(() => {
+    if (flowStreaming) {
+      setFlowCardMounted(true)
+    } else {
+      const timer = setTimeout(() => setFlowCardMounted(false), 400)
+      return () => clearTimeout(timer)
+    }
+  }, [flowStreaming])
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -427,35 +441,21 @@ export function App() {
     setUpdatedRows(prev => new Set([...prev, id]))
   }, [])
 
-  const handleAddRecordToBoard = useCallback((rowId: string, prompt: string) => {
+  const handleAddRecordToBoard = useCallback((rowId: string) => {
     const row = backlogData.find(r => r.id === rowId) ?? roadmapItems.find(r => r.id === rowId)
     if (!row) return
 
-    // Generate board name from prompt + record title
-    const shortTitle = row.title.length > 30 ? row.title.slice(0, 30).trimEnd() + '…' : row.title
-    const PROMPT_PREFIX: Record<string, string> = {
-      'Write a PRD': 'PRD',
-      'Explore insights': 'Insights',
-      'Estimate with team': 'Estimation',
-    }
-    const prefix = PROMPT_PREFIX[prompt] || prompt
-    const name = `${prefix}: ${shortTitle}`
+    const name = row.title.length > 40 ? row.title.slice(0, 40).trimEnd() + '…' : row.title
     const boardId = `board-${Date.now()}`
     const iconIdx = getRandomBoardIconIndex()
 
     const widgetId = `record-${Date.now()}`
-    const docWidgetId = `doc-${Date.now()}`
-    // Position card left of centre, doc to its right
-    const sidebarW = 320
-    const visibleW = window.innerWidth - sidebarW
+    const sidekickW = 400 + 8 // panel width + right margin
+    const visibleW = window.innerWidth - sidekickW
     const cardW = 340
     const cardH = 160
-    const docGap = 120
-    const docW = 600
-    const totalW = cardW + docGap + docW
-    // At zoom 0.7, world coords are scaled down — offset so content clears the sidebar
     const zoomLevel = 0.7
-    const startX = (sidebarW / zoomLevel) + ((visibleW / zoomLevel) - totalW) / 2
+    const startX = ((visibleW / zoomLevel) - cardW) / 2
 
     const cardWidget: CanvasWidget = {
       id: widgetId,
@@ -465,18 +465,6 @@ export function App() {
       y: (window.innerHeight - cardH) / 2,
       recordRow: row,
       recordFields: activePage === 'backlog' ? fields : roadmapFields,
-      recordPrompt: prompt,
-    }
-
-    const prdContent = generatePRD(row, prompt)
-    const docWidget: CanvasWidget = {
-      id: docWidgetId,
-      type: 'document',
-      activeTab: '',
-      x: startX + cardW + docGap,
-      y: cardWidget.y - 20,
-      documentContent: prdContent,
-      linkedWidgetId: widgetId,
     }
 
     setBoardName(name)
@@ -484,18 +472,62 @@ export function App() {
     setBoards(prev => [...prev, { id: boardId, name, iconIndex: iconIdx }])
 
     if (!canvasOpen) {
-      setWidgets([cardWidget, docWidget])
+      setWidgets([cardWidget])
       setCanvasOpen(true)
       setPanX(0)
       setPanY(0)
       setZoom(0.7)
       setSelectedWidgetId(widgetId)
     } else {
-      setWidgets(prev => [...prev, cardWidget, docWidget])
+      setWidgets(prev => [...prev, cardWidget])
       setSelectedWidgetId(widgetId)
     }
-    setActiveSidebar('space-menu')
+    setTimeout(() => setBoardSidekickOpen(true), 400)
   }, [backlogData, roadmapItems, canvasOpen, activePage])
+
+  const handleWritePRD = useCallback(() => {
+    const recordWidget = widgets.find(w => w.type === 'record-card')
+    if (!recordWidget?.recordRow) return
+
+    const prdContent = generatePRD(recordWidget.recordRow, 'Write a PRD')
+    const docWidgetId = `doc-${Date.now()}`
+    const docGap = 60
+    const cardW = 340
+    const newY = (56 + 24 + 64) / zoom // 24px below sidekick top + 64px extra
+
+    // Move card to new Y position and create document alongside it
+    setWidgets(prev => prev.map(w =>
+      w.id === recordWidget.id ? { ...w, y: newY } : w
+    ))
+
+    const docWidget: CanvasWidget = {
+      id: docWidgetId,
+      type: 'document',
+      activeTab: '',
+      x: recordWidget.x + cardW + docGap,
+      y: newY, // top-aligned with card
+      documentContent: prdContent,
+      linkedWidgetId: recordWidget.id,
+    }
+
+    setWidgets(prev => [...prev, docWidget])
+    setSelectedWidgetId(null)
+
+    // Auto-pan to center the card+document pair in the available space
+    const sidekickW = 400 + 8
+    const availableW = window.innerWidth - sidekickW
+    const totalW = cardW + docGap + 600 // card + gap + doc
+    const centerX = recordWidget.x + totalW / 2
+    const targetPanX = (availableW / 2) - centerX * zoom
+    const targetPanY = -(newY * zoom) + 56 + 24 + 64 // match card position
+
+    setSmoothPanning(true)
+    requestAnimationFrame(() => {
+      setPanX(targetPanX)
+      setPanY(targetPanY)
+    })
+    setTimeout(() => setSmoothPanning(false), 700)
+  }, [widgets, zoom])
 
   const handleAddToBoard = useCallback((cardData: FeedbackCardData) => {
     const cardWidget: CanvasWidget = {
@@ -831,42 +863,59 @@ export function App() {
           onMove={(x, y) => handleWidgetMove(widget.id, x, y)}
           smoothPanning={smoothPanning}
           onStreamingChange={(streaming, progress) => { setFlowStreaming(streaming); setFlowProgress(progress) }}
+          externalAccepted={docAccepted}
+          onKeep={() => { setDocAccepted(true) }}
+          onScrap={() => { setWidgets(prev => prev.filter(w => w.id !== widget.id)); setFlowStreaming(false) }}
         />
       ))}
 
-      {/* Connection lines between linked widgets */}
-      {widgets.filter(w => w.type === 'document' && w.linkedWidgetId).map(docWidget => {
-        const sourceWidget = widgets.find(w => w.id === docWidget.linkedWidgetId)
-        if (!sourceWidget) return null
-        return (
-          <CanvasConnectionLine
-            key={`line-${docWidget.id}`}
-            fromX={sourceWidget.x}
-            fromY={sourceWidget.y}
-            fromWidth={340}
-            fromHeight={160}
-            toX={docWidget.x}
-            toY={docWidget.y}
-            toHeight={400}
-            panX={panX}
-            panY={panY}
-            zoom={zoom}
-            isOpen={canvasOpen}
-            smoothPanning={smoothPanning}
-          />
-        )
-      })}
+      {/* Connection lines between linked widgets (disabled for board flow) */}
 
       {/* Canvas floating nav panels */}
       <CanvasNavPanels isOpen={canvasOpen} databaseTitle={databaseTitle} onMenuClick={() => setActiveSidebar(activeSidebar === 'space-menu' ? null : 'space-menu')} isMenuOpen={canvasOpen && activeSidebar === 'space-menu'} boardName={boardName ?? undefined} boardIconIndex={boardIconIndex} />
 
-      {/* Flow progress card */}
-      <FlowProgressCard
-        visible={canvasOpen && flowStreaming}
-        progress={flowProgress}
-        onStop={() => setFlowStreaming(false)}
-        onClose={() => setFlowStreaming(false)}
-      />
+      {/* Board Sidekick + Flow progress — stacked column on the right */}
+      <div
+        className="fixed z-[10000] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        style={{
+          top: 56,
+          right: 8,
+          bottom: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+          width: 400,
+          opacity: canvasOpen && boardSidekickOpen ? 1 : 0,
+          transform: canvasOpen && boardSidekickOpen ? 'translateX(0)' : 'translateX(16px)',
+          pointerEvents: canvasOpen && boardSidekickOpen ? 'auto' : 'none',
+        }}
+      >
+        {/* Sidekick panel */}
+        <div
+          className="rounded-xl overflow-hidden flex-1 min-h-0"
+          style={{ width: 400, boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)', background: '#fff' }}
+        >
+          <BoardSidekickPanel
+            onClose={() => setBoardSidekickOpen(false)}
+            onWritePRD={handleWritePRD}
+            isGenerating={flowStreaming}
+            isComplete={!flowStreaming && flowProgress >= 1}
+            onAddToBoard={() => setDocAccepted(true)}
+            docAdded={docAccepted}
+            onViewDoc={() => {
+              const docWidget = widgets.find(w => w.type === 'document')
+              if (!docWidget) return
+              const sidekickW = 400 + 8
+              const availableW = window.innerWidth - sidekickW
+              const targetPanX = (availableW / 2) - (docWidget.x + 300) * zoom
+              const targetPanY = -(docWidget.y * zoom) + 56 + 24 + 64
+              setSmoothPanning(true)
+              requestAnimationFrame(() => { setPanX(targetPanX); setPanY(targetPanY) })
+              setTimeout(() => setSmoothPanning(false), 700)
+            }}
+          />
+        </div>
+      </div>
 
       {/* Share space dialog */}
       {showShareDialog && (

@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { IconButton, IconTrash } from '@mirohq/design-system'
 import type { DocumentContent } from './generatePRD'
 
 const DRAG_THRESHOLD = 3
@@ -40,6 +41,122 @@ interface CanvasDocumentWidgetProps {
   onMove: (x: number, y: number) => void
   smoothPanning: boolean
   onStreamingChange?: (streaming: boolean, progress: number) => void
+  onKeep?: () => void
+  onScrap?: () => void
+  externalAccepted?: boolean
+}
+
+const AI_BORDER_COLOR = '#68d3f8'
+const AI_BOX_SHADOW = '-4px -4px 24px 2px rgba(156,230,255,0.16), 4px -4px 24px 2px rgba(56,89,255,0.16), -4px 4px 24px 2px rgba(184,172,251,0.16), 4px 4px 24px 2px rgba(253,154,231,0.16)'
+
+function StopIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <rect x="3" y="3" width="10" height="10" rx="1.5" />
+    </svg>
+  )
+}
+
+function DocToolbar({ state, onStop, onKeep, onScrap, zoom = 1, docWidth = 600 }: { state: 'generating' | 'done'; onStop?: () => void; onKeep?: () => void; onScrap?: () => void; zoom?: number; docWidth?: number }) {
+  const scale = 1 / zoom
+  const toolbarH = state === 'generating' ? 40 : 48
+  // Position the toolbar centered above the doc at native (unscaled) size
+  // We use a wrapper at the doc's center, then scale from there
+  const wrapperStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: -((24 + toolbarH) / zoom), // 24px gap + toolbar height, in world coords
+    left: docWidth / 2,
+    transform: `translateX(-50%) scale(${scale})`,
+    transformOrigin: 'bottom center',
+    pointerEvents: 'auto',
+    zIndex: 1,
+  }
+
+  const stopPropagation = (e: React.PointerEvent | React.MouseEvent) => e.stopPropagation()
+
+  if (state === 'generating') {
+    return (
+      <div style={wrapperStyle} onPointerDown={stopPropagation} onPointerUp={stopPropagation} onClick={stopPropagation}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            height: 40,
+            paddingLeft: 16,
+            paddingRight: 8,
+            borderRadius: 8,
+            background: '#2b2d33',
+            boxShadow: '0px 2px 4px rgba(34,36,40,0.08)',
+            animation: 'item-enter 0.35s cubic-bezier(0.16,1,0.3,1) forwards',
+          }}
+        >
+          <span style={{ fontSize: 14, fontWeight: 600, color: '#c7cad5', whiteSpace: 'nowrap', fontFamily: "var(--font-noto)" }}>
+            Generating...
+          </span>
+          <div style={{ paddingLeft: 16 }}>
+            <div
+              onClick={onStop}
+              style={{
+                width: 32,
+                height: 32,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 999,
+                cursor: 'pointer',
+                color: '#c7cad5',
+              }}
+            >
+              <StopIcon />
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={wrapperStyle} onPointerDown={stopPropagation} onPointerUp={stopPropagation} onClick={stopPropagation}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          height: 48,
+          padding: 8,
+          borderRadius: 8,
+          background: '#fff',
+          border: '0.5px solid #e9eaef',
+          boxShadow: '0px 2px 4px rgba(34,36,40,0.08)',
+          animation: 'item-enter 0.35s cubic-bezier(0.16,1,0.3,1) forwards',
+        }}
+      >
+        <div
+          onClick={onKeep}
+          style={{
+            height: 32,
+            padding: '0 12px',
+            borderRadius: 8,
+            background: '#4262FF',
+            color: '#fff',
+            fontSize: 14,
+            fontWeight: 600,
+            fontFamily: "var(--font-noto)",
+            display: 'flex',
+            alignItems: 'center',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Add to board
+        </div>
+        <IconButton aria-label="Discard" variant="ghost" size="medium" onPress={onScrap}>
+          <IconTrash />
+        </IconButton>
+      </div>
+    </div>
+  )
 }
 
 export function CanvasDocumentWidget({
@@ -53,6 +170,9 @@ export function CanvasDocumentWidget({
   onMove,
   smoothPanning,
   onStreamingChange,
+  onKeep,
+  onScrap,
+  externalAccepted,
 }: CanvasDocumentWidgetProps) {
   const content = widget.documentContent
   if (!content) return null
@@ -66,6 +186,10 @@ export function CanvasDocumentWidget({
 
   const [visibleSections, setVisibleSections] = useState(0)
   const [showLinks, setShowLinks] = useState(false)
+  const [isStreaming, setIsStreaming] = useState(true)
+  const [accepted, setAccepted] = useState(false)
+  const isAccepted = accepted || !!externalAccepted
+  const showAiBorder = !isAccepted
 
   useEffect(() => {
     if (!content) return
@@ -87,6 +211,7 @@ export function CanvasDocumentWidget({
           onStreamingChange?.(true, count / totalSteps)
         } else {
           setShowLinks(true)
+          setIsStreaming(false)
           onStreamingChange?.(false, 1)
           clearInterval(interval)
         }
@@ -152,18 +277,32 @@ export function CanvasDocumentWidget({
           width: 600,
           pointerEvents: 'auto',
           cursor: selected ? 'grab' : 'default',
+          animation: isOpen ? 'card-enter 450ms cubic-bezier(0.16,1,0.3,1) 100ms both' : undefined,
         }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
       >
         {selected && <SelectionBorder />}
+        {/* AI toolbar above document */}
+        {showAiBorder && (
+          <DocToolbar
+            state={isStreaming ? 'generating' : 'done'}
+            zoom={zoom}
+            onStop={() => { setIsStreaming(false); onStreamingChange?.(false, 1) }}
+            onKeep={() => { setAccepted(true); onKeep?.() }}
+            onScrap={onScrap}
+          />
+        )}
         <div
           style={{
             background: '#fff',
             borderRadius: 12,
-            boxShadow: '0px 2px 8px rgba(34,36,40,0.12), 0px 0px 12px rgba(34,36,40,0.04)',
+            boxShadow: showAiBorder ? AI_BOX_SHADOW : '0px 2px 8px rgba(34,36,40,0.12), 0px 0px 12px rgba(34,36,40,0.04)',
+            border: showAiBorder ? `1px solid ${AI_BORDER_COLOR}` : '1px solid transparent',
             overflow: 'hidden',
+            minHeight: 848, // A4 proportions at 600px wide (600 * 1.414)
+            transition: 'box-shadow 500ms cubic-bezier(0.16,1,0.3,1), border-color 500ms cubic-bezier(0.16,1,0.3,1), min-height 600ms cubic-bezier(0.16,1,0.3,1)',
           }}
         >
           {/* Header */}

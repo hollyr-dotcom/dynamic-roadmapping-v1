@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import type { SpaceRow, FieldDefinition, Priority } from '@spaces/shared'
 import { Tooltip } from '@mirohq/design-system'
 import { JiraLogo } from '../JiraLogo'
@@ -69,6 +69,19 @@ export function CanvasRecordCard({
 
   const [widgetX, setWidgetX] = useState(widget.x)
   const [widgetY, setWidgetY] = useState(widget.y)
+  const [animatePosition, setAnimatePosition] = useState(false)
+
+  // Sync position when widget props change (e.g. repositioning on PRD flow)
+  useEffect(() => {
+    if (widget.y !== widgetY || widget.x !== widgetX) {
+      setAnimatePosition(true)
+      setWidgetX(widget.x)
+      setWidgetY(widget.y)
+      const timer = setTimeout(() => setAnimatePosition(false), 600)
+      return () => clearTimeout(timer)
+    }
+  }, [widget.x, widget.y])
+
   const dragging = useRef(false)
   const dragStarted = useRef(false)
   const dragStart = useRef({ x: 0, y: 0 })
@@ -131,6 +144,8 @@ export function CanvasRecordCard({
           top: widgetY,
           left: widgetX,
           width: 340,
+          animation: isOpen ? 'card-enter 450ms cubic-bezier(0.16,1,0.3,1) 200ms both' : undefined,
+          transition: animatePosition ? 'top 600ms cubic-bezier(0.16,1,0.3,1), left 600ms cubic-bezier(0.16,1,0.3,1)' : undefined,
           pointerEvents: 'auto',
           cursor: selected ? 'grab' : 'default',
         }}
@@ -140,6 +155,7 @@ export function CanvasRecordCard({
       >
         {selected && <SelectionBorder />}
         <div
+          data-record-card-id={widget.id}
           className="rounded-lg bg-white overflow-hidden"
           style={{
             border: `1.5px solid ${borderColor}`,

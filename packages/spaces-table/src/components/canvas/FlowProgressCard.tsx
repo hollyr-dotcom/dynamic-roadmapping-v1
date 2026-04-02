@@ -13,15 +13,19 @@ interface FlowProgressCardProps {
   progress: number // 0–1
   onStop?: () => void
   onClose?: () => void
+  inline?: boolean
 }
 
-export function FlowProgressCard({ visible, progress, onStop, onClose }: FlowProgressCardProps) {
+export function FlowProgressCard({ visible, progress, onStop, onClose, inline }: FlowProgressCardProps) {
   if (!visible) return null
 
   return (
     <div
-      className="fixed transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-      style={{
+      className={inline ? "transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]" : "fixed transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"}
+      style={inline ? {
+        width: '100%',
+        overflow: 'hidden',
+      } : {
         top: 56,
         right: 8,
         zIndex: 110,

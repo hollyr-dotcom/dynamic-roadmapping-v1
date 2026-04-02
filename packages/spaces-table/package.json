@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@spaces/shared": "workspace:*",
+    "html2canvas": "^1.4.1",
     "simple-icons": "^16.12.0"
   }
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FieldDefinition, SpaceRow } from '@spaces/shared'
-import { IconDotsSixVertical, IconChatPlus, DropdownMenu, IconSquaresTwoOverlap, IconTrash, IconArrowsOutSimple, IconMap, IconChatLinesTwo, IconBoard, Popover, Button, IconInsights } from '@mirohq/design-system'
+import { IconDotsSixVertical, IconChatPlus, DropdownMenu, IconSquaresTwoOverlap, IconTrash, IconArrowsOutSimple, IconMap, IconChatLinesTwo, IconPlusBox, Popover, Button, IconInsights } from '@mirohq/design-system'
 
 function IconAddLineTop() {
   return (
@@ -41,8 +41,7 @@ interface TableRowProps {
   importDelay?: number
   onMoveToRoadmap?: (rowId: string) => void
   showMoveToRoadmap?: boolean
-  onAddToBoard?: (rowId: string, anchorRect: DOMRect) => void
-  isHighlighted?: boolean
+  onAddToBoard?: (rowId: string) => void
 }
 
 function RowContextMenu({ onClose, onOpenSidePanel, onMoveToRoadmap, showMoveToRoadmap, onAddToBoard }: { onClose: () => void; onOpenSidePanel?: () => void; onMoveToRoadmap?: () => void; showMoveToRoadmap?: boolean; onAddToBoard?: () => void }) {
@@ -61,17 +60,6 @@ function RowContextMenu({ onClose, onOpenSidePanel, onMoveToRoadmap, showMoveToR
           View comments
         </DropdownMenu.Item>
         <DropdownMenu.Separator />
-        {showMoveToRoadmap && (
-          <DropdownMenu.Item onSelect={onMoveToRoadmap ?? onClose}>
-            <DropdownMenu.IconSlot><IconMap /></DropdownMenu.IconSlot>
-            Move to roadmap
-          </DropdownMenu.Item>
-        )}
-        <DropdownMenu.Item onSelect={() => { onAddToBoard?.() }}>
-          <DropdownMenu.IconSlot><IconBoard /></DropdownMenu.IconSlot>
-          Add to board
-        </DropdownMenu.Item>
-        <DropdownMenu.Separator />
         <DropdownMenu.Item onSelect={onClose}>
           <DropdownMenu.IconSlot><IconAddLineTop /></DropdownMenu.IconSlot>
           Add record above
@@ -80,11 +68,21 @@ function RowContextMenu({ onClose, onOpenSidePanel, onMoveToRoadmap, showMoveToR
           <DropdownMenu.IconSlot><IconAddLineBottom /></DropdownMenu.IconSlot>
           Add record below
         </DropdownMenu.Item>
-        <DropdownMenu.Separator />
         <DropdownMenu.Item onSelect={onClose}>
           <DropdownMenu.IconSlot><IconFilledBottomBox /></DropdownMenu.IconSlot>
           Add sub-record
         </DropdownMenu.Item>
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item onSelect={() => { onAddToBoard?.() }}>
+          <DropdownMenu.IconSlot><IconPlusBox /></DropdownMenu.IconSlot>
+          Add to board
+        </DropdownMenu.Item>
+        {showMoveToRoadmap && (
+          <DropdownMenu.Item onSelect={onMoveToRoadmap ?? onClose}>
+            <DropdownMenu.IconSlot><IconMap /></DropdownMenu.IconSlot>
+            Move to roadmap
+          </DropdownMenu.Item>
+        )}
         <DropdownMenu.Separator />
         <DropdownMenu.Item onSelect={onClose}>
           <DropdownMenu.IconSlot><IconSquaresTwoOverlap /></DropdownMenu.IconSlot>
@@ -99,7 +97,7 @@ function RowContextMenu({ onClose, onOpenSidePanel, onMoveToRoadmap, showMoveToR
   )
 }
 
-export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDeselect, onRowClick, onCompanyClick, isUpdated, importDelay, onMoveToRoadmap, showMoveToRoadmap, onAddToBoard, isHighlighted }: TableRowProps) {
+export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDeselect, onRowClick, onCompanyClick, isUpdated, importDelay, onMoveToRoadmap, showMoveToRoadmap, onAddToBoard }: TableRowProps) {
   const [openField, setOpenField] = useState<string | null>(null)
 
   const importStyle = importDelay !== undefined ? {
@@ -110,7 +108,7 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
   return (
     <tr
       data-row-id={row.id}
-      className={isSelected || isHighlighted ? 'row-selected' : ''}
+      className={isSelected ? 'row-selected' : ''}
       style={{ height: '56px', ...importStyle }}
     >
       <td className="pl-14 divider-first" style={{ fontSize: '12px', position: 'relative' }}>
@@ -151,12 +149,8 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
             onMoveToRoadmap={onMoveToRoadmap ? () => { onMoveToRoadmap(row.id); onDeselect() } : undefined}
             showMoveToRoadmap={showMoveToRoadmap}
             onAddToBoard={onAddToBoard ? () => {
-              const tr = document.querySelector(`[data-row-id="${row.id}"]`)
-              const rect = tr?.getBoundingClientRect()
-              if (rect) {
-                onAddToBoard(row.id, rect)
-                onDeselect()
-              }
+              onAddToBoard(row.id)
+              onDeselect()
             } : undefined}
           />
         )}

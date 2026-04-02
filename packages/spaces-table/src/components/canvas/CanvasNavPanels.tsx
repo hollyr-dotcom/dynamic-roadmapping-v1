@@ -10,8 +10,6 @@ import { BoardIcon } from '../BoardIcons'
 
 const avatars = [
   { name: 'MK', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=56&h=56&fit=crop&crop=face' },
-  { name: 'AJ', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=56&h=56&fit=crop&crop=face' },
-  { name: 'TS', img: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=56&h=56&fit=crop&crop=face' },
 ]
 
 const SIDEBAR_WIDTH = 320

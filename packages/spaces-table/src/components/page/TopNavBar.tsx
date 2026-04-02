@@ -94,8 +94,8 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, spaceName,
 
         {/* Presence avatar */}
         <img
-          src="/james-rodriguez.png"
-          alt="James Rodriguez"
+          src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=56&h=56&fit=crop&crop=face"
+          alt="User"
           style={{ width: 32, height: 32, borderRadius: 999, border: '3px solid #FFFFFF', objectFit: 'cover', marginRight: '8px' }}
         />
 

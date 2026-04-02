@@ -193,6 +193,36 @@ tbody tr.row-selected td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes card-enter {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes flow-card-exit {
+  from { opacity: 1; transform: translateX(0); max-height: 200px; margin-bottom: 8px; }
+  to   { opacity: 0; transform: translateX(100%); max-height: 0; margin-bottom: 0; overflow: hidden; }
+}
+@keyframes line-draw {
+  from { stroke-dashoffset: var(--line-length); }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes dot-fade {
+  from { opacity: 0; transform: scale(0); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes sparkle-spin {
+  0% { transform: rotate(0deg); }
+  15% { transform: rotate(360deg); }
+  100% { transform: rotate(360deg); }
+}
+.prompt-pill:hover {
+  border-color: #c2c5cf;
+  background: #f9f9fb;
+}
+.prompt-pill:active {
+  transform: scale(0.97);
+  border-color: #4262FF;
+  background: #f2f4fc;
+}
 .item-enter {
   opacity: 0;
   animation: item-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
