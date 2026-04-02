@@ -498,7 +498,7 @@ export function App() {
         </div>
         {/* Scroll area — database title scrolls away, tabs stick under header */}
         <div ref={scrollRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-y-auto overflow-x-auto page-scroll flex flex-col${pageTransitioning ? ' page-transitioning-out' : ''}`}>
-          <div className="sticky left-0 z-[9999]" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
+          <div className="sticky left-0 z-[45]" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
             <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} centered={activePage === 'overview'} />
           </div>
           {activePage !== 'overview' && (

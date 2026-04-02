@@ -302,6 +302,7 @@ function generateFeedbackCards(row: SpaceRow) {
 
 export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, overrideSummary, onOpenSidekick }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
+  const [showSidekick, setShowSidekick] = useState(false)
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
   const [showSidekick, setShowSidekick] = useState(false)
@@ -462,6 +463,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     })
     dismissToast()
   }
+
 
 
   const chip = PRIORITY_CHIP[row.priority] ?? PRIORITY_CHIP.icebox
@@ -961,7 +963,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 </div>
               ))}
             </div>
-            <div className="shrink-0" style={{ padding: '10px 0 24px 0' }}>
+            <div className="shrink-0" style={{ padding: '16px 0' }}>
               <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white' }}>
                 <textarea
                   value={commentText}
@@ -979,9 +981,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none"
                   style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
                 />
-                <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
-                  <IconSmileyPlus css={{ width: 20, height: 20 }} />
-                </button>
                 <button
                   onClick={() => { if (!commentText.trim()) return; setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }]); setCommentText('') }}
                   className="shrink-0 transition-colors"
@@ -1083,6 +1082,29 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       </div>{/* end slider */}
       </div>{/* end overflow wrapper */}
       </div>{/* end tabs */}
+
+      {/* ── Comment input bar (Details / Jira / Insights tabs) ─── */}
+      {['Details', 'Jira', 'Insights'].includes(activeTab) && !selectedCompany && !callCard && !selectedFeedbackCard && !selectedPrompt && !showSidekick && (
+        <div className="shrink-0" style={{ padding: '16px' }}>
+          <div
+            className="flex items-center gap-1.5"
+            style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}
+            onClick={() => setShowSidekick(true)}
+          >
+            <textarea
+              readOnly
+              placeholder="Ask about your roadmap."
+              rows={2}
+              className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none cursor-text"
+              style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0' }}
+            />
+            <button onClick={e => { e.stopPropagation(); setShowSidekick(true) }} className="shrink-0 text-[#9DA3B4]">
+              <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
+            </button>
+          </div>
+        </div>
+      )}
+
 
       {/* ── Chat overlay (full-panel, avoids slider height-shift glitch) ─── */}
       {selectedPrompt && (
@@ -1353,7 +1375,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     </div>{/* end main panel */}
 
     {/* ── Comments panel (Center / Fullscreen only) ── */}
-    {selectedLayout !== 'Right' && (
+    {selectedLayout !== 'Right' && !showSidekick && (
       <div
         style={{
           width: COMMENTS_WIDTH,
@@ -1414,7 +1436,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         </div>
 
         {/* Input */}
-        <div className="shrink-0" style={{ padding: '10px 16px 24px 16px' }}>
+        <div className="shrink-0" style={{ padding: '16px' }}>
           <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white' }}>
             <textarea
               value={commentText}
@@ -1432,9 +1454,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none"
               style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
             />
-            <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
-              <IconSmileyPlus css={{ width: 20, height: 20 }} />
-            </button>
             <button
               onClick={() => {
                 if (!commentText.trim()) return
@@ -1451,6 +1470,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       </div>
     )}
     </div>
+
     </div>
   )
 
