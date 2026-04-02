@@ -489,7 +489,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     >
 
       {/* ── Header (full width) ──────────────────────────── */}
-      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: selectedLayout !== 'Right' ? '1px solid #E9EAEF' : 'none' }}>
+      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: selectedLayout !== 'Right' ? '1px solid #E9EAEF' : 'none', display: showSidekick ? 'none' : undefined }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {!hideInsightCallout && <JiraLogo size={18} />}
           <p
@@ -564,7 +564,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       </div>
 
       {showSidekick && (
-        <div className="flex flex-col h-full overflow-hidden" style={{ position: 'absolute', inset: 0, zIndex: 30, background: 'white', borderRadius: selectedLayout !== 'Right' ? 8 : 0 }}>
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <div className="flex items-center gap-2 h-12 shrink-0 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 12, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: selectedLayout !== 'Right' ? '1px solid #E9EAEF' : 'none' }}>
             <button
               onClick={() => setShowSidekick(false)}
@@ -635,7 +635,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       )}
 
       {/* ── Content row (main panel + comments panel) ── */}
-      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+      <div style={{ display: showSidekick ? 'none' : 'flex', flexDirection: 'row', flex: 1, minHeight: 0, overflow: 'hidden' }}>
       <div className="flex flex-col overflow-hidden relative" style={{ width: panelWidth, height: '100%', flexShrink: 0 }}>
 
       {/* ── Tab bar ── */}
