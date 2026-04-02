@@ -48,6 +48,12 @@ interface CanvasWidget {
   linkedWidgetId?: string
 }
 
+interface SidekickBoard {
+  id: string
+  name: string
+  feedbackCard: FeedbackCardData
+}
+
 interface PageConfig {
   title: string
   tabs: TabConfig[]
@@ -140,6 +146,7 @@ export function App() {
   const [ghostRowId, setGhostRowId] = useState<string | null>(null)
   const [companyFilter, setCompanyFilter] = useState<string[]>([])
   const [panelLayout, setPanelLayout] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
+  const [sidekickBoards, setSidekickBoards] = useState<SidekickBoard[]>([])
 
   const handleCompanyFilter = useCallback((name: string) => {
     setCompanyFilter(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name])
@@ -509,6 +516,33 @@ export function App() {
     } else {
       setWidgets(prev => [...prev, cardWidget])
     }
+    // Track in sidekick boards list
+    setSidekickBoards(prev => {
+      const name = `Board ${prev.length + 1}`
+      return [...prev, { id: cardWidget.id, name, feedbackCard: cardData }]
+    })
+    setActiveSidebar(null)
+  }, [canvasOpen, activeTab])
+
+  const handleSidekickBoardClick = useCallback((board: SidekickBoard) => {
+    const cardWidget: CanvasWidget = {
+      id: board.id,
+      type: 'feedback-card',
+      activeTab: '',
+      x: window.innerWidth - 380,
+      y: 128,
+      feedbackCard: board.feedbackCard,
+    }
+    if (!canvasOpen) {
+      setWidgets([{ id: `widget-${Date.now()}`, type: 'table', activeTab, x: 0, y: 128 }, cardWidget])
+      setCanvasOpen(true)
+      setPanX(0)
+      setPanY(0)
+      setZoom(1)
+      setSelectedWidgetId(null)
+    } else {
+      setWidgets(prev => [...prev, cardWidget])
+    }
     setActiveSidebar(null)
   }, [canvasOpen, activeTab])
 
@@ -626,7 +660,18 @@ export function App() {
           </div>
         ) : (
           <SidebarShell side="left" onClose={closeSidebar} showClose={false} width={320}>
-            <SpaceMenu onClose={closeSidebar} activePage={activePage} onPageChange={switchPage} onGoHome={() => { closeSidebar(); setView('home') }} spaceName={spaceName} boards={boards} activeBoardId={canvasOpen && boardName ? boards.find(b => b.name === boardName)?.id : undefined} />
+            <SpaceMenu
+              onClose={closeSidebar}
+              activePage={activePage}
+              onPageChange={switchPage}
+              onGoHome={() => { closeSidebar(); setView('home') }}
+              spaceName={spaceName}
+              boards={boards}
+              activeBoardId={canvasOpen && boardName ? boards.find(b => b.name === boardName)?.id : undefined}
+              sidekickBoards={sidekickBoards}
+              onSidekickBoardClick={handleSidekickBoardClick}
+              activeSidekickBoardId={canvasOpen ? widgets.find(w => w.type === 'feedback-card')?.id : undefined}
+            />
           </SidebarShell>
         )}
       </div>
