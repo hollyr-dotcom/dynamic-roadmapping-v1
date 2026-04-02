@@ -475,9 +475,10 @@ export function App() {
           pointerEvents: canvasOpen ? 'none' : 'auto',
         }}
       >
-      {/* Main content — shifts right when left sidebar is open */}
+      {/* Main content — shifts right when left sidebar is open.
+          isolate: creates stacking context so sticky z-indexes (z-[9999]) stay below fixed sidebar overlays (z-50) */}
       <div
-        className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden transition-[padding-left] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className="isolate flex-1 flex flex-col min-w-0 h-screen overflow-hidden transition-[padding-left] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{ paddingLeft: isLeftOpen ? (jiraPanelOpen ? 400 : 320) : 0, transition: 'padding-left 0.45s cubic-bezier(0.16,1,0.3,1)' }}
         onClick={isLeftOpen ? () => { setActiveSidebar(null); setJiraPanelOpen(false) } : undefined}
       >

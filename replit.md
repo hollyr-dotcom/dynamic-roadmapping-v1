@@ -46,6 +46,14 @@ Current image files:
 - `onPress` handler type → `(e: any) =>`
 - ViewTabsToolbar "View settings" button: `onPress` must be wired to `onToggleSidebar('view-settings')`
 
+## Z-Index Architecture (CRITICAL)
+The main content area (`div.isolate` in App.tsx) uses CSS `isolation: isolate` to create a scoped stacking context. This ensures internal sticky elements (e.g. DatabaseTitle at `z-[9999]`, ViewTabsToolbar at `z-20`) never compete with the fixed overlay panels:
+- `z-40` — Sidebar backdrop overlay
+- `z-50` — Left sidebar, Right sidebar (SidePanel, RowDetailPanel)
+- `z-[10000]` — AI Sidekick panel
+
+**NEVER remove the `isolate` class from the main content wrapper.** Without it, high z-index sticky elements in the scroll area will render above the sidebar panels, blocking all user interaction with side panel tabs and content.
+
 ## GitHub Pull Workflow
 - Pull: `git pull origin main --no-rebase --no-edit`
 - After pull, fix `packages/spaces-table/package.json`: change `workspace:*` to `file:../shared` for `@spaces/shared`
