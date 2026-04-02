@@ -1039,7 +1039,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       {/* ── Comment input bar (Details / Jira / Insights tabs) ─── */}
       {['Details', 'Jira', 'Insights'].includes(activeTab) && !selectedCompany && !callCard && !selectedFeedbackCard && !selectedPrompt && !showSidekick && (
-        <div className="shrink-0" style={{ padding: '24px 16px 16px' }}>
+        <div className="shrink-0" style={{ padding: '24px 24px 24px' }}>
           <div
             className="flex items-center gap-1.5"
             style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}
