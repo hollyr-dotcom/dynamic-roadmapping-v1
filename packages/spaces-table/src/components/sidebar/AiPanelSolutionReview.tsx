@@ -96,11 +96,11 @@ function PanelHeader({ onClose }: { onClose?: () => void }) {
           <span style={{ fontSize: 12, fontWeight: 600, color: "#222428" }}>AI Beta</span>
         </div>
       </div>
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <IconButton aria-label="New chat" variant="ghost" size="medium"><IconSquarePencil /></IconButton>
-        <IconButton aria-label="History" variant="ghost" size="medium"><IconClockCounterClockwise /></IconButton>
-        <IconButton aria-label="Library" variant="ghost" size="medium"><IconSquaresFour /></IconButton>
-        <IconButton aria-label="More" variant="ghost" size="medium"><IconDotsThreeVertical /></IconButton>
+      <div style={{ display: "flex", alignItems: "center", position: "relative", zIndex: 10 }}>
+        <IconButton aria-label="New chat" variant="ghost" size="medium" onPress={() => {}}><IconSquarePencil /></IconButton>
+        <IconButton aria-label="History" variant="ghost" size="medium" onPress={() => {}}><IconClockCounterClockwise /></IconButton>
+        <IconButton aria-label="Library" variant="ghost" size="medium" onPress={() => {}}><IconSquaresFour /></IconButton>
+        <IconButton aria-label="More" variant="ghost" size="medium" onPress={() => {}}><IconDotsThreeVertical /></IconButton>
         <IconButton aria-label="Close" variant="ghost" size="medium" onPress={() => { onClose?.(); (window as any).__closeAiPanel?.(); }}><IconCross /></IconButton>
       </div>
     </div>
@@ -1420,7 +1420,7 @@ function PanelInput({ onSend }: { onSend: (text: string) => void }) {
 /* ─── Main export ─── */
 export default function AiPanelSolutionReview({ onClose, activePage, focusItemId }: { onClose?: () => void; activePage?: string; focusItemId?: string } = {}) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", maxWidth: "100%", background: "#fff", borderRadius: 8, overflow: "hidden" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", maxWidth: "100%", background: "#fff", borderRadius: 8 }}>
       <AiGradientDefs />
       <PanelHeader onClose={onClose} />
       <PanelBody activePage={activePage} focusItemId={focusItemId} />
