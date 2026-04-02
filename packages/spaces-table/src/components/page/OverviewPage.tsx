@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { SpaceRow } from '@spaces/shared'
-import { Button, Chip, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard, IconInformationMarkCircle, IconEyeOpen } from '@mirohq/design-system'
+import { Button, Chip, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard, IconInformationMarkCircle, IconTriangleSquareCircle, IconLightbulb, IconGift, IconEyeOpen } from '@mirohq/design-system'
 import {
   IconChartLine,
   IconChartProgress,
@@ -14,10 +14,10 @@ import {
   IconCross,
   IconPlus,
   IconTimelineFormat,
-  IconArrowRight as _IconArrowRight,
+  IconArrowRight,
 } from '@mirohq/design-system'
 
-export const TAG_BG: Record<string, string> = {
+const TAG_BG: Record<string, string> = {
   New: '#ADF0C7',
   Customer: '#FFF6B6',
   Market: '#C6DCFF',
@@ -48,7 +48,7 @@ function GiftIcon() {
   )
 }
 
-export function confidenceBorderColor(confidence: string): string {
+function confidenceBorderColor(confidence: string): string {
   const pct = parseInt(confidence)
   if (pct >= 95) return '#ADF0C7' // green — very high
   if (pct >= 88) return '#C6DCFF' // blue — high
@@ -64,7 +64,7 @@ function confidenceTagStyle(confidence: string): { bg: string; text: string } {
   return { bg: '#FFE2BD', text: '#A54800' }                 // orange subtle
 }
 
-export function TagIcon({ label }: { label: string }) {
+function TagIcon({ label }: { label: string }) {
   if (label === 'New') return <GiftIcon />
   if (label === 'Customer') return <IconSmileyChat css={{ width: 13, height: 13 }} />
   if (label === 'Market') return <IconGlobe css={{ width: 13, height: 13 }} />
@@ -177,7 +177,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
       {CARDS.filter((card) => !dismissed.has(card.id)).map((card) => (
         <div
           key={card.id}
-          className="group relative rounded-[12px] bg-white overflow-hidden transition-shadow duration-200 hover:shadow-[0_4px_24px_rgba(34,36,40,0.10)]"
+          className="group relative rounded-[24px] bg-white overflow-hidden transition-shadow duration-200 hover:shadow-[0_4px_24px_rgba(34,36,40,0.10)]"
           style={{ border: '0.5px solid #e0e2e8', paddingBottom: 80 }}
         >
           <div className="p-6 flex flex-col gap-3">

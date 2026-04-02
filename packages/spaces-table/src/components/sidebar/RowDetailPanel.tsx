@@ -8,7 +8,7 @@ import { CallTranscriptPanel, type TranscriptLine } from './CallTranscriptPanel'
 import {
   IconCross,
   IconDotsThreeVertical,
-  IconWarning as _IconWarning,
+  IconWarning,
   Chip,
   Tooltip,
   IconHeart,
@@ -18,9 +18,9 @@ import {
   IconChevronDown,
   IconSlidersY,
   IconArrowLeft,
-  IconOffice as _IconOffice,
+  IconOffice,
   IconLink,
-  IconGlobe as _IconGlobe,
+  IconGlobe,
   IconArrowUp,
   IconThumbsUp,
   IconSlidersX,
@@ -35,12 +35,12 @@ import {
   IconChevronLeft,
   IconMagnifyingGlass,
   Checkbox,
-  IconStackedCircles as _IconStackedCircles,
-  IconPlusBox as _IconPlusBox,
-  IconUser as _IconUser,
+  IconStackedCircles,
+  IconPlusBox,
+  IconUser,
   IconSmileyPlus,
   IconPaperPlaneFilledRight,
-  IconBookmark as _IconBookmark,
+  IconBookmark,
 } from '@mirohq/design-system'
 import { JiraLogo } from '../JiraLogo'
 
@@ -156,8 +156,8 @@ const INSIGHT_SUMMARIES: Record<string, string> = {
   '18': 'Gamified savings challenges appear in 5 mentions from 7 accounts, driven by younger users at Shopify and Airbnb. Feedback describes the current savings experience as transactional and uninspiring — badges, streaks, and challenges are seen as motivators that could meaningfully improve goal completion rates, with $30K in projected revenue impact.',
 }
 
-export const _AVATAR_NO_PHOTO = '/images/avatar-no-photo.png'
-export const _AVATAR_VECTOR = '/images/avatar-vector.png'
+const AVATAR_NO_PHOTO = 'https://www.figma.com/api/mcp/asset/4d11fed8-3b68-4a90-b907-9999522076d0'
+const AVATAR_VECTOR = 'https://www.figma.com/api/mcp/asset/2e063fe9-0a1a-4f85-a78f-1882b257cad9'
 
 // Per-card impact weights — must sum to 1.0
 const CARD_WEIGHTS = [0.13, 0.12, 0.10, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06, 0.05, 0.05, 0.04, 0.03, 0.02, 0.01]
@@ -298,7 +298,7 @@ function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter: _activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, overrideSummary }: RowDetailPanelProps) {
+export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, overrideSummary }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
@@ -311,7 +311,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const [callCard, setCallCard] = useState<{ title: string; author: string; company: string; date: string; transcript: TranscriptLine[]; borderColor?: string } | null>(null)
   const [dismissedCards, setDismissedCards] = useState<Set<number>>(new Set())
   const [savedCards, setSavedCards] = useState<Set<number>>(new Set())
-  const [showSavedOnly, _setShowSavedOnly] = useState(false)
+  const [showSavedOnly, setShowSavedOnly] = useState(false)
   const [promptCards, setPromptCards] = useState<Set<number>>(new Set())
   const [showToast, setShowToast] = useState(false)
   const [toastExiting, setToastExiting] = useState(false)
@@ -327,8 +327,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     { name: 'Sarah Kim', time: 'Today, 11:14 AM', text: 'Agreed — also worth checking how this lands on mobile viewports.', avatarImg: 47 },
     { name: 'Marcus T.', time: 'Yesterday, 4:02 PM', text: 'Should we tie this to the existing design token for border radius?', avatarImg: 32 },
   ])
-  const [_resolved, _setResolved] = useState(false)
-  const _commentsEndRef = useRef<HTMLDivElement>(null); void _commentsEndRef;
+  const [resolved, setResolved] = useState(false)
+  const commentsEndRef = useRef<HTMLDivElement>(null)
   const [savePhase, setSavePhase] = useState<'refreshing' | 'success' | null>(null)
   const [saveProgress, setSaveProgress] = useState(0)
   const [saveToastExiting, setSaveToastExiting] = useState(false)
@@ -465,9 +465,9 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const priorityLabel = PRIORITY_LABELS[row.priority] ?? row.priority
 
   const remainingFraction = CARD_WEIGHTS.reduce((sum, w, i) => dismissedCards.has(i) ? sum : sum + w, 0)
-  const _adjMentions = Math.round(row.mentions * remainingFraction); void _adjMentions;
-  const _adjCustomers = Math.round(row.customers * remainingFraction); void _adjCustomers;
-  const _adjRevenue = Math.round(row.estRevenue * remainingFraction); void _adjRevenue;
+  const adjMentions = Math.round(row.mentions * remainingFraction)
+  const adjCustomers = Math.round(row.customers * remainingFraction)
+  const adjRevenue = Math.round(row.estRevenue * remainingFraction)
 
   const panelContent = (
     <div
@@ -1936,8 +1936,8 @@ function FeedbackCard({
   date,
   companies,
   source,
-  saved: _saved,
-  onSave: _onSave,
+  saved,
+  onSave,
   onDismiss,
   onSelect,
   onAddToBoard,
@@ -2304,11 +2304,11 @@ function SurveyFeedbackDetail({
   const authorName = authorParts[0].trim()
   const authorRole = authorParts.slice(1).join(',').trim()
   const nameWords = authorName.split(' ')
-  const _authorInitials = (nameWords.length >= 2
+  const authorInitials = (nameWords.length >= 2
     ? nameWords[0][0] + nameWords[nameWords.length - 1][0]
-    : authorName.slice(0, 2)).toUpperCase(); void _authorInitials;
+    : authorName.slice(0, 2)).toUpperCase()
   const AVATAR_COLORS = ['#de350b', '#4262FF', '#00C7A8', '#3C3F4A', '#7E57C2']
-  const _avatarBg = card.borderColor ?? AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]; void _avatarBg;
+  const avatarBg = card.borderColor ?? AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]
 
   const responses = generateSurveyResponses(card)
   const responseId = makeResponseId(card.author)
@@ -2465,7 +2465,7 @@ function classifyEntry(text: string, borderColor: string): 'praise' | 'request' 
 function FeedbackCardDetailView({
   card,
   onBack,
-  onClose: _onClose,
+  onClose,
   onAddToBoard,
   highlightColor = '#f1f2f5',
 }: {
@@ -2475,7 +2475,7 @@ function FeedbackCardDetailView({
   onAddToBoard?: (data: import('../canvas/CanvasFeedbackCard').FeedbackCardData) => void
   highlightColor?: string
 }) {
-  const [_activeTab, _setActiveTab] = useState('Conversation')
+  const [activeTab, setActiveTab] = useState('Conversation')
   const [search, setSearch] = useState('')
   const [showCopyToast, setShowCopyToast] = useState(false)
   const copyToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -2493,12 +2493,12 @@ function FeedbackCardDetailView({
     return () => document.removeEventListener('mousedown', handler)
   }, [convMenuIndex])
 
-  const _openConvMenu = (index: number, btn: HTMLButtonElement) => {
+  const openConvMenu = (index: number, btn: HTMLButtonElement) => {
     if (convMenuIndex === index) { setConvMenuIndex(null); return }
     const rect = btn.getBoundingClientRect()
     setConvMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
     setConvMenuIndex(index)
-  }; void _openConvMenu;
+  }
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -2513,11 +2513,11 @@ function FeedbackCardDetailView({
   const authorName = authorParts[0].trim()
   const authorRole = authorParts.slice(1).join(',').trim()
   const nameWords = authorName.split(' ')
-  const _authorInitials2 = (nameWords.length >= 2
+  const authorInitials = (nameWords.length >= 2
     ? nameWords[0][0] + nameWords[nameWords.length - 1][0]
-    : authorName.slice(0, 2)).toUpperCase(); void _authorInitials2;
+    : authorName.slice(0, 2)).toUpperCase()
   const AVATAR_COLORS = ['#de350b', '#4262FF', '#00C7A8', '#3C3F4A', '#7E57C2']
-  const _avatarBg2 = card.borderColor ?? AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]; void _avatarBg2;
+  const avatarBg = card.borderColor ?? AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]
 
   const LABEL: React.CSSProperties = {
     fontSize: 14,

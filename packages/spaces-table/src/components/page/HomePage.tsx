@@ -32,13 +32,14 @@ import {
 } from '@mirohq/design-system'
 import { JiraLogo } from '../JiraLogo'
 
-const imgFlowchart = '/images/template-flowchart.svg'
-const imgMindMap = '/images/template-mindmap.svg'
-const imgAvatar = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=48&h=48&fit=crop&crop=face'
-const imgAvatar1 = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=48&h=48&fit=crop&crop=face'
-const imgTeamLogo = '/images/team-logo.png'
-const imgShareAvatar = 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop&crop=face'
-const imgMiroTeamLogo = '/images/team-logo.png'
+// Stable placeholder images (Figma asset URLs expire every 7 days — use these instead)
+const imgFlowchart = 'https://placehold.co/200x150/e8f0fe/4262ff?text=Flowchart'
+const imgMindMap = 'https://placehold.co/200x150/f0e8fe/7b3fe4?text=Mind+Map'
+const imgAvatar = 'https://i.pravatar.cc/150?img=3'
+const imgAvatar1 = 'https://i.pravatar.cc/150?img=5'
+const imgTeamLogo = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%234262FF'/%3E%3Ctext x='20' y='26' text-anchor='middle' font-family='Arial%2Csans-serif' font-size='16' font-weight='bold' fill='white'%3EM%3C/text%3E%3C/svg%3E"
+const imgShareAvatar = 'https://i.pravatar.cc/150?img=7'
+const imgMiroTeamLogo = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Ccircle cx='15' cy='15' r='15' fill='%234262FF'/%3E%3Ctext x='15' y='20' text-anchor='middle' font-family='Arial%2Csans-serif' font-size='12' font-weight='bold' fill='white'%3EM%3C/text%3E%3C/svg%3E"
 
 interface HomePageProps {
   onOpenApp: (importSource?: 'jira' | 'miro' | 'csv', activePage?: string) => void
@@ -108,7 +109,7 @@ const boards = [
 
 export function HomePage({ onOpenApp }: HomePageProps) {
   const [spacesMenuOpen, setSpacesMenuOpen] = useState(false)
-  const [yourSpacesExpanded, _setYourSpacesExpanded] = useState(true)
+  const [yourSpacesExpanded, setYourSpacesExpanded] = useState(true)
   const [createSpaceModalOpen, setCreateSpaceModalOpen] = useState(false)
   const [modalStep, setModalStep] = useState<'create' | 'csv' | 'share' | 'miro' | 'jira'>('create')
   const [jiraSelectedKeys, setJiraSelectedKeys] = useState<Set<string>>(new Set(['UR-348', 'UR-347']))
@@ -525,7 +526,8 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                   onPress={() => { setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create'); onOpenApp() }}
                 >
                   <Button.Label>Continue without inviting</Button.Label>
-                  <Button.IconSlot><IconChevronRight /></Button.IconSlot>
+                  {/* @ts-expect-error -- MDS IconSlot type mismatch */}
+                  <Button.IconSlot placement="end"><IconChevronRight /></Button.IconSlot>
                 </Button>
               </div>
             </>) : modalStep === 'jira' ? (<>

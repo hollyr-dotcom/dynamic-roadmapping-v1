@@ -52,7 +52,8 @@ export function FieldRow({ icon: Icon, label, isPrimary = false, visible = true,
             aria-label="Edit field"
             variant="ghost"
             size="medium"
-            onPress={() => {
+            onPress={(e: any) => {
+              e?.stopPropagation?.()
               onEdit?.()
             }}
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
@@ -65,7 +66,8 @@ export function FieldRow({ icon: Icon, label, isPrimary = false, visible = true,
             aria-label={visible ? 'Hide field' : 'Show field'}
             variant="ghost"
             size="medium"
-            onPress={() => {
+            onPress={(e: any) => {
+              e?.stopPropagation?.()
               onToggleVisibility?.()
             }}
             onClick={(e: React.MouseEvent) => e.stopPropagation()}

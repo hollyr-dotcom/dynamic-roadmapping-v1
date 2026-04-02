@@ -48,7 +48,7 @@ const LAYOUT_ICONS: Record<string, MiroIcon> = {
   Timeline: IconTimelineFormat,
 }
 
-const FIELD_TYPE_ICONS: Record<FieldType, MiroIcon> = {
+const FIELD_TYPE_ICONS: Partial<Record<FieldType, MiroIcon>> = {
   text:     IconTextT,
   number:   IconNumber,
   currency: IconDollarSignCurrency,
@@ -56,8 +56,6 @@ const FIELD_TYPE_ICONS: Record<FieldType, MiroIcon> = {
   status:   IconTickCircle,
   person:   IconTextT,
   date:     IconTextT,
-  jiraId:   IconTextT,
-  priority: IconTextT,
 }
 
 
@@ -250,7 +248,7 @@ export function SidePanel({ onClose, fields }: SidePanelProps) {
               }).map((field) => (
                 <FieldRow
                   key={field.id}
-                  icon={FIELD_TYPE_ICONS[field.type]}
+                  icon={FIELD_TYPE_ICONS[field.type] ?? FIELD_TYPE_ICONS.text!}
                   label={field.label}
                   isPrimary={field.isPrimary}
                   visible={!hiddenFields.has(field.id)}

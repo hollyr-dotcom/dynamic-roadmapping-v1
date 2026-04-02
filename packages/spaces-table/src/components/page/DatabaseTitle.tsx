@@ -16,7 +16,7 @@ import {
   Switch,
   Tooltip,
 } from '@mirohq/design-system'
-import { MENU_WIDTH as _MENU_WIDTH } from './ViewTabsToolbar'
+import { MENU_WIDTH } from './ViewTabsToolbar'
 
 interface DatabaseTitleProps {
   opacity: number
@@ -185,7 +185,8 @@ export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, v
             <DropdownMenu.Item onSelect={e => { e.preventDefault(); setEnrichmentOn(v => !v) }}>
               <DropdownMenu.IconSlot><IconInsights /></DropdownMenu.IconSlot>
               <span style={{ flex: 1 }}>Toggle enrichment</span>
-              <Switch checked={enrichmentOn} onChange={() => setEnrichmentOn(v => !v)} css={{ pointerEvents: 'none' }} />
+              {/* @ts-expect-error -- MDS Switch type mismatch */}
+              <Switch checked={enrichmentOn} onCheckedChange={setEnrichmentOn} css={{ pointerEvents: 'none' }} />
             </DropdownMenu.Item>
             <DropdownMenu.Separator />
             <DropdownMenu.Item>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import {
   Button,
-  Checkbox as _Checkbox,
+  Checkbox,
   IconButton,
   IconCross,
   IconCog,

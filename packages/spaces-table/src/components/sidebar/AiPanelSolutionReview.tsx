@@ -8,7 +8,7 @@ import {
   IconCross,
   IconChevronDown,
   IconPlus,
-  IconArrowRight as _IconArrowRight,
+  IconArrowRight,
   IconSquareLineSquareDashed,
   IconSparks,
   IconSparksFilled,
@@ -316,7 +316,7 @@ function CitationChip({ label }: { label?: string }) {
 }
 
 /* ─── Evidence card (matches existing prototype card style) ─── */
-export function EvidenceCard({ title, children }: { title: string; children: React.ReactNode }) {
+function EvidenceCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ borderRadius: 12, overflow: "hidden", background: "#fff", boxShadow: "0px 2px 8px rgba(34,36,40,0.08)" }}>
       <div style={{ background: "#E8E0FF", display: "flex", alignItems: "center", gap: 8, padding: "14px 20px" }}>
@@ -344,7 +344,7 @@ function EvidenceRow({ label, value, subtext, highlight }: { label: string; valu
 }
 
 /* ─── Impact estimates grid (matches existing prototype style) ─── */
-export function ImpactEstimates({ mentions, customers, revenue }: { mentions: number; customers: number; revenue: number }) {
+function ImpactEstimates({ mentions, customers, revenue }: { mentions: number; customers: number; revenue: number }) {
   return (
     <div style={{ padding: "16px 0" }}>
       <div style={{ fontSize: 13, fontWeight: 700, color: "#222428", marginBottom: 16 }}>Impact estimates</div>
@@ -388,7 +388,7 @@ function FeedbackCard({ quote, role, type }: { quote: string; role: string; type
 }
 
 /* ─── Customer quote block (matches existing prototype quote style) ─── */
-export function QuoteBlock({ company, quote, role }: { company: string; quote: string; role: string }) {
+function QuoteBlock({ company, quote, role }: { company: string; quote: string; role: string }) {
   return (
     <div style={{ borderLeft: "3px solid #D4BBFF", padding: "12px 16px", background: "#FAFAFE", borderRadius: "0 8px 8px 0" }}>
       <span style={{ fontSize: 13, fontStyle: "italic", color: "#222428", lineHeight: 1.6 }}>"{quote}"</span>
@@ -993,7 +993,7 @@ interface Message {
   loadingSteps?: string[];
 }
 
-function PanelBody({ activePage: _activePage, focusItemId }: { activePage?: string; focusItemId?: string }) {
+function PanelBody({ activePage, focusItemId }: { activePage?: string; focusItemId?: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -1140,10 +1140,9 @@ function PanelBody({ activePage: _activePage, focusItemId }: { activePage?: stri
 
   // One contextual suggestion based on page state
   const noQuoteCount = getQ2Items().filter(r => !customerQuotes[r.id] || customerQuotes[r.id].length === 0).length;
-  const _initialPill = noQuoteCount > 0
+  const initialPill = noQuoteCount > 0
     ? { label: `${noQuoteCount} Q2 items have zero customer evidence`, key: "no-evidence" }
     : { label: "Am I betting on the right things for Q2?", key: "flow1-initial" };
-  void _initialPill;
 
   return (
     <>
@@ -1165,8 +1164,8 @@ function PanelBody({ activePage: _activePage, focusItemId }: { activePage?: stri
           {/* Insight card entry point (only before first message) */}
           {messages.length === 0 && (() => {
             const q2 = getQ2Items();
-            const _totalARR = q2.reduce((s, r) => s + r.estRevenue, 0); void _totalARR;
-            const _noQuotes = q2.filter(r => !customerQuotes[r.id] || customerQuotes[r.id].length === 0); void _noQuotes;
+            const totalARR = q2.reduce((s, r) => s + r.estRevenue, 0);
+            const noQuotes = q2.filter(r => !customerQuotes[r.id] || customerQuotes[r.id].length === 0);
             const topItem = q2.sort((a, b) => b.estRevenue - a.estRevenue)[0];
             const weakestQ2 = q2
               .filter(r => !customerQuotes[r.id] || customerQuotes[r.id].length === 0)

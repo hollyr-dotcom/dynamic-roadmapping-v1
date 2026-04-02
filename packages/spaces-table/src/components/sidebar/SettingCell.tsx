@@ -37,7 +37,7 @@ const pressedIconBg = {
   gray:  '#E6E6E6',
 } as const
 
-export function SettingCell({ icon: Icon, label: _label, subtitle, iconBg, activating, deactivating, pressed, onClick }: SettingCellProps) {
+export function SettingCell({ icon: Icon, label, subtitle, iconBg, activating, deactivating, pressed, onClick }: SettingCellProps) {
   const ChevronIcon = iconBg === 'green' ? IconChevronDown : IconChevronRight
   const iconRef = useRef<HTMLDivElement>(null)
 

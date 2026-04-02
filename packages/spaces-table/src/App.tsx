@@ -13,7 +13,7 @@ import { InsightsModal } from './components/page/InsightsModal'
 import { JiraImportModal } from './components/page/JiraImportModal'
 import { InsightsToast } from './components/page/InsightsToast'
 import { SpaceMenu } from './components/sidebar/SpaceMenu'
-import { InsightsChatPanel as _InsightsChatPanel } from './components/sidebar/InsightsChatPanel'
+import { InsightsChatPanel } from './components/sidebar/InsightsChatPanel'
 import AiPanelSolutionReview from './components/sidebar/AiPanelSolutionReview'
 import { SidePanel } from './components/sidebar/SidePanel'
 import { RowDetailPanel } from './components/sidebar/RowDetailPanel'
@@ -97,7 +97,6 @@ export function App() {
   const [selectedRow, setSelectedRow] = useState<SpaceRow | null>(null)
   const [overviewCardId, setOverviewCardId] = useState<string | null>(null)
   const [selectedRowDates, setSelectedRowDates] = useState<{ startDate: string; endDate: string } | undefined>(undefined)
-  // @ts-ignore
   const [selectedJiraRow, setSelectedJiraRow] = useState<SpaceRow | null>(null)
   const [jiraPanelOpen, setJiraPanelOpen] = useState(false)
   const [isJiraDetailOpen, setIsJiraDetailOpen] = useState(false)
@@ -105,7 +104,7 @@ export function App() {
   const [newColumnMenuOpen, setNewColumnMenuOpen] = useState(false)
   const [sidekickFocusItemId, setSidekickFocusItemId] = useState<string | undefined>(undefined)
   const [canvasOpen, setCanvasOpen] = useState(false)
-  const [_navHovered, setNavHovered] = useState(false)
+  const [navHovered, setNavHovered] = useState(false)
   const [kanbanCardSelected, setKanbanCardSelected] = useState(false)
 
   // Canvas pan/zoom/selection state
@@ -513,7 +512,7 @@ export function App() {
             <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onCardSelectedChange={setKanbanCardSelected} />
           )}
           {activeTabConfig?.type === 'timeline' && (
-            <TimelinePlaceholder key={activeTab} data={roadmapItems} parentScrollRef={scrollRef} onRowClick={(row) => { setSidekickFocusItemId(row.id); setActiveSidebar('ai-sidekick') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onBarSelectedChange={setKanbanCardSelected} ghostRowId={ghostRowId ?? undefined} onBarPlaced={(_rowId, startDate, endDate) => { setSelectedRowDates({ startDate, endDate }); setGhostRowId(null) }} />
+            <TimelinePlaceholder key={activeTab} data={roadmapItems} parentScrollRef={scrollRef} onRowClick={(row) => { setSidekickFocusItemId(row.id); setActiveSidebar('ai-sidekick') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onBarSelectedChange={setKanbanCardSelected} ghostRowId={ghostRowId ?? undefined} onBarPlaced={(rowId, startDate, endDate) => { setSelectedRowDates({ startDate, endDate }); setGhostRowId(null) }} />
           )}
         </div>
       </div>

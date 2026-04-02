@@ -60,7 +60,6 @@ const INITIAL_POSITIONS: Record<string, [number, number]> = {
   r14: [22, 10],
 }
 
-// @ts-ignore
 const MILESTONE_OFFSET = 19
 
 const days = Array.from({ length: TOTAL_DAYS }, (_, i) => {
@@ -88,7 +87,6 @@ for (const day of days) {
   }
 }
 
-// @ts-ignore
 const TODAY_OFFSET = Math.floor((TODAY.getTime() - VIEW_START.getTime()) / 86400000)
 const TOTAL_WIDTH = TOTAL_DAYS * DAY_WIDTH
 const GHOST_LENGTH = 5
@@ -197,7 +195,7 @@ const [selectedBarId, setSelectedBarId] = useState<string | null>(null)
     }
 
     const dd = Math.round(dx / DAY_WIDTH)
-    const { origStart, origLen, type, startY: _startY, origRowIndex } = dragRef.current
+    const { origStart, origLen, type, startY, origRowIndex } = dragRef.current
 
     // Horizontal position update
     setPositions(prev => {

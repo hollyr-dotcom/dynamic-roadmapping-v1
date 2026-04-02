@@ -14,7 +14,7 @@ interface CellRendererProps {
   isUpdated?: boolean
 }
 
-export function CellRenderer({ field, row, onAvatarChipClick, isUpdated: _isUpdated }: CellRendererProps) {
+export function CellRenderer({ field, row, onAvatarChipClick, isUpdated }: CellRendererProps) {
   const value = row[field.id as keyof SpaceRow]
 
   switch (field.type) {

@@ -4,7 +4,7 @@ interface TextCellProps {
   isUpdated?: boolean
 }
 
-export function TextCell({ value, isPrimary: _isPrimary }: TextCellProps) {
+export function TextCell({ value, isPrimary }: TextCellProps) {
   return (
     <span
       className={`truncate block font-body text-[#222428] font-normal`}

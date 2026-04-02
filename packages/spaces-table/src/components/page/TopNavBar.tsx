@@ -97,7 +97,7 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, isMenuOpen
           style={{ width: 32, height: 32, borderRadius: 999, border: '3px solid #FFFFFF', objectFit: 'cover', marginRight: '8px' }}
         />
 
-        {/* @ts-ignore - Tooltip open/onOpenChange props work at runtime */}
+        {/* @ts-expect-error -- MDS Tooltip controlled props */}
         <Tooltip open={tooltipOpen} onOpenChange={setTooltipOpen}>
           <Tooltip.Trigger asChild>
             <Button size="medium">Share</Button>
