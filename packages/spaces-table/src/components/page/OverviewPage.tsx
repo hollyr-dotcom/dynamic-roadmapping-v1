@@ -143,7 +143,7 @@ const CARDS: {
     title: 'Add rich text editing inside table cells (bullets, bold, links)',
     description: '~874 projected monthly mentions make rich text the single highest-volume theme in March, rising for three consecutive months. Current cells are plain text only, breaking use cases like mini-specs, meeting notes, and workshop content.',
     confidence: '85%',
-    primaryAction: 'Add to roadmap',
+    primaryAction: 'Reprioritize',
     secondaryAction: 'Dive deeper',
   },
   {
@@ -154,7 +154,7 @@ const CARDS: {
     title: 'Rein in AI table creation — make it suggestion-only with preview and opt-in controls',
     description: 'Only ~241 mentions across 89 customers so far — low volume relative to other themes. Reports are scattered with no clear pattern yet. Not enough signal to scope work confidently.',
     confidence: '83%',
-    primaryAction: 'Review evidence',
+    primaryAction: 'Review priority',
     secondaryAction: 'Dive deeper',
   },
 ]
@@ -241,10 +241,10 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
             <Button
               variant="primary"
               size="medium"
-              onPress={() => { if (card.primaryAction === 'Add to roadmap') { onAddToRoadmap?.(card.id); setDismissed(prev => new Set(prev).add(card.id)) } else if (card.primaryAction === 'Reprioritize') { onReprioritize?.() } else if (card.primaryAction === 'Review evidence') { onDiveDeeper?.(card.id) } }}
+              onPress={() => { if (card.primaryAction === 'Add to roadmap') { onAddToRoadmap?.(card.id); setDismissed(prev => new Set(prev).add(card.id)) } else if (card.primaryAction === 'Reprioritize') { onReprioritize?.() } else if (card.primaryAction === 'Review priority') { onDiveDeeper?.(card.id) } }}
             >
               <Button.IconSlot>
-                {card.primaryAction === 'Add to roadmap' ? <IconPlus /> : card.primaryAction === 'Reprioritize' ? <IconTimelineFormat /> : <IconEyeOpen />}
+                {card.primaryAction === 'Add to roadmap' ? <IconPlus /> : card.primaryAction === 'Reprioritize' ? <IconTimelineFormat /> : card.primaryAction === 'Review priority' ? <IconEyeOpen /> : <IconEyeOpen />}
               </Button.IconSlot>
               <Button.Label>{card.primaryAction}</Button.Label>
             </Button>
