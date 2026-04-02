@@ -17,8 +17,6 @@ import {
 import { roadmapData, sampleData, companyARR, customerQuotes, itemDependencies } from "@spaces/shared";
 import type { SpaceRow } from "@spaces/shared";
 
-type Dep = { from: string; to: string; type: string };
-
 /* ─── Escher-style AI avatar (gradient circle + sparkle icon) ─── */
 function AgentAvatar({ size = 40 }: { size?: number }) {
   const iconSize = size === 28 ? 14 : 20;
@@ -462,9 +460,9 @@ function getQ2Items(): SpaceRow[] {
 /* ─── Helper: get dependencies for an item ─── */
 function getDeps(id: string) {
   return {
-    blocks: itemDependencies.filter((d: Dep) => d.from === id && d.type === 'blocks').map((d: Dep) => getItem(d.to)).filter(Boolean) as SpaceRow[],
-    dependsOn: itemDependencies.filter((d: Dep) => d.to === id && d.type === 'blocks').map((d: Dep) => getItem(d.from)).filter(Boolean) as SpaceRow[],
-    related: itemDependencies.filter((d: Dep) => (d.from === id || d.to === id) && d.type === 'related').map((d: Dep) => getItem(d.from === id ? d.to : d.from)).filter(Boolean) as SpaceRow[],
+    blocks: itemDependencies.filter(d => d.from === id && d.type === 'blocks').map(d => getItem(d.to)).filter(Boolean) as SpaceRow[],
+    dependsOn: itemDependencies.filter(d => d.to === id && d.type === 'blocks').map(d => getItem(d.from)).filter(Boolean) as SpaceRow[],
+    related: itemDependencies.filter(d => (d.from === id || d.to === id) && d.type === 'related').map(d => getItem(d.from === id ? d.to : d.from)).filter(Boolean) as SpaceRow[],
   };
 }
 
@@ -591,8 +589,8 @@ function buildFlow1NoEvidence(): MessageContent {
 }
 
 function buildFlow1Worried(): MessageContent {
-  const deps = itemDependencies.filter((d: Dep) => d.type === 'blocks');
-  const depPairs = deps.map((d: Dep) => {
+  const deps = itemDependencies.filter(d => d.type === 'blocks');
+  const depPairs = deps.map(d => {
     const from = getItem(d.from);
     const to = getItem(d.to);
     return from && to ? { from, to, type: d.type } : null;
@@ -719,7 +717,7 @@ function buildFlow2(itemId: string): MessageContent {
       {arr.length > 0 && (
         <div style={{ borderTop: "1px solid #F1F2F5" }}>
           <div style={{ padding: "12px 20px 4px", fontSize: 13, fontWeight: 700, color: "#222428" }}>Top requesters</div>
-          {arr.slice(0, 4).map((a: any, i: number) => (
+          {arr.slice(0, 4).map((a, i) => (
             <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "10px 20px", borderBottom: i < Math.min(arr.length, 4) - 1 ? "1px solid #f1f2f5" : "none" }}>
               <span style={{ fontSize: 13, color: "#222428" }}>{a.company}</span>
               <div style={{ textAlign: "right" }}>
@@ -738,7 +736,7 @@ function buildFlow2(itemId: string): MessageContent {
     cards.push(
       <div key="feedback" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>Feedback</div>
-        {quotes.map((q: any, i: number) => (
+        {quotes.map((q, i) => (
           <FeedbackCard key={i} quote={q.quote} role={`${q.company} — ${q.role}`} type={i % 2 === 0 ? 'positive' : 'neutral'} />
         ))}
       </div>
@@ -915,8 +913,8 @@ function routeInput(text: string): MessageContent {
   // Deps
   if (/depend|block|what.*depends/i.test(lower)) {
     const depPairs = itemDependencies
-      .filter((d: Dep) => d.type === 'blocks')
-      .map((d: Dep) => {
+      .filter(d => d.type === 'blocks')
+      .map(d => {
         const from = getItem(d.from);
         const to = getItem(d.to);
         return from && to ? { from, to, type: d.type } : null;
@@ -1142,7 +1140,10 @@ function PanelBody({ activePage: _activePage, focusItemId }: { activePage?: stri
 
   // One contextual suggestion based on page state
   const noQuoteCount = getQ2Items().filter(r => !customerQuotes[r.id] || customerQuotes[r.id].length === 0).length;
-  void noQuoteCount;
+  const _initialPill = noQuoteCount > 0
+    ? { label: `${noQuoteCount} Q2 items have zero customer evidence`, key: "no-evidence" }
+    : { label: "Am I betting on the right things for Q2?", key: "flow1-initial" };
+  void _initialPill;
 
   return (
     <>
@@ -1164,8 +1165,8 @@ function PanelBody({ activePage: _activePage, focusItemId }: { activePage?: stri
           {/* Insight card entry point (only before first message) */}
           {messages.length === 0 && (() => {
             const q2 = getQ2Items();
-            void q2.reduce((s, r) => s + r.estRevenue, 0);
-            void q2.filter(r => !customerQuotes[r.id] || customerQuotes[r.id].length === 0);
+            const _totalARR = q2.reduce((s, r) => s + r.estRevenue, 0); void _totalARR;
+            const _noQuotes = q2.filter(r => !customerQuotes[r.id] || customerQuotes[r.id].length === 0); void _noQuotes;
             const topItem = q2.sort((a, b) => b.estRevenue - a.estRevenue)[0];
             const weakestQ2 = q2
               .filter(r => !customerQuotes[r.id] || customerQuotes[r.id].length === 0)

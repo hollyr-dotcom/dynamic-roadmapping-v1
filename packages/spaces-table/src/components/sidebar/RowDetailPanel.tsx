@@ -91,7 +91,7 @@ interface RowDetailPanelProps {
   onCompanyFilter?: (name: string) => void
   activeCompanyFilter?: string[] | null
   selectedLayout?: 'Center' | 'Right' | 'Fullscreen' | 'Half-screen'
-  onLayoutChange?: (layout: 'Center' | 'Right' | 'Fullscreen') => void
+  onLayoutChange?: (layout: 'Center' | 'Right' | 'Fullscreen' | 'Half-screen') => void
   hideInsightCallout?: boolean
   overrideSummary?: string
 }
@@ -155,6 +155,9 @@ const INSIGHT_SUMMARIES: Record<string, string> = {
   'r12': 'Dark mode surfaces in 6 mentions from 5 accounts — lower volume but consistent sentiment across Apple, Google, and Atlassian users. Feedback frames it as a quality-of-life expectation rather than a nice-to-have, with its absence noted as a signal of product immaturity. NPS data correlates dark mode delivery with a 12-point satisfaction improvement.',
   '18': 'Gamified savings challenges appear in 5 mentions from 7 accounts, driven by younger users at Shopify and Airbnb. Feedback describes the current savings experience as transactional and uninspiring — badges, streaks, and challenges are seen as motivators that could meaningfully improve goal completion rates, with $30K in projected revenue impact.',
 }
+
+export const _AVATAR_NO_PHOTO = '/images/avatar-no-photo.png'
+export const _AVATAR_VECTOR = '/images/avatar-vector.png'
 
 // Per-card impact weights — must sum to 1.0
 const CARD_WEIGHTS = [0.13, 0.12, 0.10, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06, 0.05, 0.05, 0.04, 0.03, 0.02, 0.01]
@@ -325,6 +328,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     { name: 'Marcus T.', time: 'Yesterday, 4:02 PM', text: 'Should we tie this to the existing design token for border radius?', avatarImg: 32 },
   ])
   const [_resolved, _setResolved] = useState(false)
+  const _commentsEndRef = useRef<HTMLDivElement>(null); void _commentsEndRef;
   const [savePhase, setSavePhase] = useState<'refreshing' | 'success' | null>(null)
   const [saveProgress, setSaveProgress] = useState(0)
   const [saveToastExiting, setSaveToastExiting] = useState(false)
@@ -343,9 +347,9 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
   const [layoutOpen, setLayoutOpen] = useState(false)
   const [layoutPos, setLayoutPos] = useState<{ top: number; right: number } | null>(null)
-  const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
+  const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Fullscreen' | 'Half-screen'>('Right')
   const selectedLayout = selectedLayoutProp ?? layoutInternal
-  const setSelectedLayout = (l: 'Center' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
+  const setSelectedLayout = (l: 'Center' | 'Right' | 'Fullscreen' | 'Half-screen') => { setLayoutInternal(l); onLayoutChange?.(l) }
   const COMMENTS_WIDTH = 420
   const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 48 - COMMENTS_WIDTH : 460
   const layoutButtonRef = useRef<HTMLButtonElement>(null)
@@ -461,7 +465,9 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const priorityLabel = PRIORITY_LABELS[row.priority] ?? row.priority
 
   const remainingFraction = CARD_WEIGHTS.reduce((sum, w, i) => dismissedCards.has(i) ? sum : sum + w, 0)
-  void remainingFraction
+  const _adjMentions = Math.round(row.mentions * remainingFraction); void _adjMentions;
+  const _adjCustomers = Math.round(row.customers * remainingFraction); void _adjCustomers;
+  const _adjRevenue = Math.round(row.estRevenue * remainingFraction); void _adjRevenue;
 
   const panelContent = (
     <div
@@ -752,32 +758,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         )}
 
         {activeTab === 'Insights' && <div className="flex flex-col gap-8 pb-6" style={{ paddingTop: 16 }}>
-
-            {/* Low-confidence Insights callout — only for AI portfolio advisor row */}
-            {!hideInsightCallout && !insightDismissed && (row.id === '1' || row.id === 'r1') && (
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'flex-start',
-                  padding: 16,
-                  gap: 12,
-                  background: '#F2F4FC',
-                  border: 'none',
-                  borderRadius: 8,
-                  position: 'relative',
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, paddingRight: 20 }}>
-                  <p className="text-[14px] leading-[1.4]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1", color: '#1a1b1e', margin: 0 }}>
-                    Low-confidence Insights
-                  </p>
-                  <p style={{ fontSize: 14, color: '#222428', lineHeight: 1.5, margin: 0 }}>
-                    The title or description may be too brief to reliably match to customer feedback. Improving context will increase matching accuracy.
-                  </p>
-                </div>
-              </div>
-            )}
 
             {/* Summary */}
             <InsightSection label="Summary">
@@ -1603,7 +1583,7 @@ function PromptChatView({ prompt, company, onBack, onClose }: { prompt: string; 
   )
 }
 
-function CompanyDetailView({ company, rowTitle: _rowTitle, onBack, onPromptSelect }: { company: string; rowTitle?: string; onBack: () => void; onPromptSelect: (prompt: string) => void }) {
+function CompanyDetailView({ company, onBack, onPromptSelect }: { company: string; onBack: () => void; onPromptSelect: (prompt: string) => void }) {
   const info = COMPANY_INFO[company] ?? { domain: `${company.toLowerCase()}.com`, stage: 'N/A', dealValue: 'N/A', source: 'N/A' }
   return (
     <div className="flex flex-col pb-6">
@@ -1964,7 +1944,8 @@ function FeedbackCard({
   onViewCall,
 }: {
   borderColor: string
-  Icon: typeof IconHeart | typeof IconUserTickDown
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Icon: React.ComponentType<any>
   stars?: number
   text: string
   author: string
@@ -2322,6 +2303,13 @@ function SurveyFeedbackDetail({
   const authorParts = card.author.split(',')
   const authorName = authorParts[0].trim()
   const authorRole = authorParts.slice(1).join(',').trim()
+  const nameWords = authorName.split(' ')
+  const _authorInitials = (nameWords.length >= 2
+    ? nameWords[0][0] + nameWords[nameWords.length - 1][0]
+    : authorName.slice(0, 2)).toUpperCase(); void _authorInitials;
+  const AVATAR_COLORS = ['#de350b', '#4262FF', '#00C7A8', '#3C3F4A', '#7E57C2']
+  const _avatarBg = card.borderColor ?? AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]; void _avatarBg;
+
   const responses = generateSurveyResponses(card)
   const responseId = makeResponseId(card.author)
   const surveyId = 'sm-' + makeResponseId(card.title).slice(0, 6)
@@ -2481,7 +2469,7 @@ function FeedbackCardDetailView({
   onAddToBoard,
   highlightColor = '#f1f2f5',
 }: {
-  card: { title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string; source?: string; stars?: number }
+  card: { title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string }
   onBack: () => void
   onClose: () => void
   onAddToBoard?: (data: import('../canvas/CanvasFeedbackCard').FeedbackCardData) => void
@@ -2505,7 +2493,12 @@ function FeedbackCardDetailView({
     return () => document.removeEventListener('mousedown', handler)
   }, [convMenuIndex])
 
-  void convMenuIndex; void setConvMenuIndex; void convMenuPos; void setConvMenuPos;
+  const _openConvMenu = (index: number, btn: HTMLButtonElement) => {
+    if (convMenuIndex === index) { setConvMenuIndex(null); return }
+    const rect = btn.getBoundingClientRect()
+    setConvMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
+    setConvMenuIndex(index)
+  }; void _openConvMenu;
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -2519,6 +2512,13 @@ function FeedbackCardDetailView({
   const authorParts = card.author.split(',')
   const authorName = authorParts[0].trim()
   const authorRole = authorParts.slice(1).join(',').trim()
+  const nameWords = authorName.split(' ')
+  const _authorInitials2 = (nameWords.length >= 2
+    ? nameWords[0][0] + nameWords[nameWords.length - 1][0]
+    : authorName.slice(0, 2)).toUpperCase(); void _authorInitials2;
+  const AVATAR_COLORS = ['#de350b', '#4262FF', '#00C7A8', '#3C3F4A', '#7E57C2']
+  const _avatarBg2 = card.borderColor ?? AVATAR_COLORS[authorName.charCodeAt(0) % AVATAR_COLORS.length]; void _avatarBg2;
+
   const LABEL: React.CSSProperties = {
     fontSize: 14,
     color: '#656b81',
@@ -2584,7 +2584,7 @@ function FeedbackCardDetailView({
       </div>
 
       {/* Keyword search */}
-      <div style={{ paddingBottom: 28 }}>
+      <div style={{ marginBottom: 28 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 32, padding: '0 12px', borderRadius: 8, backgroundColor: '#f1f2f5' }}>
           <IconMagnifyingGlass css={{ width: 14, height: 14, color: '#7D8297', flexShrink: 0 }} />
           <input
