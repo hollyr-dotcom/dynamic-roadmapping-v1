@@ -500,7 +500,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        width: selectedLayout !== 'Right' ? panelWidth + COMMENTS_WIDTH : panelWidth,
+        width: showSidekick ? panelWidth : (selectedLayout !== 'Right' ? panelWidth + COMMENTS_WIDTH : panelWidth),
         backgroundColor: 'white',
         fontFamily: 'Open Sans, sans-serif',
         borderRadius: selectedLayout !== 'Right' ? 8 : 0,
@@ -586,7 +586,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       {/* ── Content row (main panel + comments panel) ── */}
       <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, overflow: 'hidden' }}>
-      <div className="flex flex-col overflow-hidden relative" style={{ width: (showSidekick && selectedLayout !== 'Right') ? panelWidth + COMMENTS_WIDTH : panelWidth, height: '100%', flexShrink: 0, transition: 'width 0.25s cubic-bezier(0.16,1,0.3,1)' }}>
+      <div className="flex flex-col overflow-hidden relative" style={{ width: panelWidth, height: '100%', flexShrink: 0 }}>
 
       {/* ── Tab bar ── */}
       <div className="flex gap-1 px-3 pt-3 pb-4 shrink-0" style={{ pointerEvents: 'auto' }}>
