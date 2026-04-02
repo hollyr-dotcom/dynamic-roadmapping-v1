@@ -757,8 +757,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           <JiraForm row={row} />
         )}
 
-        {activeTab === 'Insights' && <div className="flex flex-col" style={{ height: '100%' }}>
-          <div className="flex-1 overflow-y-auto panel-scroll flex flex-col gap-8 pb-6" style={{ paddingTop: 16 }}>
+        {activeTab === 'Insights' && <div className="flex flex-col gap-8 pb-6" style={{ paddingTop: 16 }}>
 
             {/* Summary */}
             <InsightSection label="Summary">
@@ -888,25 +887,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 </div>
               </>
             )}
-          </div>
-          <div className="shrink-0" style={{ padding: 16 }}>
-            <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}>
-              <textarea
-                readOnly
-                placeholder="What should we do next?"
-                rows={2}
-                className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none cursor-text"
-                style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0' }}
-              />
-              <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
-                <IconSmileyPlus css={{ width: 20, height: 20 }} />
-              </button>
-              <button className="shrink-0 text-[#9DA3B4]">
-                <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
-              </button>
-            </div>
-          </div>
-        </div>}
+          </div>}
 
         {activeTab === 'Comments' && <div className="flex flex-col" style={{ height: '100%' }}>
             <div className="flex-1 overflow-y-auto panel-scroll flex flex-col gap-4" style={{ paddingTop: 16, paddingBottom: 8 }}>
@@ -980,6 +961,25 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         )}
 
       </div>
+
+      <div className="shrink-0" style={{ padding: 16 }}>
+        <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}>
+          <textarea
+            readOnly
+            placeholder="What should we do next?"
+            rows={2}
+            className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none cursor-text"
+            style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0' }}
+          />
+          <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
+            <IconSmileyPlus css={{ width: 20, height: 20 }} />
+          </button>
+          <button className="shrink-0 text-[#9DA3B4]">
+            <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
+          </button>
+        </div>
+      </div>
+
       {/* ── Company panel ─── */}
       <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: selectedLayout !== 'Right' ? 48 : 16 }}>
         {selectedCompany && (
