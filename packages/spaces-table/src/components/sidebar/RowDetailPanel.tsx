@@ -500,12 +500,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        width: showSidekick ? panelWidth : (selectedLayout !== 'Right' ? panelWidth + COMMENTS_WIDTH : panelWidth),
+        width: selectedLayout !== 'Right' ? panelWidth + COMMENTS_WIDTH : panelWidth,
         backgroundColor: 'white',
         fontFamily: 'Open Sans, sans-serif',
         borderRadius: selectedLayout !== 'Right' ? 8 : 0,
         boxShadow: selectedLayout !== 'Right' ? '0px 8px 32px rgba(34,36,40,0.16), 0px 1px 4px rgba(34,36,40,0.08)' : 'none',
         overflow: 'hidden',
+        position: 'relative',
       }}
     >
 
@@ -1062,136 +1063,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         </div>
       )}
 
-      {/* ── Sidekick overlay ─── */}
-      {showSidekick && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', flexDirection: 'column', height: '100%', width: '100%', background: 'white', overflow: 'hidden' }}>
-
-          {/* Gradient defs */}
-          <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }}>
-            <defs>
-              <linearGradient id="sk-gradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientTransform="rotate(42)">
-                <stop offset="0%" stopColor="#322BFE" />
-                <stop offset="27%" stopColor="#6E3CFE" />
-                <stop offset="55%" stopColor="#A34CFF" />
-                <stop offset="82%" stopColor="#D05DFF" />
-                <stop offset="100%" stopColor="#F66EFF" />
-              </linearGradient>
-            </defs>
-          </svg>
-
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 12, paddingRight: 12, height: 56, flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <button
-                onClick={() => setShowSidekick(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors shrink-0"
-                aria-label="Back"
-              >
-                <IconChevronLeft css={{ width: 20, height: 20 }} />
-              </button>
-              <span style={{ fontSize: 16, fontWeight: 600, color: '#222428', fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01'" }}>Sidekick</span>
-              <svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path fill="currentColor" d="M6.707 9.293 12 14.586l5.293-5.293 1.414 1.414-6 6h-1.414l-6-6 1.414-1.414Z" /></svg>
-              <div style={{ background: '#F1F2F5', borderRadius: 4, padding: '0 6px', height: 20, display: 'flex', alignItems: 'center', marginLeft: 4 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#222428', fontFamily: 'Open Sans, sans-serif' }}>AI Beta</span>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="New chat" onClick={() => { setSidekickMessages([]); setSidekickInput('') }}>
-                <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path fill="currentColor" d="M3 18V6a3 3 0 0 1 3-3h7v2H6a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7h2v7a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3ZM18.543 1.543a2.768 2.768 0 1 1 3.914 3.914l-5.839 5.839-3.422.684-1.176-1.176.684-3.422 5.839-5.839Zm2.5 1.414c-.3-.3-.786-.3-1.086 0l-5.411 5.41-.272 1.358 1.358-.272 5.411-5.41c.3-.3.3-.786 0-1.086Z" /></svg>
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="History">
-                <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path fill="currentColor" d="M13 3a9 9 0 1 1 0 18v-2a7 7 0 1 0-7-7v.586l1.293-1.293 1.414 1.414-3 3H4.293l-3-3 1.414-1.414L4 12.586V12a9 9 0 0 1 9-9Zm3.707 6.707-1.777 1.776a2 2 0 1 1-1.414-1.414l1.777-1.776 1.414 1.414Z" /></svg>
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="Library">
-                <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path fill="currentColor" d="m10 13 1 1v6l-1 1H4l-1-1v-6l1-1h6Zm-5 6h4v-4H5v4Zm5-16 1 1v6l-1 1H4l-1-1V4l1-1h6ZM5 9h4V5H5v4Zm15-6 1 1v6l-1 1h-6l-1-1V4l1-1h6Zm-5 6h4V5h-4v4Zm5 4 1 1v6l-1 1h-6l-1-1v-6l1-1h6Zm-5 6h4v-4h-4v4Z" /></svg>
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="More">
-                <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path fill="currentColor" d="M12 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" /></svg>
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="Close" onClick={() => setShowSidekick(false)}>
-                <IconCross css={{ width: 20, height: 20 }} />
-              </button>
-            </div>
-          </div>
-
-          {/* Body */}
-          <div style={{ flex: '1 1 0%', overflowY: 'auto', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-            <div style={{ flex: '1 1 0%' }} />
-            {sidekickMessages.length === 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '0 24px 24px' }}>
-                {/* Avatar row */}
-                <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
-                  <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', width: 72, height: 44, borderRadius: 22, background: '#F1F2F5' }} />
-                  <div style={{ position: 'relative', zIndex: 1 }}>
-                    <div style={{ width: 48, height: 48, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'linear-gradient(42deg, #322BFE 0%, #6E3CFE 27%, #A34CFF 55%, #D05DFF 82%, #F66EFF 109%)' }}>
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M8.678 3.207c.325-1.368 2.319-1.37 2.644 0l.026.142.042.255c.49 2.625 2.599 4.662 5.26 5.046 1.554.224 1.562 2.473 0 2.698-2.747.394-4.906 2.552-5.302 5.3-.224 1.562-2.474 1.554-2.698 0-.396-2.747-2.554-4.906-5.302-5.3-1.559-.225-1.556-2.474 0-2.699l.256-.042c2.625-.49 4.662-2.599 5.046-5.26l.028-.14Z" fill="white" />
-                        <path d="M3.5 14c0 1.38 1.12 2.5 2.5 2.5v1c-1.38 0-2.5 1.12-2.5 2.5h-1c0-1.38-1.12-2.5-2.5-2.5v-1c1.38 0 2.5-1.12 2.5-2.5h1Z" fill="white" />
-                        <path d="M17.5 0c0 1.38 1.12 2.5 2.5 2.5v1c-1.38 0-2.5 1.12-2.5 2.5h-1c0-1.38-1.12-2.5-2.5-2.5v-1c1.38 0 2.5-1.12 2.5-2.5h1Z" fill="white" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div style={{ position: 'relative', zIndex: 1, width: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path fill="currentColor" d="M6.707 9.293 12 14.586l5.293-5.293 1.414 1.414-6 6h-1.414l-6-6 1.414-1.414Z" /></svg>
-                  </div>
-                </div>
-                <span style={{ fontSize: 20, fontWeight: 600, color: '#656B81', lineHeight: 1.4, fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01'" }}>Hey Holly,</span>
-                <span style={{ fontSize: 14, color: '#222428', lineHeight: 1.5, fontFamily: 'Open Sans, sans-serif' }}>I scanned your Roadmap and Backlog. Here's what I found:</span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {['Am I betting on the right things for Q2?', 'Deep dive into my top roadmap item', 'What happens if I swap a Q2 item?'].map(chip => (
-                    <div key={chip} onClick={() => sendSidekick(chip)} style={{ background: 'white', border: '1px solid #E0E2E8', borderRadius: 8, padding: '6px 12px', fontSize: 14, color: '#222428', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', fontFamily: 'Open Sans, sans-serif' }}>
-                      {chip}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '0 24px 24px' }}>
-                {sidekickMessages.map((msg, i) => (
-                  msg.role === 'user' ? (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <div style={{ maxWidth: '85%', borderRadius: 8, padding: '12px 16px', fontSize: 14, lineHeight: 1.57, color: '#3C3F4A', backgroundColor: '#F1F2F5', fontFamily: 'Open Sans, sans-serif' }}>{msg.text}</div>
-                    </div>
-                  ) : (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                      <p style={{ fontSize: 14, lineHeight: 1.57, color: '#222428', fontFamily: 'Open Sans, sans-serif', margin: 0 }}>{msg.text}</p>
-                    </div>
-                  )
-                ))}
-                {sidekickTyping && <p style={{ fontSize: 13, color: '#656B81', fontFamily: 'Open Sans, sans-serif', margin: 0 }}>Thinking…</p>}
-                <div ref={sidekickBottomRef} />
-              </div>
-            )}
-          </div>
-
-          {/* Input — matches comments tab exactly */}
-          <div className="shrink-0" style={{ padding: '16px' }}>
-            <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white' }}>
-              <textarea
-                autoFocus
-                value={sidekickInput}
-                onChange={e => setSidekickInput(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSidekick(sidekickInput) } }}
-                placeholder="Ask about your roadmap..."
-                rows={2}
-                className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none"
-                style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
-              />
-              <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
-                <IconSmileyPlus css={{ width: 20, height: 20 }} />
-              </button>
-              <button
-                onClick={() => sendSidekick(sidekickInput)}
-                className="shrink-0 transition-colors"
-                style={{ color: sidekickInput.trim() ? '#4262FF' : '#9DA3B4' }}
-              >
-                <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
-              </button>
-            </div>
-          </div>
-
-        </div>
-      )}
 
       {/* ── Chat overlay (full-panel, avoids slider height-shift glitch) ─── */}
       {selectedPrompt && (
@@ -1560,6 +1431,128 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       </div>
     )}
     </div>
+
+    {/* ── Sidekick overlay — spans full panel width at outer wrapper level ─── */}
+    {showSidekick && (
+      <div style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', flexDirection: 'column', height: '100%', width: '100%', background: 'white', overflow: 'hidden' }}>
+
+        {/* Gradient defs */}
+        <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }}>
+          <defs>
+            <linearGradient id="sk-gradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientTransform="rotate(42)">
+              <stop offset="0%" stopColor="#322BFE" />
+              <stop offset="27%" stopColor="#6E3CFE" />
+              <stop offset="55%" stopColor="#A34CFF" />
+              <stop offset="82%" stopColor="#D05DFF" />
+              <stop offset="100%" stopColor="#F66EFF" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 12, paddingRight: 12, height: 56, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <button onClick={() => setShowSidekick(false)} className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors shrink-0" aria-label="Back">
+              <IconChevronLeft css={{ width: 20, height: 20 }} />
+            </button>
+            <span style={{ fontSize: 16, fontWeight: 600, color: '#222428', fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01'" }}>Sidekick</span>
+            <svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path fill="currentColor" d="M6.707 9.293 12 14.586l5.293-5.293 1.414 1.414-6 6h-1.414l-6-6 1.414-1.414Z" /></svg>
+            <div style={{ background: '#F1F2F5', borderRadius: 4, padding: '0 6px', height: 20, display: 'flex', alignItems: 'center', marginLeft: 4 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#222428', fontFamily: 'Open Sans, sans-serif' }}>AI Beta</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="New chat" onClick={() => { setSidekickMessages([]); setSidekickInput('') }}>
+              <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path fill="currentColor" d="M3 18V6a3 3 0 0 1 3-3h7v2H6a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7h2v7a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3ZM18.543 1.543a2.768 2.768 0 1 1 3.914 3.914l-5.839 5.839-3.422.684-1.176-1.176.684-3.422 5.839-5.839Zm2.5 1.414c-.3-.3-.786-.3-1.086 0l-5.411 5.41-.272 1.358 1.358-.272 5.411-5.41c.3-.3.3-.786 0-1.086Z" /></svg>
+            </button>
+            <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="History">
+              <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path fill="currentColor" d="M13 3a9 9 0 1 1 0 18v-2a7 7 0 1 0-7-7v.586l1.293-1.293 1.414 1.414-3 3H4.293l-3-3 1.414-1.414L4 12.586V12a9 9 0 0 1 9-9Zm3.707 6.707-1.777 1.776a2 2 0 1 1-1.414-1.414l1.777-1.776 1.414 1.414Z" /></svg>
+            </button>
+            <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="Library">
+              <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path fill="currentColor" d="m10 13 1 1v6l-1 1H4l-1-1v-6l1-1h6Zm-5 6h4v-4H5v4Zm5-16 1 1v6l-1 1H4l-1-1V4l1-1h6ZM5 9h4V5H5v4Zm15-6 1 1v6l-1 1h-6l-1-1V4l1-1h6Zm-5 6h4V5h-4v4Zm5 4 1 1v6l-1 1h-6l-1-1v-6l1-1h6Zm-5 6h4v-4h-4v4Z" /></svg>
+            </button>
+            <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="More">
+              <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path fill="currentColor" d="M12 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" /></svg>
+            </button>
+            <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors" aria-label="Close" onClick={() => setShowSidekick(false)}>
+              <IconCross css={{ width: 20, height: 20 }} />
+            </button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{ flex: '1 1 0%', overflowY: 'auto', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <div style={{ flex: '1 1 0%' }} />
+          {sidekickMessages.length === 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '0 24px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', width: 72, height: 44, borderRadius: 22, background: '#F1F2F5' }} />
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'linear-gradient(42deg, #322BFE 0%, #6E3CFE 27%, #A34CFF 55%, #D05DFF 82%, #F66EFF 109%)' }}>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M8.678 3.207c.325-1.368 2.319-1.37 2.644 0l.026.142.042.255c.49 2.625 2.599 4.662 5.26 5.046 1.554.224 1.562 2.473 0 2.698-2.747.394-4.906 2.552-5.302 5.3-.224 1.562-2.474 1.554-2.698 0-.396-2.747-2.554-4.906-5.302-5.3-1.559-.225-1.556-2.474 0-2.699l.256-.042c2.625-.49 4.662-2.599 5.046-5.26l.028-.14Z" fill="white" />
+                      <path d="M3.5 14c0 1.38 1.12 2.5 2.5 2.5v1c-1.38 0-2.5 1.12-2.5 2.5h-1c0-1.38-1.12-2.5-2.5-2.5v-1c1.38 0 2.5-1.12 2.5-2.5h1Z" fill="white" />
+                      <path d="M17.5 0c0 1.38 1.12 2.5 2.5 2.5v1c-1.38 0-2.5 1.12-2.5 2.5h-1c0-1.38-1.12-2.5-2.5-2.5v-1c1.38 0 2.5-1.12 2.5-2.5h1Z" fill="white" />
+                    </svg>
+                  </div>
+                </div>
+                <div style={{ position: 'relative', zIndex: 1, width: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path fill="currentColor" d="M6.707 9.293 12 14.586l5.293-5.293 1.414 1.414-6 6h-1.414l-6-6 1.414-1.414Z" /></svg>
+                </div>
+              </div>
+              <span style={{ fontSize: 20, fontWeight: 600, color: '#656B81', lineHeight: 1.4, fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01'" }}>Hey Holly,</span>
+              <span style={{ fontSize: 14, color: '#222428', lineHeight: 1.5, fontFamily: 'Open Sans, sans-serif' }}>I scanned your Roadmap and Backlog. Here's what I found:</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {['Am I betting on the right things for Q2?', 'Deep dive into my top roadmap item', 'What happens if I swap a Q2 item?'].map(chip => (
+                  <div key={chip} onClick={() => sendSidekick(chip)} style={{ background: 'white', border: '1px solid #E0E2E8', borderRadius: 8, padding: '6px 12px', fontSize: 14, color: '#222428', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', fontFamily: 'Open Sans, sans-serif' }}>
+                    {chip}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '0 24px 24px' }}>
+              {sidekickMessages.map((msg, i) => (
+                msg.role === 'user' ? (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <div style={{ maxWidth: '85%', borderRadius: 8, padding: '12px 16px', fontSize: 14, lineHeight: 1.57, color: '#3C3F4A', backgroundColor: '#F1F2F5', fontFamily: 'Open Sans, sans-serif' }}>{msg.text}</div>
+                  </div>
+                ) : (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                    <p style={{ fontSize: 14, lineHeight: 1.57, color: '#222428', fontFamily: 'Open Sans, sans-serif', margin: 0 }}>{msg.text}</p>
+                  </div>
+                )
+              ))}
+              {sidekickTyping && <p style={{ fontSize: 13, color: '#656B81', fontFamily: 'Open Sans, sans-serif', margin: 0 }}>Thinking…</p>}
+              <div ref={sidekickBottomRef} />
+            </div>
+          )}
+        </div>
+
+        {/* Input */}
+        <div className="shrink-0" style={{ padding: '16px' }}>
+          <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white' }}>
+            <textarea
+              autoFocus
+              value={sidekickInput}
+              onChange={e => setSidekickInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSidekick(sidekickInput) } }}
+              placeholder="Ask about your roadmap..."
+              rows={2}
+              className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none"
+              style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
+            />
+            <button className="shrink-0 text-[#9DA3B4] hover:text-[#656B81] transition-colors">
+              <IconSmileyPlus css={{ width: 20, height: 20 }} />
+            </button>
+            <button onClick={() => sendSidekick(sidekickInput)} className="shrink-0 transition-colors" style={{ color: sidekickInput.trim() ? '#4262FF' : '#9DA3B4' }}>
+              <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
+            </button>
+          </div>
+        </div>
+
+      </div>
+    )}
     </div>
   )
 
