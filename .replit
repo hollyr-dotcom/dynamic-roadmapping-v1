@@ -51,5 +51,5 @@ externalPort = 3001
 
 [deployment]
 deploymentTarget = "static"
-build = ["bash", "-c", "cd packages/spaces-table && npx vite build"]
+build = ["bash", "-c", "cd packages/spaces-table && bun install && npx vite build"]
 publicDir = "packages/spaces-table/dist"
