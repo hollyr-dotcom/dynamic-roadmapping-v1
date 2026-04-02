@@ -22,7 +22,8 @@ const pages = [
 interface SidekickBoard {
   id: string
   name: string
-  feedbackCard: unknown
+  iconIndex?: number
+  feedbackCard?: unknown
 }
 
 interface SpaceMenuProps {
@@ -53,16 +54,16 @@ function CollapsibleSection({
   return (
     <div className="mt-1">
       <div
-        className="flex items-center h-8 rounded-lg px-2 cursor-pointer hover:bg-[#F1F2F5] transition-colors duration-150 group"
+        className="flex items-center gap-3 px-2 h-10 rounded-lg cursor-pointer hover:bg-[#F1F2F5] transition-colors duration-150"
         onClick={() => setIsOpen(!isOpen)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         <span
-          className="text-[#656B81] transition-transform duration-200 mr-1"
-          style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)', display: 'inline-flex' }}
+          className="text-[#656B81] transition-transform duration-200"
+          style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)', display: 'inline-flex', width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}
         >
-          <IconChevronRight size="small" />
+          <IconChevronRight size="medium" />
         </span>
         <span
           className="font-body font-semibold text-[#1A1B1E] leading-none flex-1 select-none"
@@ -71,15 +72,15 @@ function CollapsibleSection({
           {title}
         </span>
         <div
-          className="flex items-center gap-0.5 transition-opacity duration-150"
-          style={{ opacity: isHovered ? 1 : 0 }}
+          className="flex items-center transition-opacity duration-150"
+          style={{ opacity: isHovered ? 1 : 0, marginRight: -4, gap: 0 }}
           onClick={(e) => e.stopPropagation()}
         >
-          <IconButton aria-label="Add" variant="ghost" size="small">
-            <IconPlus />
+          <IconButton aria-label="Add" variant="ghost" size="medium">
+            <IconPlus size="small" />
           </IconButton>
-          <IconButton aria-label="Options" variant="ghost" size="small">
-            <IconDotsThreeVertical />
+          <IconButton aria-label="Options" variant="ghost" size="medium">
+            <IconDotsThreeVertical size="small" />
           </IconButton>
         </div>
       </div>
@@ -141,7 +142,7 @@ export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome, spaceNa
       <div className="flex flex-col gap-1 mt-[18px]">
         {pages.map((page) => {
           const Icon = page.icon
-          const isActive = !activeBoardId && page.id === activePage
+          const isActive = !activeSidekickBoardId && page.id === activePage
           return (
             <button
               key={page.id}
@@ -178,7 +179,7 @@ export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome, spaceNa
             className="font-body text-[#656B81] leading-none"
             style={{ fontSize: '14px' }}
           >
-            {boards && boards.length > 0 ? 'Boards and formats' : 'Add content'}
+            {(boards && boards.length > 0) || (sidekickBoards && sidekickBoards.length > 0) ? 'Boards and formats' : 'Add content'}
           </span>
           <IconButton aria-label="Add content" variant="ghost" size="medium">
             <IconPlus />
@@ -222,10 +223,9 @@ export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome, spaceNa
                   className={`flex items-center gap-3 w-full rounded-lg px-2 h-10 text-left transition-colors duration-150 ${
                     isActive ? 'bg-[#F3F4F6]' : 'hover:bg-[#F1F2F5]'
                   }`}
-                  style={{ paddingLeft: '28px' }}
                 >
-                  <span className="text-[#656B81]">
-                    <IconSparksFilled size="small" />
+                  <span style={{ flexShrink: 0, width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {board.iconIndex != null ? <BoardIcon index={board.iconIndex} /> : <IconSparksFilled size="medium" />}
                   </span>
                   <span
                     className="font-body text-[#222428] leading-[1.3] select-none truncate"
@@ -240,7 +240,7 @@ export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome, spaceNa
         )}
 
         {/* Empty state */}
-        {(!boards || boards.length === 0) && (
+        {(!boards || boards.length === 0) && (!sidekickBoards || sidekickBoards.length === 0) && (
           <div className="flex-1 flex flex-col items-center justify-center px-8 pb-6">
             <span
               className="font-body font-semibold text-[#656B81] text-center leading-[1.4]"

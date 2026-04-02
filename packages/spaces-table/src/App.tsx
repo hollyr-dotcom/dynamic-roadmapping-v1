@@ -666,11 +666,16 @@ export function App() {
               onPageChange={switchPage}
               onGoHome={() => { closeSidebar(); setView('home') }}
               spaceName={spaceName}
-              boards={boards}
-              activeBoardId={canvasOpen && boardName ? boards.find(b => b.name === boardName)?.id : undefined}
-              sidekickBoards={sidekickBoards}
-              onSidekickBoardClick={handleSidekickBoardClick}
-              activeSidekickBoardId={canvasOpen ? widgets.find(w => w.type === 'feedback-card')?.id : undefined}
+              sidekickBoards={boards.map(b => ({ id: b.id, name: b.name, iconIndex: b.iconIndex }))}
+              onSidekickBoardClick={(board) => {
+                const matchingBoard = boards.find(b => b.id === board.id)
+                if (matchingBoard) {
+                  setBoardName(matchingBoard.name)
+                  setCanvasOpen(true)
+                  setActiveSidebar(null)
+                }
+              }}
+              activeSidekickBoardId={canvasOpen && boardName ? boards.find(b => b.name === boardName)?.id : undefined}
             />
           </SidebarShell>
         )}
