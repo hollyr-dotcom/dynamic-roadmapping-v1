@@ -616,7 +616,10 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
               <IconSparksFilled />
             </IconButton>
           </Tooltip.Trigger>
-          <Tooltip.Content side="top" sideOffset={4}>Sidekick</Tooltip.Content>
+          <Tooltip.Content side="top" sideOffset={4}>
+            Sidekick
+            <Tooltip.Hotkey>⌘ + K</Tooltip.Hotkey>
+          </Tooltip.Content>
         </Tooltip>
 
         <Tooltip>
