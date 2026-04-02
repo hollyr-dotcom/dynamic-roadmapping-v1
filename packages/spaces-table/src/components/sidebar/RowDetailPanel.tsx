@@ -90,8 +90,8 @@ interface RowDetailPanelProps {
   timelineDates?: { startDate: string; endDate: string }
   onCompanyFilter?: (name: string) => void
   activeCompanyFilter?: string[] | null
-  selectedLayout?: 'Center' | 'Right' | 'Fullscreen' | 'Half-screen'
-  onLayoutChange?: (layout: 'Center' | 'Right' | 'Fullscreen' | 'Half-screen') => void
+  selectedLayout?: 'Center' | 'Right' | 'Fullscreen'
+  onLayoutChange?: (layout: 'Center' | 'Right' | 'Fullscreen') => void
   hideInsightCallout?: boolean
   overrideSummary?: string
 }
@@ -347,9 +347,9 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
   const [layoutOpen, setLayoutOpen] = useState(false)
   const [layoutPos, setLayoutPos] = useState<{ top: number; right: number } | null>(null)
-  const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Fullscreen' | 'Half-screen'>('Right')
+  const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
   const selectedLayout = selectedLayoutProp ?? layoutInternal
-  const setSelectedLayout = (l: 'Center' | 'Right' | 'Fullscreen' | 'Half-screen') => { setLayoutInternal(l); onLayoutChange?.(l) }
+  const setSelectedLayout = (l: 'Center' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
   const COMMENTS_WIDTH = 420
   const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 48 - COMMENTS_WIDTH : 460
   const layoutButtonRef = useRef<HTMLButtonElement>(null)

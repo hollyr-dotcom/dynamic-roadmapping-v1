@@ -125,7 +125,7 @@ export function App() {
   const [pageTransitioning, setPageTransitioning] = useState(false)
   const [ghostRowId, setGhostRowId] = useState<string | null>(null)
   const [companyFilter, setCompanyFilter] = useState<string[]>([])
-  const [panelLayout, setPanelLayout] = useState<'Center' | 'Right' | 'Half-screen' | 'Fullscreen'>('Right')
+  const [panelLayout, setPanelLayout] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
 
   const handleCompanyFilter = useCallback((name: string) => {
     setCompanyFilter(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name])
