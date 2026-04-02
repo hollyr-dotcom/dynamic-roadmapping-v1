@@ -526,6 +526,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                   onPress={() => { setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create'); onOpenApp() }}
                 >
                   <Button.Label>Continue without inviting</Button.Label>
+                  {/* @ts-expect-error -- MDS IconSlot type mismatch */}
                   <Button.IconSlot placement="end"><IconChevronRight /></Button.IconSlot>
                 </Button>
               </div>
@@ -542,7 +543,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                     { label: 'Configure cards', Icon: IconCard },
                     { label: 'Show imported', Icon: IconEyeOpen },
                     { label: 'Create issue', Icon: IconSquarePencil },
-                  ] as Array<{ label: string; Icon: (props: { css?: Record<string, unknown> }) => JSX.Element }>).map(({ label, Icon }) => (
+                  ] as Array<{ label: string; Icon: (props: { css?: Record<string, unknown> }) => React.JSX.Element }>).map(({ label, Icon }) => (
                     <button key={label} className="hover:bg-[#f1f2f5] transition-colors" style={{ height: 32, padding: '0 10px', borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', fontSize: 16, color: '#222428', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
                       <Icon css={{ width: 16, height: 16, minWidth: 16, minHeight: 16, color: '#222428', flexShrink: 0 }} />
                       {label}

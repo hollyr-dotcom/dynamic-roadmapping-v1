@@ -9,7 +9,7 @@ const AVATAR_COLORS: Record<string, { bg: string; fg: string }> = {
 const AVATAR_DEFAULT = { bg: '#F1F2F5', fg: '#656B81' }
 
 function MdsAvatar({ color }: { color?: string }) {
-  const { bg, fg } = (color && AVATAR_COLORS[color]) ?? AVATAR_DEFAULT
+  const { bg, fg } = (color ? AVATAR_COLORS[color] : undefined) ?? AVATAR_DEFAULT
   return (
     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
       <path d="M0 20C0 8.95431 8.95431 0 20 0C31.0457 0 40 8.95431 40 20C40 31.0457 31.0457 40 20 40C8.95431 40 0 31.0457 0 20Z" fill={bg}/>

@@ -33,6 +33,7 @@ export function TableHeader({ fields, className }: TableHeaderProps) {
             }}
           >
             <span className="inline-flex items-center truncate" style={{ gap: field.type === 'priority' ? 4 : undefined }}>
+              {/* @ts-expect-error -- MDS icon style prop */}
               {field.type === 'priority' && <IconSortDescending size="small" style={{ color: '#7D8297', flexShrink: 0 }} />}
               {field.label}
             </span>

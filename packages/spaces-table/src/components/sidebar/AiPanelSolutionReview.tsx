@@ -74,20 +74,29 @@ function GradientSparks({ filled, size = "small" }: { filled?: boolean; size?: "
 }
 
 /* ─── Panel Header ─── */
-function PanelHeader({ onClose }: { onClose?: () => void }) {
+function PanelHeader({ onClose, onBack, layoutButton }: { onClose?: () => void; onBack?: () => void; layoutButton?: React.ReactNode }) {
   return (
     <div
       style={{
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        paddingLeft: 24,
+        paddingLeft: onBack ? 12 : 24,
         paddingRight: 12,
         height: 56,
         flexShrink: 0,
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        {onBack && (
+          <button
+            onClick={onBack}
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: 4, border: "none", background: "transparent", cursor: "pointer", color: "#656B81", marginRight: 4 }}
+            className="hover:bg-[#F1F2F5] transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path fill="currentColor" d="M15.707 6.707 10.414 12l5.293 5.293-1.414 1.414-6-6v-1.414l6-6 1.414 1.414Z"/></svg>
+          </button>
+        )}
         <span style={{ fontSize: 16, fontWeight: 600, color: "#222428", fontFamily: "var(--font-roobert)", fontFeatureSettings: "'ss01'" }}>
           Sidekick
         </span>
@@ -101,6 +110,7 @@ function PanelHeader({ onClose }: { onClose?: () => void }) {
         <IconButton aria-label="History" variant="ghost" size="medium" onPress={() => {}}><IconClockCounterClockwise /></IconButton>
         <IconButton aria-label="Library" variant="ghost" size="medium" onPress={() => {}}><IconSquaresFour /></IconButton>
         <IconButton aria-label="More" variant="ghost" size="medium" onPress={() => {}}><IconDotsThreeVertical /></IconButton>
+        {layoutButton}
         <button onClick={() => onClose?.()} className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors shrink-0" aria-label="Close"><IconCross css={{ width: 16, height: 16 }} /></button>
       </div>
     </div>
@@ -1193,7 +1203,7 @@ function PanelBody({ activePage, focusItemId }: { activePage?: string; focusItem
                 </span>
 
                 {/* Suggested prompts — one per flow, short and crisp */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
                   <PromptPill
                     label="Am I betting on the right things for Q2?"
                     onClick={() => handlePillClick({ label: "Am I betting on the right things for Q2?", key: "flow1-initial" })}
@@ -1418,11 +1428,11 @@ function PanelInput({ onSend }: { onSend: (text: string) => void }) {
 }
 
 /* ─── Main export ─── */
-export default function AiPanelSolutionReview({ onClose, activePage, focusItemId }: { onClose?: () => void; activePage?: string; focusItemId?: string } = {}) {
+export default function AiPanelSolutionReview({ onClose, activePage, focusItemId, onBack, layoutButton }: { onClose?: () => void; activePage?: string; focusItemId?: string; onBack?: () => void; layoutButton?: React.ReactNode } = {}) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", maxWidth: "100%", background: "#fff", borderRadius: 8 }}>
       <AiGradientDefs />
-      <PanelHeader onClose={onClose} />
+      <PanelHeader onClose={onClose} onBack={onBack} layoutButton={layoutButton} />
       <PanelBody activePage={activePage} focusItemId={focusItemId} />
     </div>
   );

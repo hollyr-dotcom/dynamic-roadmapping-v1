@@ -185,6 +185,7 @@ export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, v
             <DropdownMenu.Item onSelect={e => { e.preventDefault(); setEnrichmentOn(v => !v) }}>
               <DropdownMenu.IconSlot><IconInsights /></DropdownMenu.IconSlot>
               <span style={{ flex: 1 }}>Toggle enrichment</span>
+              {/* @ts-expect-error -- MDS Switch type mismatch */}
               <Switch checked={enrichmentOn} onCheckedChange={setEnrichmentOn} css={{ pointerEvents: 'none' }} />
             </DropdownMenu.Item>
             <DropdownMenu.Separator />

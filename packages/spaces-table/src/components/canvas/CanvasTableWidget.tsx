@@ -313,7 +313,7 @@ export function CanvasTableWidget({
               <KanbanBoard key={activeTab} data={viewData} fields={fields} columns={kanbanColumns} />
             )}
             {activeViewType === 'timeline' && (
-              <TimelinePlaceholder key={activeTab} />
+              <TimelinePlaceholder key={activeTab} data={viewData} parentScrollRef={{ current: null }} />
             )}
           </div>
         </div>
