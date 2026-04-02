@@ -125,6 +125,10 @@ export function App() {
   const [ghostRowId, setGhostRowId] = useState<string | null>(null)
   const [companyFilter, setCompanyFilter] = useState<string[]>([])
   const [panelLayout, setPanelLayout] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
+  const [sidekickLayout, setSidekickLayout] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
+  const [sidekickLayoutOpen, setSidekickLayoutOpen] = useState(false)
+  const sidekickLayoutBtnRef = useRef<HTMLButtonElement>(null)
+  const [sidekickLayoutPos, setSidekickLayoutPos] = useState({ top: 0, right: 0 })
 
   const handleCompanyFilter = useCallback((name: string) => {
     setCompanyFilter(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name])
@@ -542,24 +546,121 @@ export function App() {
       </div>
 
       {/* AI Sidekick — rendered outside the sliding sidebar to avoid white flash on exit */}
-      <div
-        className="fixed z-[10000] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-        style={{
-          top: 56,
-          right: 8,
-          bottom: 8,
-          opacity: activeSidebar === 'ai-sidekick' ? 1 : 0,
-          transform: activeSidebar === 'ai-sidekick' ? 'translateX(0)' : 'translateX(16px)',
-          pointerEvents: activeSidebar === 'ai-sidekick' ? 'auto' : 'none',
-        }}
-      >
-        <div
-          className="rounded-xl overflow-hidden h-full"
-          style={{ width: 400, boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)', background: '#fff' }}
-        >
-          <AiPanelSolutionReview onClose={closeSidebar} activePage={activePage} focusItemId={sidekickFocusItemId} />
-        </div>
-      </div>
+      {(() => {
+        const skWidth = sidekickLayout === 'Fullscreen' ? window.innerWidth - 48 : sidekickLayout === 'Center' ? 720 : 400;
+        const isCenter = sidekickLayout === 'Center' || sidekickLayout === 'Fullscreen';
+        return (
+          <>
+          <div
+            className="fixed z-[10000] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={isCenter ? {
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 24,
+              opacity: activeSidebar === 'ai-sidekick' ? 1 : 0,
+              pointerEvents: activeSidebar === 'ai-sidekick' ? 'auto' : 'none',
+              backgroundColor: 'rgba(0,0,0,0.3)',
+            } : {
+              top: 56,
+              right: 8,
+              bottom: 8,
+              opacity: activeSidebar === 'ai-sidekick' ? 1 : 0,
+              transform: activeSidebar === 'ai-sidekick' ? 'translateX(0)' : 'translateX(16px)',
+              pointerEvents: activeSidebar === 'ai-sidekick' ? 'auto' : 'none',
+            }}
+            onClick={isCenter ? closeSidebar : undefined}
+          >
+            <div
+              className="rounded-xl overflow-hidden h-full"
+              style={{ width: skWidth, boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)', background: '#fff' }}
+              onClick={isCenter ? (e: React.MouseEvent) => e.stopPropagation() : undefined}
+            >
+              <AiPanelSolutionReview
+                onClose={closeSidebar}
+                activePage={activePage}
+                focusItemId={sidekickFocusItemId}
+                layoutButton={
+                  <button
+                    ref={sidekickLayoutBtnRef}
+                    aria-label="Panel layout"
+                    style={{ height: 24, display: 'flex', alignItems: 'center', gap: 2, padding: '0 4px', borderRadius: 4, color: '#656B81', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                    className="hover:bg-[#F1F2F5] transition-colors"
+                    onClick={() => {
+                      const r = sidekickLayoutBtnRef.current?.getBoundingClientRect()
+                      if (r) setSidekickLayoutPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+                      setSidekickLayoutOpen(o => !o)
+                    }}
+                  >
+                    {sidekickLayout === 'Center' && (
+                      <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                    {sidekickLayout === 'Right' && (
+                      <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                    {sidekickLayout === 'Fullscreen' && (
+                      <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                  </button>
+                }
+              />
+            </div>
+          </div>
+
+          {sidekickLayoutOpen && activeSidebar === 'ai-sidekick' && (
+            <>
+              <div className="fixed inset-0 z-[10001]" onClick={() => setSidekickLayoutOpen(false)} />
+              <div
+                className="fixed z-[10002] bg-white rounded-lg py-1"
+                style={{ top: sidekickLayoutPos.top, right: sidekickLayoutPos.right, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', minWidth: 140 }}
+              >
+                {(['Right', 'Center', 'Fullscreen'] as const).map(layout => (
+                  <button
+                    key={layout}
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-[#F1F2F5] transition-colors"
+                    style={{ border: 'none', background: sidekickLayout === layout ? '#F1F2F5' : 'transparent', cursor: 'pointer', color: '#222428' }}
+                    onClick={() => { setSidekickLayout(layout); setSidekickLayoutOpen(false) }}
+                  >
+                    {layout === 'Center' && (
+                      <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                    {layout === 'Right' && (
+                      <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                    {layout === 'Fullscreen' && (
+                      <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                        <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                        <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="currentColor"/>
+                      </svg>
+                    )}
+                    {layout}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+          </>
+        )
+      })()}
 
       {/* Right sidebar backdrop — suppressed on overview page and during ghost bar placement */}
       {isRightOpen && !ghostRowId && activePage !== 'overview' && activeSidebar !== 'ai-sidekick' && (
