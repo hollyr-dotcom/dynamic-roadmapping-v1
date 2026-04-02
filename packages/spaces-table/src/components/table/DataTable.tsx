@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { SpaceRow, FieldDefinition } from '@spaces/shared'
-import { Button, IconPlus } from '@mirohq/design-system'
+import { IconPlus, IconFileSpreadsheet, IconLightbulb } from '@mirohq/design-system'
+import { JiraLogo } from '../JiraLogo'
 import { TableHeader } from './TableHeader'
 import { TableRow } from './TableRow'
 
@@ -29,12 +30,19 @@ interface DataTableProps {
   onImportComplete?: () => void
   onMoveToRoadmap?: (rowId: string) => void
   showMoveToRoadmap?: boolean
+  onImportSource?: (source: 'jira' | 'csv' | 'backlog') => void
+  onAddRecord?: (title?: string) => void
+  activePage?: 'backlog' | 'roadmap'
+  animateIn?: boolean
+  onEmptyInteract?: () => void
 }
 
-export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete, onMoveToRoadmap, showMoveToRoadmap }: DataTableProps) {
+export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete, onMoveToRoadmap, showMoveToRoadmap, onImportSource, onAddRecord, activePage = 'roadmap', animateIn = true, onEmptyInteract }: DataTableProps) {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const tableRef = useRef<HTMLDivElement>(null)
   const hasImportedRef = useRef(false)
+  // Freeze animateIn at mount — prevents CSS animation from triggering if prop changes later
+  const animateInRef = useRef(animateIn)
   if (isImporting) hasImportedRef.current = true
 
   // Deselect when clicking outside the table
@@ -63,21 +71,85 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
     setSelectedRowId((prev) => (prev === rowId ? null : rowId))
   }, [])
 
+  const [newItemTitle, setNewItemTitle] = useState('')
+  const [newItemFocused, setNewItemFocused] = useState(false)
+  const newItemInputRef = useRef<HTMLInputElement>(null)
+
   if (data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 item-enter" style={{ animationDelay: '80ms' }}>
-        <div className="w-12 h-12 rounded-xl bg-[#f1f2f5] flex items-center justify-center mb-4">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <rect x="3" y="3" width="18" height="18" rx="2" stroke="#7D8297" strokeWidth="1.5"/>
-            <path d="M3 9h18M9 9v12" stroke="#7D8297" strokeWidth="1.5"/>
-          </svg>
+      <div
+        className={`flex-1 flex flex-col min-h-full${animateInRef.current ? ' item-enter' : ''}`}
+        style={animateInRef.current ? { animationDelay: '80ms' } : undefined}
+      >
+        {/* Centered content — two sections */}
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <div className="w-full max-w-[400px] flex flex-col items-center" style={{ paddingBottom: 160 }}>
+
+            {/* Section 1: Start with a new idea */}
+            <h3 className="text-[18px] font-semibold text-[#1a1b1e] mb-4 text-center" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>
+              {activePage === 'roadmap' ? 'Add a new roadmap item' : 'Start with a new idea'}
+            </h3>
+            <div
+              className="group/idea w-full flex items-center gap-2 px-4 py-3 rounded-xl mb-14 cursor-text bg-[#f1f2f5]"
+              onClick={() => newItemInputRef.current?.focus()}
+            >
+              <input
+                ref={newItemInputRef}
+                type="text"
+                value={newItemTitle}
+                onChange={e => setNewItemTitle(e.target.value)}
+                onFocus={() => { setNewItemFocused(true); onEmptyInteract?.() }}
+                onBlur={() => setNewItemFocused(false)}
+                onKeyDown={e => { if (e.key === 'Enter' && newItemTitle.trim()) onAddRecord?.(newItemTitle.trim()) }}
+                placeholder={activePage === 'roadmap' ? 'Write a title' : 'Write a roadmap idea'}
+                className="flex-1 text-[14px] text-[#1a1b1e] placeholder:text-[#AEB2C0] bg-transparent outline-none"
+                style={{ fontFamily: "'Noto Sans', sans-serif" }}
+              />
+              <button
+                className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-150 ${newItemTitle.trim() ? 'opacity-100 bg-[#4262FF] text-white hover:bg-[#3350e0] active:bg-[#2b44c7]' : 'opacity-0 pointer-events-none'}`}
+                onClick={e => { e.stopPropagation(); if (newItemTitle.trim()) onAddRecord?.(newItemTitle.trim()) }}
+              >
+                <IconPlus css={{ width: 14, height: 14 }} />
+              </button>
+            </div>
+
+            {/* Section 2: Add existing ideas */}
+            <h3 className="text-[18px] font-semibold text-[#1a1b1e] mb-4 text-center" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>
+              {activePage === 'roadmap' ? 'Add existing roadmap items' : 'Add existing ideas'}
+            </h3>
+            <div className="w-full flex flex-col gap-0">
+              {([
+                ...(activePage === 'roadmap' ? [{ id: 'backlog', label: 'Move idea from backlog' }] : []),
+                { id: 'jira', label: 'Import Jira issues' },
+                { id: 'csv',  label: 'Upload CSV' },
+              ] as const).map(source => (
+                <div
+                  key={source.id}
+                  className="group flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer hover:bg-[#f1f2f5] transition-colors"
+                  onClick={() => onImportSource?.(source.id)}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="shrink-0 w-5 h-5 flex items-center justify-center">
+                      {source.id === 'backlog' && <IconLightbulb css={{ width: 20, height: 20, color: '#222428' }} />}
+                      {source.id === 'jira' && <JiraLogo size={20} />}
+                      {source.id === 'csv' && <IconFileSpreadsheet css={{ width: 20, height: 20, color: '#222428' }} />}
+                    </div>
+                    <span className="text-[14px] text-[#1a1b1e]" style={{ fontFamily: "'Noto Sans', sans-serif" }}>
+                      {source.label}
+                    </span>
+                  </div>
+                  <button
+                    className="shrink-0 ml-3 w-8 h-8 flex items-center justify-center rounded-full bg-white border border-[#e9eaef] text-[#1a1b1e] group-hover:bg-[#4262FF] group-hover:border-transparent group-hover:text-white transition-colors"
+                    onClick={e => { e.stopPropagation(); onImportSource?.(source.id) }}
+                  >
+                    <IconPlus css={{ width: 14, height: 14 }} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+          </div>
         </div>
-        <h3 className="text-[16px] font-semibold text-[#1a1b1e] mb-1" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>No records yet</h3>
-        <p className="text-[14px] text-[#7D8297] mb-5" style={{ fontFamily: 'Open Sans, sans-serif' }}>Add your first record to get started</p>
-        <Button variant="secondary" size="medium">
-          <Button.IconSlot><IconPlus /></Button.IconSlot>
-          <Button.Label>Add record</Button.Label>
-        </Button>
       </div>
     )
   }

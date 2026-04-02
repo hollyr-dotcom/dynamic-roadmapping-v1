@@ -1,4 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { Button, IconButton, IconCross } from '@mirohq/design-system'
+import { ShareSpaceDialog } from './components/page/ShareSpaceDialog'
 import { sampleData, fields, roadmapData, roadmapFields } from '@spaces/shared'
 import type { Priority, SpaceRow, Status } from '@spaces/shared'
 import { TopNavBar } from './components/page/TopNavBar'
@@ -76,14 +78,22 @@ const ROADMAP_KANBAN_COLUMNS: Priority[] = ['now', 'next', 'later']
 export function App() {
   const [scrollFade, setScrollFade] = useState(0)
   const [view, setView] = useState<'home' | 'app'>('home')
+  const [isInitialLoad, setIsInitialLoad] = useState(false)
+  const [emptyVariant] = useState<'hidden' | 'disabled'>('disabled')
+  const [spaceName, setSpaceName] = useState('Project Galaxy')
   const [showInsightsModal, setShowInsightsModal] = useState(false)
   const [showInsightsToast, setShowInsightsToast] = useState(false)
-  const [showShareTooltip, setShowShareTooltip] = useState(false)
+  const [showImportPopover, setShowImportPopover] = useState(false)
+  const [showSharePopover, setShowSharePopover] = useState(false)
+  const [showShareDialog, setShowShareDialog] = useState(false)
   const [activePage, setActivePage] = useState<PageId>('backlog')
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
   const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
   const [pendingImport, setPendingImport] = useState<'jira' | 'miro' | 'csv' | null>(null)
-  const [hasData, setHasData] = useState(true)
+  const [backlogHasData, setBacklogHasData] = useState(true)
+  const [roadmapHasData, setRoadmapHasData] = useState(true)
+  const hasData = activePage === 'backlog' ? backlogHasData : roadmapHasData
+  const setHasData = (val: boolean) => activePage === 'backlog' ? setBacklogHasData(val) : setRoadmapHasData(val)
   const [backlogData, setBacklogData] = useState<SpaceRow[]>(sampleData)
   const [roadmapItems, setRoadmapItems] = useState<SpaceRow[]>(roadmapData)
   const [activeTab, setActiveTab] = useState('all-items')
@@ -119,6 +129,7 @@ export function App() {
   const [syncShimmering, setSyncShimmering] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
   const [pendingToast, setPendingToast] = useState(false)
+  const [showJiraAuth, setShowJiraAuth] = useState(false)
   const [movedRow, setMovedRow] = useState<SpaceRow | null>(null)
   const [showMoveSnackbar, setShowMoveSnackbar] = useState(false)
   const [pageTransitioning, setPageTransitioning] = useState(false)
@@ -139,7 +150,7 @@ export function App() {
     if (pendingToast) {
       setPendingToast(false)
       setShowInsightsToast(true)
-      setTimeout(() => setShowShareTooltip(true), 4000)
+      setTimeout(() => setShowImportPopover(true), 4000)
     }
   }, [pendingToast])
 
@@ -187,6 +198,11 @@ export function App() {
       return clamped
     })
   }, [])
+
+  // Reset initial load flag after first app render so page-switch animations work
+  useEffect(() => {
+    if (view === 'app' && isInitialLoad) setIsInitialLoad(false)
+  }, [view, isInitialLoad])
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -442,7 +458,7 @@ export function App() {
   const isLeftOpen = activeSidebar === 'space-menu' || jiraPanelOpen
   const isRightOpen = activeSidebar === 'ai-sidekick' || activeSidebar === 'view-settings' || activeSidebar === 'row-detail'
   // Dynamic view rendering
-  const currentTabs = pageTabs[activePage]
+  const currentTabs = pageTabs[activePage] ?? pageTabs.backlog
   const activeTabConfig = currentTabs.find(t => t.id === activeTab)
   const pageData = hasData ? (activePage === 'backlog' ? backlogData : roadmapItems) : []
   const pageFields = activePage === 'backlog' ? fields : roadmapFields
@@ -453,17 +469,22 @@ export function App() {
 
   if (view === 'home') {
     return <HomePage onOpenApp={(importSource?: 'jira' | 'miro' | 'csv', activePage?: string) => {
+      setIsInitialLoad(true)
       setView('app')
-      const page = (activePage ?? 'backlog') as PageId
+      const page = (activePage && activePage in PAGE_CONFIGS ? activePage : 'backlog') as PageId
       setActivePage(page)
       setDatabaseTitle(PAGE_CONFIGS[page].title)
       setActiveTab(PAGE_CONFIGS[page].defaultTab)
+      setActiveSidebar('space-menu')
       if (importSource) {
-        setHasData(false)
+        setBacklogHasData(false)
+        setRoadmapHasData(false)
         setPendingToast(true)
         setTimeout(() => setPendingImport(importSource), 300)
-      } else if (!activePage) {
-        setTimeout(() => { setShowInsightsToast(true); setTimeout(() => setShowShareTooltip(true), 4000) }, 0)
+      } else {
+        setBacklogHasData(false)
+        setRoadmapHasData(false)
+        setTimeout(() => setShowShareDialog(true), 400)
       }
     }} />
   }
@@ -484,34 +505,39 @@ export function App() {
       <div
         className="isolate flex-1 flex flex-col min-w-0 h-screen overflow-hidden transition-[padding-left] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{ paddingLeft: isLeftOpen ? (jiraPanelOpen ? 400 : 320) : 0, transition: 'padding-left 0.45s cubic-bezier(0.16,1,0.3,1)' }}
-        onClick={isLeftOpen ? () => { setActiveSidebar(null); setJiraPanelOpen(false) } : undefined}
+        onClick={isLeftOpen && hasData ? () => { setActiveSidebar(null); setJiraPanelOpen(false) } : undefined}
       >
-        <div onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
+        <div onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)} onClick={e => e.stopPropagation()}>
           <TopNavBar
             borderOpacity={scrollFade}
             scrollFade={scrollFade}
             databaseTitle={databaseTitle}
+            spaceName={spaceName}
             isMenuOpen={isLeftOpen}
             onToggleMenu={() => toggleSidebar('space-menu')}
-            showShareTooltip={showShareTooltip}
+            showSharePopover={showSharePopover}
+            onDismissSharePopover={() => setShowSharePopover(false)}
           />
         </div>
         {/* Scroll area — database title scrolls away, tabs stick under header */}
         <div ref={scrollRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-y-auto overflow-x-auto page-scroll flex flex-col${pageTransitioning ? ' page-transitioning-out' : ''}`}>
           <div className="sticky left-0 z-[45]" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
-            <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} centered={activePage === 'overview'} />
+            <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} disableControls={emptyVariant === 'disabled' && !hasData} centered={activePage === 'overview'} />
           </div>
           {activePage !== 'overview' && (
             <div className={`sticky top-0 left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
-              <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} />
+              <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} showImportPopover={showImportPopover} onDismissImportPopover={() => setShowImportPopover(false)} hideControls={emptyVariant === 'hidden' && !hasData} disableControls={emptyVariant === 'disabled' && !hasData} />
             </div>
           )}
 
           {activePage === 'overview' && <OverviewPage onDiveDeeper={(cardId) => { setOverviewCardId(cardId); setSelectedRow(OVERVIEW_ROWS[cardId] ?? backlogData[0]); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onAddToRoadmap={(cardId) => { const row = OVERVIEW_ROWS[cardId]; if (row) { setMovedRow(row); setRoadmapItems(prev => [...prev, { ...row, id: `r-ov-${cardId}`, status: 'planning', priority: 'next' }]); setShowMoveSnackbar(true) } }} onReprioritize={() => { setActivePage('backlog'); setDatabaseTitle('Backlog'); setActiveTab('prioritization') }} />}
 
-          {/* Type-based view renderer */}
+          {/* Type-based view renderer — show empty state for any view type when no data */}
+          {activePage !== 'overview' && !hasData ? (
+            <DataTable key={`empty-${activePage}`} data={[]} fields={pageFields} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={(title) => { closeSidebar(); setShowSharePopover(false); setHasData(true); if (activePage === 'roadmap') { setRoadmapItems([{ id: 'new-1', title: title || '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'now', status: 'planning' }]) } else { setBacklogData([{ id: 'new-1', title: title || '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]) }; setTimeout(() => setShowImportPopover(true), 800) }} activePage={activePage} animateIn={!isInitialLoad} onEmptyInteract={closeSidebar} />
+          ) : (<>
           {activePage !== 'overview' && activeTabConfig?.type === 'table' && (
-              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} />
+              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={(title) => { setShowSharePopover(false); setHasData(true); setBacklogData([{ id: 'new-1', title: title || '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]); setTimeout(() => setShowImportPopover(true), 800) }} activePage={activePage} />
           )}
           {activeTabConfig?.type === 'kanban' && (
             <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onCardSelectedChange={setKanbanCardSelected} />
@@ -519,6 +545,7 @@ export function App() {
           {activeTabConfig?.type === 'timeline' && (
             <TimelinePlaceholder key={activeTab} data={roadmapItems} parentScrollRef={scrollRef} onRowClick={(row) => { setSidekickFocusItemId(row.id); setActiveSidebar('ai-sidekick') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onBarSelectedChange={setKanbanCardSelected} ghostRowId={ghostRowId ?? undefined} onBarPlaced={(rowId, startDate, endDate) => { setSelectedRowDates({ startDate, endDate }); setGhostRowId(null) }} />
           )}
+          </>)}
         </div>
       </div>
       </div>
@@ -540,7 +567,7 @@ export function App() {
           </div>
         ) : (
           <SidebarShell side="left" onClose={closeSidebar} showClose={false} width={320}>
-            <SpaceMenu onClose={closeSidebar} activePage={activePage} onPageChange={switchPage} onGoHome={() => { closeSidebar(); setView('home') }} />
+            <SpaceMenu onClose={closeSidebar} activePage={activePage} onPageChange={switchPage} onGoHome={() => { closeSidebar(); setView('home') }} spaceName={spaceName} />
           </SidebarShell>
         )}
       </div>
@@ -779,10 +806,69 @@ export function App() {
       {/* Canvas floating nav panels */}
       <CanvasNavPanels isOpen={canvasOpen} databaseTitle={databaseTitle} />
 
+      {/* Share space dialog */}
+      {showShareDialog && (
+        <ShareSpaceDialog
+          spaceName={spaceName}
+          onContinue={() => setShowShareDialog(false)}
+        />
+      )}
+
+      {/* Jira auth dialog */}
+      {showJiraAuth && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ backgroundColor: 'rgba(99,107,130,0.55)' }}
+          onClick={() => { setShowJiraAuth(false); setPendingImport(null) }}
+        >
+          <div
+            className="bg-white flex flex-col relative"
+            style={{
+              borderRadius: 16,
+              width: 480,
+              padding: 40,
+              gap: 20,
+              boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="absolute top-4 right-4 z-10">
+              <IconButton variant="ghost" size="large" aria-label="Close" onPress={() => { setShowJiraAuth(false); setPendingImport(null) }}>
+                <IconCross />
+              </IconButton>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full border-[1.5px] border-[#4262FF] flex items-center justify-center shrink-0">
+                <span className="text-[#4262FF] text-[13px] font-semibold" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>!</span>
+              </div>
+              <h2 className="text-[22px] text-[#1a1b1e] font-semibold" style={{ fontFamily: "'Roobert PRO', sans-serif" }}>Authorization required</h2>
+            </div>
+
+            <p className="text-[15px] text-[#44474f]" style={{ fontFamily: 'Open Sans, sans-serif', lineHeight: 1.5 }}>
+              Sign in to Jira using your personal credentials to continue working with Jira Cards in Miro.
+            </p>
+
+            <div className="flex items-center gap-3 pt-2">
+              <Button variant="primary" size="large" onPress={() => { setShowJiraAuth(false) }}>
+                <Button.Label>Authorize</Button.Label>
+              </Button>
+              <Button variant="ghost" size="large" onPress={() => { setShowJiraAuth(false); setPendingImport(null) }}>
+                <Button.Label>Cancel</Button.Label>
+              </Button>
+              <div className="flex-1" />
+              <Button variant="ghost" size="large" onPress={() => { setShowJiraAuth(false) }}>
+                <Button.Label>Skip for now</Button.Label>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Jira import modal */}
-      {pendingImport === 'jira' && (
+      {pendingImport === 'jira' && !showJiraAuth && (
         <JiraImportModal
-          onImport={() => { setPendingImport(null); setHasData(true); setIsImporting(true) }}
+          onImport={() => { setPendingImport(null); setIsImporting(true); if (activePage === 'roadmap') { setRoadmapHasData(true); setRoadmapItems(roadmapData) } else { setBacklogHasData(true); setBacklogData(sampleData) } }}
           onClose={() => { setPendingImport(null) }}
         />
       )}
@@ -805,6 +891,7 @@ export function App() {
           onDismiss={() => { setShowMoveSnackbar(false); setMovedRow(null) }}
         />
       )}
+
 
     </div>
   )

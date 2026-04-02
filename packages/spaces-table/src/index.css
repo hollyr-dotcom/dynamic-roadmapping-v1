@@ -42,6 +42,22 @@ body {
   animation: center-panel-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* ── Onboarding popover entrances ─────────────────────── */
+@keyframes popover-tip-center-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0);    }
+}
+@keyframes popover-tip-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+.import-popover-tip-center {
+  animation: popover-tip-center-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.import-popover-tip {
+  animation: popover-tip-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* ── Thin scrollbar for page scroll ──────────────────── */
 .page-scroll {
   scrollbar-width: thin;
@@ -317,6 +333,17 @@ tbody tr.row-selected td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
   to   { width: 100%; }
 }
 
+/* ── Agent card exit animation ───────────────────────── */
+@keyframes agent-exit {
+  0%   { opacity: 1; transform: translateY(0) scale(1);    max-height: 80px;  padding-top: 12px; padding-bottom: 12px; border-width: 1px; }
+  100% { opacity: 0; transform: translateY(4px) scale(0.97); max-height: 0;   padding-top: 0;    padding-bottom: 0;    border-width: 0;   }
+}
+.agent-exit {
+  animation: agent-exit 0.32s cubic-bezier(0.4, 0, 1, 1) forwards;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 @keyframes toolbarEnter {
   from { opacity: 0; transform: translateX(calc(-50%)) scale(0.95); }
   to   { opacity: 1; transform: translateX(calc(-50%)) scale(1); }
@@ -325,6 +352,22 @@ tbody tr.row-selected td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
 /* Ensure MDS Tooltip portals render above all page layers */
 [data-radix-popper-content-wrapper] {
   z-index: 9999 !important;
+}
+
+/* ── Share dialog entrance ───────────────────────────── */
+@keyframes dialog-backdrop-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes dialog-card-enter {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.dialog-backdrop-enter {
+  animation: dialog-backdrop-enter 0.25s ease-out forwards;
+}
+.dialog-card-enter {
+  animation: dialog-card-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* ── Page transition out ─────────────────────────────── */
