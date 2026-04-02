@@ -586,6 +586,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       {/* ── Tabs content ── */}
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
 
         {/* Low-confidence Insights callout */}
         {activeTab === 'Details' && !insightDismissed && row.id === '1' && (
@@ -961,7 +962,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </div>
         )}
 
-      </div>
+      </div>{/* end inner scrollable wrapper */}
 
       {activeTab !== 'Comments' && (
         <div className="shrink-0" style={{ padding: 16 }} onClick={() => onOpenSidekick?.()}>
@@ -982,6 +983,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </div>
         </div>
       )}
+
+      </div>{/* end tabs content outer */}
 
       {/* ── Company panel ─── */}
       <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: selectedLayout !== 'Right' ? 48 : 16 }}>
