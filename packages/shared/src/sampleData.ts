@@ -54,3 +54,78 @@ export const roadmapData: SpaceRow[] = [
   { id: "r13", title: "Accessibility audit and WCAG 2.2 AA compliance across all flows",           mentions: 10,  customers: 11,  estRevenue: 50,  companies: ["Notion", "Asana"],                        priority: "now", status: "done" },
   { id: "r14", title: "Financial literacy hub with interactive learning modules",                   mentions: 12,  customers: 9,   estRevenue: 45,  companies: ["Figma", "Airbnb", "Shopify", "Linear"],   priority: "now", status: "done" },
 ]
+
+/* ─── Mock data for Roadmap Sidekick flows ─── */
+
+export const companyARR: Record<string, { company: string; arr: number; contacts: number }[]> = {
+  r1: [
+    { company: "Figma", arr: 180, contacts: 42 },
+    { company: "Airbnb", arr: 120, contacts: 38 },
+    { company: "Stripe", arr: 85, contacts: 31 },
+    { company: "Notion", arr: 40, contacts: 23 },
+  ],
+  r2: [
+    { company: "Spotify", arr: 160, contacts: 35 },
+    { company: "Stripe", arr: 110, contacts: 28 },
+    { company: "Linear", arr: 70, contacts: 34 },
+  ],
+  r3: [
+    { company: "Dropbox", arr: 95, contacts: 30 },
+    { company: "ZenDesk", arr: 80, contacts: 27 },
+    { company: "Asana", arr: 60, contacts: 32 },
+  ],
+  r4: [
+    { company: "Atlassian", arr: 150, contacts: 40 },
+    { company: "Notion", arr: 140, contacts: 38 },
+    { company: "Miro", arr: 100, contacts: 34 },
+  ],
+  r5: [
+    { company: "Shopify", arr: 110, contacts: 25 },
+    { company: "Figma", arr: 90, contacts: 22 },
+    { company: "Linear", arr: 50, contacts: 24 },
+  ],
+  r6: [
+    { company: "Asana", arr: 70, contacts: 14 },
+    { company: "Linear", arr: 55, contacts: 12 },
+    { company: "Notion", arr: 35, contacts: 12 },
+  ],
+  r7: [
+    { company: "Spotify", arr: 30, contacts: 5 },
+    { company: "Stripe", arr: 25, contacts: 4 },
+    { company: "Miro", arr: 10, contacts: 3 },
+    { company: "Slack", arr: 5, contacts: 2 },
+  ],
+  r8: [
+    { company: "ZenDesk", arr: 40, contacts: 8 },
+    { company: "Jira", arr: 25, contacts: 6 },
+    { company: "Atlassian", arr: 15, contacts: 5 },
+  ],
+}
+
+export const customerQuotes: Record<string, { company: string; quote: string; role: string }[]> = {
+  r2: [
+    { company: "Spotify", quote: "Our team has been requesting real-time transaction categorisation using ML classification for several quarters. Automatically tag every transaction with a spending category.", role: "Sarah Kim, VP of Product" },
+    { company: "Stripe", quote: "Manual tagging is costing us 12 hours a week. We need this automated yesterday.", role: "Dave Chen, Engineering Lead" },
+  ],
+  r4: [
+    { company: "Atlassian", quote: "We need multi-currency for our APAC expansion. Our treasury team is blocked.", role: "James Wright, CFO" },
+    { company: "Notion", quote: "Customers in Europe keep asking why they can't pay in EUR. It's a churn risk.", role: "Lisa Park, Head of Growth" },
+    { company: "Miro", quote: "We're losing deals to competitors who support GBP and EUR natively.", role: "Tom Bauer, Sales Director" },
+  ],
+  r6: [
+    { company: "Asana", quote: "Dollar-cost averaging is table stakes for any investment product. We're surprised it's not live yet.", role: "Nina Patel, Product Manager" },
+  ],
+  r8: [
+    { company: "ZenDesk", quote: "We had two near-miss fraud events last quarter. The current detection is too slow for high-value transfers.", role: "Alex Morgan, Risk Lead" },
+  ],
+}
+
+export const itemDependencies: { from: string; to: string; type: 'blocks' | 'depends-on' | 'related' }[] = [
+  { from: "r2", to: "r3", type: "blocks" },        // categorisation blocks budgeting (budgeting needs categories)
+  { from: "r1", to: "r5", type: "blocks" },         // portfolio advisor blocks savings rules (shared risk model)
+  { from: "r4", to: "r6", type: "depends-on" },     // multi-currency needed for recurring investment plans
+  { from: "r2", to: "r5", type: "related" },         // categorisation related to savings rules
+  { from: "r8", to: "r11", type: "related" },        // fraud detection related to open banking (external data)
+  { from: "r8", to: "r4", type: "related" },         // fraud detection related to multi-currency (FX risk)
+  { from: "r3", to: "r7", type: "depends-on" },      // budgeting insights feed into tax-loss harvesting
+]

@@ -525,6 +525,7 @@ const [selectedBarId, setSelectedBarId] = useState<string | null>(null)
             >
               <KanbanCardToolbar
                 onOpenSidePanel={() => onRowClick?.(selectedRow)}
+                onOpenSidekick={() => onRowClick?.(selectedRow)}
                 onMoveToRoadmap={showMoveToRoadmap && onMoveToRoadmap ? () => { onMoveToRoadmap(selectedRow.id); setSelectedBarId(null); onBarSelectedChange?.(false) } : undefined}
                 cardColor={(PRIORITY_BAR_COLORS[selectedRow.priority] ?? DEFAULT_BAR_COLOR).bg}
               />
