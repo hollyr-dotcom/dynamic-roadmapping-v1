@@ -567,21 +567,11 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       {showSidekick && (
         <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <div className="flex items-center gap-2 h-12 shrink-0 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 12, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: selectedLayout !== 'Right' ? '1px solid #E9EAEF' : 'none' }}>
-            <button
-              onClick={() => setShowSidekick(false)}
-              className="flex items-center justify-center w-6 h-6 rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
-              style={{ cursor: 'pointer' }}
-            >
-              <IconChevronLeft css={{ width: 16, height: 16 }} />
-            </button>
-            <p
-              className="flex-1 min-w-0 text-[#222428] leading-[1.5]"
-              style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: '16px', fontFeatureSettings: "'ss01' 1" }}
-            >
-              Sidekick
-            </p>
-            <div className="flex items-center gap-1 shrink-0">
+          <AiPanelSolutionReview
+            onClose={onClose}
+            onBack={() => setShowSidekick(false)}
+            focusItemId={row.id}
+            layoutButton={
               <Tooltip>
                 <Tooltip.Trigger asChild>
                   <button
@@ -618,21 +608,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   <Tooltip.Content side="top" sideOffset={4}>Panel view</Tooltip.Content>
                 </Tooltip.Portal>
               </Tooltip>
-              <Tooltip>
-                <Tooltip.Trigger asChild>
-                  <button aria-label="Close panel" className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors" onClick={onClose}>
-                    <IconCross css={{ width: 16, height: 16 }} />
-                  </button>
-                </Tooltip.Trigger>
-                <Tooltip.Portal>
-                  <Tooltip.Content side="top" sideOffset={4}>Close</Tooltip.Content>
-                </Tooltip.Portal>
-              </Tooltip>
-            </div>
-          </div>
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <AiPanelSolutionReview onClose={() => setShowSidekick(false)} focusItemId={row.id} />
-          </div>
+            }
+          />
         </div>
       )}
 
