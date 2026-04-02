@@ -91,8 +91,8 @@ interface RowDetailPanelProps {
   timelineDates?: { startDate: string; endDate: string }
   onCompanyFilter?: (name: string) => void
   activeCompanyFilter?: string[] | null
-  selectedLayout?: 'Center' | 'Right' | 'Fullscreen'
-  onLayoutChange?: (layout: 'Center' | 'Right' | 'Fullscreen') => void
+  selectedLayout?: 'Halfscreen' | 'Right' | 'Fullscreen'
+  onLayoutChange?: (layout: 'Halfscreen' | 'Right' | 'Fullscreen') => void
   hideInsightCallout?: boolean
   overrideSummary?: string
   onOpenSidekick?: () => void
@@ -350,11 +350,11 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
   const [layoutOpen, setLayoutOpen] = useState(false)
   const [layoutPos, setLayoutPos] = useState<{ top: number; right: number } | null>(null)
-  const [layoutInternal, setLayoutInternal] = useState<'Center' | 'Right' | 'Fullscreen'>('Right')
+  const [layoutInternal, setLayoutInternal] = useState<'Halfscreen' | 'Right' | 'Fullscreen'>('Right')
   const selectedLayout = selectedLayoutProp ?? layoutInternal
-  const setSelectedLayout = (l: 'Center' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
+  const setSelectedLayout = (l: 'Halfscreen' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
   const COMMENTS_WIDTH = 420
-  const panelWidth = selectedLayout === 'Center' ? 720 : selectedLayout === 'Fullscreen' ? window.innerWidth - 48 - COMMENTS_WIDTH : 460
+  const panelWidth = selectedLayout === 'Halfscreen' ? window.innerWidth * 0.5 : selectedLayout === 'Fullscreen' ? window.innerWidth * 0.75 - COMMENTS_WIDTH : 460
   const layoutButtonRef = useRef<HTMLButtonElement>(null)
   const layoutMenuRef = useRef<HTMLDivElement>(null)
 
@@ -479,7 +479,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        width: selectedLayout !== 'Right' ? panelWidth + COMMENTS_WIDTH : panelWidth,
+        width: selectedLayout === 'Fullscreen' ? panelWidth + COMMENTS_WIDTH : panelWidth,
         backgroundColor: 'white',
         fontFamily: 'Open Sans, sans-serif',
         borderRadius: selectedLayout !== 'Right' ? 8 : 0,
@@ -491,7 +491,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       {/* ── Header (full width) ──────────────────────────── */}
       {!showSidekick && (
-      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: selectedLayout !== 'Right' ? '1px solid #E9EAEF' : 'none' }}>
+      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: 'none' }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {!hideInsightCallout && <JiraLogo size={18} />}
           <p
@@ -528,10 +528,10 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   setLayoutOpen(o => !o)
                 }}
               >
-                {selectedLayout === 'Center' && (
+                {selectedLayout === 'Halfscreen' && (
                   <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
                     <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                    <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
+                    <rect x="5.5" y="2.5" width="6" height="7" rx="0.8" fill="currentColor"/>
                   </svg>
                 )}
                 {selectedLayout === 'Right' && (
@@ -585,7 +585,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                       setLayoutOpen(o => !o)
                     }}
                   >
-                    {selectedLayout === 'Center' && (
+                    {selectedLayout === 'Halfscreen' && (
                       <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
                         <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
                         <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
@@ -620,7 +620,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       {/* ── Tab bar ── */}
       <div className="flex gap-1 px-3 pt-3 pb-4 shrink-0" style={{ pointerEvents: 'auto' }}>
-        {(selectedLayout === 'Right' ? ['Details', 'Jira', 'Insights', 'Comments'] : ['Details', 'Jira', 'Insights']).map(tab => (
+        {(selectedLayout === 'Fullscreen' ? ['Details', 'Jira', 'Insights'] : ['Details', 'Jira', 'Insights', 'Comments']).map(tab => (
           <button
             key={tab}
             onPointerDown={e => { e.stopPropagation(); setActiveTab(tab) }}
@@ -1012,22 +1012,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </div>
         )}
 
-      {activeTab !== 'Comments' && (
-        <div style={{ position: 'sticky', bottom: 0, marginTop: 'auto', paddingTop: 16, paddingBottom: 24, background: 'white' }} onClick={() => setShowSidekick(true)}>
-          <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}>
-            <textarea
-              readOnly
-              placeholder="What should we do next?"
-              rows={2}
-              className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none cursor-text"
-              style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0' }}
-            />
-            <button className="shrink-0 text-[#9DA3B4]">
-              <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
-            </button>
-          </div>
-        </div>
-      )}
 
       </div>
 
@@ -1103,7 +1087,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </div>
         </div>
       )}
-
 
       {/* ── Chat overlay (full-panel, avoids slider height-shift glitch) ─── */}
       {selectedPrompt && (
@@ -1261,7 +1244,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           className="fixed z-[9999] bg-white flex flex-col rounded-[8px]"
           style={{ top: layoutPos.top, right: layoutPos.right, padding: '16px 12px', gap: 4, boxShadow: '0px 0px 12px rgba(34,36,40,0.04), 0px 2px 8px rgba(34,36,40,0.12)' }}
         >
-          {(['Right', 'Center', 'Fullscreen'] as const).map(option => (
+          {(['Right', 'Halfscreen', 'Fullscreen'] as const).map(option => (
             <button
               key={option}
               className={`flex items-center w-full rounded-[4px] transition-colors text-left ${selectedLayout === option ? 'bg-[#F1F2F5]' : 'hover:bg-[#F1F2F5]'}`}
@@ -1275,10 +1258,10 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="#222428"/>
                   </svg>
                 )}
-                {option === 'Center' && (
+                {option === 'Halfscreen' && (
                   <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
                     <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
-                    <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="#222428"/>
+                    <rect x="5.5" y="2.5" width="6" height="7" rx="0.8" fill="#222428"/>
                   </svg>
                 )}
                 {option === 'Fullscreen' && (
@@ -1373,8 +1356,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       )}
     </div>{/* end main panel */}
 
-    {/* ── Comments panel (Center / Fullscreen only) ── */}
-    {selectedLayout !== 'Right' && !showSidekick && (
+    {/* ── Comments panel (Fullscreen only) ── */}
+    {selectedLayout === 'Fullscreen' && !showSidekick && (
       <div
         style={{
           width: COMMENTS_WIDTH,
@@ -1473,7 +1456,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     </div>
   )
 
-  if (selectedLayout === 'Center' || selectedLayout === 'Fullscreen') {
+  if (selectedLayout === 'Fullscreen') {
     return createPortal(
       <div
         className="center-overlay-enter fixed inset-0 z-[200] flex items-center justify-center py-[24px]"
