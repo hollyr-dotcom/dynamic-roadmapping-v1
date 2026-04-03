@@ -44,7 +44,7 @@ import {
   IconTasks,
 } from '@mirohq/design-system'
 import { JiraLogo } from '../JiraLogo'
-import AiPanelSolutionReview, { PanelHeader as SidekickHeader } from './AiPanelSolutionReview'
+import AiPanelSolutionReview, { PanelHeader as SidekickHeader, PanelInput as SidekickInput } from './AiPanelSolutionReview'
 
 function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
   const size = (props as { width?: number }).width ?? 24
@@ -1584,37 +1584,7 @@ function PromptChatView({ prompt, company, onBack, onClose }: { prompt: string; 
         </div>
       )}
 
-      {/* Input card */}
-      <div className="shrink-0 px-4 pb-4" style={{ paddingTop: thinking ? 0 : 8 }}>
-        <div className="flex flex-col rounded-lg border border-[#EBEBEB] bg-white" style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.05)' }}>
-          <textarea
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-            placeholder="Ask anything..."
-            rows={2}
-            className="w-full px-4 pt-4 pb-2 text-[14px] text-[#222428] outline-none bg-transparent resize-none placeholder:text-[#7D8297] leading-[1.4]"
-            style={{ fontFamily: 'Open Sans, sans-serif' }}
-          />
-          <div className="flex items-center justify-between px-3 pb-3">
-            <div className="flex items-center gap-1">
-              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
-                <IconSlidersX size="small" />
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
-                <IconStickyNote size="small" />
-              </button>
-            </div>
-            <button
-              onClick={send}
-              className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
-              style={{ backgroundColor: input.trim() ? '#4262FF' : '#E9EAEF', color: input.trim() ? '#fff' : '#AEB2C0' }}
-            >
-              <IconArrowUp css={{ width: 16, height: 16 }} />
-            </button>
-          </div>
-        </div>
-      </div>
+      <SidekickInput onSend={send} />
     </div>
   )
 }

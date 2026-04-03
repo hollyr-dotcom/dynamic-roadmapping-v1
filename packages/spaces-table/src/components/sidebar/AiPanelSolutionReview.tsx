@@ -1332,7 +1332,7 @@ function PanelBody({ activePage, focusItemId, contextUserMessage }: { activePage
 }
 
 /* ─── Input area ─── */
-function PanelInput({ onSend }: { onSend: (text: string) => void }) {
+export function PanelInput({ onSend }: { onSend: (text: string) => void }) {
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
