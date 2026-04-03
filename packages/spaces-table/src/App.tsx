@@ -89,11 +89,12 @@ export function App() {
   const [activePage, setActivePage] = useState<PageId>('backlog')
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
   const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
-  const [pendingImport, setPendingImport] = useState<'jira' | 'miro' | 'csv' | null>(null)
+  const [pendingImport, setPendingImport] = useState<'jira' | 'miro' | 'csv' | 'backlog' | null>(null)
   const [backlogHasData, setBacklogHasData] = useState(true)
   const [roadmapHasData, setRoadmapHasData] = useState(true)
-  const hasData = activePage === 'backlog' ? backlogHasData : roadmapHasData
-  const setHasData = (val: boolean) => activePage === 'backlog' ? setBacklogHasData(val) : setRoadmapHasData(val)
+  const [overviewHasData, setOverviewHasData] = useState(true)
+  const hasData = activePage === 'overview' ? overviewHasData : activePage === 'backlog' ? backlogHasData : roadmapHasData
+  const setHasData = (val: boolean) => activePage === 'overview' ? setOverviewHasData(val) : activePage === 'backlog' ? setBacklogHasData(val) : setRoadmapHasData(val)
   const [backlogData, setBacklogData] = useState<SpaceRow[]>(sampleData)
   const [roadmapItems, setRoadmapItems] = useState<SpaceRow[]>(roadmapData)
   const [activeTab, setActiveTab] = useState('all-items')
@@ -524,16 +525,20 @@ export function App() {
         </div>
         {/* Scroll area — database title scrolls away, tabs stick under header */}
         <div ref={scrollRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-y-auto overflow-x-auto page-scroll flex flex-col${pageTransitioning ? ' page-transitioning-out' : ''}`}>
-          <div className="sticky left-0 z-[45]" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
-            <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} disableControls={emptyVariant === 'disabled' && !hasData} centered={activePage === 'overview'} />
+          <div className="sticky top-0 left-0 z-[45]" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
+            <DatabaseTitle opacity={1} scrollFade={0} title={databaseTitle} onTitleChange={setDatabaseTitle} disableControls={emptyVariant === 'disabled' && !hasData} centered={activePage === 'overview'} />
           </div>
           {activePage !== 'overview' && (
-            <div className={`sticky top-0 left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
+            <div className={`sticky top-[99px] left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
               <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} showImportPopover={showImportPopover} onDismissImportPopover={() => setShowImportPopover(false)} hideControls={emptyVariant === 'hidden' && !hasData} disableControls={emptyVariant === 'disabled' && !hasData} onOpenAiSidekick={() => { setSidekickSource('toolbar'); toggleSidebar('ai-sidekick') }} />
             </div>
           )}
 
-          {activePage === 'overview' && <OverviewPage onDiveDeeper={(cardId) => {
+          {activePage === 'overview' && !overviewHasData && (
+            <DataTable key="empty-overview" data={[]} fields={pageFields} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={(title) => { closeSidebar(); setShowSharePopover(false); setOverviewHasData(true); setBacklogData([{ id: 'new-1', title: title || '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]); setTimeout(() => setShowImportPopover(true), 800) }} activePage="overview" animateIn={!isInitialLoad} onEmptyInteract={closeSidebar} />
+          )}
+
+          {activePage === 'overview' && overviewHasData && <OverviewPage onDiveDeeper={(cardId) => {
                   const row = OVERVIEW_ROWS[cardId] ?? backlogData[0]
                   const card = OVERVIEW_CARDS.find(c => c.id === cardId)
                   const msg = card

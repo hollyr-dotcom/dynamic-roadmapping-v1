@@ -73,7 +73,7 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack,
   return (
     <div
       className="panel-scroll"
-      style={{ height: '100%', overflowY: 'auto', padding: '16px 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+      style={{ height: '100%', overflowY: 'auto', padding: '0px 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
       {/* ── Sticky header: back button only ── */}
       <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 8px' }}>

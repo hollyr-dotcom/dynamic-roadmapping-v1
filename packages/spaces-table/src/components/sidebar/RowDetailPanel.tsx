@@ -41,6 +41,7 @@ import {
   IconSmileyPlus,
   IconPaperPlaneFilledRight,
   IconBookmark,
+  IconTasks,
 } from '@mirohq/design-system'
 import { JiraLogo } from '../JiraLogo'
 import AiPanelSolutionReview from './AiPanelSolutionReview'
@@ -167,21 +168,21 @@ const CARD_WEIGHTS = [0.13, 0.12, 0.10, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06, 0.05
 const isStoreReview = (source?: string) => source === 'App Store' || source === 'Play Store'
 
 const CARD_STYLES = [
-  { borderColor: '#D1F09F', Icon: IconHeart, stars: 3, date: 'Aug 02', source: 'App Store' },
-  { borderColor: '#d4bbff', Icon: IconFlag, date: 'Jul 18', source: 'Gong' },
-  { borderColor: '#ffd4b2', Icon: IconUserTickDown, date: 'Jun 30', source: 'SurveyMonkey' },
-  { borderColor: '#D1F09F', Icon: IconHeart, stars: 5, date: 'Jun 12', source: 'App Store' },
-  { borderColor: '#d4bbff', Icon: IconFlag, date: 'May 28', source: 'Play Store' },
-  { borderColor: '#D1F09F', Icon: IconHeart, stars: 4, date: 'May 14', source: 'Gong' },
-  { borderColor: '#ffd4b2', Icon: IconUserTickDown, date: 'Apr 29', source: 'SurveyMonkey' },
-  { borderColor: '#D1F09F', Icon: IconHeart, stars: 5, date: 'Apr 11', source: 'Play Store' },
-  { borderColor: '#d4bbff', Icon: IconFlag, date: 'Mar 27', source: 'Gong' },
-  { borderColor: '#D1F09F', Icon: IconHeart, stars: 2, date: 'Mar 10', source: 'App Store' },
-  { borderColor: '#ffd4b2', Icon: IconUserTickDown, date: 'Feb 22', source: 'SurveyMonkey' },
-  { borderColor: '#D1F09F', Icon: IconHeart, stars: 4, date: 'Feb 05', source: 'Play Store' },
-  { borderColor: '#d4bbff', Icon: IconFlag, date: 'Jan 20', source: 'Gong' },
-  { borderColor: '#D1F09F', Icon: IconHeart, stars: 5, date: 'Jan 08', source: 'App Store' },
-  { borderColor: '#d4bbff', Icon: IconFlag, date: 'Dec 19', source: 'Play Store' },
+  { borderColor: '#D1F09F', fillColor: '#EAFAEA', Icon: IconHeart, stars: 3, date: 'Aug 02', source: 'App Store' },
+  { borderColor: '#d4bbff', fillColor: '#EFE9FF', Icon: IconFlag, date: 'Jul 18', source: 'Gong' },
+  { borderColor: '#ffd4b2', fillColor: '#FFF0E0', Icon: IconUserTickDown, date: 'Jun 30', source: 'SurveyMonkey' },
+  { borderColor: '#D1F09F', fillColor: '#EAFAEA', Icon: IconHeart, stars: 5, date: 'Jun 12', source: 'App Store' },
+  { borderColor: '#4262FF', fillColor: '#F1F2F5', Icon: IconStackedCircles, date: 'May 28', source: 'Slack' },
+  { borderColor: '#D1F09F', fillColor: '#EAFAEA', Icon: IconHeart, stars: 4, date: 'May 14', source: 'Gong' },
+  { borderColor: '#ffd4b2', fillColor: '#FFF0E0', Icon: IconUserTickDown, date: 'Apr 29', source: 'SurveyMonkey' },
+  { borderColor: '#D1F09F', fillColor: '#EAFAEA', Icon: IconHeart, stars: 5, date: 'Apr 11', source: 'Play Store' },
+  { borderColor: '#4262FF', fillColor: '#F1F2F5', Icon: IconStackedCircles, date: 'Mar 27', source: 'Linear' },
+  { borderColor: '#D1F09F', fillColor: '#EAFAEA', Icon: IconHeart, stars: 2, date: 'Mar 10', source: 'App Store' },
+  { borderColor: '#ffd4b2', fillColor: '#FFF0E0', Icon: IconUserTickDown, date: 'Feb 22', source: 'SurveyMonkey' },
+  { borderColor: '#D1F09F', fillColor: '#EAFAEA', Icon: IconHeart, stars: 4, date: 'Feb 05', source: 'Play Store' },
+  { borderColor: '#d4bbff', fillColor: '#EFE9FF', Icon: IconFlag, date: 'Jan 20', source: 'Gong' },
+  { borderColor: '#D1F09F', fillColor: '#EAFAEA', Icon: IconHeart, stars: 5, date: 'Jan 08', source: 'App Store' },
+  { borderColor: '#d4bbff', fillColor: '#EFE9FF', Icon: IconFlag, date: 'Dec 19', source: 'Play Store' },
 ]
 
 // Transcripts for Gong-sourced cards (indices 1, 5, 8, 12 in CARD_STYLES)
@@ -311,10 +312,12 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     if (initialCompany) setSelectedCompany(initialCompany)
   }, [initialCompany])
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null)
-  const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string; source?: string; stars?: number } | null>(null)
-  const [callCard, setCallCard] = useState<{ title: string; author: string; company: string; date: string; transcript: TranscriptLine[]; borderColor?: string } | null>(null)
+  const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string; fillColor?: string; source?: string; stars?: number } | null>(null)
+  const [callCard, setCallCard] = useState<{ title: string; author: string; company: string; date: string; transcript: TranscriptLine[]; borderColor?: string; fillColor?: string } | null>(null)
   const [dismissedCards, setDismissedCards] = useState<Set<number>>(new Set())
   const [savedCards, setSavedCards] = useState<Set<number>>(new Set())
+  const [archivedCards, setArchivedCards] = useState<Set<number>>(new Set())
+  const [showArchive, setShowArchive] = useState(false)
   const [showSavedOnly, setShowSavedOnly] = useState(false)
   const [promptCards, setPromptCards] = useState<Set<number>>(new Set())
   const [showToast, setShowToast] = useState(false)
@@ -678,12 +681,12 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         className="flex absolute inset-y-0 left-0"
         style={{
           width: panelWidth * 3,
-          transform: (callCard || selectedFeedbackCard) ? `translateX(-${panelWidth * 2}px)` : selectedCompany ? `translateX(-${panelWidth}px)` : 'translateX(0)',
+          transform: (callCard || selectedFeedbackCard || showArchive) ? `translateX(-${panelWidth * 2}px)` : selectedCompany ? `translateX(-${panelWidth}px)` : 'translateX(0)',
           transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
       {/* ── Main panel ─── */}
-      <div className="h-full overflow-y-auto panel-scroll flex flex-col gap-2 shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 20, paddingRight: selectedLayout !== 'Right' ? 24 : 20, paddingTop: 8, overflowAnchor: 'none' }}>
+      <div className="h-full overflow-y-auto panel-scroll flex flex-col gap-0 shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 20, paddingRight: selectedLayout !== 'Right' ? 24 : 20, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -852,8 +855,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               <div className="flex gap-8 items-start">
 
                 {/* Right: feedback cards */}
-                <div className="flex flex-col gap-3 flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
+                <div className="flex flex-col flex-1 min-w-0">
+                  <div className="sticky top-0 z-10 bg-white -mx-6 px-6 pb-2 flex items-center justify-between">
                     <span className="text-[14px] font-semibold text-[#222428] leading-[1]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>Feedback</span>
                     <div className="flex items-center gap-1">
                       <Tooltip>
@@ -866,6 +869,14 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                       </Tooltip>
                       <Tooltip>
                         <Tooltip.Trigger asChild>
+                          <button onClick={() => setShowArchive(true)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F1F2F5] transition-colors" style={{ color: '#222428' }}>
+                            <IconTasks size="small" />
+                          </button>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Archive</Tooltip.Content></Tooltip.Portal>
+                      </Tooltip>
+                      <Tooltip>
+                        <Tooltip.Trigger asChild>
                           <button ref={feedbackFilterBtnRef} onClick={openFeedbackFilter} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F1F2F5] transition-colors" style={{ color: '#222428' }}>
                             <IconSlidersY size="small" />
                           </button>
@@ -875,19 +886,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     </div>
                   </div>
                   <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
-                    {false ? (
-                      <div className="flex items-center justify-center" style={{ paddingTop: 48, paddingBottom: 48 }}>
-                        <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center' }}>
-                          Save feedback cards to view them here.
-                        </p>
-                      </div>
-                    ) : generateFeedbackCards(row).map((card, i) => {
-                      const hidden = dismissedCards.has(i) || (showSavedOnly && !savedCards.has(i))
+                    {generateFeedbackCards(row).map((card, i) => {
+                      const hidden = dismissedCards.has(i) || archivedCards.has(i) || (showSavedOnly && !savedCards.has(i))
                       return (
                         <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : ((selectedLayout as string) !== 'Right' ? 24 : 20), overflow: hidden ? 'hidden' : 'visible', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
                           {promptCards.has(i)
                             ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
-                            : <FeedbackCard {...card} saved={savedCards.has(i)} onSave={() => setSavedCards(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
+                            : <FeedbackCard {...card} saved={savedCards.has(i)} onSave={() => setSavedCards(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })} onDismiss={() => handleDismissCard(i)} onArchive={() => setArchivedCards(s => { const n = new Set(s); n.add(i); return n })} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, fillColor: card.fillColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor, fillColor: card.fillColor }) : undefined} />
                           }
                         </div>
                       )
@@ -899,8 +904,8 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               /* ── Center / Right: single column ── */
               <>
 
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <div className="sticky top-0 z-10 bg-white -mx-5 px-5 pb-2 flex items-center justify-between">
                     <span className="text-[14px] font-semibold text-[#222428] leading-[1]" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>Feedback</span>
                     <div className="flex items-center gap-1">
                       <Tooltip>
@@ -913,6 +918,14 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                       </Tooltip>
                       <Tooltip>
                         <Tooltip.Trigger asChild>
+                          <button onClick={() => setShowArchive(true)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F1F2F5] transition-colors" style={{ color: '#222428' }}>
+                            <IconTasks size="small" />
+                          </button>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4}>Archive</Tooltip.Content></Tooltip.Portal>
+                      </Tooltip>
+                      <Tooltip>
+                        <Tooltip.Trigger asChild>
                           <button ref={feedbackFilterBtnRef} onClick={openFeedbackFilter} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F1F2F5] transition-colors" style={{ color: '#222428' }}>
                             <IconSlidersY size="small" />
                           </button>
@@ -922,19 +935,13 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     </div>
                   </div>
                   <div style={{ overflowAnchor: 'none' }} className="flex flex-col">
-                    {false ? (
-                      <div className="flex items-center justify-center" style={{ paddingTop: 48, paddingBottom: 48 }}>
-                        <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center' }}>
-                          Save feedback cards to view them here.
-                        </p>
-                      </div>
-                    ) : generateFeedbackCards(row).map((card, i) => {
-                      const hidden = dismissedCards.has(i) || (showSavedOnly && !savedCards.has(i))
+                    {generateFeedbackCards(row).map((card, i) => {
+                      const hidden = dismissedCards.has(i) || archivedCards.has(i) || (showSavedOnly && !savedCards.has(i))
                       return (
                         <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : ((selectedLayout as string) !== 'Right' ? 24 : 20), overflow: hidden ? 'hidden' : 'visible', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
                           {promptCards.has(i)
                             ? <FeedbackPrompt onSubmit={() => handlePromptSubmit(i)} onClose={() => handlePromptClose(i)} />
-                            : <FeedbackCard {...card} saved={savedCards.has(i)} onSave={() => setSavedCards(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })} onDismiss={() => handleDismissCard(i)} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor }) : undefined} />
+                            : <FeedbackCard {...card} saved={savedCards.has(i)} onSave={() => setSavedCards(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })} onDismiss={() => handleDismissCard(i)} onArchive={() => setArchivedCards(s => { const n = new Set(s); n.add(i); return n })} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, fillColor: card.fillColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor, fillColor: card.fillColor }) : undefined} />
                           }
                         </div>
                       )
@@ -962,33 +969,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                   </button>
                 </div>
               ))}
-            </div>
-            <div className="shrink-0" style={{ padding: '16px 0' }}>
-              <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white' }}>
-                <textarea
-                  value={commentText}
-                  onChange={e => setCommentText(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault()
-                      if (!commentText.trim()) return
-                      setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }])
-                      setCommentText('')
-                    }
-                  }}
-                  placeholder="Leave a reply. Use @ to mention."
-                  rows={2}
-                  className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none"
-                  style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
-                />
-                <button
-                  onClick={() => { if (!commentText.trim()) return; setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }]); setCommentText('') }}
-                  className="shrink-0 transition-colors"
-                  style={{ color: commentText.trim() ? '#4262FF' : '#9DA3B4' }}
-                >
-                  <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
-                </button>
-              </div>
             </div>
           </div>}
 
@@ -1023,34 +1003,66 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             company={selectedCompany}
             onBack={() => setSelectedCompany(null)}
             onPromptSelect={(prompt) => setSelectedPrompt(prompt)}
+            onAskClick={() => setShowSidekick(true)}
           />
         )}
       </div>
       {/* ── Detail panel (call transcript + all feedback card details) ─── */}
       <div className="h-full shrink-0" style={{ width: panelWidth }}>
-        {callCard && (
+        {showArchive && (
+          <div className="panel-scroll h-full overflow-y-auto" style={{ padding: '16px 16px 32px', display: 'flex', flexDirection: 'column' }}>
+            <button
+              onClick={() => setShowArchive(false)}
+              className="hover:bg-[#F1F2F5] transition-colors"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 16, marginLeft: -8, fontWeight: 600 }}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              Archive
+            </button>
+            {archivedCards.size === 0 ? (
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, paddingBottom: 48 }}>
+                <IconTasks css={{ width: 40, height: 40, color: '#D1D4DC' }} />
+                <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center', maxWidth: 220, lineHeight: 1.5 }}>
+                  You have 0 archived feedback. Mark a signal as less relevant to add.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {generateFeedbackCards(row).map((card, i) => {
+                  if (!archivedCards.has(i)) return null
+                  return (
+                    <div key={i}>
+                      <FeedbackCard {...card} isArchived saved={savedCards.has(i)} onSave={() => setSavedCards(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })} onDismiss={() => handleDismissCard(i)} onArchive={() => setArchivedCards(s => { const n = new Set(s); n.delete(i); return n })} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, fillColor: card.fillColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor, fillColor: card.fillColor }) : undefined} />
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+        {!showArchive && callCard && (
           <CallTranscriptPanel
             author={callCard.author}
             company={callCard.company}
             date={callCard.date}
             transcript={callCard.transcript}
             onBack={() => setCallCard(null)}
-            highlightColor={callCard.borderColor === '#d4bbff' ? '#EFE9FF' : callCard.borderColor === '#D1F09F' ? '#EAFAEA' : '#FFF0E0'}
             avatarColor={callCard.borderColor}
+            highlightColor={callCard.fillColor ?? '#F1F2F5'}
           />
         )}
         {selectedFeedbackCard && isStoreReview(selectedFeedbackCard.source) && (
           <AppStoreReviewDetail
             card={selectedFeedbackCard}
             onBack={() => setSelectedFeedbackCard(null)}
-            highlightColor={selectedFeedbackCard.borderColor === '#D1F09F' ? '#EAFAEA' : selectedFeedbackCard.borderColor === '#d4bbff' ? '#EFE9FF' : '#FFF0E0'}
+            highlightColor={selectedFeedbackCard.fillColor ?? '#F1F2F5'}
           />
         )}
         {selectedFeedbackCard?.source === 'SurveyMonkey' && (
           <SurveyFeedbackDetail
             card={selectedFeedbackCard}
             onBack={() => setSelectedFeedbackCard(null)}
-            highlightColor={'#FFF0E0'}
+            highlightColor={selectedFeedbackCard.fillColor ?? '#F1F2F5'}
           />
         )}
         {selectedFeedbackCard && !isStoreReview(selectedFeedbackCard.source) && selectedFeedbackCard.source !== 'SurveyMonkey' && (
@@ -1059,7 +1071,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             onBack={() => setSelectedFeedbackCard(null)}
             onClose={onClose}
             onAddToBoard={onAddToBoard}
-            highlightColor={selectedFeedbackCard.borderColor === '#D1F09F' ? '#EAFAEA' : selectedFeedbackCard.borderColor === '#d4bbff' ? '#EFE9FF' : '#FFF0E0'}
+            highlightColor={selectedFeedbackCard.fillColor ?? '#F1F2F5'}
           />
         )}
       </div>
@@ -1418,37 +1430,6 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           ))}
         </div>
 
-        <div className="shrink-0" style={{ padding: '16px' }}>
-          <div className="flex items-center gap-1.5" style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white' }}>
-            <textarea
-              value={commentText}
-              onChange={e => setCommentText(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  if (!commentText.trim()) return
-                  setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }])
-                  setCommentText('')
-                }
-              }}
-              placeholder="Leave a reply. Use @ to mention."
-              rows={2}
-              className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none"
-              style={{ fontFamily: 'Open Sans, sans-serif', color: '#222428' }}
-            />
-            <button
-              onClick={() => {
-                if (!commentText.trim()) return
-                setComments(prev => [...prev, { name: 'You', time: 'Just now', text: commentText.trim(), avatarImg: 1 }])
-                setCommentText('')
-              }}
-              className="shrink-0 transition-colors"
-              style={{ color: commentText.trim() ? '#4262FF' : '#9DA3B4' }}
-            >
-              <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
-            </button>
-          </div>
-        </div>
       </div>
     )}
     </div>
@@ -1657,7 +1638,7 @@ function PromptChatView({ prompt, company, onBack, onClose }: { prompt: string; 
   )
 }
 
-function CompanyDetailView({ company, onBack, onPromptSelect }: { company: string; onBack: () => void; onPromptSelect: (prompt: string) => void }) {
+function CompanyDetailView({ company, onBack, onPromptSelect, onAskClick }: { company: string; onBack: () => void; onPromptSelect: (prompt: string) => void; onAskClick: () => void }) {
   const info = COMPANY_INFO[company] ?? { domain: `${company.toLowerCase()}.com`, stage: 'N/A', dealValue: 'N/A', source: 'N/A' }
   return (
     <div className="flex flex-col pb-6">
@@ -1683,6 +1664,24 @@ function CompanyDetailView({ company, onBack, onPromptSelect }: { company: strin
             {label}
           </button>
         ))}
+      </div>
+      <div style={{ position: 'sticky', bottom: 0, background: 'white', paddingTop: 16, paddingBottom: 16 }}>
+        <div
+          className="flex items-center gap-1.5"
+          style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}
+          onClick={onAskClick}
+        >
+          <textarea
+            readOnly
+            placeholder="Ask about your roadmap."
+            rows={2}
+            className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none cursor-text"
+            style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0' }}
+          />
+          <button onClick={e => { e.stopPropagation(); onAskClick() }} className="shrink-0 text-[#9DA3B4]">
+            <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -2008,10 +2007,12 @@ function FeedbackCard({
   onSelect,
   onAddToBoard,
   onViewCall,
+  onArchive,
+  isArchived = false,
 }: {
   borderColor: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Icon: React.ComponentType<any>
+  Icon?: React.ComponentType<any>
   stars?: number
   text: string
   author: string
@@ -2024,6 +2025,8 @@ function FeedbackCard({
   onSelect: () => void
   onAddToBoard?: () => void
   onViewCall?: () => void
+  onArchive?: () => void
+  isArchived?: boolean
 }) {
   const [expanded, setExpanded] = useState(false)
   const [hovered, setHovered] = useState(false)
@@ -2053,7 +2056,7 @@ function FeedbackCard({
   return (
     <div
       className="w-full rounded-xl flex flex-col gap-2 p-5 cursor-pointer relative"
-      style={{ backgroundColor: borderColor === '#D1F09F' ? '#EAFAEA' : borderColor === '#d4bbff' ? '#EFE9FF' : '#FFF0E0', boxShadow: hovered ? '0 8px 24px rgba(34,36,40,0.08)' : 'none', transition: 'box-shadow 0.2s ease' }}
+      style={{ backgroundColor: ({ '#D1F09F': '#EAFAEA', '#d4bbff': '#EFE9FF', '#ffd4b2': '#FFF0E0' } as Record<string, string>)[borderColor] ?? '#F1F2F5', boxShadow: hovered ? '0 8px 24px rgba(34,36,40,0.08)' : 'none', transition: 'box-shadow 0.2s ease' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setThumbTooltip(null) }}
       onClick={onViewCall ?? onSelect}
@@ -2063,15 +2066,17 @@ function FeedbackCard({
         const category =
           borderColor === '#D1F09F' ? 'User Praise' :
           borderColor === '#d4bbff' ? 'User Request' :
+          borderColor === '#4262FF' ? 'Uncategorized' :
           'User Problem'
         const categoryColor =
           borderColor === '#D1F09F' ? { bg: '#EAFAEA', text: '#3C3F4A' } :
           borderColor === '#d4bbff' ? { bg: '#EFE9FF', text: '#3C3F4A' } :
+          borderColor === '#4262FF' ? { bg: '#EBF0FF', text: '#3C3F4A' } :
           { bg: '#FFF0E0', text: '#3C3F4A' }
         const iconSize = category === 'User Problem' ? 36 : 28
         return (
       <div className="flex items-start gap-2">
-        <span style={{
+        {Icon ? <span style={{
           position: 'relative',
           display: 'inline-flex',
           alignItems: 'center',
@@ -2106,7 +2111,7 @@ function FeedbackCard({
             fontFeatureSettings: "'ss01' 1",
             transition: 'max-width 0.25s ease, opacity 0.2s ease',
           }}>{category}</span>
-        </span>
+        </span> : null}
         <div className="flex-1" />
         <div className="flex items-center gap-1" style={{ opacity: hovered || menuOpen ? 1 : 0, transition: 'opacity 0.2s ease' }}>
           <button
@@ -2161,25 +2166,28 @@ function FeedbackCard({
             {companies[0] && <CompanyLogo name={companies[0]} size={24} />}
             <div className="flex items-center gap-1 ml-auto" onClick={e => e.stopPropagation()}>
               {[
-                { key: 'up', label: 'More relevant', active: thumbsUp, onClick: () => { setThumbsUp(v => !v); setThumbsDown(false) } },
-                { key: 'down', label: 'Less relevant', active: thumbsDown, onClick: () => { setThumbsDown(v => !v); setThumbsUp(false) } },
-              ].map(({ key, label, active, onClick: handleClick }) => (
+                { key: 'up', label: 'More relevant', active: thumbsUp, onClick: () => { if (isArchived) onArchive?.(); setThumbsUp(v => !v); setThumbsDown(false) } },
+                { key: 'down', label: 'Less relevant', active: thumbsDown, onClick: () => { if (!thumbsDown) onArchive?.(); setThumbsDown(v => !v); setThumbsUp(false) } },
+              ].map(({ key, label, active, onClick: handleClick }) => {
+                const forceHover = isArchived && key === 'down' && !thumbsUp
+                return (
                 <button
                   key={key}
                   onClick={handleClick}
-                  onMouseEnter={e => {
+                  onMouseEnter={forceHover ? undefined : e => {
                     const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
                     setThumbTooltip({ label, pos: { top: r.top - 4, left: r.left + r.width / 2 } })
                   }}
-                  onMouseLeave={() => setThumbTooltip(null)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors hover:bg-white"
-                  style={{ color: active ? '#222428' : '#656B81' }}
+                  onMouseLeave={forceHover ? undefined : () => setThumbTooltip(null)}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors"
+                  style={{ background: (active || forceHover) ? 'white' : 'transparent', color: active ? '#222428' : '#656B81' }}
                 >
                   <span style={{ transform: key === 'down' ? 'rotate(180deg)' : undefined, display: 'inline-flex' }}>
                     <IconThumbsUp css={{ width: 16, height: 16 }} />
                   </span>
                 </button>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>
@@ -2417,7 +2425,7 @@ function SurveyFeedbackDetail({
   return (
     <div
       className="panel-scroll"
-      style={{ height: '100%', overflowY: 'auto', padding: '16px 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+      style={{ height: '100%', overflowY: 'auto', padding: '0px 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
       {/* ── Sticky header ── */}
       <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 0' }}>
@@ -2513,6 +2521,7 @@ function classifyEntry(text: string, borderColor: string): 'praise' | 'request' 
   // Fallback to card's border color
   if (borderColor === '#d4bbff') return 'request'
   if (borderColor === '#ffd4b2') return 'problem'
+  if (borderColor === '#4262FF') return 'request'
   return 'praise'
 }
 
