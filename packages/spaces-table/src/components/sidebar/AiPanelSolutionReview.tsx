@@ -76,7 +76,7 @@ function GradientSparks({ filled, size = "small" }: { filled?: boolean; size?: "
 }
 
 /* ─── Panel Header ─── */
-function PanelHeader({ onClose, onBack, layoutButton }: { onClose?: () => void; onBack?: () => void; layoutButton?: React.ReactNode }) {
+export function PanelHeader({ onClose, onBack, layoutButton }: { onClose?: () => void; onBack?: () => void; layoutButton?: React.ReactNode }) {
   return (
     <div
       style={{

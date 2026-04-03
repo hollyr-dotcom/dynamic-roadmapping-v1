@@ -44,7 +44,7 @@ import {
   IconTasks,
 } from '@mirohq/design-system'
 import { JiraLogo } from '../JiraLogo'
-import AiPanelSolutionReview from './AiPanelSolutionReview'
+import AiPanelSolutionReview, { PanelHeader as SidekickHeader } from './AiPanelSolutionReview'
 
 function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
   const size = (props as { width?: number }).width ?? 24
@@ -172,11 +172,11 @@ const CARD_STYLES = [
   { borderColor: '#d4bbff', fillColor: '#EFE9FF', Icon: IconFlag, date: 'Jul 18', source: 'Gong' },
   { borderColor: '#ffd4b2', fillColor: '#FFF0E0', Icon: IconUserTickDown, date: 'Jun 30', source: 'SurveyMonkey' },
   { borderColor: '#D1F09F', fillColor: '#EAFAEA', Icon: IconHeart, stars: 5, date: 'Jun 12', source: 'App Store' },
-  { borderColor: '#4262FF', fillColor: '#F1F2F5', Icon: IconStackedCircles, date: 'May 28', source: 'Slack' },
+  { borderColor: '#4262FF', fillColor: '#F1F2F5', Icon: IconBookmark, date: 'May 28', source: 'Slack' },
   { borderColor: '#D1F09F', fillColor: '#EAFAEA', Icon: IconHeart, stars: 4, date: 'May 14', source: 'Gong' },
   { borderColor: '#ffd4b2', fillColor: '#FFF0E0', Icon: IconUserTickDown, date: 'Apr 29', source: 'SurveyMonkey' },
   { borderColor: '#D1F09F', fillColor: '#EAFAEA', Icon: IconHeart, stars: 5, date: 'Apr 11', source: 'Play Store' },
-  { borderColor: '#4262FF', fillColor: '#F1F2F5', Icon: IconStackedCircles, date: 'Mar 27', source: 'Linear' },
+  { borderColor: '#4262FF', fillColor: '#F1F2F5', Icon: IconBookmark, date: 'Mar 27', source: 'Linear' },
   { borderColor: '#D1F09F', fillColor: '#EAFAEA', Icon: IconHeart, stars: 2, date: 'Mar 10', source: 'App Store' },
   { borderColor: '#ffd4b2', fillColor: '#FFF0E0', Icon: IconUserTickDown, date: 'Feb 22', source: 'SurveyMonkey' },
   { borderColor: '#D1F09F', fillColor: '#EAFAEA', Icon: IconHeart, stars: 4, date: 'Feb 05', source: 'Play Store' },
@@ -494,7 +494,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
     >
 
       {/* ── Header (full width) ──────────────────────────── */}
-      {!showSidekick && (
+      {!showSidekick && !selectedPrompt && (
       <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: 'none' }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {!hideInsightCallout && <JiraLogo size={18} />}
@@ -1542,26 +1542,7 @@ function PromptChatView({ prompt, company, onBack, onClose }: { prompt: string; 
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* Header */}
-      <div className="flex items-center h-14 pl-4 pr-2 shrink-0 gap-1">
-        <button onClick={onBack} className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors shrink-0">
-          <IconChevronRight css={{ width: 16, height: 16, transform: 'rotate(180deg)' }} />
-        </button>
-        <div className="flex-1 flex items-center gap-2 min-w-0">
-          <span className="text-[16px] text-[#222428] leading-[1.5] font-semibold truncate" style={{ fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1" }}>
-            Miro Insights
-          </span>
-          <span className="shrink-0 px-1.5 py-0.5 rounded text-[11px] font-semibold text-[#3C3F4A] bg-[#E9EAEF] leading-none" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-            Beta
-          </span>
-        </div>
-        <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors shrink-0">
-          <IconDotsThree css={{ width: 16, height: 16 }} />
-        </button>
-        <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors shrink-0">
-          <IconCross css={{ width: 16, height: 16 }} />
-        </button>
-      </div>
+      <SidekickHeader onBack={onBack} onClose={onClose} />
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto panel-scroll px-5 py-4 flex flex-col gap-4">
@@ -1641,7 +1622,7 @@ function PromptChatView({ prompt, company, onBack, onClose }: { prompt: string; 
 function CompanyDetailView({ company, onBack, onPromptSelect, onAskClick }: { company: string; onBack: () => void; onPromptSelect: (prompt: string) => void; onAskClick: () => void }) {
   const info = COMPANY_INFO[company] ?? { domain: `${company.toLowerCase()}.com`, stage: 'N/A', dealValue: 'N/A', source: 'N/A' }
   return (
-    <div className="flex flex-col pb-6">
+    <div className="flex flex-col flex-1">
       <button
         onClick={onBack}
         className="flex items-center gap-1 h-8 rounded-lg px-2 text-[14px] font-semibold text-[#656B81] hover:bg-[#F1F2F5] transition-colors self-start -ml-2 mb-2"
@@ -1665,7 +1646,7 @@ function CompanyDetailView({ company, onBack, onPromptSelect, onAskClick }: { co
           </button>
         ))}
       </div>
-      <div style={{ position: 'sticky', bottom: 0, background: 'white', paddingTop: 16, paddingBottom: 16 }}>
+      <div style={{ position: 'sticky', bottom: 0, background: 'white', paddingTop: 16, paddingBottom: 16, marginTop: 'auto' }}>
         <div
           className="flex items-center gap-1.5"
           style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}
