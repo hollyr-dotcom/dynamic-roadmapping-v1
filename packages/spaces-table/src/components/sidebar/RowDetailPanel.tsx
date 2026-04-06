@@ -1080,7 +1080,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       </div>{/* end tabs */}
 
       {/* ── Comment input bar (Details / Jira / Insights tabs) ─── */}
-      {!selectedCompany && !callCard && !selectedFeedbackCard && !selectedPrompt && !showSidekick && (
+      {!selectedCompany && !callCard && !selectedPrompt && !showSidekick && (
         <div className="shrink-0" style={{ padding: '16px' }}>
           <div
             className="flex items-center gap-1.5"
