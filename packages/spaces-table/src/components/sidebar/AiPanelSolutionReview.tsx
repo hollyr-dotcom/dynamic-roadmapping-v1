@@ -76,7 +76,7 @@ function GradientSparks({ filled, size = "small" }: { filled?: boolean; size?: "
 }
 
 /* ─── Panel Header ─── */
-function PanelHeader({ onClose, onBack, layoutButton }: { onClose?: () => void; onBack?: () => void; layoutButton?: React.ReactNode }) {
+export function PanelHeader({ onClose, onBack, layoutButton }: { onClose?: () => void; onBack?: () => void; layoutButton?: React.ReactNode }) {
   return (
     <div
       style={{
@@ -1332,7 +1332,7 @@ function PanelBody({ activePage, focusItemId, contextUserMessage }: { activePage
 }
 
 /* ─── Input area ─── */
-function PanelInput({ onSend }: { onSend: (text: string) => void }) {
+export function PanelInput({ onSend }: { onSend: (text: string) => void }) {
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 

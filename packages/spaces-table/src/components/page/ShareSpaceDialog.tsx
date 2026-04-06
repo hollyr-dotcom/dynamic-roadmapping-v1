@@ -84,7 +84,7 @@ export function ShareSpaceDialog({ spaceName, onContinue }: ShareSpaceDialogProp
           </button>
           <Button variant="ghost" size="large" onPress={onContinue}>
             <Button.Label>Continue without inviting</Button.Label>
-            <Button.IconSlot placement="end"><IconChevronRight /></Button.IconSlot>
+            <Button.IconSlot><IconChevronRight /></Button.IconSlot>
           </Button>
         </div>
       </div>
