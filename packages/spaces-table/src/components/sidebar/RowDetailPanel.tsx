@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import type { SpaceRow } from '@spaces/shared'
@@ -167,7 +167,7 @@ const AVATAR_VECTOR = '/avatar.png'
 const CARD_WEIGHTS = [0.13, 0.12, 0.10, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06, 0.05, 0.05, 0.04, 0.03, 0.02, 0.01]
 const isStoreReview = (source?: string) => source === 'App Store' || source === 'Play Store'
 
-const CARD_STYLES = [
+export const CARD_STYLES = [
   { borderColor: '#D1F09F', fillColor: '#EAFAEA', Icon: IconHeart, stars: 3, date: 'Aug 02', source: 'App Store' },
   { borderColor: '#d4bbff', fillColor: '#EFE9FF', Icon: IconFlag, date: 'Jul 18', source: 'Gong' },
   { borderColor: '#ffd4b2', fillColor: '#FFF0E0', Icon: IconUserTickDown, date: 'Jun 30', source: 'SurveyMonkey' },
@@ -235,7 +235,7 @@ const GONG_TRANSCRIPT_MAP: Record<number, TranscriptLine[]> = {
   ],
 }
 
-function generateFeedbackCards(row: SpaceRow) {
+export function generateFeedbackCards(row: SpaceRow) {
   const t = row.title
   const d = row.description ?? t
 
@@ -313,6 +313,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   }, [initialCompany])
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null)
   const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string; fillColor?: string; source?: string; stars?: number } | null>(null)
+  const closeFeedbackCard = useCallback(() => setSelectedFeedbackCard(null), [])
   const [callCard, setCallCard] = useState<{ title: string; author: string; company: string; date: string; transcript: TranscriptLine[]; borderColor?: string; fillColor?: string } | null>(null)
   const [dismissedCards, setDismissedCards] = useState<Set<number>>(new Set())
   const [savedCards, setSavedCards] = useState<Set<number>>(new Set())
@@ -681,7 +682,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         className="flex absolute inset-y-0 left-0"
         style={{
           width: panelWidth * 3,
-          transform: (callCard || selectedFeedbackCard || showArchive) ? `translateX(-${panelWidth * 2}px)` : selectedCompany ? `translateX(-${panelWidth}px)` : 'translateX(0)',
+          transform: (callCard || showArchive || selectedFeedbackCard) ? `translateX(-${panelWidth * 2}px)` : selectedCompany ? `translateX(-${panelWidth}px)` : 'translateX(0)',
           transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
@@ -996,7 +997,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       </div>
 
-      {/* ── Company panel ─── */}
+      {/* ── Company panel (slot 1) ─── */}
       <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: selectedLayout !== 'Right' ? 48 : 16 }}>
         {selectedCompany && (
           <CompanyDetailView
@@ -1007,7 +1008,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           />
         )}
       </div>
-      {/* ── Detail panel (call transcript + all feedback card details) ─── */}
+      {/* ── Detail panel — slot 2 (archive / call transcript / feedback detail) ─── */}
       <div className="h-full shrink-0" style={{ width: panelWidth }}>
         {showArchive && (
           <div className="panel-scroll h-full overflow-y-auto" style={{ padding: '16px 16px 32px', display: 'flex', flexDirection: 'column' }}>
@@ -1051,24 +1052,24 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             highlightColor={callCard.fillColor ?? '#F1F2F5'}
           />
         )}
-        {selectedFeedbackCard && isStoreReview(selectedFeedbackCard.source) && (
+        {!showArchive && !callCard && selectedFeedbackCard && isStoreReview(selectedFeedbackCard.source) && (
           <AppStoreReviewDetail
             card={selectedFeedbackCard}
-            onBack={() => setSelectedFeedbackCard(null)}
+            onBack={closeFeedbackCard}
             highlightColor={selectedFeedbackCard.fillColor ?? '#F1F2F5'}
           />
         )}
-        {selectedFeedbackCard?.source === 'SurveyMonkey' && (
+        {!showArchive && !callCard && selectedFeedbackCard?.source === 'SurveyMonkey' && (
           <SurveyFeedbackDetail
             card={selectedFeedbackCard}
-            onBack={() => setSelectedFeedbackCard(null)}
+            onBack={closeFeedbackCard}
             highlightColor={selectedFeedbackCard.fillColor ?? '#F1F2F5'}
           />
         )}
-        {selectedFeedbackCard && !isStoreReview(selectedFeedbackCard.source) && selectedFeedbackCard.source !== 'SurveyMonkey' && (
+        {!showArchive && !callCard && selectedFeedbackCard && !isStoreReview(selectedFeedbackCard.source) && selectedFeedbackCard.source !== 'SurveyMonkey' && (
           <FeedbackCardDetailView
             card={selectedFeedbackCard}
-            onBack={() => setSelectedFeedbackCard(null)}
+            onBack={closeFeedbackCard}
             onClose={onClose}
             onAddToBoard={onAddToBoard}
             highlightColor={selectedFeedbackCard.fillColor ?? '#F1F2F5'}
@@ -1076,6 +1077,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
         )}
       </div>
       </div>{/* end slider */}
+
       </div>{/* end overflow wrapper */}
       </div>{/* end tabs */}
 
@@ -1943,7 +1945,7 @@ function AppStoreReviewDetail({
   )
 }
 
-function FeedbackCard({
+export function FeedbackCard({
   borderColor,
   Icon,
   stars,
@@ -2130,8 +2132,8 @@ function FeedbackCard({
                     setThumbTooltip({ label, pos: { top: r.top - 4, left: r.left + r.width / 2 } })
                   }}
                   onMouseLeave={forceHover ? undefined : () => setThumbTooltip(null)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors"
-                  style={{ background: (active || forceHover) ? 'white' : 'transparent', color: active ? '#222428' : '#656B81' }}
+                  className={`w-7 h-7 flex items-center justify-center rounded-lg transition-colors hover:bg-white ${(active || forceHover) ? 'bg-white' : ''}`}
+                  style={{ color: active ? '#222428' : '#656B81' }}
                 >
                   <span style={{ transform: key === 'down' ? 'rotate(180deg)' : undefined, display: 'inline-flex' }}>
                     <IconThumbsUp css={{ width: 16, height: 16 }} />
@@ -2476,18 +2478,20 @@ function classifyEntry(text: string, borderColor: string): 'praise' | 'request' 
   return 'praise'
 }
 
-function FeedbackCardDetailView({
+export function FeedbackCardDetailView({
   card,
   onBack,
   onClose,
   onAddToBoard,
   highlightColor = '#f1f2f5',
+  compactTop = false,
 }: {
   card: { title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string }
   onBack: () => void
   onClose: () => void
   onAddToBoard?: (data: import('../canvas/CanvasFeedbackCard').FeedbackCardData) => void
   highlightColor?: string
+  compactTop?: boolean
 }) {
   const [activeTab, setActiveTab] = useState('Conversation')
   const [search, setSearch] = useState('')
@@ -2556,7 +2560,7 @@ function FeedbackCardDetailView({
   return (
     <><div
       className="panel-scroll"
-      style={{ height: '100%', overflowY: 'auto', padding: '16px 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+      style={{ height: '100%', overflowY: 'auto', padding: `${compactTop ? 0 : 16}px 16px 32px`, display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
       {/* ── Sticky header ── */}
       <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 0' }}>

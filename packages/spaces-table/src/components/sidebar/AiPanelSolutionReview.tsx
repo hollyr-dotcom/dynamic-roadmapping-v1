@@ -1,23 +1,42 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from "react";
 import {
   IconButton,
   IconSquarePencil,
   IconClockCounterClockwise,
   IconSquaresFour,
+  IconSquaresTwoOverlap,
   IconDotsThreeVertical,
   IconCross,
   IconChevronDown,
   IconPlus,
   IconArrowRight,
-  IconSquareLineSquareDashed,
   IconSparks,
   IconSparksFilled,
   IconInsights,
+  IconInsightsSearch,
   Tooltip,
+  DropdownMenu,
+  IconEyeOpen,
+  IconBoard,
+  IconTimelineFormat,
+  IconTasks,
+  IconSlidersY,
+  IconHeart,
+  IconFlag,
 } from "@mirohq/design-system";
 import { roadmapData, sampleData, companyARR, customerQuotes, itemDependencies } from "@spaces/shared";
 import type { SpaceRow } from "@spaces/shared";
 import { OVERVIEW_ROWS } from "../page/OverviewPage";
+import { FeedbackCardDetailView, FeedbackCard, generateFeedbackCards, CARD_STYLES } from "./RowDetailPanel";
+
+/* ─── Context so CitationChip can open panels inside the sidekick ─── */
+type FeedbackCardData = { title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string; fillColor?: string; source?: string; stars?: number }
+type CitationView =
+  | { type: 'details'; title: string }
+  | { type: 'related-evidence'; title: string }
+  | { type: 'feedback-card-detail'; card: FeedbackCardData; from: CitationView }
+  | null;
+const CitationDetailContext = createContext<((view: CitationView) => void) | null>(null);
 
 /* ─── Escher-style AI avatar (gradient circle + sparkle icon) ─── */
 function AgentAvatar({ size = 40 }: { size?: number }) {
@@ -308,31 +327,55 @@ function AnalysingIndicator({ steps }: { steps?: string[] }) {
   );
 }
 
+
 /* ─── AI Citation chip (mds-ai-citation style) ─── */
-function CitationChip({ label }: { label?: string }) {
+function CitationChip({ label, itemTitle }: { label?: string; itemTitle?: string }) {
   const [hovered, setHovered] = useState(false);
+  const openDetail = useContext(CitationDetailContext);
   return (
-    <span
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 4,
-        padding: "2px 6px",
-        background: hovered ? "#DFE1E6" : "#E9EAEF",
-        borderRadius: 4,
-        cursor: "pointer",
-        verticalAlign: "middle",
-        marginLeft: 4,
-        transition: "background 150ms",
-        flexShrink: 0,
-        lineHeight: 1,
-      }}
-    >
-      <IconInsights size="small" color="icon-secondary" />
-      {label && <span style={{ fontSize: 12, fontWeight: 500, color: "#222428", whiteSpace: "nowrap" }}>{label}</span>}
-    </span>
+    <DropdownMenu>
+      <DropdownMenu.Trigger asChild>
+        <span
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            padding: "2px 6px",
+            background: hovered ? "#DFE1E6" : "#E9EAEF",
+            borderRadius: 4,
+            cursor: "pointer",
+            verticalAlign: "middle",
+            marginLeft: 4,
+            transition: "background 150ms",
+            flexShrink: 0,
+            lineHeight: 1,
+          }}
+        >
+          <IconInsights size="small" color="icon-secondary" />
+          {label && <span style={{ fontSize: 12, fontWeight: 500, color: "#222428", whiteSpace: "nowrap" }}>{label}</span>}
+        </span>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Content>
+        <DropdownMenu.Item onSelect={() => {}}>
+          <DropdownMenu.IconSlot><IconBoard /></DropdownMenu.IconSlot>
+          Add to board
+        </DropdownMenu.Item>
+        <DropdownMenu.Item onSelect={() => {}}>
+          <DropdownMenu.IconSlot><IconSquaresTwoOverlap /></DropdownMenu.IconSlot>
+          Copy
+        </DropdownMenu.Item>
+        <DropdownMenu.Item onSelect={() => { if (itemTitle) openDetail?.({ type: 'details', title: itemTitle }) }}>
+          <DropdownMenu.IconSlot><IconEyeOpen /></DropdownMenu.IconSlot>
+          View details
+        </DropdownMenu.Item>
+        <DropdownMenu.Item onSelect={() => { if (itemTitle) openDetail?.({ type: 'related-evidence', title: itemTitle }) }}>
+          <DropdownMenu.IconSlot><IconInsightsSearch /></DropdownMenu.IconSlot>
+          Related evidence
+        </DropdownMenu.Item>
+      </DropdownMenu.Content>
+    </DropdownMenu>
   );
 }
 
@@ -391,22 +434,6 @@ function ImpactEstimates({ mentions, customers, revenue }: { mentions: number; c
   );
 }
 
-/* ─── Feedback card (matches existing prototype feedback cards) ─── */
-function FeedbackCard({ quote, role, type }: { quote: string; role: string; type: 'positive' | 'neutral' }) {
-  const bg = type === 'positive' ? '#F0FFF4' : '#F5F3FF';
-  const borderColor = type === 'positive' ? '#C6F6D5' : '#E8E0FF';
-  return (
-    <div style={{ background: bg, border: `1px solid ${borderColor}`, borderRadius: 12, padding: "16px 20px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-        <span style={{ fontSize: 16 }}>{type === 'positive' ? '♡' : '⚑'}</span>
-      </div>
-      <span style={{ fontSize: 13, color: "#222428", lineHeight: 1.6, display: "block" }}>
-        {quote}
-      </span>
-      <div style={{ fontSize: 12, color: "#7C3AED", fontWeight: 500, marginTop: 8 }}>{role}</div>
-    </div>
-  );
-}
 
 /* ─── Customer quote block (matches existing prototype quote style) ─── */
 function QuoteBlock({ company, quote, role }: { company: string; quote: string; role: string }) {
@@ -700,6 +727,33 @@ function buildFlow1BacklogRanked(): MessageContent {
   };
 }
 
+function FeedbackQuoteCard({ quote, company, role, isPositive }: { quote: string; company: string; role: string; isPositive: boolean }) {
+  const [dismissed, setDismissed] = useState(false)
+  const openDetail = useContext(CitationDetailContext)
+  if (dismissed) return null
+  const card = {
+    title: role,
+    text: quote,
+    author: role,
+    date: '',
+    companies: [company],
+    borderColor: isPositive ? '#D1F09F' : '#d4bbff',
+    fillColor: isPositive ? '#EAFAEA' : '#EFE9FF',
+  }
+  return (
+    <FeedbackCard
+      borderColor={card.borderColor}
+      Icon={isPositive ? IconHeart : IconFlag}
+      text={quote}
+      author={role}
+      date=""
+      companies={[company]}
+      onDismiss={() => setDismissed(true)}
+      onSelect={() => openDetail?.({ type: 'feedback-card-detail', card, from: null })}
+    />
+  )
+}
+
 function buildFlow2(itemId: string): MessageContent {
   const item = getItem(itemId);
   if (!item) return { text: "I couldn't find that item. Could you try again?" };
@@ -760,7 +814,7 @@ function buildFlow2(itemId: string): MessageContent {
       <div key="feedback" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>Feedback</div>
         {quotes.map((q, i) => (
-          <FeedbackCard key={i} quote={q.quote} role={`${q.company} — ${q.role}`} type={i % 2 === 0 ? 'positive' : 'neutral'} />
+          <FeedbackQuoteCard key={i} quote={q.quote} company={q.company} role={q.role} isPositive={i % 2 === 0} />
         ))}
       </div>
     );
@@ -995,7 +1049,7 @@ function renderTextWithLinks(text: string): React.ReactNode[] {
       return (
         <span key={i}>
           <span style={{ fontWeight: 700 }}>{inner}</span>
-          <CitationChip label={label} />
+          <CitationChip label={label} itemTitle={inner} />
         </span>
       );
     }
@@ -1016,7 +1070,7 @@ interface Message {
   loadingSteps?: string[];
 }
 
-function PanelBody({ activePage, focusItemId, contextUserMessage }: { activePage?: string; focusItemId?: string; contextUserMessage?: string }) {
+function PanelBody({ activePage, focusItemId, contextUserMessage, sendRef }: { activePage?: string; focusItemId?: string; contextUserMessage?: string; sendRef?: React.MutableRefObject<((text: string) => void) | null> }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -1161,6 +1215,9 @@ function PanelBody({ activePage, focusItemId, contextUserMessage }: { activePage
     const content = routeInput(text);
     addAiResponse(content, text);
   };
+
+  // Expose handleChatSend via ref so the overlay's PanelInput can send messages
+  if (sendRef) sendRef.current = handleChatSend;
 
   // One contextual suggestion based on page state
   const noQuoteCount = getQ2Items().filter(r => !customerQuotes[r.id] || customerQuotes[r.id].length === 0).length;
@@ -1347,26 +1404,7 @@ export function PanelInput({ onSend }: { onSend: (text: string) => void }) {
   const hasText = text.trim().length > 0;
 
   return (
-    <div style={{ flexShrink: 0, padding: "0 24px 16px", display: "flex", flexDirection: "column" }}>
-      <div
-        style={{
-          background: "#f1f2f5",
-          borderRadius: "8px 8px 0 0",
-          padding: "8px 12px",
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          marginBottom: 0,
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        <IconSquareLineSquareDashed size="small" color="icon-secondary" />
-        <span style={{ fontSize: 12, fontWeight: 400, color: "#222428", lineHeight: 1.5 }}>
-          Select objects on the canvas to add context
-        </span>
-      </div>
-
+    <div style={{ flexShrink: 0, padding: "16px 24px 16px", display: "flex", flexDirection: "column" }}>
       <div
         style={{
           border: `1px solid ${hasText ? "#4262FF" : "#e0e2e8"}`,
@@ -1442,12 +1480,240 @@ export function PanelInput({ onSend }: { onSend: (text: string) => void }) {
 }
 
 /* ─── Main export ─── */
-export default function AiPanelSolutionReview({ onClose, activePage, focusItemId, onBack, layoutButton, contextUserMessage }: { onClose?: () => void; activePage?: string; focusItemId?: string; onBack?: () => void; layoutButton?: React.ReactNode; contextUserMessage?: string } = {}) {
+function RelatedEvidencePanel({ title, onClose, onSelectCard }: { title: string; onClose: () => void; onSelectCard: (card: FeedbackCardData) => void }) {
+  const row = Object.values(OVERVIEW_ROWS).find(r => r.title === title) ?? Object.values(OVERVIEW_ROWS)[0];
+  const cards = generateFeedbackCards(row);
+  const [dismissedCards, setDismissedCards] = useState<Set<number>>(new Set());
+  const [archivedCards, setArchivedCards] = useState<Set<number>>(new Set());
+  const [showArchive, setShowArchive] = useState(false);
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", maxWidth: "100%", background: "#fff", borderRadius: 8 }}>
-      <AiGradientDefs />
-      <PanelHeader onClose={onClose} onBack={onBack} layoutButton={layoutButton} />
-      <PanelBody activePage={activePage} focusItemId={focusItemId} contextUserMessage={contextUserMessage} />
+    <div style={{ position: 'relative', overflow: 'hidden', height: '100%' }}>
+      {/* Sliding inner rail — two panels side by side at 200% total width */}
+      <div
+        style={{
+          display: 'flex',
+          width: '200%',
+          height: '100%',
+          transform: showArchive ? 'translateX(-50%)' : 'translateX(0)',
+          transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
+      >
+        {/* ── Main panel ── */}
+        <div style={{ width: '50%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header row: back nav + sort/filter/archive */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 16px 8px', flexShrink: 0 }}>
+            <button
+              onClick={onClose}
+              className="hover:bg-[#F1F2F5] transition-colors"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", marginLeft: -8, fontWeight: 600 }}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Related evidence
+            </button>
+            <div className="flex items-center gap-1">
+              <Tooltip>
+                <Tooltip.Trigger asChild>
+                  <button className="flex items-center gap-1 px-2 py-1 rounded-lg text-[13px] text-[#222428] hover:bg-[#F1F2F5] transition-colors">
+                    Relevance<IconChevronDown size="small" />
+                  </button>
+                </Tooltip.Trigger>
+                <Tooltip.Content side="top" sideOffset={4}>Sort</Tooltip.Content>
+              </Tooltip>
+              <Tooltip>
+                <Tooltip.Trigger asChild>
+                  <button onClick={() => setShowArchive(true)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F1F2F5] transition-colors" style={{ color: '#222428' }}>
+                    <IconTasks size="small" />
+                  </button>
+                </Tooltip.Trigger>
+                <Tooltip.Content side="top" sideOffset={4}>Archive</Tooltip.Content>
+              </Tooltip>
+              <Tooltip>
+                <Tooltip.Trigger asChild>
+                  <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F1F2F5] transition-colors" style={{ color: '#222428' }}>
+                    <IconSlidersY size="small" />
+                  </button>
+                </Tooltip.Trigger>
+                <Tooltip.Content side="top" sideOffset={4}>Filter</Tooltip.Content>
+              </Tooltip>
+            </div>
+          </div>
+          {/* Card list */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 32px', display: 'flex', flexDirection: 'column' }}>
+            {cards.map((card, i) => {
+              const hidden = dismissedCards.has(i) || archivedCards.has(i);
+              return (
+                <div key={i} style={{ maxHeight: hidden ? 0 : 800, opacity: hidden ? 0 : 1, marginBottom: hidden ? 0 : 20, overflow: hidden ? 'hidden' : 'visible', transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-bottom 0.35s ease' }}>
+                  <FeedbackCard
+                    {...card}
+                    onSelect={() => onSelectCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, fillColor: card.fillColor, source: card.source, stars: card.stars })}
+                    onDismiss={() => setDismissedCards(s => { const n = new Set(s); n.add(i); return n })}
+                    onArchive={() => setArchivedCards(s => { const n = new Set(s); n.add(i); return n })}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── Archive panel ── */}
+        <div className="panel-scroll" style={{ width: '50%', height: '100%', overflowY: 'auto', padding: '16px 16px 32px', display: 'flex', flexDirection: 'column' }}>
+          <button
+            onClick={() => setShowArchive(false)}
+            className="hover:bg-[#F1F2F5] transition-colors"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 16, marginLeft: -8, fontWeight: 600 }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Archive
+          </button>
+          {archivedCards.size === 0 ? (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, paddingBottom: 48 }}>
+              <IconTasks css={{ width: 40, height: 40, color: '#D1D4DC' }} />
+              <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center', maxWidth: 220, lineHeight: 1.5 }}>
+                You have 0 archived feedback. Mark a signal as less relevant to add.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {cards.map((card, i) => {
+                if (!archivedCards.has(i)) return null;
+                return (
+                  <div key={i}>
+                    <FeedbackCard
+                      {...card}
+                      isArchived
+                      onSelect={() => onSelectCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, fillColor: card.fillColor, source: card.source, stars: card.stars })}
+                      onDismiss={() => setDismissedCards(s => { const n = new Set(s); n.add(i); return n })}
+                      onArchive={() => setArchivedCards(s => { const n = new Set(s); n.delete(i); return n })}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
+  );
+}
+
+export default function AiPanelSolutionReview({ onClose, activePage, focusItemId, onBack, layoutButton, contextUserMessage }: { onClose?: () => void; activePage?: string; focusItemId?: string; onBack?: () => void; layoutButton?: React.ReactNode; contextUserMessage?: string } = {}) {
+  const [citationView, setCitationView] = useState<CitationView>(null);
+  // mountedView keeps the last view in the DOM during the exit animation
+  const [mountedView, setMountedView] = useState<CitationView>(null);
+  // overlayKey increments on each fresh open, forcing React to remount the
+  // overlay div so @keyframes panel-slide-in always fires from scratch.
+  const [overlayKey, setOverlayKey] = useState(0);
+  const [isClosing, setIsClosing] = useState(false);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  // Ref so the callback never reads stale citationView
+  const citationViewRef = useRef<CitationView>(null);
+  // Ref populated by PanelBody so overlay input can send messages to the chat
+  const chatSendRef = useRef<((text: string) => void) | null>(null);
+
+  const handleSetCitationView = useCallback((view: CitationView) => {
+    console.log('[citation] handleSetCitationView', view?.type ?? 'null');
+    if (view !== null) {
+      clearTimeout(closeTimerRef.current);
+      // Fresh open (or re-open during close): increment key to remount element
+      // so the CSS @keyframes animation fires reliably from translateX(100%).
+      if (citationViewRef.current === null) {
+        setOverlayKey(k => k + 1);
+      }
+      setIsClosing(false);
+      citationViewRef.current = view;
+      setCitationView(view);
+      setMountedView(view);
+    } else {
+      // Slide out, then unmount after animation completes
+      setIsClosing(true);
+      citationViewRef.current = null;
+      setCitationView(null);
+      closeTimerRef.current = setTimeout(() => {
+        setMountedView(null);
+        setIsClosing(false);
+      }, 380);
+    }
+  }, []);
+
+  const citationCard = citationView?.type === 'details' ? (() => {
+    const row = Object.values(OVERVIEW_ROWS).find(r => r.title === citationView.title) ?? Object.values(OVERVIEW_ROWS)[0];
+    return {
+      title: citationView.title,
+      text: row.description ?? citationView.title,
+      author: 'John Doe, CPO',
+      date: 'Aug 14',
+      companies: row.companies,
+      borderColor: '#d4bbff',
+      fillColor: '#EFE9FF',
+      source: 'Gong',
+    };
+  })() : null;
+
+  return (
+    <CitationDetailContext.Provider value={handleSetCitationView}>
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", maxWidth: "100%", background: "#fff", borderRadius: 8, position: 'relative', overflow: 'hidden' }}>
+        <AiGradientDefs />
+        {/* Header is a matching layer — never animates regardless of overlay state */}
+        <PanelHeader
+          onClose={mountedView ? () => handleSetCitationView(null) : onClose}
+          onBack={onBack}
+          layoutButton={layoutButton}
+        />
+        <PanelBody activePage={activePage} focusItemId={focusItemId} contextUserMessage={contextUserMessage} sendRef={chatSendRef} />
+
+        {/* Overlay: header (top 56px) and PanelInput (bottom) are matching layers —
+            they must not animate. Only the content area between them slides in. */}
+        {mountedView && (
+          <>
+            <style>{`
+              @keyframes _ai-slide-in  { from { transform: translateX(100%); } to { transform: translateX(0); } }
+              @keyframes _ai-slide-out { from { transform: translateX(0); } to { transform: translateX(100%); } }
+            `}</style>
+            {/* Static outer shell: positions content+input below the header */}
+            <div style={{ position: 'absolute', top: 56, bottom: 0, left: 0, right: 0, zIndex: 20, display: 'flex', flexDirection: 'column' }}>
+              {/* Animated content area only */}
+              <div
+                key={overlayKey}
+                style={{
+                  flex: 1, minHeight: 0, background: '#fff', overflow: 'hidden',
+                  animation: isClosing
+                    ? '_ai-slide-out 0.32s cubic-bezier(0.4, 0, 1, 1) both'
+                    : '_ai-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both',
+                }}
+              >
+                {mountedView?.type === 'details' && citationCard && (
+                  <FeedbackCardDetailView
+                    card={citationCard}
+                    onBack={() => handleSetCitationView(null)}
+                    onClose={() => { handleSetCitationView(null); onClose?.() }}
+                    highlightColor={citationCard.fillColor}
+                    compactTop
+                  />
+                )}
+                {mountedView?.type === 'related-evidence' && (
+                  <RelatedEvidencePanel
+                    title={mountedView.title}
+                    onClose={() => handleSetCitationView(null)}
+                    onSelectCard={(card) => handleSetCitationView({ type: 'feedback-card-detail', card, from: citationView })}
+                  />
+                )}
+                {mountedView?.type === 'feedback-card-detail' && (
+                  <FeedbackCardDetailView
+                    card={mountedView.card}
+                    onBack={() => handleSetCitationView(mountedView.from)}
+                    onClose={() => { handleSetCitationView(null); onClose?.() }}
+                    highlightColor={mountedView.card.fillColor ?? '#EFE9FF'}
+                    compactTop
+                  />
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </CitationDetailContext.Provider>
   );
 }
