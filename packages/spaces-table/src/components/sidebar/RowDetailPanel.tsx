@@ -557,22 +557,23 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               <Tooltip.Content side="top" sideOffset={4}>Panel view</Tooltip.Content>
             </Tooltip.Portal>
           </Tooltip>
-          <Tooltip>
-            <Tooltip.Trigger asChild>
-              <button aria-label="Close panel" className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors" onClick={onClose}>
-                <IconCross css={{ width: 16, height: 16 }} />
-              </button>
-            </Tooltip.Trigger>
-            <Tooltip.Portal>
-              <Tooltip.Content side="top" sideOffset={4}>Close</Tooltip.Content>
-            </Tooltip.Portal>
-          </Tooltip>
+          <button
+            aria-label="Close panel"
+            className="w-6 h-6 flex items-center justify-center rounded text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+            onPointerDown={(e) => {
+              e.stopPropagation()
+              setSelectedCompany(null); setSelectedFeedbackCard(null); setCallCard(null); setShowArchive(false)
+              setShowSidekick(false)
+              onClose()
+            }}
+          >
+            <IconCross css={{ width: 16, height: 16 }} />
+          </button>
         </div>
       </div>
       )}
 
-      {showSidekick && (
-        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+      <div className="absolute inset-0 bg-white flex flex-col overflow-hidden" style={{ zIndex: 30, transform: showSidekick ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)', pointerEvents: showSidekick ? 'auto' : 'none' }}>
           <AiPanelSolutionReview
             onClose={onClose}
             onBack={() => setShowSidekick(false)}
@@ -616,11 +617,10 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               </Tooltip>
             }
           />
-        </div>
-      )}
+      </div>
 
       {/* ── Content row (main panel + comments panel) ── */}
-      <div style={{ display: showSidekick ? 'none' : 'flex', flexDirection: 'row', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, overflow: 'hidden' }}>
       <div className="flex flex-col overflow-hidden relative" style={{ width: panelWidth, height: '100%', flexShrink: 0 }}>
 
       {/* ── Tab bar ── */}
@@ -676,18 +676,10 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </div>
         )}
 
-      {/* ── Content (sliding panels) ─────────────────── */}
+      {/* ── Content ─────────────────────────── */}
       <div className="flex-1 min-h-0 overflow-hidden relative">
-      <div
-        className="flex absolute inset-y-0 left-0"
-        style={{
-          width: panelWidth * 3,
-          transform: (callCard || showArchive || selectedFeedbackCard) ? `translateX(-${panelWidth * 2}px)` : selectedCompany ? `translateX(-${panelWidth}px)` : 'translateX(0)',
-          transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
-        }}
-      >
       {/* ── Main panel ─── */}
-      <div className="h-full overflow-y-auto panel-scroll flex flex-col gap-0 shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 20, paddingRight: selectedLayout !== 'Right' ? 24 : 20, overflowAnchor: 'none' }}>
+      <div className="h-full overflow-y-auto panel-scroll flex flex-col gap-0 absolute inset-0" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 20, paddingRight: selectedLayout !== 'Right' ? 24 : 20, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -997,92 +989,26 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       </div>
 
-      {/* ── Company panel (slot 1) ─── */}
-      <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ width: panelWidth, paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: selectedLayout !== 'Right' ? 48 : 16 }}>
-        {selectedCompany && (
-          <CompanyDetailView
-            company={selectedCompany}
-            onBack={() => setSelectedCompany(null)}
-            onPromptSelect={(prompt) => setSelectedPrompt(prompt)}
-            onAskClick={() => setShowSidekick(true)}
-          />
-        )}
+      {/* ── Company overlay ─── */}
+      <div className="absolute inset-0 bg-white" style={{ transform: selectedCompany ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+        <div className="h-full overflow-y-auto panel-scroll flex flex-col shrink-0" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, paddingTop: selectedLayout !== 'Right' ? 48 : 16 }}>
+          {selectedCompany && (
+            <CompanyDetailView
+              company={selectedCompany}
+              onBack={() => setSelectedCompany(null)}
+              onPromptSelect={(prompt) => setSelectedPrompt(prompt)}
+              onAskClick={() => setShowSidekick(true)}
+            />
+          )}
+        </div>
       </div>
-      {/* ── Detail panel — slot 2 (archive / call transcript / feedback detail) ─── */}
-      <div className="h-full shrink-0" style={{ width: panelWidth }}>
-        {showArchive && (
-          <div className="panel-scroll h-full overflow-y-auto" style={{ padding: '16px 16px 32px', display: 'flex', flexDirection: 'column' }}>
-            <button
-              onClick={() => setShowArchive(false)}
-              className="hover:bg-[#F1F2F5] transition-colors"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", alignSelf: 'flex-start', marginBottom: 16, marginLeft: -8, fontWeight: 600 }}
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Archive
-            </button>
-            {archivedCards.size === 0 ? (
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, paddingBottom: 48 }}>
-                <IconTasks css={{ width: 40, height: 40, color: '#D1D4DC' }} />
-                <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center', maxWidth: 220, lineHeight: 1.5 }}>
-                  You have 0 archived feedback. Mark a signal as less relevant to add.
-                </p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-4">
-                {generateFeedbackCards(row).map((card, i) => {
-                  if (!archivedCards.has(i)) return null
-                  return (
-                    <div key={i}>
-                      <FeedbackCard {...card} isArchived saved={savedCards.has(i)} onSave={() => setSavedCards(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })} onDismiss={() => handleDismissCard(i)} onArchive={() => setArchivedCards(s => { const n = new Set(s); n.delete(i); return n })} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, fillColor: card.fillColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor, fillColor: card.fillColor }) : undefined} />
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        )}
-        {!showArchive && callCard && (
-          <CallTranscriptPanel
-            author={callCard.author}
-            company={callCard.company}
-            date={callCard.date}
-            transcript={callCard.transcript}
-            onBack={() => setCallCard(null)}
-            avatarColor={callCard.borderColor}
-            highlightColor={callCard.fillColor ?? '#F1F2F5'}
-          />
-        )}
-        {!showArchive && !callCard && selectedFeedbackCard && isStoreReview(selectedFeedbackCard.source) && (
-          <AppStoreReviewDetail
-            card={selectedFeedbackCard}
-            onBack={closeFeedbackCard}
-            highlightColor={selectedFeedbackCard.fillColor ?? '#F1F2F5'}
-          />
-        )}
-        {!showArchive && !callCard && selectedFeedbackCard?.source === 'SurveyMonkey' && (
-          <SurveyFeedbackDetail
-            card={selectedFeedbackCard}
-            onBack={closeFeedbackCard}
-            highlightColor={selectedFeedbackCard.fillColor ?? '#F1F2F5'}
-          />
-        )}
-        {!showArchive && !callCard && selectedFeedbackCard && !isStoreReview(selectedFeedbackCard.source) && selectedFeedbackCard.source !== 'SurveyMonkey' && (
-          <FeedbackCardDetailView
-            card={selectedFeedbackCard}
-            onBack={closeFeedbackCard}
-            onClose={onClose}
-            onAddToBoard={onAddToBoard}
-            highlightColor={selectedFeedbackCard.fillColor ?? '#F1F2F5'}
-          />
-        )}
-      </div>
-      </div>{/* end slider */}
 
-      </div>{/* end overflow wrapper */}
-      </div>{/* end tabs */}
+      </div>{/* end content */}
+
+      </div>{/* end tabs content */}
 
       {/* ── Comment input bar (Details / Jira / Insights tabs) ─── */}
-      {!selectedCompany && !callCard && !selectedPrompt && !showSidekick && (
+      {!selectedCompany && !selectedFeedbackCard && !callCard && !showArchive && !selectedPrompt && !showSidekick && (
         <div className="shrink-0" style={{ padding: '16px' }}>
           <div
             className="flex items-center gap-1.5"
@@ -1102,6 +1028,78 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </div>
         </div>
       )}
+
+      {/* ── Detail overlay — sits below the 48px header so X button is never covered ─── */}
+      <div className="absolute bg-white" style={{ zIndex: 10, top: 48, left: 0, right: 0, bottom: 0, transform: (callCard || showArchive || selectedFeedbackCard) ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)', pointerEvents: (callCard || showArchive || selectedFeedbackCard) ? 'auto' : 'none' }}>
+          {showArchive && (
+            <div className="panel-scroll h-full overflow-y-auto" style={{ padding: '16px 16px 32px', display: 'flex', flexDirection: 'column' }}>
+              <button
+                onClick={() => setShowArchive(false)}
+                className="hover:bg-[#F1F2F5] transition-colors"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, fontSize: 14, color: '#656b81', fontFamily: "'Open Sans', sans-serif", marginLeft: -8, marginBottom: 16, fontWeight: 600 }}
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                Archive
+              </button>
+              {archivedCards.size === 0 ? (
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, paddingBottom: 48 }}>
+                  <IconTasks css={{ width: 40, height: 40, color: '#D1D4DC' }} />
+                  <p style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 14, color: '#9DA3B4', margin: 0, textAlign: 'center', maxWidth: 220, lineHeight: 1.5 }}>
+                    You have 0 archived feedback. Mark a signal as less relevant to add.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {generateFeedbackCards(row).map((card, i) => {
+                    if (!archivedCards.has(i)) return null
+                    return (
+                      <div key={i}>
+                        <FeedbackCard {...card} isArchived saved={savedCards.has(i)} onSave={() => setSavedCards(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })} onDismiss={() => handleDismissCard(i)} onArchive={() => setArchivedCards(s => { const n = new Set(s); n.delete(i); return n })} onSelect={() => { setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, fillColor: card.fillColor, source: card.source, stars: card.stars }) }} onAddToBoard={() => onAddToBoard?.({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor, stars: card.stars })} onViewCall={GONG_TRANSCRIPT_MAP[i] ? () => setCallCard({ title: card.title, author: card.author, company: card.companies[0] ?? '', date: card.date, transcript: GONG_TRANSCRIPT_MAP[i], borderColor: card.borderColor, fillColor: card.fillColor }) : undefined} />
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+          {!showArchive && callCard && (
+            <CallTranscriptPanel
+              author={callCard.author}
+              company={callCard.company}
+              date={callCard.date}
+              transcript={callCard.transcript}
+              onBack={() => setCallCard(null)}
+              onClose={onClose}
+              avatarColor={callCard.borderColor}
+              highlightColor={callCard.fillColor ?? '#F1F2F5'}
+            />
+          )}
+          {!showArchive && !callCard && selectedFeedbackCard && isStoreReview(selectedFeedbackCard.source) && (
+            <AppStoreReviewDetail
+              card={selectedFeedbackCard}
+              onBack={closeFeedbackCard}
+              onClose={onClose}
+              highlightColor={selectedFeedbackCard.fillColor ?? '#F1F2F5'}
+            />
+          )}
+          {!showArchive && !callCard && selectedFeedbackCard?.source === 'SurveyMonkey' && (
+            <SurveyFeedbackDetail
+              card={selectedFeedbackCard}
+              onBack={closeFeedbackCard}
+              onClose={onClose}
+              highlightColor={selectedFeedbackCard.fillColor ?? '#F1F2F5'}
+            />
+          )}
+          {!showArchive && !callCard && selectedFeedbackCard && !isStoreReview(selectedFeedbackCard.source) && selectedFeedbackCard.source !== 'SurveyMonkey' && (
+            <FeedbackCardDetailView
+              card={selectedFeedbackCard}
+              onBack={closeFeedbackCard}
+              onClose={onClose}
+              onAddToBoard={onAddToBoard}
+              highlightColor={selectedFeedbackCard.fillColor ?? '#F1F2F5'}
+            />
+          )}
+        </div>
 
       {/* ── Chat overlay (full-panel, avoids slider height-shift glitch) ─── */}
       {selectedPrompt && (
@@ -1853,10 +1851,12 @@ function FeedbackPrompt({ onSubmit, onClose }: { onSubmit: () => void; onClose: 
 function AppStoreReviewDetail({
   card,
   onBack,
+  onClose,
   highlightColor = '#f1f2f5',
 }: {
   card: { title: string; text: string; author: string; date: string; companies: string[]; stars?: number; borderColor?: string; source?: string }
   onBack: () => void
+  onClose?: () => void
   highlightColor?: string
 }) {
   const authorParts = card.author.split(',')
@@ -1892,7 +1892,6 @@ function AppStoreReviewDetail({
           </svg>
           Feedback
         </button>
-
       </div>
 
       {/* Author */}
@@ -1907,6 +1906,10 @@ function AppStoreReviewDetail({
       {/* Metadata fields */}
       <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Feedback date</span>
+          <div style={{ backgroundColor: '#f1f2f5', borderRadius: 6, padding: '0 8px', height: 28, display: 'inline-flex', alignItems: 'center', fontSize: 14, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{card.date}</div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
           <span style={LABEL}>Source</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <SourceLogoChip source={card.source ?? 'App Store'} />
@@ -1918,10 +1921,16 @@ function AppStoreReviewDetail({
             <CompanyLogo name={card.companies[0]} size={24} />
           </div>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-          <span style={LABEL}>Feedback date</span>
-          <div style={{ backgroundColor: '#f1f2f5', borderRadius: 6, padding: '0 8px', height: 28, display: 'inline-flex', alignItems: 'center', fontSize: 14, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{card.date}</div>
-        </div>
+        {(() => {
+          const bc = card.borderColor ?? ''
+          const label = bc === '#D1F09F' ? 'Praise' : bc === '#d4bbff' ? 'Request' : bc === '#4262FF' ? 'Uncategorized' : 'Problem'
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+              <span style={LABEL}>Feedback type</span>
+              <div style={{ backgroundColor: '#f1f2f5', borderRadius: 6, padding: '0 8px', height: 28, display: 'inline-flex', alignItems: 'center', fontSize: 14, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{label}</div>
+            </div>
+          )
+        })()}
       </div>
 
       {/* Review card */}
@@ -2309,10 +2318,12 @@ function makeResponseId(seed: string) {
 function SurveyFeedbackDetail({
   card,
   onBack,
+  onClose,
   highlightColor = '#f1f2f5',
 }: {
   card: { title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string }
   onBack: () => void
+  onClose?: () => void
   highlightColor?: string
 }) {
   const authorParts = card.author.split(',')
@@ -2393,7 +2404,6 @@ function SurveyFeedbackDetail({
           </svg>
           Feedback
         </button>
-
       </div>
 
       {/* Author row */}
@@ -2486,7 +2496,7 @@ export function FeedbackCardDetailView({
   highlightColor = '#f1f2f5',
   compactTop = false,
 }: {
-  card: { title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string }
+  card: { title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string; source?: string }
   onBack: () => void
   onClose: () => void
   onAddToBoard?: (data: import('../canvas/CanvasFeedbackCard').FeedbackCardData) => void
@@ -2575,7 +2585,6 @@ export function FeedbackCardDetailView({
           </svg>
           Feedback
         </button>
-
       </div>
 
       {/* Author info */}
@@ -2589,16 +2598,32 @@ export function FeedbackCardDetailView({
 
       {/* Metadata fields */}
       <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+          <span style={LABEL}>Feedback date</span>
+          <div style={CHIP}>{card.date}</div>
+        </div>
+        {card.source && (
+          <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+            <span style={LABEL}>Source</span>
+            <SourceLogoChip source={card.source} />
+          </div>
+        )}
         {card.companies[0] && (
           <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
             <span style={LABEL}>Company</span>
             <CompanyLogo name={card.companies[0]} size={24} />
           </div>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
-          <span style={LABEL}>Feedback date</span>
-          <div style={CHIP}>{card.date}</div>
-        </div>
+        {(() => {
+          const bc = card.borderColor ?? ''
+          const label = bc === '#D1F09F' ? 'Praise' : bc === '#d4bbff' ? 'Request' : bc === '#4262FF' ? 'Uncategorized' : 'Problem'
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+              <span style={LABEL}>Feedback type</span>
+              <div style={CHIP}>{label}</div>
+            </div>
+          )
+        })()}
       </div>
 
       {/* Keyword search */}
@@ -2615,17 +2640,21 @@ export function FeedbackCardDetailView({
       </div>
 
       {/* Grey box — highlighted excerpt */}
-      <div style={{ backgroundColor: highlightColor, borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 16 }}>
+      <div className="group" style={{ backgroundColor: highlightColor, borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 16 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <span style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1" }}>{transcript[0].speaker}</span>
             <span style={{ fontSize: 13, color: '#656b81' }}>{transcript[0].time}</span>
-            <span style={{ marginLeft: 'auto' }}>
+            <button
+              className="opacity-0 group-hover:opacity-100 transition-opacity ml-auto"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', color: '#aeb2c0' }}
+              onClick={() => handleCopy(transcript[0].text + (transcript[0].bold ?? ''))}
+            >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <rect x="2" y="5" width="8" height="9" rx="1.5" stroke="#aeb2c0" strokeWidth="1.3" />
-                <path d="M5 5V3.5A1.5 1.5 0 016.5 2H12A1.5 1.5 0 0113.5 3.5V9A1.5 1.5 0 0112 10.5h-1.5" stroke="#aeb2c0" strokeWidth="1.3" strokeLinecap="round" />
+                <rect x="2" y="5" width="8" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+                <path d="M5 5V3.5A1.5 1.5 0 016.5 2H12A1.5 1.5 0 0113.5 3.5V9A1.5 1.5 0 0112 10.5h-1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
               </svg>
-            </span>
+            </button>
           </div>
           <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>
             {transcript[0].text}{transcript[0].bold && <strong>{transcript[0].bold}</strong>}
@@ -2635,10 +2664,20 @@ export function FeedbackCardDetailView({
 
       {/* Remaining transcript entries */}
       {transcript.slice(1).map((msg, i) => (
-        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+        <div key={i} className="group" style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: 14, color: '#222428', fontFeatureSettings: "'ss01' 1" }}>{msg.speaker}</span>
             <span style={{ fontSize: 13, color: '#aeb2c0' }}>{msg.time}</span>
+            <button
+              className="opacity-0 group-hover:opacity-100 transition-opacity ml-auto"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', color: '#aeb2c0' }}
+              onClick={() => handleCopy(msg.text + (msg.bold ?? ''))}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="5" width="8" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+                <path d="M5 5V3.5A1.5 1.5 0 016.5 2H12A1.5 1.5 0 0113.5 3.5V9A1.5 1.5 0 0112 10.5h-1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+              </svg>
+            </button>
           </div>
           <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>{msg.text}</p>
         </div>

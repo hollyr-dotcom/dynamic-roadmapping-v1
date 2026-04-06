@@ -36,7 +36,7 @@ type CitationView =
   | { type: 'related-evidence'; title: string }
   | { type: 'feedback-card-detail'; card: FeedbackCardData; from: CitationView }
   | null;
-const CitationDetailContext = createContext<((view: CitationView) => void) | null>(null);
+const CitationDetailContext = createContext<((view: CitationView, dir?: 'forward' | 'back') => void) | null>(null);
 
 /* ─── Escher-style AI avatar (gradient circle + sparkle icon) ─── */
 function AgentAvatar({ size = 40 }: { size?: number }) {
@@ -1607,27 +1607,29 @@ export default function AiPanelSolutionReview({ onClose, activePage, focusItemId
   // overlay div so @keyframes panel-slide-in always fires from scratch.
   const [overlayKey, setOverlayKey] = useState(0);
   const [isClosing, setIsClosing] = useState(false);
+  const [slideDir, setSlideDir] = useState<'forward' | 'back'>('forward');
   const closeTimerRef = useRef<ReturnType<typeof setTimeout>>();
   // Ref so the callback never reads stale citationView
   const citationViewRef = useRef<CitationView>(null);
   // Ref populated by PanelBody so overlay input can send messages to the chat
   const chatSendRef = useRef<((text: string) => void) | null>(null);
 
-  const handleSetCitationView = useCallback((view: CitationView) => {
-    console.log('[citation] handleSetCitationView', view?.type ?? 'null');
+  const handleSetCitationView = useCallback((view: CitationView, dir: 'forward' | 'back' = 'forward') => {
+    console.log('[citation] handleSetCitationView', view?.type ?? 'null', dir);
     if (view !== null) {
       clearTimeout(closeTimerRef.current);
-      // Fresh open (or re-open during close): increment key to remount element
-      // so the CSS @keyframes animation fires reliably from translateX(100%).
-      if (citationViewRef.current === null) {
-        setOverlayKey(k => k + 1);
-      }
+      // Always increment key to remount the animated element so the CSS
+      // @keyframes animation fires reliably on every transition — including
+      // panel-to-panel navigations where citationViewRef is already non-null.
+      setOverlayKey(k => k + 1);
+      setSlideDir(dir);
       setIsClosing(false);
       citationViewRef.current = view;
       setCitationView(view);
       setMountedView(view);
     } else {
       // Slide out, then unmount after animation completes
+      setSlideDir(dir);
       setIsClosing(true);
       citationViewRef.current = null;
       setCitationView(null);
@@ -1658,7 +1660,7 @@ export default function AiPanelSolutionReview({ onClose, activePage, focusItemId
         <AiGradientDefs />
         {/* Header is a matching layer — never animates regardless of overlay state */}
         <PanelHeader
-          onClose={mountedView ? () => handleSetCitationView(null) : onClose}
+          onClose={onClose}
           onBack={onBack}
           layoutButton={layoutButton}
         />
@@ -1669,8 +1671,10 @@ export default function AiPanelSolutionReview({ onClose, activePage, focusItemId
         {mountedView && (
           <>
             <style>{`
-              @keyframes _ai-slide-in  { from { transform: translateX(100%); } to { transform: translateX(0); } }
-              @keyframes _ai-slide-out { from { transform: translateX(0); } to { transform: translateX(100%); } }
+              @keyframes _ai-slide-in      { from { transform: translateX(100%);  } to { transform: translateX(0); } }
+              @keyframes _ai-slide-in-back { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+              @keyframes _ai-slide-out     { from { transform: translateX(0); } to { transform: translateX(100%);  } }
+              @keyframes _ai-slide-out-back { from { transform: translateX(0); } to { transform: translateX(100%);  } }
             `}</style>
             {/* Static outer shell: positions content+input below the header */}
             <div style={{ position: 'absolute', top: 56, bottom: 0, left: 0, right: 0, zIndex: 20, display: 'flex', flexDirection: 'column' }}>
@@ -1680,14 +1684,14 @@ export default function AiPanelSolutionReview({ onClose, activePage, focusItemId
                 style={{
                   flex: 1, minHeight: 0, background: '#fff', overflow: 'hidden',
                   animation: isClosing
-                    ? '_ai-slide-out 0.32s cubic-bezier(0.4, 0, 1, 1) both'
-                    : '_ai-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both',
+                    ? (slideDir === 'back' ? '_ai-slide-out-back 0.32s cubic-bezier(0.4, 0, 1, 1) both' : '_ai-slide-out 0.32s cubic-bezier(0.4, 0, 1, 1) both')
+                    : (slideDir === 'back' ? '_ai-slide-in-back 0.35s cubic-bezier(0.16, 1, 0.3, 1) both' : '_ai-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both'),
                 }}
               >
                 {mountedView?.type === 'details' && citationCard && (
                   <FeedbackCardDetailView
                     card={citationCard}
-                    onBack={() => handleSetCitationView(null)}
+                    onBack={() => handleSetCitationView(null, 'back')}
                     onClose={() => { handleSetCitationView(null); onClose?.() }}
                     highlightColor={citationCard.fillColor}
                     compactTop
@@ -1703,7 +1707,7 @@ export default function AiPanelSolutionReview({ onClose, activePage, focusItemId
                 {mountedView?.type === 'feedback-card-detail' && (
                   <FeedbackCardDetailView
                     card={mountedView.card}
-                    onBack={() => handleSetCitationView(mountedView.from)}
+                    onBack={() => handleSetCitationView(mountedView.from, 'back')}
                     onClose={() => { handleSetCitationView(null); onClose?.() }}
                     highlightColor={mountedView.card.fillColor ?? '#EFE9FF'}
                     compactTop
