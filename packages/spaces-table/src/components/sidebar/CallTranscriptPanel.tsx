@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { InputSearch } from '@mirohq/design-system'
+import { InputSearch, IconCross } from '@mirohq/design-system'
 
 const AVATAR_COLORS: Record<string, { bg: string; fg: string }> = {
   '#D1F09F': { bg: '#ADF0C7', fg: '#067429' },
@@ -36,6 +36,7 @@ interface CallTranscriptPanelProps {
   date: string
   transcript: TranscriptLine[]
   onBack: () => void
+  onClose?: () => void
   highlightColor?: string
   avatarColor?: string
 }
@@ -62,7 +63,7 @@ const CHIP: React.CSSProperties = {
   fontFamily: "'Open Sans', sans-serif",
 }
 
-export function CallTranscriptPanel({ author, company, date, transcript, onBack, highlightColor = '#f1f2f5', avatarColor }: CallTranscriptPanelProps) {
+export function CallTranscriptPanel({ author, company, date, transcript, onBack, onClose, highlightColor = '#f1f2f5', avatarColor }: CallTranscriptPanelProps) {
   const [search, setSearch] = useState('')
   const [authorName, authorRole] = author.split(',').map(s => s.trim())
 

@@ -29,7 +29,7 @@ const TAG_BG: Record<string, string> = {
 
 function IconThreeColumnsVertical() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="2"  y="4" width="5" height="16" rx="1.5" fill="#3C3F4A" />
       <rect x="9.5" y="4" width="5" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
       <rect x="17" y="4" width="5" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
@@ -187,7 +187,7 @@ export const CARDS: {
 ]
 
 function CardIcon({ type }: { type: CardIcon }) {
-  const props = { css: { width: 24, height: 24 } }
+  const props = { css: { width: 28, height: 28 } }
   if (type === 'chart-line') return <IconChartLine {...props} />
   if (type === 'chart-progress') return <IconChartProgress {...props} />
   if (type === 'sparks') return <IconSparks {...props} />
@@ -211,7 +211,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
             {/* Icon + close row */}
             <div className="flex items-center justify-between">
               <div className="flex items-center justify-center shrink-0" style={{ color: '#222428' }}>
-                {card.matchTag === 'Growing evidence' ? <IconChartLine size="medium" /> : card.matchTag === 'Fading evidence' ? <IconArrowDown size="medium" /> : card.matchTag === 'New evidence' ? <IconSparks size="medium" /> : card.matchTag === 'Missing with roadmap' ? <IconExclamationPointCircle size="medium" /> : card.matchTag === 'Weak evidence' ? <IconThreeColumnsVertical /> : <CardIcon type={card.icon} />}
+                {card.matchTag === 'Growing evidence' ? <IconChartLine css={{ width: 28, height: 28 }} /> : card.matchTag === 'Fading evidence' ? <IconArrowDown css={{ width: 28, height: 28 }} /> : card.matchTag === 'New evidence' ? <IconSparks css={{ width: 28, height: 28 }} /> : card.matchTag === 'Missing with roadmap' ? <IconExclamationPointCircle css={{ width: 28, height: 28 }} /> : card.matchTag === 'Weak evidence' ? <IconThreeColumnsVertical /> : <CardIcon type={card.icon} />}
               </div>
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 <DropdownMenu>
@@ -241,7 +241,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
             </div>
 
             {/* Title */}
-            <h3 className="text-[17px] font-medium text-[#1a1b1e] leading-snug -mt-0.5" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
+            <h3 className="text-[17px] font-medium text-[#1a1b1e] leading-snug mt-0.5" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
               {card.title}
             </h3>
 

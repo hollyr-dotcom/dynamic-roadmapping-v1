@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { JiraForm, SourceLogoChip } from './RowDetailPanel'
+import { JiraForm, SourceLogoChip, FeedbackCardDetailView } from './RowDetailPanel'
 import { JiraLogo } from '../JiraLogo'
 import {
   IconDotsThreeVertical,
@@ -106,6 +106,7 @@ const TABS = ['Details', 'Jira', 'Insights', 'Comments']
 export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   const [dismissedCards, setDismissedCards] = useState<Set<number>>(new Set())
+  const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string } | null>(null)
   const [companiesExpanded, setCompaniesExpanded] = useState(false)
 
   const [layoutOpen, setLayoutOpen] = useState(false)
@@ -237,8 +238,18 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
       {/* 4px spacer */}
       <div className="h-1 shrink-0" />
 
-      {/* ── Content ── */}
-      <div className="flex-1 min-h-0 overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2">
+      {/* ── Content (2-slot slider) ── */}
+      <div className="flex-1 min-h-0 overflow-hidden relative">
+      <div
+        className="flex absolute inset-y-0 left-0"
+        style={{
+          width: '200%',
+          transform: selectedFeedbackCard ? 'translateX(-50%)' : 'translateX(0)',
+          transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
+      >
+      {/* Slot 0 — main content */}
+      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2 shrink-0" style={{ width: '50%' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -398,7 +409,7 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
                     <FeedbackCard
                       {...card}
                       onDismiss={() => setDismissedCards(prev => new Set([...prev, i]))}
-                      onSelect={() => {}}
+                      onSelect={() => setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor })}
                     />
                   </div>
                 ))}
@@ -412,7 +423,22 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
             <p className="text-[14px] text-[#AEB2C0]">Comments coming soon</p>
           </div>
         )}
+      </div>{/* end slot 0 */}
+
+      {/* Slot 1 — feedback detail */}
+      <div className="h-full shrink-0" style={{ width: '50%' }}>
+        {selectedFeedbackCard && (
+          <FeedbackCardDetailView
+            card={selectedFeedbackCard}
+            onBack={() => setSelectedFeedbackCard(null)}
+            onClose={onClose}
+            highlightColor="#F1F2F5"
+          />
+        )}
       </div>
+
+      </div>{/* end slider */}
+      </div>{/* end overflow wrapper */}
 
       {layoutOpen && layoutPos && createPortal(
         <div

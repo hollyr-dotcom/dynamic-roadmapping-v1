@@ -370,6 +370,18 @@ tbody tr.row-selected td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
   animation: dialog-card-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* ── Side panel slide in/out from right ──────────────── */
+@keyframes panel-slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes panel-slide-out {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
+}
+.panel-slide-in  { animation: panel-slide-in  0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.panel-slide-out { animation: panel-slide-out 0.32s cubic-bezier(0.4, 0, 1, 1) both; }
+
 /* ── Page transition out ─────────────────────────────── */
 .page-transitioning-out {
   opacity: 0;
