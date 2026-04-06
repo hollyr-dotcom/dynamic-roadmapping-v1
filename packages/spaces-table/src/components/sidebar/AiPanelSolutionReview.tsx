@@ -1608,7 +1608,7 @@ export default function AiPanelSolutionReview({ onClose, activePage, focusItemId
   const [overlayKey, setOverlayKey] = useState(0);
   const [isClosing, setIsClosing] = useState(false);
   const [slideDir, setSlideDir] = useState<'forward' | 'back'>('forward');
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   // Ref so the callback never reads stale citationView
   const citationViewRef = useRef<CitationView>(null);
   // Ref populated by PanelBody so overlay input can send messages to the chat
