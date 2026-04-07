@@ -7,6 +7,7 @@ import { TopNavBar } from './components/page/TopNavBar'
 import { DatabaseTitle } from './components/page/DatabaseTitle'
 import { ViewTabsToolbar, type SidebarId, type TabConfig, type ViewType } from './components/page/ViewTabsToolbar'
 import { DataTable } from './components/table'
+import { SuggestionsTable } from './components/table/SuggestionsTable'
 import { KanbanBoard } from './components/kanban'
 import { TimelinePlaceholder } from './components/timeline'
 import { SidebarShell } from './components/sidebar/SidebarShell'
@@ -58,6 +59,7 @@ const PAGE_CONFIGS: Record<PageId, PageConfig> = {
     tabs: [
       { id: 'all-items', label: 'All ideas', type: 'table' },
       { id: 'prioritization', label: 'Prioritization', type: 'kanban' },
+      { id: 'suggestions', label: 'Suggestions', type: 'suggestions' },
     ],
     defaultTab: 'all-items',
   },
@@ -272,7 +274,7 @@ export function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [toggleSidebar, canvasOpen, zoom, zoomTo, widgets, selectedWidgetId])
 
-  const closeSidebar = () => { setActiveSidebar(null); setIsJiraDetailOpen(false); setPanelLayout('Right'); setSidekickFocusItemId(undefined) }
+  const closeSidebar = () => { setActiveSidebar(null); setIsJiraDetailOpen(false); setPanelLayout('Right'); setSidekickFocusItemId(undefined); setSidekickReprioritizeId(undefined) }
 
   // Wire up global close for Sidekick panel
   useEffect(() => {
@@ -319,7 +321,7 @@ export function App() {
 
   const handleAddView = useCallback((type: ViewType) => {
     const currentTabs = pageTabs[activePage]
-    const typeLabels: Record<ViewType, string> = { table: 'Table', kanban: 'Kanban', timeline: 'Timeline' }
+    const typeLabels: Record<ViewType, string> = { table: 'Table', kanban: 'Kanban', timeline: 'Timeline', suggestions: 'Suggestions' }
     const baseLabel = typeLabels[type]
     const existingLabels = new Set(currentTabs.map(t => t.label))
     let label = baseLabel
@@ -494,7 +496,7 @@ export function App() {
   }
 
   return (
-    <div className="relative w-screen h-screen bg-white overflow-hidden">
+    <div className="relative w-screen h-screen overflow-hidden" style={{ backgroundColor: activePage === 'overview' ? '#FBFAF7' : '#ffffff' }}>
       {/* Main app layout — scales down when canvas opens */}
       <div
         className="flex w-full h-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
@@ -521,6 +523,7 @@ export function App() {
             onToggleMenu={() => toggleSidebar('space-menu')}
             showSharePopover={showSharePopover}
             onDismissSharePopover={() => setShowSharePopover(false)}
+            transparent={activePage === 'overview'}
           />
         </div>
         {/* Scroll area — database title scrolls away, tabs stick under header */}
@@ -563,6 +566,9 @@ export function App() {
           )}
           {activeTabConfig?.type === 'timeline' && (
             <TimelinePlaceholder key={activeTab} data={roadmapItems} parentScrollRef={scrollRef} onRowClick={(row) => { setSidekickFocusItemId(row.id); setActiveSidebar('ai-sidekick') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onBarSelectedChange={setKanbanCardSelected} ghostRowId={ghostRowId ?? undefined} onBarPlaced={(rowId, startDate, endDate) => { setSelectedRowDates({ startDate, endDate }); setGhostRowId(null) }} />
+          )}
+          {activeTabConfig?.type === 'suggestions' && (
+            <SuggestionsTable onRowClick={(_row, _description, cardId) => { setSidekickReprioritizeCardId(cardId); setSidekickContextMessage(undefined); setSidekickKey(k => k + 1); setActiveSidebar('ai-sidekick') }} />
           )}
           </>)}
         </div>

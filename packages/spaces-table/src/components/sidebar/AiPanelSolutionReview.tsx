@@ -902,6 +902,217 @@ function buildFlow3(cutId: string, addId: string): MessageContent {
   };
 }
 
+/* ─── Overview card reprioritize data ─── */
+
+const OVERVIEW_DIVE_DEEP_DATA: Record<string, {
+  title: string;
+  description: string;
+  mentions: number;
+  customers: number;
+  revenue: number;
+  confidence: string;
+  matchTag: string;
+  arrKey: string;
+}> = {
+  '1': {
+    title: 'Accelerate large-table performance improvements — boards become unusable at ~100+ rows',
+    description: '~793 projected monthly mentions make this the highest-volume theme in March, up 23% month-over-month. It correlates directly to an existing P0 roadmap item that may need to be pulled forward.',
+    mentions: 793,
+    customers: 284,
+    revenue: 4200,
+    confidence: '90%',
+    matchTag: 'Growing evidence',
+    arrKey: 'ov1',
+  },
+  '2': {
+    title: 'Fix paste and CSV import fidelity — especially the 5-row truncation bug',
+    description: 'Paste from Excel, Google Sheets, CSV, and Confluence is broken for ~652 projected monthly mentions. No existing roadmap item addresses paste or import fidelity.',
+    mentions: 652,
+    customers: 241,
+    revenue: 3100,
+    confidence: '88%',
+    matchTag: 'Missing in roadmap',
+    arrKey: 'ov2',
+  },
+  '3': {
+    title: 'Add rich text editing inside table cells (bullets, bold, links)',
+    description: '~874 projected monthly mentions make rich text the single highest-volume theme in March, rising for three consecutive months. Current cells are plain text only, breaking use cases like mini-specs, meeting notes, and workshop content.',
+    mentions: 874,
+    customers: 312,
+    revenue: 3800,
+    confidence: '85%',
+    matchTag: 'Growing evidence',
+    arrKey: 'ov3',
+  },
+  '4': {
+    title: 'Rein in AI table creation — make it suggestion-only with preview and opt-in controls',
+    description: 'Only ~241 mentions across 89 customers so far — low volume relative to other themes. Reports are scattered with no clear pattern yet. Not enough signal to scope work confidently.',
+    mentions: 241,
+    customers: 89,
+    revenue: 1900,
+    confidence: '83%',
+    matchTag: 'Weak evidence',
+    arrKey: 'ov4',
+  },
+}
+
+function buildOverviewDiveDeepFlow(cardId: string): MessageContent {
+  const data = OVERVIEW_DIVE_DEEP_DATA[cardId];
+  if (!data) return { text: "I couldn't find data for that signal." };
+
+  const arr = companyARR[data.arrKey] ?? [];
+  const revLabel = `$${(data.revenue / 1000).toFixed(1)}M`;
+
+  const impactCard = (
+    <div key="dive-impact" style={{ borderRadius: 12, background: '#fff', boxShadow: '0px 2px 8px rgba(34,36,40,0.08)', overflow: 'hidden' }}>
+      <div style={{ padding: '16px 20px' }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#222428', marginBottom: 16 }}>Impact metrics</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px 16px' }}>
+          <div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: '#222428', lineHeight: 1 }}>{data.mentions}</div>
+            <div style={{ fontSize: 12, color: '#6f7489', marginTop: 4 }}>Monthly mentions</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: '#222428', lineHeight: 1 }}>{data.customers}</div>
+            <div style={{ fontSize: 12, color: '#6f7489', marginTop: 4 }}>Unique customers</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: '#222428', lineHeight: 1 }}>{revLabel}</div>
+            <div style={{ fontSize: 12, color: '#6f7489', marginTop: 4 }}>Impacted ARR</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: '#222428', lineHeight: 1 }}>{data.confidence}</div>
+            <div style={{ fontSize: 12, color: '#6f7489', marginTop: 4 }}>Evidence confidence</div>
+          </div>
+        </div>
+      </div>
+      {arr.length > 0 && (
+        <div style={{ borderTop: '1px solid #F1F2F5' }}>
+          <div style={{ padding: '12px 20px 4px', fontSize: 13, fontWeight: 700, color: '#222428' }}>Top requesters</div>
+          {arr.slice(0, 4).map((a, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '10px 20px', borderBottom: i < Math.min(arr.length, 4) - 1 ? '1px solid #f1f2f5' : 'none' }}>
+              <span style={{ fontSize: 13, color: '#222428' }}>{a.company}</span>
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#222428' }}>${a.arr}K</span>
+                <div style={{ fontSize: 12, color: '#6f7489' }}>{a.contacts} contacts</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const diveDeepPills: { label: string; key: string }[] = data.matchTag === 'Missing in roadmap'
+    ? [
+        { label: 'Should we add this to the roadmap?', key: 'flow1-initial' },
+        { label: 'Am I betting on the right things for Q2?', key: 'flow1-initial' },
+      ]
+    : data.matchTag === 'Weak evidence'
+    ? [
+        { label: 'Am I betting on the right things for Q2?', key: 'flow1-initial' },
+        { label: 'What else could we cut instead?', key: 'alt-cut' },
+      ]
+    : [
+        { label: `What's the trade-off of reprioritizing this?`, key: 'alt-cut' },
+        { label: 'Am I betting on the right things for Q2?', key: 'flow1-initial' },
+      ];
+
+  return {
+    text: `**${shortTitle(data.title, 55)}**\n\n${data.description}\n\n**Signal status:** ${data.matchTag}`,
+    cards: [impactCard],
+    loadingSteps: [
+      `Reading evidence for "${shortTitle(data.title, 30)}"…`,
+      'Aggregating customer signals…',
+      'Calculating impact estimates…',
+    ],
+    pills: diveDeepPills,
+  };
+}
+
+const OVERVIEW_REPRIORITIZE_DATA: Record<string, {
+  title: string;
+  mentions: number;
+  customers: number;
+  revenue: number;
+  confidence: string;
+}> = {
+  '1': {
+    title: 'Accelerate large-table performance improvements — boards become unusable at ~100+ rows',
+    mentions: 793,
+    customers: 284,
+    revenue: 4200,
+    confidence: '90%',
+  },
+  '3': {
+    title: 'Add rich text editing inside table cells (bullets, bold, links)',
+    mentions: 874,
+    customers: 312,
+    revenue: 3800,
+    confidence: '85%',
+  },
+}
+
+function buildOverviewReprioritizeFlow(cardId: string): MessageContent {
+  const data = OVERVIEW_REPRIORITIZE_DATA[cardId];
+  if (!data) return { text: "I couldn't find data for that signal." };
+
+  // Pick the Q2 item with the weakest qualitative backing as the clearest potential slip
+  const q2 = getQ2Items().sort((a, b) => a.estRevenue - b.estRevenue);
+  const noQuote = q2.find(r => !customerQuotes[r.id] || customerQuotes[r.id].length === 0);
+  const potentialCut = noQuote ?? q2[0];
+
+  const gainItems: { label: string; value: string }[] = [
+    { label: 'Customer mentions', value: `${data.mentions}` },
+    { label: 'Unique customers', value: `${data.customers}` },
+    { label: 'Impacted ARR', value: `$${(data.revenue / 1000).toFixed(1)}M` },
+    { label: 'Evidence confidence', value: data.confidence },
+  ];
+
+  const cutDeps = potentialCut ? getDeps(potentialCut.id) : null;
+  const hasNoEvidence = potentialCut && (!customerQuotes[potentialCut.id] || customerQuotes[potentialCut.id].length === 0);
+  const loseItems: { label: string; value: string }[] = potentialCut ? [
+    { label: 'Est. Revenue at risk', value: `$${potentialCut.estRevenue}K` },
+    { label: 'Customers affected', value: `${potentialCut.customers}` },
+    { label: 'Customer quotes', value: hasNoEvidence ? 'None linked' : `${(customerQuotes[potentialCut.id] ?? []).length} linked` },
+    ...(cutDeps && cutDeps.blocks.length > 0 ? [{ label: 'Blocks', value: `${cutDeps.blocks.length} item${cutDeps.blocks.length > 1 ? 's' : ''}` }] : []),
+  ] : [];
+
+  const cards: React.ReactNode[] = [
+    <ImpactCard
+      key="gain"
+      title={`Signal: ${shortTitle(data.title, 35)}`}
+      type="gain"
+      items={gainItems}
+    />,
+    potentialCut ? (
+      <ImpactCard
+        key="lose"
+        title={`Could slip: ${shortTitle(potentialCut.title, 35)}`}
+        type="lose"
+        items={loseItems}
+      />
+    ) : null,
+  ].filter(Boolean) as React.ReactNode[];
+
+  const signalRevLabel = `$${(data.revenue / 1000).toFixed(1)}M`;
+  const cutRevLabel = potentialCut ? `$${potentialCut.estRevenue}K` : '';
+
+  return {
+    text: `**${shortTitle(data.title, 45)}** is your strongest unaddressed signal right now — ${data.mentions} mentions from ${data.customers} customers, ${signalRevLabel} impacted ARR.\n\nTo pull this into Q2, capacity needs to come from somewhere. The cleanest swap is **${potentialCut ? shortTitle(potentialCut.title, 40) : 'your lowest-priority Q2 item'}**${hasNoEvidence ? ' — it has the weakest qualitative backing of your current "Now" items' : ''}${cutRevLabel ? ` (${cutRevLabel} revenue at risk)` : ''}.`,
+    cards,
+    loadingSteps: [
+      `Reading evidence for "${shortTitle(data.title, 30)}"…`,
+      'Checking current Q2 roadmap capacity…',
+      'Estimating ripple effects…',
+    ],
+    pills: [
+      { label: 'What else could we cut instead?', key: 'alt-cut' },
+      { label: 'Am I betting on the right things for Q2?', key: 'flow1-initial' },
+    ],
+  };
+}
+
 function buildAltCut(): MessageContent {
   const q2 = getQ2Items().sort((a, b) => a.estRevenue - b.estRevenue);
   const safest = q2.find(item => {
@@ -1094,6 +1305,45 @@ function PanelBody({ activePage, focusItemId, contextUserMessage, sendRef }: { a
       }
     }
   }, [focusItemId, contextUserMessage]);
+
+  // Show description as context when opened from Suggestions table
+  const contextTriggeredRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (contextUserMessage && contextUserMessage !== contextTriggeredRef.current) {
+      contextTriggeredRef.current = contextUserMessage;
+      setMessages([{
+        id: msgIdRef.current++,
+        role: 'ai',
+        text: contextUserMessage,
+      }]);
+    }
+  }, [contextUserMessage]);
+
+  // Auto-trigger trade-off analysis when opened via Reprioritize on an overview card
+  const reprioritizeTriggeredRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (reprioritizeCardId && reprioritizeCardId !== reprioritizeTriggeredRef.current) {
+      reprioritizeTriggeredRef.current = reprioritizeCardId;
+      setMessages([]);
+      const content = buildOverviewReprioritizeFlow(reprioritizeCardId);
+      const title = OVERVIEW_REPRIORITIZE_DATA[reprioritizeCardId]?.title ?? 'this signal';
+      addAiResponse(content, `What's the trade-off of reprioritizing "${shortTitle(title, 50)}"?`);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reprioritizeCardId]);
+
+  // Auto-trigger signal deep-dive when opened via Dive Deeper on an overview card
+  const diveDeepTriggeredRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (diveDeepCardId && diveDeepCardId !== diveDeepTriggeredRef.current) {
+      diveDeepTriggeredRef.current = diveDeepCardId;
+      setMessages([]);
+      const content = buildOverviewDiveDeepFlow(diveDeepCardId);
+      const title = OVERVIEW_DIVE_DEEP_DATA[diveDeepCardId]?.title ?? 'this signal';
+      addAiResponse(content, `Tell me more about "${shortTitle(title, 50)}"`);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [diveDeepCardId]);
 
   // Track if user has scrolled up manually
   const userScrolledUpRef = useRef(false);

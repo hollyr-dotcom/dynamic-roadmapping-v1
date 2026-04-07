@@ -57,7 +57,7 @@ function confidenceBorderColor(confidence: string): string {
   return '#F8D3AF'                 // orange — low
 }
 
-function confidenceTagStyle(confidence: string): { bg: string; text: string } {
+export function confidenceTagStyle(confidence: string): { bg: string; text: string } {
   const pct = parseInt(confidence)
   if (pct >= 95) return { bg: '#DCFFF1', text: '#1C6B4A' } // green subtle
   if (pct >= 88) return { bg: '#DAEAFF', text: '#0055CC' } // blue subtle
@@ -121,7 +121,7 @@ type CardIcon = 'chart-line' | 'chart-progress' | 'sparks' | 'lightning' | 'chat
 
 type MatchTag = 'Growing evidence' | 'Fading evidence' | 'New evidence' | 'Missing in roadmap' | 'Weak evidence'
 
-const MATCH_TAG_STYLE: Record<MatchTag, { bg: string; text: string }> = {
+export const MATCH_TAG_STYLE: Record<MatchTag, { bg: string; text: string }> = {
   'Growing evidence':    { bg: '#EAFAEA', text: '#067429' },
   'Fading evidence':     { bg: '#EFE9FF', text: '#3D25A0' },
   'New evidence':        { bg: '#E7F0FF', text: '#0055CC' },
@@ -138,7 +138,7 @@ export const CARDS: {
   description: string
   confidence: string
   primaryAction: string
-  secondaryAction: string
+  secondaryAction?: string
 }[] = [
   {
     id: '1',
@@ -149,7 +149,6 @@ export const CARDS: {
     description: '~793 projected monthly mentions make this the highest-volume theme in March, up 23% month-over-month. It correlates directly to an existing P0 roadmap item that may need to be pulled forward.',
     confidence: '90%',
     primaryAction: 'Reprioritize',
-    secondaryAction: 'Dive deeper',
   },
   {
     id: '2',
@@ -171,7 +170,6 @@ export const CARDS: {
     description: '~874 projected monthly mentions make rich text the single highest-volume theme in March, rising for three consecutive months. Current cells are plain text only, breaking use cases like mini-specs, meeting notes, and workshop content.',
     confidence: '85%',
     primaryAction: 'Reprioritize',
-    secondaryAction: 'Dive deeper',
   },
   {
     id: '4',
@@ -181,8 +179,7 @@ export const CARDS: {
     title: 'Rein in AI table creation — make it suggestion-only with preview and opt-in controls',
     description: 'Only ~241 mentions across 89 customers so far — low volume relative to other themes. Reports are scattered with no clear pattern yet. Not enough signal to scope work confidently.',
     confidence: '83%',
-    primaryAction: 'Review priority',
-    secondaryAction: 'Dive deeper',
+    primaryAction: 'Dive deeper',
   },
 ]
 
@@ -196,7 +193,7 @@ function CardIcon({ type }: { type: CardIcon }) {
   return null
 }
 
-export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: { onDiveDeeper?: (cardId: string) => void; onAddToRoadmap?: (cardId: string) => void; onReprioritize?: () => void }) {
+export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: { onDiveDeeper?: (cardId: string) => void; onAddToRoadmap?: (cardId: string) => void; onReprioritize?: (cardId: string) => void }) {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
 
   return (
@@ -250,10 +247,10 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
             <Button
               variant="primary"
               size="medium"
-              onPress={() => { if (card.primaryAction === 'Add to roadmap') { onAddToRoadmap?.(card.id); setDismissed(prev => new Set(prev).add(card.id)) } else if (card.primaryAction === 'Reprioritize') { onReprioritize?.() } else if (card.primaryAction === 'Review priority') { onDiveDeeper?.(card.id) } }}
+              onPress={() => { if (card.primaryAction === 'Add to roadmap') { onAddToRoadmap?.(card.id); setDismissed(prev => new Set(prev).add(card.id)) } else if (card.primaryAction === 'Reprioritize') { onReprioritize?.(card.id) } else if (card.primaryAction === 'Dive deeper') { onDiveDeeper?.(card.id) } }}
             >
               <Button.IconSlot>
-                {card.primaryAction === 'Add to roadmap' ? <IconPlus /> : card.primaryAction === 'Reprioritize' ? <IconTimelineFormat /> : card.primaryAction === 'Review priority' ? <IconEyeOpen /> : <IconEyeOpen />}
+                {card.primaryAction === 'Add to roadmap' ? <IconPlus /> : card.primaryAction === 'Reprioritize' ? <IconTimelineFormat /> : card.primaryAction === 'Dive deeper' ? <IconEyeOpen /> : <IconEyeOpen />}
               </Button.IconSlot>
               <Button.Label>{card.primaryAction}</Button.Label>
             </Button>

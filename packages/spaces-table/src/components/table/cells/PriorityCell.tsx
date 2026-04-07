@@ -22,6 +22,7 @@ export function PriorityCell({ value }: PriorityCellProps) {
       className="inline-flex items-center justify-center font-body whitespace-nowrap"
       style={{
         fontSize: 14,
+        fontWeight: 600,
         height: 28,
         padding: '4px 8px',
         borderRadius: 6,

@@ -18,9 +18,10 @@ interface TopNavBarProps {
   onToggleMenu: () => void
   showSharePopover?: boolean
   onDismissSharePopover?: () => void
+  transparent?: boolean
 }
 
-export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, spaceName, isMenuOpen, onToggleMenu, showSharePopover, onDismissSharePopover }: TopNavBarProps) {
+export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, spaceName, isMenuOpen, onToggleMenu, showSharePopover, onDismissSharePopover, transparent }: TopNavBarProps) {
   const shareBtnRef = useRef<HTMLSpanElement>(null)
   const [shareBtnRect, setShareBtnRect] = useState<{ x: number; y: number; right: number } | null>(null)
   const [tooltipOpen, setTooltipOpen] = useState(false)
@@ -35,7 +36,7 @@ export function TopNavBar({ borderOpacity, scrollFade, databaseTitle, spaceName,
 
   return (
     <div
-      className="flex items-center justify-between bg-white shrink-0"
+      className={`flex items-center justify-between shrink-0${transparent ? '' : ' bg-white'}`}
       style={{
         paddingLeft: '8px',
         paddingRight: '12px',
