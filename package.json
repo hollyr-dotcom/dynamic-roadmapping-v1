@@ -6,6 +6,7 @@
     "dev": "bun run --filter @spaces/spaces-table dev",
     "dev:sidebar": "bun run --filter @spaces/sidebar dev",
     "dev:table": "bun run --filter @spaces/spaces-table dev",
+    "build": "bun run --filter @spaces/spaces-table build",
     "test": "bun run --filter '*' test"
   },
   "dependencies": {
