@@ -32,7 +32,7 @@ interface DataTableProps {
   showMoveToRoadmap?: boolean
   onImportSource?: (source: 'jira' | 'csv' | 'backlog') => void
   onAddRecord?: (title?: string) => void
-  activePage?: 'backlog' | 'roadmap'
+  activePage?: 'backlog' | 'roadmap' | 'overview'
   animateIn?: boolean
   onEmptyInteract?: () => void
   onAddToBoard?: (rowId: string) => void
@@ -127,7 +127,7 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
                 <div
                   key={source.id}
                   className="group flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer hover:bg-[#f1f2f5] transition-colors"
-                  onClick={() => onImportSource?.(source.id)}
+                  onClick={() => onImportSource?.(source.id as 'jira' | 'csv' | 'backlog')}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="shrink-0 w-5 h-5 flex items-center justify-center">
@@ -141,7 +141,7 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
                   </div>
                   <button
                     className="shrink-0 ml-3 w-8 h-8 flex items-center justify-center rounded-full bg-white border border-[#e9eaef] text-[#1a1b1e] group-hover:bg-[#4262FF] group-hover:border-transparent group-hover:text-white transition-colors"
-                    onClick={e => { e.stopPropagation(); onImportSource?.(source.id) }}
+                    onClick={e => { e.stopPropagation(); onImportSource?.(source.id as 'jira' | 'csv' | 'backlog') }}
                   >
                     <IconPlus css={{ width: 14, height: 14 }} />
                   </button>
