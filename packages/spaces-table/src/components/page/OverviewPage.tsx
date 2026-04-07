@@ -208,12 +208,12 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
           style={{ border: '0.5px solid #e0e2e8', paddingBottom: 64 }}
         >
           <div className="p-6 flex flex-col gap-2">
-            {/* Icon + close row */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center justify-center shrink-0" style={{ color: '#222428' }}>
-                {card.matchTag === 'Growing evidence' ? <IconChartLine css={{ width: 28, height: 28 }} /> : card.matchTag === 'Fading evidence' ? <IconArrowDown css={{ width: 28, height: 28 }} /> : card.matchTag === 'New evidence' ? <IconSparks css={{ width: 28, height: 28 }} /> : card.matchTag === 'Missing with roadmap' ? <IconExclamationPointCircle css={{ width: 28, height: 28 }} /> : card.matchTag === 'Weak evidence' ? <IconThreeColumnsVertical /> : <CardIcon type={card.icon} />}
-              </div>
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            {/* Title + close row */}
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="text-[20px] font-medium text-[#1a1b1e] leading-snug" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
+                {card.title}
+              </h3>
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shrink-0">
                 <button
                   onClick={() => setDismissed(prev => new Set(prev).add(card.id))}
                   className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
@@ -222,11 +222,6 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
                 </button>
               </div>
             </div>
-
-            {/* Title */}
-            <h3 className="text-[17px] font-medium text-[#1a1b1e] leading-snug mt-0.5" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
-              {card.title}
-            </h3>
 
             {/* Description */}
             <p className="text-[14px] leading-relaxed" style={{ fontFamily: 'Open Sans, sans-serif', color: '#656b81' }}>
