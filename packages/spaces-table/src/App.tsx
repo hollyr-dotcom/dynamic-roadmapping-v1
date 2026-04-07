@@ -89,6 +89,7 @@ export function App() {
   const [showSharePopover, setShowSharePopover] = useState(false)
   const [showShareDialog, setShowShareDialog] = useState(false)
   const [activePage, setActivePage] = useState<PageId>('backlog')
+  const [overviewBgColor, setOverviewBgColor] = useState('#F2F4FC')
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
   const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
   const [pendingImport, setPendingImport] = useState<'jira' | 'miro' | 'csv' | 'backlog' | null>(null)
@@ -496,7 +497,7 @@ export function App() {
   }
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden" style={{ backgroundColor: activePage === 'overview' ? '#FBFAF7' : '#ffffff' }}>
+    <div className="relative w-screen h-screen overflow-hidden" style={{ backgroundColor: activePage === 'overview' ? overviewBgColor : '#ffffff', transition: 'background-color 0.5s ease' }}>
       {/* Main app layout — scales down when canvas opens */}
       <div
         className="flex w-full h-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"

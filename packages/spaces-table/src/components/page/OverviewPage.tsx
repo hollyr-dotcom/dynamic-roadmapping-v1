@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { SpaceRow } from '@spaces/shared'
 import { companyARR } from '@spaces/shared'
-import { Button, Chip, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard, IconInformationMarkCircle, IconTriangleSquareCircle, IconLightbulb, IconGift, IconEyeOpen } from '@mirohq/design-system'
+import { Button, IconButton, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard, IconEyeOpen, IconInsightsSearch } from '@mirohq/design-system'
 import {
   IconChartLine,
   IconChartProgress,
@@ -15,7 +15,8 @@ import {
   IconCross,
   IconPlus,
   IconTimelineFormat,
-  IconArrowRight,
+  IconChevronLeft,
+  IconChevronRight,
 } from '@mirohq/design-system'
 
 const TAG_BG: Record<string, string> = {
@@ -117,7 +118,7 @@ companyARR['ov4'] = [
   { company: 'Spotify', arr: 175, contacts: 4  },
 ]
 
-type CardIcon = 'chart-line' | 'chart-progress' | 'sparks' | 'lightning' | 'chat'
+type CardIcon = 'chart-line' | 'chart-progress' | 'sparks' | 'lightning' | 'chat' | 'timeline' | 'insights-search'
 
 type MatchTag = 'Growing evidence' | 'Fading evidence' | 'New evidence' | 'Missing in roadmap' | 'Weak evidence'
 
@@ -125,7 +126,7 @@ export const MATCH_TAG_STYLE: Record<MatchTag, { bg: string; text: string }> = {
   'Growing evidence':    { bg: '#EAFAEA', text: '#067429' },
   'Fading evidence':     { bg: '#EFE9FF', text: '#3D25A0' },
   'New evidence':        { bg: '#E7F0FF', text: '#0055CC' },
-  'Missing in roadmap': { bg: '#FDD3F2', text: '#7B2F6E' },
+  'Missing in roadmap': { bg: '#FFE3FC', text: '#7B2F6E' },
   'Weak evidence':       { bg: '#FFF8D6', text: '#7F5F01' },
 }
 
@@ -142,7 +143,7 @@ export const CARDS: {
 }[] = [
   {
     id: '1',
-    icon: 'lightning',
+    icon: 'chart-line',
     tags: ['Customer'],
     matchTag: 'Growing evidence',
     title: 'Accelerate large-table performance improvements — boards become unusable at ~100+ rows',
@@ -152,7 +153,7 @@ export const CARDS: {
   },
   {
     id: '2',
-    icon: 'chart-progress',
+    icon: 'timeline',
     tags: ['Customer'],
     matchTag: 'Missing in roadmap',
     title: 'Fix paste and CSV import fidelity — especially the 5-row truncation bug',
@@ -173,7 +174,7 @@ export const CARDS: {
   },
   {
     id: '4',
-    icon: 'sparks',
+    icon: 'insights-search',
     tags: ['Customer'],
     matchTag: 'Weak evidence',
     title: 'Rein in AI table creation — make it suggestion-only with preview and opt-in controls',
@@ -190,19 +191,42 @@ function CardIcon({ type }: { type: CardIcon }) {
   if (type === 'sparks') return <IconSparks {...props} />
   if (type === 'lightning') return <IconLightning {...props} />
   if (type === 'chat') return <IconChatTwo {...props} />
+  if (type === 'timeline') return <IconTimelineFormat {...props} />
+  if (type === 'insights-search') return <IconInsightsSearch {...props} />
   return null
 }
 
-export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: { onDiveDeeper?: (cardId: string) => void; onAddToRoadmap?: (cardId: string) => void; onReprioritize?: (cardId: string) => void }) {
+const CARD_W = 500
+const CARD_GAP = 28
+
+export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onBgColorChange }: { onDiveDeeper?: (cardId: string) => void; onAddToRoadmap?: (cardId: string) => void; onReprioritize?: (cardId: string) => void; onBgColorChange?: (color: string) => void }) {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  const visibleCards = CARDS.filter((card) => !dismissed.has(card.id))
+  const safeIndex = Math.min(activeIndex, Math.max(0, visibleCards.length - 1))
+
+  const goTo = (idx: number) => setActiveIndex(Math.max(0, Math.min(idx, visibleCards.length - 1)))
+
+  // Notify parent of active card's chip color whenever it changes
+  const activeCard = visibleCards[safeIndex]
+  const activeBg = activeCard ? MATCH_TAG_STYLE[activeCard.matchTag].bg : '#F2F4FC'
+  useEffect(() => { onBgColorChange?.(activeBg) }, [activeBg, onBgColorChange])
 
   return (
-    <div className="px-14 py-8 flex flex-col gap-6 max-w-[760px] mx-auto w-full">
-      {CARDS.filter((card) => !dismissed.has(card.id)).map((card) => (
+    <div className="flex flex-col items-center justify-center w-full h-full select-none py-10">
+
+      {/* Carousel viewport */}
+      <div className="relative w-full" style={{ minHeight: 340, overflow: 'clip', overflowClipMargin: '40px' }}>
+
+        {/* Track */}
         <div
-          key={card.id}
-          className="group relative rounded-[24px] bg-white transition-shadow duration-200 hover:shadow-[0_4px_24px_rgba(34,36,40,0.10)] hover:z-10"
-          style={{ border: '0.5px solid #e0e2e8', paddingBottom: 64, transition: 'padding-bottom 0.3s ease' }}
+          className="flex items-stretch"
+          style={{
+            gap: CARD_GAP,
+            transform: `translateX(calc(50% - ${CARD_W / 2}px - ${safeIndex * (CARD_W + CARD_GAP)}px))`,
+            transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
+          }}
         >
           <div className="p-7 flex flex-col gap-2">
             {/* Title + close row */}
@@ -240,7 +264,17 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
               </Chip>
             </div>
 
-          </div>
+                  {/* Close button — active card only */}
+                  {isActive && (
+                    <div className="absolute top-5 right-5">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setDismissed(prev => new Set(prev).add(card.id)); goTo(Math.min(safeIndex, visibleCards.length - 2)) }}
+                        className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+                      >
+                        <IconCross size="small" />
+                      </button>
+                    </div>
+                  )}
 
           {/* Hover-reveal actions */}
           <div className="absolute bottom-7 left-7 flex items-center gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-[transform,opacity] duration-300 ease-out">
@@ -280,7 +314,66 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
             </DropdownMenu>
           </div>
         </div>
-      ))}
+
+        {/* Left chevron */}
+        {safeIndex > 0 && (
+          <div
+            className="absolute top-1/2 -translate-y-1/2 z-10"
+            style={{ left: `calc(50% - ${CARD_W / 2}px - 48px)` }}
+          >
+            <IconButton
+              aria-label="Previous"
+              variant="ghost"
+              size="medium"
+              onPress={() => goTo(safeIndex - 1)}
+              css={{ color: '#3C3F4A', background: '#fff', border: '1px solid #eaecf0', boxShadow: '0 2px 8px rgba(34,36,40,0.08)', transition: 'background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease', '&:hover': { background: '#F1F2F5', boxShadow: '0 6px 20px rgba(34,36,40,0.14)', transform: 'scale(1.08)' } }}
+            >
+              <IconChevronLeft />
+            </IconButton>
+          </div>
+        )}
+
+        {/* Right chevron */}
+        {safeIndex < visibleCards.length - 1 && (
+          <div
+            className="absolute top-1/2 -translate-y-1/2 z-10"
+            style={{ left: `calc(50% + ${CARD_W / 2}px + 12px)` }}
+          >
+            <IconButton
+              aria-label="Next"
+              variant="ghost"
+              size="medium"
+              onPress={() => goTo(safeIndex + 1)}
+              css={{ color: '#3C3F4A', background: '#fff', border: '1px solid #eaecf0', boxShadow: '0 2px 8px rgba(34,36,40,0.08)', transition: 'background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease', '&:hover': { background: '#F1F2F5', boxShadow: '0 6px 20px rgba(34,36,40,0.14)', transform: 'scale(1.08)' } }}
+            >
+              <IconChevronRight />
+            </IconButton>
+          </div>
+        )}
+      </div>
+
+      {/* Dot indicators */}
+      {visibleCards.length > 1 && (
+        <div className="flex items-center gap-[7px] mt-6">
+          {visibleCards.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => goTo(idx)}
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                backgroundColor: idx === safeIndex ? '#222428' : '#C2C5D1',
+                transition: 'width 0.3s ease, height 0.3s ease, background-color 0.3s ease',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+              }}
+            />
+          ))}
+        </div>
+      )}
+
     </div>
   )
 }
