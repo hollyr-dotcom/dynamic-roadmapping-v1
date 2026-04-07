@@ -593,12 +593,13 @@ export function App() {
 
       {/* AI Sidekick — rendered outside the sliding sidebar to avoid white flash on exit */}
       {(() => {
-        const skWidth = sidekickLayout === 'Fullscreen' ? window.innerWidth * 0.75 : sidekickLayout === 'Halfscreen' ? 720 : 400;
-        const isCenter = sidekickLayout === 'Halfscreen' || sidekickLayout === 'Fullscreen';
+        const skWidth = sidekickLayout === 'Fullscreen' ? window.innerWidth * 0.75 : sidekickLayout === 'Halfscreen' ? window.innerWidth * 0.5 : 400;
+        const isCenter = sidekickLayout === 'Fullscreen';
+        const isHalfscreen = sidekickLayout === 'Halfscreen';
         return (
           <>
           <div
-            className="fixed z-[10000] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            className="fixed z-[10000]"
             style={isCenter ? {
               top: 0,
               left: 0,
@@ -611,6 +612,15 @@ export function App() {
               opacity: activeSidebar === 'ai-sidekick' ? 1 : 0,
               pointerEvents: activeSidebar === 'ai-sidekick' ? 'auto' : 'none',
               backgroundColor: 'rgba(0,0,0,0.3)',
+              transition: 'opacity 300ms cubic-bezier(0.16,1,0.3,1)',
+            } : isHalfscreen ? {
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: skWidth,
+              transform: activeSidebar === 'ai-sidekick' ? 'translateX(0)' : 'translateX(100%)',
+              pointerEvents: activeSidebar === 'ai-sidekick' ? 'auto' : 'none',
+              transition: 'transform 450ms cubic-bezier(0.16,1,0.3,1), width 450ms cubic-bezier(0.16,1,0.3,1)',
             } : {
               top: 56,
               right: 8,
@@ -618,9 +628,46 @@ export function App() {
               opacity: activeSidebar === 'ai-sidekick' ? 1 : 0,
               transform: activeSidebar === 'ai-sidekick' ? 'translateX(0)' : 'translateX(16px)',
               pointerEvents: activeSidebar === 'ai-sidekick' ? 'auto' : 'none',
+              transition: 'opacity 300ms cubic-bezier(0.16,1,0.3,1), transform 300ms cubic-bezier(0.16,1,0.3,1)',
             }}
             onClick={isCenter ? closeSidebar : undefined}
           >
+            {isHalfscreen ? (
+              <div className="h-full flex" style={{ paddingTop: 24, paddingBottom: 24, paddingLeft: 12, paddingRight: 12 }}>
+                <div className="flex-1 rounded-xl overflow-hidden" style={{ boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)', background: '#fff' }}>
+                  <AiPanelSolutionReview
+                    key={sidekickKey}
+                    onClose={closeSidebar}
+                    activePage={activePage}
+                    focusItemId={sidekickFocusItemId}
+                    contextUserMessage={sidekickContextMessage}
+                    layoutButton={
+                      <Tooltip>
+                        <Tooltip.Trigger asChild>
+                          <button
+                            ref={sidekickLayoutBtnRef}
+                            aria-label="Panel layout"
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, border: 'none', cursor: 'pointer', color: '#656B81' }}
+                            className="w-8 h-8 rounded-lg hover:bg-[#F1F2F5] transition-colors shrink-0"
+                            onClick={() => {
+                              const r = sidekickLayoutBtnRef.current?.getBoundingClientRect()
+                              if (r) setSidekickLayoutPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+                              setSidekickLayoutOpen(o => !o)
+                            }}
+                          >
+                            <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
+                              <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+                              <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
+                            </svg>
+                          </button>
+                        </Tooltip.Trigger>
+                        <Tooltip.Content side="top" sideOffset={4}>Panel view</Tooltip.Content>
+                      </Tooltip>
+                    }
+                  />
+                </div>
+              </div>
+            ) : (
             <div
               className="rounded-xl overflow-hidden h-full"
               style={{ width: skWidth, boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)', background: '#fff' }}
@@ -646,12 +693,6 @@ export function App() {
                           setSidekickLayoutOpen(o => !o)
                         }}
                       >
-                        {sidekickLayout === 'Halfscreen' && (
-                          <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
-                            <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                            <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
-                          </svg>
-                        )}
                         {sidekickLayout === 'Right' && (
                           <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
                             <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
@@ -671,6 +712,7 @@ export function App() {
                 }
               />
             </div>
+            )}
           </div>
 
           {sidekickLayoutOpen && activeSidebar === 'ai-sidekick' && (
@@ -708,7 +750,7 @@ export function App() {
                       )}
                     </span>
                     <span style={{ fontFamily: 'Open Sans, sans-serif', fontSize: 14, color: '#222428', paddingLeft: 8, paddingTop: 10, paddingBottom: 10, fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>
-                      {layout === 'Halfscreen' ? (sidekickSource === 'toolbar' ? 'Center' : 'Halfscreen') : layout}
+                      {layout}
                     </span>
                   </button>
                 ))}

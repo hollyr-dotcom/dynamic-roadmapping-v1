@@ -204,16 +204,16 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
       {CARDS.filter((card) => !dismissed.has(card.id)).map((card) => (
         <div
           key={card.id}
-          className="group relative rounded-[24px] bg-white overflow-hidden transition-shadow duration-200 hover:shadow-[0_4px_24px_rgba(34,36,40,0.10)]"
+          className="group relative rounded-[24px] bg-white transition-shadow duration-200 hover:shadow-[0_4px_24px_rgba(34,36,40,0.10)] hover:z-10"
           style={{ border: '0.5px solid #e0e2e8', paddingBottom: 64 }}
         >
-          <div className="p-6 flex flex-col gap-2">
-            {/* Icon + close row */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center justify-center shrink-0" style={{ color: '#222428' }}>
-                {card.matchTag === 'Growing evidence' ? <IconChartLine css={{ width: 28, height: 28 }} /> : card.matchTag === 'Fading evidence' ? <IconArrowDown css={{ width: 28, height: 28 }} /> : card.matchTag === 'New evidence' ? <IconSparks css={{ width: 28, height: 28 }} /> : card.matchTag === 'Missing with roadmap' ? <IconExclamationPointCircle css={{ width: 28, height: 28 }} /> : card.matchTag === 'Weak evidence' ? <IconThreeColumnsVertical /> : <CardIcon type={card.icon} />}
-              </div>
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="p-7 flex flex-col gap-2">
+            {/* Title + close row */}
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="text-[20px] font-medium text-[#1a1b1e] leading-snug" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
+                {card.title}
+              </h3>
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shrink-0">
                 <button
                   onClick={() => setDismissed(prev => new Set(prev).add(card.id))}
                   className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
@@ -222,11 +222,6 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
                 </button>
               </div>
             </div>
-
-            {/* Title */}
-            <h3 className="text-[17px] font-medium text-[#1a1b1e] leading-snug mt-0.5" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
-              {card.title}
-            </h3>
 
             {/* Description */}
             <p className="text-[14px] leading-relaxed" style={{ fontFamily: 'Open Sans, sans-serif', color: '#656b81' }}>
@@ -247,7 +242,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
           </div>
 
           {/* Hover-reveal actions */}
-          <div className="absolute bottom-6 left-6 flex items-center gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-[transform,opacity] duration-300 ease-out">
+          <div className="absolute bottom-7 left-7 flex items-center gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-[transform,opacity] duration-300 ease-out">
             <Button
               variant="primary"
               size="medium"
@@ -271,7 +266,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
                   <IconDotsThreeVertical size="small" />
                 </button>
               </DropdownMenu.Trigger>
-              <DropdownMenu.Content>
+              <DropdownMenu.Content align="start">
                 <DropdownMenu.Item onSelect={() => {}}>
                   <DropdownMenu.IconSlot><IconSquaresTwoOverlap /></DropdownMenu.IconSlot>
                   Copy
