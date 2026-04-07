@@ -119,13 +119,13 @@ companyARR['ov4'] = [
 
 type CardIcon = 'chart-line' | 'chart-progress' | 'sparks' | 'lightning' | 'chat'
 
-type MatchTag = 'Growing evidence' | 'Fading evidence' | 'New evidence' | 'Missing with roadmap' | 'Weak evidence'
+type MatchTag = 'Growing evidence' | 'Fading evidence' | 'New evidence' | 'Missing in roadmap' | 'Weak evidence'
 
 const MATCH_TAG_STYLE: Record<MatchTag, { bg: string; text: string }> = {
   'Growing evidence':    { bg: '#EAFAEA', text: '#067429' },
   'Fading evidence':     { bg: '#EFE9FF', text: '#3D25A0' },
   'New evidence':        { bg: '#E7F0FF', text: '#0055CC' },
-  'Missing with roadmap': { bg: '#FDD3F2', text: '#7B2F6E' },
+  'Missing in roadmap': { bg: '#FDD3F2', text: '#7B2F6E' },
   'Weak evidence':       { bg: '#FFF8D6', text: '#7F5F01' },
 }
 
@@ -155,7 +155,7 @@ export const CARDS: {
     id: '2',
     icon: 'chart-progress',
     tags: ['Customer'],
-    matchTag: 'Missing with roadmap',
+    matchTag: 'Missing in roadmap',
     title: 'Fix paste and CSV import fidelity — especially the 5-row truncation bug',
     description: 'Paste from Excel, Google Sheets, CSV, and Confluence is broken for ~652 projected monthly mentions. No existing roadmap item addresses paste or import fidelity.',
     confidence: '88%',
@@ -205,7 +205,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
         <div
           key={card.id}
           className="group relative rounded-[24px] bg-white transition-shadow duration-200 hover:shadow-[0_4px_24px_rgba(34,36,40,0.10)] hover:z-10"
-          style={{ border: '0.5px solid #e0e2e8', paddingBottom: 64 }}
+          style={{ border: '0.5px solid #e0e2e8', paddingBottom: 64, transition: 'padding-bottom 0.3s ease' }}
         >
           <div className="p-7 flex flex-col gap-2">
             {/* Title + close row */}
@@ -223,12 +223,16 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
               </div>
             </div>
 
-            {/* Description */}
-            <p className="text-[14px] leading-relaxed" style={{ fontFamily: 'Open Sans, sans-serif', color: '#656b81' }}>
-              {card.description}
-            </p>
+            {/* Description — expands on hover via grid-rows trick for smooth height transition */}
+            <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+              <div className="overflow-hidden">
+                <p className="text-[14px] leading-relaxed pb-1" style={{ fontFamily: 'Open Sans, sans-serif', color: '#656b81' }}>
+                  {card.description}
+                </p>
+              </div>
+            </div>
 
-            {/* Chips — below description */}
+            {/* Chips */}
             <div className="flex items-center gap-2 flex-wrap mt-1">
               <Chip removable={false} css={{ backgroundColor: MATCH_TAG_STYLE[card.matchTag].bg, color: MATCH_TAG_STYLE[card.matchTag].text, fontWeight: 700, borderRadius: 6, fontFamily: "'Roobert PRO', sans-serif", fontSize: 12 }}>{card.matchTag}</Chip>
               <Chip removable={false} css={{ backgroundColor: confidenceTagStyle(card.confidence).bg, color: confidenceTagStyle(card.confidence).text, fontWeight: 700, borderRadius: 6, fontFamily: "'Roobert PRO', sans-serif", fontSize: 12 }}>
