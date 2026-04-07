@@ -207,7 +207,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
           className="group relative rounded-[24px] bg-white transition-shadow duration-200 hover:shadow-[0_4px_24px_rgba(34,36,40,0.10)] hover:z-10"
           style={{ border: '0.5px solid #e0e2e8', paddingBottom: 64 }}
         >
-          <div className="p-6 flex flex-col gap-2">
+          <div className="p-7 flex flex-col gap-2">
             {/* Title + close row */}
             <div className="flex items-start justify-between gap-3">
               <h3 className="text-[20px] font-medium text-[#1a1b1e] leading-snug" style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontFeatureSettings: "'ss01' 1" }}>
@@ -242,7 +242,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
           </div>
 
           {/* Hover-reveal actions */}
-          <div className="absolute bottom-6 left-6 flex items-center gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-[transform,opacity] duration-300 ease-out">
+          <div className="absolute bottom-7 left-7 flex items-center gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-[transform,opacity] duration-300 ease-out">
             <Button
               variant="primary"
               size="medium"
