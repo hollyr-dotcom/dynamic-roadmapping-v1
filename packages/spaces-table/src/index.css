@@ -100,31 +100,43 @@ tbody tr:hover .row-number             { display: none; }
 tbody tr:hover .row-dots               { display: flex; }
 tbody tr:hover .row-comment            { visibility: visible; pointer-events: auto; }
 
-tbody tr.row-selected .row-number       { display: none; }
-tbody tr.row-selected .row-dots         { display: flex; }
-tbody tr.row-selected .row-comment      { visibility: hidden; pointer-events: none; }
+tbody tr.row-menu-open .row-number       { display: none; }
+tbody tr.row-menu-open .row-dots         { display: flex; }
+tbody tr.row-menu-open .row-comment      { visibility: visible; pointer-events: auto; }
 
-/* ── Active row shared (hover + selected) ─────────────── */
+/* ── Floating drag handle ────────────────────────────── */
+.row-drag-handle {
+  display: none;
+  position: absolute;
+  left: 36px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #C2C5CC;
+  pointer-events: none;
+}
+tbody tr:hover .row-drag-handle { display: flex; }
+
+/* ── Active row shared (hover + menu-open) ────────────── */
 tbody tr:hover td {
   background-color: #F1F2F5;
   border-color: transparent;
 }
-tbody tr.row-selected td {
+tbody tr.row-menu-open td {
   border-color: transparent;
 }
 
 tbody tr:hover .divider-first::after,
 tbody tr:hover .divider-last::after,
-tbody tr.row-selected .divider-first::after,
-tbody tr.row-selected .divider-last::after { background: transparent; }
+tbody tr.row-menu-open .divider-first::after,
+tbody tr.row-menu-open .divider-last::after { background: transparent; }
 
 tbody tr:has(+ tr:hover) td,
-tbody tr:has(+ tr.row-selected) td { border-color: transparent; }
+tbody tr:has(+ tr.row-menu-open) td { border-color: transparent; }
 
 tbody tr:has(+ tr:hover) .divider-first::after,
 tbody tr:has(+ tr:hover) .divider-last::after,
-tbody tr:has(+ tr.row-selected) .divider-first::after,
-tbody tr:has(+ tr.row-selected) .divider-last::after { background: transparent; }
+tbody tr:has(+ tr.row-menu-open) .divider-first::after,
+tbody tr:has(+ tr.row-menu-open) .divider-last::after { background: transparent; }
 
 /* ── Fill column (extends divider + highlight to viewport edge) ── */
 td.table-fill,
@@ -146,9 +158,9 @@ tbody td.table-fill::after {
   pointer-events: none;
 }
 tbody tr:hover td.table-fill::after,
-tbody tr.row-selected td.table-fill::after,
+tbody tr.row-menu-open td.table-fill::after,
 tbody tr:has(+ tr:hover) td.table-fill::after,
-tbody tr:has(+ tr.row-selected) td.table-fill::after { background: transparent; }
+tbody tr:has(+ tr.row-menu-open) td.table-fill::after { background: transparent; }
 
 
 /* ── Hover background ─────────────────────────────────── */
@@ -167,21 +179,21 @@ tbody tr:hover td.divider-first::before {
 tbody tr:hover td.table-fill { background: transparent; }
 tbody tr:hover td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
 
-/* ── Selected background (overrides hover) ────────────── */
-tbody tr.row-selected { position: relative; z-index: 30; }
-tbody tr.row-selected td { background-color: #F2F4FC; }
-tbody tr.row-selected td.divider-first { background: transparent; }
-tbody tr.row-selected td.divider-first::before {
+/* ── Menu-open background (gray, matches hover) ──────── */
+tbody tr.row-menu-open { position: relative; z-index: 30; }
+tbody tr.row-menu-open td { background-color: #F7F8FA; }
+tbody tr.row-menu-open td.divider-first { background: transparent; }
+tbody tr.row-menu-open td.divider-first::before {
   content: '';
   position: absolute;
   top: 0; bottom: 0;
   left: 56px; right: 0;
-  background: #F2F4FC;
+  background: #F7F8FA;
   border-radius: 8px 0 0 8px;
   z-index: -1;
 }
-tbody tr.row-selected td.table-fill { background: transparent; }
-tbody tr.row-selected td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
+tbody tr.row-menu-open td.table-fill { background: transparent; }
+tbody tr.row-menu-open td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
 
 
 /* ── Sidebar content stagger ─────────────────────────── */
@@ -323,7 +335,7 @@ tbody tr.row-selected td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
   display: none !important;
 }
 .canvas-widget-view tbody tr:hover td.divider-first::before,
-.canvas-widget-view tbody tr.row-selected td.divider-first::before {
+.canvas-widget-view tbody tr.row-menu-open td.divider-first::before {
   left: 0 !important;
   border-radius: 8px 0 0 8px !important;
 }
@@ -331,8 +343,12 @@ tbody tr.row-selected td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
 .canvas-widget-view tbody tr:hover td:nth-last-child(2) {
   border-radius: 0 8px 8px 0;
 }
-.canvas-widget-view tbody tr.row-selected td:nth-last-child(2) {
+.canvas-widget-view tbody tr.row-menu-open td:nth-last-child(2) {
   border-radius: 0 8px 8px 0;
+}
+/* Hide drag handle on canvas widgets (no gutter) */
+.canvas-widget-view .row-drag-handle {
+  display: none !important;
 }
 
 /* ── Kanban icon buttons (tinted hover/active) ───────── */

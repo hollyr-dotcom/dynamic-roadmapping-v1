@@ -1,7 +1,7 @@
 
 import { useState } from 'react'
 import type { FieldDefinition, SpaceRow } from '@spaces/shared'
-import { IconDotsSixVertical, IconChatPlus, DropdownMenu, IconSquaresTwoOverlap, IconTrash, IconArrowsOutSimple, IconMap, IconChatLinesTwo, IconPlusBox, Popover, Button, IconInsights } from '@mirohq/design-system'
+import { IconDotsSixVertical, IconDotsThreeVertical, IconButton, IconChatPlus, DropdownMenu, IconSquaresTwoOverlap, IconTrash, IconArrowsOutSimple, IconMap, IconChatLinesTwo, IconPlusBox, Popover, Button, IconInsights } from '@mirohq/design-system'
 
 function IconAddLineTop() {
   return (
@@ -33,9 +33,6 @@ interface TableRowProps {
   row: SpaceRow
   idx: number
   fields: FieldDefinition[]
-  isSelected: boolean
-  onToggleSelect: (id: string, e: React.MouseEvent) => void
-  onDeselect: () => void
   onRowClick?: (row: SpaceRow) => void
   onCompanyClick?: (row: SpaceRow, name: string) => void
   isUpdated?: boolean
@@ -45,61 +42,10 @@ interface TableRowProps {
   onAddToBoard?: (rowId: string) => void
 }
 
-function RowContextMenu({ onClose, onOpenSidePanel, onMoveToRoadmap, showMoveToRoadmap, onAddToBoard }: { onClose: () => void; onOpenSidePanel?: () => void; onMoveToRoadmap?: () => void; showMoveToRoadmap?: boolean; onAddToBoard?: () => void }) {
-  return (
-    <DropdownMenu defaultOpen>
-      <DropdownMenu.Trigger asChild>
-        <div onClick={(e) => e.stopPropagation()} />
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Content side="bottom" align="start" alignOffset={-12} css={{ minWidth: MENU_WIDTH }}>
-        <DropdownMenu.Item onSelect={() => { onOpenSidePanel?.(); onClose() }}>
-          <DropdownMenu.IconSlot><IconArrowsOutSimple /></DropdownMenu.IconSlot>
-          Open in side panel
-        </DropdownMenu.Item>
-        <DropdownMenu.Item onSelect={onClose}>
-          <DropdownMenu.IconSlot><IconChatLinesTwo /></DropdownMenu.IconSlot>
-          View comments
-        </DropdownMenu.Item>
-        <DropdownMenu.Separator />
-        <DropdownMenu.Item onSelect={onClose}>
-          <DropdownMenu.IconSlot><IconAddLineTop /></DropdownMenu.IconSlot>
-          Add record above
-        </DropdownMenu.Item>
-        <DropdownMenu.Item onSelect={onClose}>
-          <DropdownMenu.IconSlot><IconAddLineBottom /></DropdownMenu.IconSlot>
-          Add record below
-        </DropdownMenu.Item>
-        <DropdownMenu.Item onSelect={onClose}>
-          <DropdownMenu.IconSlot><IconFilledBottomBox /></DropdownMenu.IconSlot>
-          Add sub-record
-        </DropdownMenu.Item>
-        <DropdownMenu.Separator />
-        <DropdownMenu.Item onSelect={() => { onAddToBoard?.() }}>
-          <DropdownMenu.IconSlot><IconPlusBox /></DropdownMenu.IconSlot>
-          Add to board
-        </DropdownMenu.Item>
-        {showMoveToRoadmap && (
-          <DropdownMenu.Item onSelect={onMoveToRoadmap ?? onClose}>
-            <DropdownMenu.IconSlot><IconMap /></DropdownMenu.IconSlot>
-            Move to roadmap
-          </DropdownMenu.Item>
-        )}
-        <DropdownMenu.Separator />
-        <DropdownMenu.Item onSelect={onClose}>
-          <DropdownMenu.IconSlot><IconSquaresTwoOverlap /></DropdownMenu.IconSlot>
-          Duplicate
-        </DropdownMenu.Item>
-        <DropdownMenu.Item onSelect={onClose}>
-          <DropdownMenu.IconSlot><IconTrash /></DropdownMenu.IconSlot>
-          Delete
-        </DropdownMenu.Item>
-      </DropdownMenu.Content>
-    </DropdownMenu>
-  )
-}
 
-export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDeselect, onRowClick, onCompanyClick, isUpdated, importDelay, onMoveToRoadmap, showMoveToRoadmap, onAddToBoard }: TableRowProps) {
+export function TableRow({ row, idx, fields, onRowClick, onCompanyClick, isUpdated, importDelay, onMoveToRoadmap, showMoveToRoadmap, onAddToBoard }: TableRowProps) {
   const [openFieldId, setOpenFieldId] = useState<string | null>(null)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const importStyle = importDelay !== undefined ? {
     opacity: 0,
@@ -109,28 +55,84 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
   return (
     <tr
       data-row-id={row.id}
-      className={isSelected ? 'row-selected' : ''}
+      className={isMenuOpen ? 'row-menu-open' : ''}
       style={{ height: '56px', ...importStyle }}
     >
       <td className="pl-14 divider-first" style={{ fontSize: '12px', position: 'relative' }}>
+        {/* Floating drag handle — in the left padding gutter */}
+        <div className="row-drag-handle">
+          <IconDotsSixVertical size="small" />
+        </div>
+
         {isUpdated && (
           <span style={{ position: 'absolute', left: 28, top: '50%', transform: 'translateY(-50%)', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4262FF', zIndex: 1 }} />
         )}
-        <div className="flex items-center w-full gap-0.5">
-          {/* Row number / dots — swap in the same slot */}
+        <div className="flex items-center w-full gap-0.5 ml-2">
+          {/* Row number / three-dots menu — swap in the same slot */}
           <div className="relative w-8 h-8 shrink-0">
             <div className="row-number w-8 h-8 flex items-center justify-center">
               {idx + 1}
             </div>
-            <button
-              className="row-dots absolute inset-0 flex items-center justify-center rounded-lg cursor-grab"
-              onClick={(e) => onToggleSelect(row.id, e)}
-            >
-              <IconDotsSixVertical
-                size="small"
-                color={isSelected ? 'icon-primary' : 'icon-neutrals-subtle'}
-              />
-            </button>
+            <div className="row-dots absolute inset-0 flex items-center justify-center">
+              <DropdownMenu onOpen={() => setIsMenuOpen(true)} onClose={() => setIsMenuOpen(false)}>
+                <DropdownMenu.Trigger asChild>
+                  <IconButton
+                    aria-label="Row options"
+                    variant="ghost"
+                    size="medium"
+                    css={isMenuOpen
+                      ? { borderRadius: 8, background: '#E6E6E6', color: '#656B81', '&:hover': { background: '#E6E6E6' } }
+                      : { borderRadius: 8, color: '#7D8297', '&:hover': { background: '#E9EAEF' } }
+                    }
+                  >
+                    <IconDotsThreeVertical />
+                  </IconButton>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Content side="bottom" align="start" alignOffset={-12} css={{ minWidth: MENU_WIDTH }}>
+                  <DropdownMenu.Item onSelect={() => onRowClick?.(row)}>
+                    <DropdownMenu.IconSlot><IconArrowsOutSimple /></DropdownMenu.IconSlot>
+                    Open in side panel
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item>
+                    <DropdownMenu.IconSlot><IconChatLinesTwo /></DropdownMenu.IconSlot>
+                    View comments
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Separator />
+                  <DropdownMenu.Item>
+                    <DropdownMenu.IconSlot><IconAddLineTop /></DropdownMenu.IconSlot>
+                    Add record above
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item>
+                    <DropdownMenu.IconSlot><IconAddLineBottom /></DropdownMenu.IconSlot>
+                    Add record below
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item>
+                    <DropdownMenu.IconSlot><IconFilledBottomBox /></DropdownMenu.IconSlot>
+                    Add sub-record
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Separator />
+                  <DropdownMenu.Item onSelect={() => onAddToBoard?.(row.id)}>
+                    <DropdownMenu.IconSlot><IconPlusBox /></DropdownMenu.IconSlot>
+                    Add to board
+                  </DropdownMenu.Item>
+                  {showMoveToRoadmap && (
+                    <DropdownMenu.Item onSelect={() => onMoveToRoadmap?.(row.id)}>
+                      <DropdownMenu.IconSlot><IconMap /></DropdownMenu.IconSlot>
+                      Move to roadmap
+                    </DropdownMenu.Item>
+                  )}
+                  <DropdownMenu.Separator />
+                  <DropdownMenu.Item>
+                    <DropdownMenu.IconSlot><IconSquaresTwoOverlap /></DropdownMenu.IconSlot>
+                    Duplicate
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item>
+                    <DropdownMenu.IconSlot><IconTrash /></DropdownMenu.IconSlot>
+                    Delete
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu>
+            </div>
           </div>
 
           {/* Comment button — hover only */}
@@ -141,20 +143,6 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
             <IconChatPlus size="small" color="icon-neutrals-subtle" />
           </button>
         </div>
-
-        {/* Context menu */}
-        {isSelected && (
-          <RowContextMenu
-            onClose={onDeselect}
-            onOpenSidePanel={onRowClick ? () => onRowClick(row) : undefined}
-            onMoveToRoadmap={onMoveToRoadmap ? () => { onMoveToRoadmap(row.id); onDeselect() } : undefined}
-            showMoveToRoadmap={showMoveToRoadmap}
-            onAddToBoard={onAddToBoard ? () => {
-              onAddToBoard(row.id)
-              onDeselect()
-            } : undefined}
-          />
-        )}
       </td>
 
       {fields.map((field) => {

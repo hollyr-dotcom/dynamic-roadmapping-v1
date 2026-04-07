@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { SpaceRow, FieldDefinition } from '@spaces/shared'
 import { IconPlus, IconFileSpreadsheet, IconLightbulb } from '@mirohq/design-system'
 import { JiraLogo } from '../JiraLogo'
@@ -39,24 +39,11 @@ interface DataTableProps {
 }
 
 export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRows, insightsAllDots, onTableInteract, isImporting, onImportComplete, onMoveToRoadmap, showMoveToRoadmap, onImportSource, onAddRecord, activePage = 'roadmap', animateIn = true, onEmptyInteract, onAddToBoard }: DataTableProps) {
-  const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const tableRef = useRef<HTMLDivElement>(null)
   const hasImportedRef = useRef(false)
   // Freeze animateIn at mount — prevents CSS animation from triggering if prop changes later
   const animateInRef = useRef(animateIn)
   if (isImporting) hasImportedRef.current = true
-
-  // Deselect when clicking outside the table
-  useEffect(() => {
-    if (!selectedRowId) return
-    const handleClick = (e: MouseEvent) => {
-      if (tableRef.current && !tableRef.current.contains(e.target as Node)) {
-        setSelectedRowId(null)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [selectedRowId])
 
   // Fire completion callback after all rows have animated in
   useEffect(() => {
@@ -66,11 +53,6 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
     const timer = setTimeout(onImportComplete, totalTime)
     return () => clearTimeout(timer)
   }, [isImporting, onImportComplete, data.length])
-
-  const handleDotsClick = useCallback((rowId: string, e: React.MouseEvent) => {
-    e.stopPropagation()
-    setSelectedRowId((prev) => (prev === rowId ? null : rowId))
-  }, [])
 
   const [newItemTitle, setNewItemTitle] = useState('')
   const [newItemFocused, setNewItemFocused] = useState(false)
@@ -167,9 +149,6 @@ export function DataTable({ data, fields, onRowClick, onCompanyClick, updatedRow
               idx={idx}
               fields={fields}
               isUpdated={insightsAllDots || (updatedRows?.has(row.id) ?? false)}
-              isSelected={selectedRowId === row.id}
-              onToggleSelect={handleDotsClick}
-              onDeselect={() => setSelectedRowId(null)}
               onRowClick={onRowClick}
               onCompanyClick={onCompanyClick}
               importDelay={isImporting ? getRowDelay(idx, data.length) : undefined}
