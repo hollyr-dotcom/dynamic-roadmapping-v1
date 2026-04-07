@@ -24,6 +24,7 @@ import { JiraDetailPanel } from './components/sidebar/JiraDetailPanel'
 import { CanvasOverlay } from './components/canvas/CanvasOverlay'
 import { CanvasTableWidget } from './components/canvas/CanvasTableWidget'
 import { CanvasNavPanels } from './components/canvas/CanvasNavPanels'
+import { CanvasCreationToolbar } from './components/canvas/CanvasCreationToolbar'
 import { CanvasFeedbackCard, type FeedbackCardData } from './components/canvas/CanvasFeedbackCard'
 import { CanvasRecordCard } from './components/canvas/CanvasRecordCard'
 import { MoveToRoadmapSnackbar } from './components/page/MoveToRoadmapSnackbar'
@@ -1086,11 +1087,14 @@ export function App() {
       {/* Canvas floating nav panels */}
       <CanvasNavPanels isOpen={canvasOpen} databaseTitle={databaseTitle} onMenuClick={() => setActiveSidebar(activeSidebar === 'space-menu' ? null : 'space-menu')} isMenuOpen={canvasOpen && activeSidebar === 'space-menu'} boardName={boardName ?? undefined} boardIconIndex={boardIconIndex} />
 
+      {/* Canvas creation toolbar — left edge, vertically centred */}
+      <CanvasCreationToolbar isOpen={canvasOpen} isMenuOpen={canvasOpen && activeSidebar === 'space-menu'} />
+
       {/* Board Sidekick + Flow progress — stacked column on the right */}
       <div
         className="fixed z-[10000] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{
-          top: 56,
+          top: 64,
           right: 8,
           bottom: 8,
           display: 'flex',

@@ -97,7 +97,7 @@ function CollapsibleSection({
 
 export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome, spaceName, boards, activeBoardId, sidekickBoards, onSidekickBoardClick, activeSidekickBoardId }: SpaceMenuProps) {
   return (
-    <div className="flex flex-col h-full pt-2 px-3">
+    <div className="flex flex-col h-full pt-3 px-3">
       {/* Top bar: Home | Search + Close */}
       <div className="flex items-center justify-between">
         <IconButton aria-label="Home" variant="ghost" size="large" onPress={onGoHome}>
