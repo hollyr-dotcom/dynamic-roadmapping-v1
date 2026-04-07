@@ -214,23 +214,6 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
                 {card.matchTag === 'Growing evidence' ? <IconChartLine css={{ width: 28, height: 28 }} /> : card.matchTag === 'Fading evidence' ? <IconArrowDown css={{ width: 28, height: 28 }} /> : card.matchTag === 'New evidence' ? <IconSparks css={{ width: 28, height: 28 }} /> : card.matchTag === 'Missing with roadmap' ? <IconExclamationPointCircle css={{ width: 28, height: 28 }} /> : card.matchTag === 'Weak evidence' ? <IconThreeColumnsVertical /> : <CardIcon type={card.icon} />}
               </div>
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <DropdownMenu>
-                  <DropdownMenu.Trigger asChild>
-                    <button className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors">
-                      <IconDotsThreeVertical size="small" />
-                    </button>
-                  </DropdownMenu.Trigger>
-                  <DropdownMenu.Content>
-                    <DropdownMenu.Item onSelect={() => {}}>
-                      <DropdownMenu.IconSlot><IconSquaresTwoOverlap /></DropdownMenu.IconSlot>
-                      Copy
-                    </DropdownMenu.Item>
-                    <DropdownMenu.Item onSelect={() => {}}>
-                      <DropdownMenu.IconSlot><IconBoard /></DropdownMenu.IconSlot>
-                      Add to board
-                    </DropdownMenu.Item>
-                  </DropdownMenu.Content>
-                </DropdownMenu>
                 <button
                   onClick={() => setDismissed(prev => new Set(prev).add(card.id))}
                   className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
@@ -282,6 +265,23 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize }: {
             >
               <Button.Label>{card.secondaryAction}</Button.Label>
             </Button>
+            <DropdownMenu>
+              <DropdownMenu.Trigger asChild>
+                <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#E8E9EF] transition-colors">
+                  <IconDotsThreeVertical size="small" />
+                </button>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content>
+                <DropdownMenu.Item onSelect={() => {}}>
+                  <DropdownMenu.IconSlot><IconSquaresTwoOverlap /></DropdownMenu.IconSlot>
+                  Copy
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={() => {}}>
+                  <DropdownMenu.IconSlot><IconBoard /></DropdownMenu.IconSlot>
+                  Add to board
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu>
           </div>
         </div>
       ))}
