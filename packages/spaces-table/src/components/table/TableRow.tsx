@@ -1,7 +1,7 @@
 
 import { useState } from 'react'
 import type { FieldDefinition, SpaceRow } from '@spaces/shared'
-import { IconDotsSixVertical, IconDotsThreeVertical, IconButton, IconChatPlus, DropdownMenu, IconSquaresTwoOverlap, IconTrash, IconArrowsOutSimple, IconMap, IconChatLinesTwo, IconPlusBox, Popover, Button, IconInsights } from '@mirohq/design-system'
+import { IconDotsSixVertical, IconDotsThreeVertical, IconButton, IconChatPlus, IconCursor, DropdownMenu, IconSquaresTwoOverlap, IconTrash, IconArrowsOutSimple, IconRocket, IconChatLinesTwo, IconPlus, IconLink, Popover, IconInsights } from '@mirohq/design-system'
 
 function IconAddLineTop() {
   return (
@@ -97,36 +97,48 @@ export function TableRow({ row, idx, fields, onRowClick, onCompanyClick, isUpdat
                     <DropdownMenu.IconSlot><IconChatLinesTwo /></DropdownMenu.IconSlot>
                     View comments
                   </DropdownMenu.Item>
-                  <DropdownMenu.Separator />
                   <DropdownMenu.Item>
-                    <DropdownMenu.IconSlot><IconAddLineTop /></DropdownMenu.IconSlot>
-                    Add record above
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item>
-                    <DropdownMenu.IconSlot><IconAddLineBottom /></DropdownMenu.IconSlot>
-                    Add record below
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item>
-                    <DropdownMenu.IconSlot><IconFilledBottomBox /></DropdownMenu.IconSlot>
-                    Add sub-record
+                    <DropdownMenu.IconSlot><IconLink /></DropdownMenu.IconSlot>
+                    Copy link
                   </DropdownMenu.Item>
                   <DropdownMenu.Separator />
                   <DropdownMenu.Item onSelect={() => onAddToBoard?.(row.id)}>
-                    <DropdownMenu.IconSlot><IconPlusBox /></DropdownMenu.IconSlot>
-                    Add to board
+                    <DropdownMenu.IconSlot><IconCursor /></DropdownMenu.IconSlot>
+                    Work on this
                   </DropdownMenu.Item>
                   {showMoveToRoadmap && (
                     <DropdownMenu.Item onSelect={() => onMoveToRoadmap?.(row.id)}>
-                      <DropdownMenu.IconSlot><IconMap /></DropdownMenu.IconSlot>
+                      <DropdownMenu.IconSlot><IconRocket /></DropdownMenu.IconSlot>
                       Move to roadmap
                     </DropdownMenu.Item>
                   )}
+                  <DropdownMenu.Separator />
+                  <DropdownMenu.Sub>
+                    <DropdownMenu.SubTrigger>
+                      <DropdownMenu.IconSlot><IconPlus /></DropdownMenu.IconSlot>
+                      Add item
+                    </DropdownMenu.SubTrigger>
+                    <DropdownMenu.SubContent css={{ minWidth: MENU_WIDTH }}>
+                      <DropdownMenu.Item>
+                        <DropdownMenu.IconSlot><IconAddLineTop /></DropdownMenu.IconSlot>
+                        Add item above
+                      </DropdownMenu.Item>
+                      <DropdownMenu.Item>
+                        <DropdownMenu.IconSlot><IconAddLineBottom /></DropdownMenu.IconSlot>
+                        Add item below
+                      </DropdownMenu.Item>
+                      <DropdownMenu.Item>
+                        <DropdownMenu.IconSlot><IconFilledBottomBox /></DropdownMenu.IconSlot>
+                        Add sub-item
+                      </DropdownMenu.Item>
+                    </DropdownMenu.SubContent>
+                  </DropdownMenu.Sub>
                   <DropdownMenu.Separator />
                   <DropdownMenu.Item>
                     <DropdownMenu.IconSlot><IconSquaresTwoOverlap /></DropdownMenu.IconSlot>
                     Duplicate
                   </DropdownMenu.Item>
-                  <DropdownMenu.Item>
+                  <DropdownMenu.Item variant="danger">
                     <DropdownMenu.IconSlot><IconTrash /></DropdownMenu.IconSlot>
                     Delete
                   </DropdownMenu.Item>

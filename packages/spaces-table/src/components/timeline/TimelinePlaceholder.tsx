@@ -118,6 +118,7 @@ interface TimelinePlaceholderProps {
   data: SpaceRow[]
   parentScrollRef: React.RefObject<HTMLDivElement | null>
   onRowClick?: (row: SpaceRow) => void
+  onAddToBoard?: (rowId: string) => void
   onMoveToRoadmap?: (rowId: string) => void
   showMoveToRoadmap?: boolean
   onBarSelectedChange?: (hasSelection: boolean) => void
@@ -125,7 +126,7 @@ interface TimelinePlaceholderProps {
   onBarPlaced?: (rowId: string, startDate: string, endDate: string) => void
 }
 
-export function TimelinePlaceholder({ data, parentScrollRef, onRowClick, onMoveToRoadmap, showMoveToRoadmap, onBarSelectedChange, ghostRowId, onBarPlaced }: TimelinePlaceholderProps) {
+export function TimelinePlaceholder({ data, parentScrollRef, onRowClick, onAddToBoard, onMoveToRoadmap, showMoveToRoadmap, onBarSelectedChange, ghostRowId, onBarPlaced }: TimelinePlaceholderProps) {
   const [positions, setPositions] = useState<Record<string, [number, number]>>(INITIAL_POSITIONS)
   const timelineItems = useMemo(() => data.filter(r => positions[r.id]), [data, positions])
   const ghostRow = ghostRowId ? data.find(r => r.id === ghostRowId && !positions[r.id]) : null
@@ -526,6 +527,7 @@ const [selectedBarId, setSelectedBarId] = useState<string | null>(null)
               <KanbanCardToolbar
                 onOpenSidePanel={() => onRowClick?.(selectedRow)}
                 onOpenSidekick={() => onRowClick?.(selectedRow)}
+                onAddToBoard={onAddToBoard ? () => { onAddToBoard(selectedRow.id); setSelectedBarId(null); onBarSelectedChange?.(false) } : undefined}
                 onMoveToRoadmap={showMoveToRoadmap && onMoveToRoadmap ? () => { onMoveToRoadmap(selectedRow.id); setSelectedBarId(null); onBarSelectedChange?.(false) } : undefined}
                 cardColor={(PRIORITY_BAR_COLORS[selectedRow.priority] ?? DEFAULT_BAR_COLOR).bg}
               />
