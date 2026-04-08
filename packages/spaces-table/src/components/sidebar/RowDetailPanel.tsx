@@ -304,7 +304,8 @@ export function generateFeedbackCards(row: SpaceRow) {
 
 export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, hideComments = false, overrideSummary, onOpenSidekick }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
-  const [showSidekick, setShowSidekick] = useState(false)
+  // Holly's sidekick state — disabled for v2 exploration, keeping code intact
+  const [showSidekick, /* setShowSidekick */] = useState(false)
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
 
@@ -563,7 +564,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
             onPointerDown={(e) => {
               e.stopPropagation()
               setSelectedCompany(null); setSelectedFeedbackCard(null); setCallCard(null); setShowArchive(false)
-              setShowSidekick(false)
+              // setShowSidekick(false) — disabled for v2
               onClose()
             }}
           >
@@ -576,7 +577,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       <div className="absolute inset-0 bg-white flex flex-col overflow-hidden" style={{ zIndex: 30, transform: showSidekick ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)', pointerEvents: showSidekick ? 'auto' : 'none' }}>
           <AiPanelSolutionReview
             onClose={onClose}
-            onBack={() => setShowSidekick(false)}
+            onBack={() => {/* setShowSidekick(false) — disabled for v2 */}}
             focusItemId={row.id}
             layoutButton={
               <Tooltip>
@@ -997,7 +998,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               company={selectedCompany}
               onBack={() => setSelectedCompany(null)}
               onPromptSelect={(prompt) => setSelectedPrompt(prompt)}
-              onAskClick={() => setShowSidekick(true)}
+              onAskClick={() => {/* setShowSidekick(true) — disabled for v2 */}}
             />
           )}
         </div>
@@ -1013,7 +1014,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           <div
             className="flex items-center gap-1.5"
             style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}
-            onClick={() => setShowSidekick(true)}
+            onClick={() => {/* setShowSidekick(true) — disabled for v2 */}}
           >
             <textarea
               readOnly
@@ -1022,7 +1023,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
               className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none cursor-text"
               style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0' }}
             />
-            <button onClick={e => { e.stopPropagation(); setShowSidekick(true) }} className="shrink-0 text-[#9DA3B4]">
+            <button onClick={e => { e.stopPropagation(); /* setShowSidekick(true) — disabled for v2 */ }} className="shrink-0 text-[#9DA3B4]">
               <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
             </button>
           </div>
