@@ -16,6 +16,7 @@ interface KanbanColumnProps {
   selectedCardId?: string | null
   onSelectCard?: (rowId: string) => void
   onOpenSidePanel?: (row: SpaceRow) => void
+  onAddToBoard?: (rowId: string) => void
   onMoveToRoadmap?: (rowId: string) => void
 }
 
@@ -31,7 +32,7 @@ function ColumnIconButton({ label, color, children }: { label: string; color: st
   )
 }
 
-export function KanbanColumn({ config, rows, fields, selectedCardId, onSelectCard, onOpenSidePanel, onMoveToRoadmap }: KanbanColumnProps) {
+export function KanbanColumn({ config, rows, fields, selectedCardId, onSelectCard, onOpenSidePanel, onAddToBoard, onMoveToRoadmap }: KanbanColumnProps) {
   return (
     <div
       className="group flex flex-col h-full"
@@ -90,6 +91,7 @@ export function KanbanColumn({ config, rows, fields, selectedCardId, onSelectCar
             isSelected={row.id === selectedCardId}
             onSelect={onSelectCard ? () => onSelectCard(row.id) : undefined}
             onOpenSidePanel={onOpenSidePanel ? () => onOpenSidePanel(row) : undefined}
+            onAddToBoard={onAddToBoard ? () => onAddToBoard(row.id) : undefined}
             onMoveToRoadmap={onMoveToRoadmap ? () => onMoveToRoadmap(row.id) : undefined}
           />
         ))}

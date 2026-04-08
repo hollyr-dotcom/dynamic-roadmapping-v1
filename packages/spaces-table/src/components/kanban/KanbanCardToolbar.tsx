@@ -1,14 +1,15 @@
 import { useLayoutEffect, useRef, useState } from 'react'
-import { IconButton, IconArrowsOutSimple, IconChatLinesTwo, IconMap, IconDotsThreeVertical, IconSparksFilled, Tooltip } from '@mirohq/design-system'
+import { IconButton, IconArrowsOutSimple, IconChatLinesTwo, IconRocket, IconPlusBox, IconDotsThreeVertical, IconSparksFilled, Tooltip } from '@mirohq/design-system'
 
 interface KanbanCardToolbarProps {
   onOpenSidePanel: () => void
+  onAddToBoard?: () => void
   onMoveToRoadmap?: () => void
   onOpenSidekick?: () => void
   cardColor?: string
 }
 
-export function KanbanCardToolbar({ onOpenSidePanel, onMoveToRoadmap, onOpenSidekick, cardColor }: KanbanCardToolbarProps) {
+export function KanbanCardToolbar({ onOpenSidePanel, onAddToBoard, onMoveToRoadmap, onOpenSidekick, cardColor }: KanbanCardToolbarProps) {
   const ref = useRef<HTMLDivElement>(null)
   const [offsetX, setOffsetX] = useState(0)
 
@@ -72,11 +73,22 @@ export function KanbanCardToolbar({ onOpenSidePanel, onMoveToRoadmap, onOpenSide
         </Tooltip>
       )}
 
+      {onAddToBoard && (
+        <Tooltip>
+          <Tooltip.Trigger asChild>
+            <IconButton aria-label="Add to board" variant="ghost" size="medium" onPress={onAddToBoard}>
+              <IconPlusBox />
+            </IconButton>
+          </Tooltip.Trigger>
+          <Tooltip.Content side="top" sideOffset={4}>Add to board</Tooltip.Content>
+        </Tooltip>
+      )}
+
       {onMoveToRoadmap && (
         <Tooltip>
           <Tooltip.Trigger asChild>
             <IconButton aria-label="Move to roadmap" variant="ghost" size="medium" onPress={onMoveToRoadmap}>
-              <IconMap />
+              <IconRocket />
             </IconButton>
           </Tooltip.Trigger>
           <Tooltip.Content side="top" sideOffset={4}>Move to roadmap</Tooltip.Content>

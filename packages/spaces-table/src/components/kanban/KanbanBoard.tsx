@@ -47,12 +47,13 @@ interface KanbanBoardProps {
   fields: FieldDefinition[]
   columns?: Priority[]
   onRowClick?: (row: SpaceRow) => void
+  onAddToBoard?: (rowId: string) => void
   onMoveToRoadmap?: (rowId: string) => void
   showMoveToRoadmap?: boolean
   onCardSelectedChange?: (hasSelection: boolean) => void
 }
 
-export function KanbanBoard({ data, fields, columns, onRowClick, onMoveToRoadmap, showMoveToRoadmap, onCardSelectedChange }: KanbanBoardProps) {
+export function KanbanBoard({ data, fields, columns, onRowClick, onAddToBoard, onMoveToRoadmap, showMoveToRoadmap, onCardSelectedChange }: KanbanBoardProps) {
   const columnOrder = columns ?? DEFAULT_COLUMNS
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
   const boardRef = useRef<HTMLDivElement>(null)
@@ -109,6 +110,7 @@ export function KanbanBoard({ data, fields, columns, onRowClick, onMoveToRoadmap
             selectedCardId={selectedCardId}
             onSelectCard={handleSelectCard}
             onOpenSidePanel={onRowClick}
+            onAddToBoard={onAddToBoard}
             onMoveToRoadmap={handleMoveToRoadmap}
           />
         </div>

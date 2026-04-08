@@ -11,6 +11,7 @@ interface KanbanCardProps {
   isSelected?: boolean
   onSelect?: () => void
   onOpenSidePanel?: () => void
+  onAddToBoard?: () => void
   onMoveToRoadmap?: () => void
 }
 
@@ -62,7 +63,7 @@ function FieldTag({ field, row }: { field: FieldDefinition; row: SpaceRow }) {
   )
 }
 
-export function KanbanCard({ row, fields, borderColor, isSelected, onSelect, onOpenSidePanel, onMoveToRoadmap }: KanbanCardProps) {
+export function KanbanCard({ row, fields, borderColor, isSelected, onSelect, onOpenSidePanel, onAddToBoard, onMoveToRoadmap }: KanbanCardProps) {
   return (
     <div
       className="relative"
@@ -72,7 +73,9 @@ export function KanbanCard({ row, fields, borderColor, isSelected, onSelect, onO
       {isSelected && onOpenSidePanel && (
         <KanbanCardToolbar
           onOpenSidePanel={onOpenSidePanel}
+          onAddToBoard={onAddToBoard}
           onMoveToRoadmap={onMoveToRoadmap}
+          cardColor={borderColor}
         />
       )}
       <div
