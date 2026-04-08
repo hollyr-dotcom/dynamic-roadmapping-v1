@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import type { FieldDefinition, SpaceRow } from '@spaces/shared'
 import { IconDotsSixVertical, IconChatPlus, IconSparksFilled, DropdownMenu, IconSquaresTwoOverlap, IconTrash, IconArrowsOutSimple, IconMap, IconChatLinesTwo, Popover, Button, IconInsights } from '@mirohq/design-system'
@@ -97,7 +98,7 @@ function RowContextMenu({ onClose, onOpenSidePanel, onMoveToRoadmap, showMoveToR
 }
 
 export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDeselect, onRowClick, onCompanyClick, isUpdated, importDelay, onMoveToRoadmap, showMoveToRoadmap, onOpenSidekick }: TableRowProps) {
-  const [openField, setOpenField] = useState<string | null>(null)
+  const [openFieldId, setOpenFieldId] = useState<string | null>(null)
 
   const importStyle = importDelay !== undefined ? {
     opacity: 0,
@@ -166,65 +167,59 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
           className="px-3 border-b border-[#F1F2F5]"
           style={field.id === 'description' ? { maxWidth: '320px' } : undefined}
         >
-          <Popover
-            open={openField === field.id}
-            onOpen={() => {}}
-            onClose={() => setOpenField(null)}
-          >
-            <Popover.Trigger asChild>
-              <div
-                style={{ width: '100%' }}
-                onClick={(e) => { e.stopPropagation(); setOpenField(field.id) }}
-              >
-                <CellRenderer field={field} row={row} onAvatarChipClick={onCompanyClick ? (name) => onCompanyClick(row, name) : undefined} />
-              </div>
-            </Popover.Trigger>
-            <Popover.Content
-              side="bottom"
-              align="start"
-              sideOffset={4}
-              css={{
-                background: 'white',
-                borderRadius: 8,
-                width: 'fit-content',
-                minWidth: 160,
-                padding: 0,
-                boxShadow: '0px 0px 12px rgba(34,36,40,0.04), 0px 2px 8px rgba(34,36,40,0.12)',
-                border: 'none',
-                outline: 'none',
-                overflow: 'hidden',
-                '&::before': { display: 'none' },
-                '&::after': { display: 'none' },
-                '& svg[aria-hidden="true"][viewBox="0 0 6 50"]': { display: 'none' },
-              }}
-            >
-              <button
-                onClick={() => { setOpenField(null); onRowClick?.(row) }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  width: '100%',
-                  height: 48,
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '0 12px',
-                  fontSize: 14,
-                  color: '#222428',
-                  fontFamily: 'Open Sans, sans-serif',
-                  whiteSpace: 'nowrap',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#F1F2F5')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-              >
-                <IconInsights css={{ width: 16, height: 16, color: '#222428', flexShrink: 0 }} />
-                View Insights
-              </button>
-            </Popover.Content>
-          </Popover>
-        </td>
+              <Popover open={openFieldId === field.id} onOpen={() => setOpenFieldId(field.id)} onClose={() => setOpenFieldId(null)}>
+                <Popover.Trigger asChild>
+                  <div style={{ width: '100%' }} onClick={(e) => e.stopPropagation()}>
+                    <CellRenderer field={field} row={row} onAvatarChipClick={onCompanyClick ? (name) => onCompanyClick(row, name) : undefined} />
+                  </div>
+                </Popover.Trigger>
+                <Popover.Content
+                  side="bottom"
+                  align="start"
+                  sideOffset={4}
+                  css={{
+                    background: 'white',
+                    borderRadius: 8,
+                    width: 'fit-content',
+                    minWidth: 160,
+                    padding: 0,
+                    boxShadow: '0px 0px 12px rgba(34,36,40,0.04), 0px 2px 8px rgba(34,36,40,0.12)',
+                    border: 'none',
+                    outline: 'none',
+                    overflow: 'hidden',
+                    '&::before': { display: 'none' },
+                    '&::after': { display: 'none' },
+                    '& svg[aria-hidden="true"][viewBox="0 0 6 50"]': { display: 'none' },
+                  }}
+                >
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setOpenFieldId(null); onRowClick?.(row) }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      width: '100%',
+                      height: 48,
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '0 12px',
+                      fontSize: 14,
+                      color: '#222428',
+                      fontFamily: 'Open Sans, sans-serif',
+                      whiteSpace: 'nowrap',
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#F1F2F5')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+                  >
+                    <IconInsights css={{ width: 16, height: 16, color: '#222428', flexShrink: 0 }} />
+                    View Insights
+                  </button>
+                </Popover.Content>
+              </Popover>
+          </td>
       ))}
+
 
       <td className="table-fill" aria-hidden="true" />
     </tr>

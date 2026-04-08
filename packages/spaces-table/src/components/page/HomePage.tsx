@@ -114,7 +114,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
   const [modalStep, setModalStep] = useState<'create' | 'csv' | 'share' | 'miro' | 'jira'>('create')
   const [jiraSelectedKeys, setJiraSelectedKeys] = useState<Set<string>>(new Set(['UR-348', 'UR-347']))
   const [modalFading, setModalFading] = useState(false)
-  const [spaceName, setSpaceName] = useState('Project Galaxy')
+  const [spaceName, setSpaceName] = useState('')
   const [importJira, setImportJira] = useState(false)
   const [importTables, setImportTables] = useState(false)
   const [importCsv, setImportCsv] = useState(false)
@@ -266,7 +266,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center"
           style={{ backgroundColor: 'rgba(99,107,130,0.55)' }}
-          onClick={() => { setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create') }}
+          onClick={() => { setCreateSpaceModalOpen(false); setSpaceName(''); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create') }}
         >
           <div
             className="bg-white flex flex-col relative"
@@ -292,7 +292,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 variant="ghost"
                 size="large"
                 aria-label="Close"
-                onPress={() => { setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create') }}
+                onPress={() => { setCreateSpaceModalOpen(false); setSpaceName(''); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create') }}
               >
                 <IconCross />
               </IconButton>
@@ -311,76 +311,16 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSpaceName(e.target.value)}
               />
 
-              {/* Import records from */}
-              <div className="flex flex-col gap-5 py-2">
-                <span className="font-body font-semibold text-[16px] text-[#1a1b1e] leading-none">Import records from</span>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { icon: <JiraLogo size={20} />, label: 'Jira', tooltip: 'Import issues and epics from your Jira projects', checked: importJira, toggle: () => { setImportJira(v => !v); setImportTables(false); setImportCsv(false) } },
-                    { icon: <IconTable css={{ width: 20, height: 20 }} />, label: 'Tables', tooltip: 'Pull in items from your Miro tables', checked: importTables, toggle: () => { setImportTables(v => !v); setImportJira(false); setImportCsv(false) } },
-                    { icon: <IconFileSpreadsheet css={{ width: 20, height: 20 }} />, label: 'CSV', tooltip: 'Upload a spreadsheet of work items', checked: importCsv, toggle: () => { setImportCsv(v => !v); setImportJira(false); setImportTables(false) } },
-                  ].map(({ icon, label, tooltip, checked, toggle }) => (
-                    <Tooltip key={label}>
-                      <Tooltip.Trigger asChild>
-                        <button
-                          onClick={toggle}
-                          className={`flex items-center gap-2 h-12 rounded-full transition-colors duration-150 ${
-                            checked
-                              ? 'border-[#4262FF] hover:border-[#3350e0] active:border-[#2b44c7]'
-                              : 'border-[#e9eaef] hover:border-[#d5d8de] active:border-[#c2c5cc]'
-                          } bg-white`}
-                          style={{ borderWidth: '1.5px', borderStyle: 'solid', paddingLeft: 18, paddingRight: 12 }}
-                        >
-                          <span className="shrink-0 -translate-y-px">{icon}</span>
-                          <span className="text-[16px] text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif', paddingBottom: 1 }}>{label}</span>
-                          <div className="pointer-events-none shrink-0 pill-checkbox translate-y-0.5">
-                            <Checkbox checked={checked} />
-                          </div>
-                        </button>
-                      </Tooltip.Trigger>
-                      <Tooltip.Content side="top" sideOffset={4}>{tooltip}</Tooltip.Content>
-                    </Tooltip>
-                  ))}
-                </div>
-              </div>
-
-              {/* Enrich records with */}
-              <div className="flex flex-col gap-5 py-2">
-                <span className="font-body font-semibold text-[16px] text-[#1a1b1e] leading-none">Enrich records with</span>
-                <div className="flex">
-                  <Tooltip>
-                    <Tooltip.Trigger asChild>
-                      <button
-                        onClick={() => setEnrichInsights(v => !v)}
-                        className={`flex items-center gap-2 h-12 rounded-full transition-colors duration-150 ${
-                          enrichInsights
-                            ? 'border-[#4262FF] hover:border-[#3350e0] active:border-[#2b44c7]'
-                            : 'border-[#e9eaef] hover:border-[#d5d8de] active:border-[#c2c5cc]'
-                        } bg-white`}
-                        style={{ borderWidth: '1.5px', borderStyle: 'solid', paddingLeft: 18, paddingRight: 12 }}
-                      >
-                        <span className="shrink-0 -translate-y-px">
-                          <IconInsights css={{ width: 20, height: 20 }} />
-                        </span>
-                        <span className="text-[16px] text-[#1a1b1e]" style={{ fontFamily: 'Open Sans, sans-serif', paddingBottom: 1 }}>Insights</span>
-                        <div className="pointer-events-none shrink-0 pill-checkbox translate-y-0.5">
-                          <Checkbox checked={enrichInsights} />
-                        </div>
-                      </button>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content side="top" sideOffset={4}>Enrich items with customer feedback and signals</Tooltip.Content>
-                  </Tooltip>
-                </div>
-              </div>
-
               {/* Actions */}
               <div className="flex items-center gap-3 pt-4">
                 <Button
                   variant="primary"
                   size="large"
+                  disabled={!spaceName.trim()}
                   onPress={() => {
                     const importSource = importJira ? 'jira' as const : importTables ? 'miro' as const : importCsv ? 'csv' as const : null
-                    setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create')
+                    const name = spaceName
+                    setCreateSpaceModalOpen(false); setSpaceName(''); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create')
                     onOpenApp(importSource ?? undefined)
                   }}
                 >
@@ -389,7 +329,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 <Button
                   variant="ghost"
                   size="large"
-                  onPress={() => { setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create') }}
+                  onPress={() => { setCreateSpaceModalOpen(false); setSpaceName(''); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create') }}
                 >
                   <Button.Label>Cancel</Button.Label>
                 </Button>
@@ -523,9 +463,10 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 <Button
                   variant="ghost"
                   size="large"
-                  onPress={() => { setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create'); onOpenApp() }}
+                  onPress={() => { setCreateSpaceModalOpen(false); setSpaceName(''); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create'); onOpenApp() }}
                 >
                   <Button.Label>Continue without inviting</Button.Label>
+                  {/* @ts-expect-error -- MDS IconSlot type mismatch */}
                   <Button.IconSlot placement="end"><IconChevronRight /></Button.IconSlot>
                 </Button>
               </div>
@@ -542,7 +483,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                     { label: 'Configure cards', Icon: IconCard },
                     { label: 'Show imported', Icon: IconEyeOpen },
                     { label: 'Create issue', Icon: IconSquarePencil },
-                  ] as Array<{ label: string; Icon: (props: { css?: Record<string, unknown> }) => JSX.Element }>).map(({ label, Icon }) => (
+                  ] as Array<{ label: string; Icon: (props: { css?: Record<string, unknown> }) => React.JSX.Element }>).map(({ label, Icon }) => (
                     <button key={label} className="hover:bg-[#f1f2f5] transition-colors" style={{ height: 32, padding: '0 10px', borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', fontSize: 16, color: '#222428', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
                       <Icon css={{ width: 16, height: 16, minWidth: 16, minHeight: 16, color: '#222428', flexShrink: 0 }} />
                       {label}
@@ -716,7 +657,7 @@ export function HomePage({ onOpenApp }: HomePageProps) {
                 <Button
                   variant="ghost"
                   size="large"
-                  onPress={() => { setCreateSpaceModalOpen(false); setSpaceName('Project Galaxy'); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create'); onOpenApp() }}
+                  onPress={() => { setCreateSpaceModalOpen(false); setSpaceName(''); setImportJira(false); setImportTables(false); setImportCsv(false); setEnrichInsights(true); setModalStep('create'); onOpenApp() }}
                 >
                   <Button.Label>Configure later</Button.Label>
                 </Button>

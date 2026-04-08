@@ -6,7 +6,7 @@ import {
   IconChevronUpDown,
   IconDotsThreeVertical,
   IconLightbulb,
-  IconMap,
+  IconRocket,
   IconPlus,
   IconRectanglesTwoLinesFour,
 } from '@mirohq/design-system'
@@ -14,7 +14,7 @@ import {
 const pages = [
   { id: 'overview', label: 'Overview', icon: IconRectanglesTwoLinesFour },
   { id: 'backlog', label: 'Backlog', icon: IconLightbulb },
-  { id: 'roadmap', label: 'Roadmap', icon: IconMap },
+  { id: 'roadmap', label: 'Roadmap', icon: IconRocket },
 ]
 
 interface SpaceMenuProps {
@@ -22,9 +22,10 @@ interface SpaceMenuProps {
   activePage: string
   onPageChange: (id: string) => void
   onGoHome?: () => void
+  spaceName?: string
 }
 
-export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome }: SpaceMenuProps) {
+export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome, spaceName }: SpaceMenuProps) {
   return (
     <div className="flex flex-col h-full pt-2 px-3">
       {/* Top bar: Home | Search + Close */}
@@ -49,7 +50,7 @@ export function SpaceMenu({ onClose, activePage, onPageChange, onGoHome }: Space
             className="font-heading font-semibold text-[#1A1B1E] leading-[1.4] truncate block"
             style={{ fontSize: '20px', fontFeatureSettings: "'ss01' 1" }}
           >
-            Project Galaxy
+            {spaceName || 'Project Galaxy'}
           </span>
           <span
             className="font-body text-[#656B81] leading-[1.4] cursor-pointer hover:underline"

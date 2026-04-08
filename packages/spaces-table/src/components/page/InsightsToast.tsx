@@ -26,8 +26,8 @@ export function InsightsToast({ onDismiss }: InsightsToastProps) {
   }
 
   useEffect(() => {
-    const dismissTimer = setTimeout(dismiss, 4000)
-    const confettiTimer = setTimeout(() => setShowConfetti(false), 4200)
+    const dismissTimer = setTimeout(dismiss, 3500)
+    const confettiTimer = setTimeout(() => setShowConfetti(false), 2100)
     return () => { clearTimeout(dismissTimer); clearTimeout(confettiTimer) }
   }, [])
 
@@ -102,10 +102,6 @@ export function InsightsToast({ onDismiss }: InsightsToastProps) {
           </p>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2 pt-1">
-          <Button variant="primary" size="medium" onPress={dismiss}>Share with team</Button>
-        </div>
 
       </div>
     </>

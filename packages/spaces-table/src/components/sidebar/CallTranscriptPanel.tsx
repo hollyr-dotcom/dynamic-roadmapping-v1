@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { InputSearch } from '@mirohq/design-system'
+import { InputSearch, IconCross } from '@mirohq/design-system'
 
 const AVATAR_COLORS: Record<string, { bg: string; fg: string }> = {
   '#D1F09F': { bg: '#ADF0C7', fg: '#067429' },
@@ -9,7 +9,7 @@ const AVATAR_COLORS: Record<string, { bg: string; fg: string }> = {
 const AVATAR_DEFAULT = { bg: '#F1F2F5', fg: '#656B81' }
 
 function MdsAvatar({ color }: { color?: string }) {
-  const { bg, fg } = (color && AVATAR_COLORS[color]) ?? AVATAR_DEFAULT
+  const { bg, fg } = (color ? AVATAR_COLORS[color] : undefined) ?? AVATAR_DEFAULT
   return (
     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
       <path d="M0 20C0 8.95431 8.95431 0 20 0C31.0457 0 40 8.95431 40 20C40 31.0457 31.0457 40 20 40C8.95431 40 0 31.0457 0 20Z" fill={bg}/>
@@ -36,6 +36,7 @@ interface CallTranscriptPanelProps {
   date: string
   transcript: TranscriptLine[]
   onBack: () => void
+  onClose?: () => void
   highlightColor?: string
   avatarColor?: string
 }
@@ -62,7 +63,7 @@ const CHIP: React.CSSProperties = {
   fontFamily: "'Open Sans', sans-serif",
 }
 
-export function CallTranscriptPanel({ author, company, date, transcript, onBack, highlightColor = '#f1f2f5', avatarColor }: CallTranscriptPanelProps) {
+export function CallTranscriptPanel({ author, company, date, transcript, onBack, onClose, highlightColor = '#f1f2f5', avatarColor }: CallTranscriptPanelProps) {
   const [search, setSearch] = useState('')
   const [authorName, authorRole] = author.split(',').map(s => s.trim())
 
@@ -73,7 +74,7 @@ export function CallTranscriptPanel({ author, company, date, transcript, onBack,
   return (
     <div
       className="panel-scroll"
-      style={{ height: '100%', overflowY: 'auto', padding: '16px 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
+      style={{ height: '100%', overflowY: 'auto', padding: '0px 16px 32px', display: 'flex', flexDirection: 'column', fontFamily: "'Open Sans', sans-serif", color: '#222428' }}
     >
       {/* ── Sticky header: back button only ── */}
       <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', margin: '0 -16px', padding: '0 16px 8px' }}>

@@ -27,10 +27,11 @@ interface DatabaseTitleProps {
   onExitCanvas?: () => void
   syncCount?: number
   syncing?: boolean
+  disableControls?: boolean
   centered?: boolean
 }
 
-export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, variant = 'page', onExitCanvas, syncCount = 0, syncing = false, centered = false }: DatabaseTitleProps) {
+export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, variant = 'page', onExitCanvas, syncCount = 0, syncing = false, disableControls, centered = false }: DatabaseTitleProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const measureRef = useRef<HTMLSpanElement>(null)
   const [draft, setDraft] = useState(title)
@@ -185,6 +186,7 @@ export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, v
             <DropdownMenu.Item onSelect={e => { e.preventDefault(); setEnrichmentOn(v => !v) }}>
               <DropdownMenu.IconSlot><IconInsights /></DropdownMenu.IconSlot>
               <span style={{ flex: 1 }}>Toggle enrichment</span>
+              {/* @ts-expect-error -- MDS Switch type mismatch */}
               <Switch checked={enrichmentOn} onCheckedChange={setEnrichmentOn} css={{ pointerEvents: 'none' }} />
             </DropdownMenu.Item>
             <DropdownMenu.Separator />
@@ -203,6 +205,7 @@ export function DatabaseTitle({ opacity, scrollFade = 0, title, onTitleChange, v
           </DropdownMenu.Content>
         </DropdownMenu>
       </div>
+
     </div>
   )
 }

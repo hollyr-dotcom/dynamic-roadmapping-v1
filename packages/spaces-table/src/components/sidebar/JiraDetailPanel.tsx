@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { JiraForm, SourceLogoChip } from './RowDetailPanel'
+import { JiraForm, SourceLogoChip, FeedbackCardDetailView } from './RowDetailPanel'
 import { JiraLogo } from '../JiraLogo'
 import {
   IconDotsThreeVertical,
@@ -106,6 +106,7 @@ const TABS = ['Details', 'Jira', 'Insights', 'Comments']
 export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   const [dismissedCards, setDismissedCards] = useState<Set<number>>(new Set())
+  const [selectedFeedbackCard, setSelectedFeedbackCard] = useState<{ title: string; text: string; author: string; date: string; companies: string[]; borderColor?: string } | null>(null)
   const [companiesExpanded, setCompaniesExpanded] = useState(false)
 
   const [layoutOpen, setLayoutOpen] = useState(false)
@@ -237,8 +238,18 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
       {/* 4px spacer */}
       <div className="h-1 shrink-0" />
 
-      {/* ── Content ── */}
-      <div className="flex-1 min-h-0 overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2">
+      {/* ── Content (2-slot slider) ── */}
+      <div className="flex-1 min-h-0 overflow-hidden relative">
+      <div
+        className="flex absolute inset-y-0 left-0"
+        style={{
+          width: '200%',
+          transform: selectedFeedbackCard ? 'translateX(-50%)' : 'translateX(0)',
+          transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
+      >
+      {/* Slot 0 — main content */}
+      <div className="h-full overflow-y-auto panel-scroll pl-4 pr-4 pt-2 flex flex-col gap-2 shrink-0" style={{ width: '50%' }}>
 
         {activeTab === 'Details' && (
           <>
@@ -398,7 +409,7 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
                     <FeedbackCard
                       {...card}
                       onDismiss={() => setDismissedCards(prev => new Set([...prev, i]))}
-                      onSelect={() => {}}
+                      onSelect={() => setSelectedFeedbackCard({ title: card.title, text: card.text, author: card.author, date: card.date, companies: card.companies, borderColor: card.borderColor })}
                     />
                   </div>
                 ))}
@@ -412,7 +423,62 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
             <p className="text-[14px] text-[#AEB2C0]">Comments coming soon</p>
           </div>
         )}
+      </div>{/* end slot 0 */}
+
+      {/* Slot 1 — feedback detail */}
+      <div className="h-full shrink-0" style={{ width: '50%' }}>
+        {selectedFeedbackCard && (
+          <FeedbackCardDetailView
+            card={selectedFeedbackCard}
+            onBack={() => setSelectedFeedbackCard(null)}
+            onClose={onClose}
+            highlightColor="#F1F2F5"
+          />
+        )}
       </div>
+
+      </div>{/* end slider */}
+      </div>{/* end overflow wrapper */}
+
+      {layoutOpen && layoutPos && createPortal(
+        <div
+          ref={layoutMenuRef}
+          className="fixed z-[9999] bg-white flex flex-col rounded-[8px]"
+          style={{ top: layoutPos.top, right: layoutPos.right, padding: '16px 12px', gap: 4, boxShadow: '0px 0px 12px rgba(34,36,40,0.04), 0px 2px 8px rgba(34,36,40,0.12)' }}
+        >
+          {(['Right', 'Center', 'Fullscreen'] as const).map(option => (
+            <button
+              key={option}
+              className={`flex items-center w-full rounded-[4px] transition-colors text-left ${selectedLayout === option ? 'bg-[#F1F2F5]' : 'hover:bg-[#F1F2F5]'}`}
+              style={{ padding: '0 8px 0 0', gap: 0 }}
+              onClick={() => { setSelectedLayout(option); setLayoutOpen(false) }}
+            >
+              <span className="flex items-center justify-end shrink-0" style={{ padding: '12px 0 12px 8px' }}>
+                {option === 'Right' && (
+                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
+                    <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="#222428"/>
+                  </svg>
+                )}
+                {option === 'Center' && (
+                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
+                    <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="#222428"/>
+                  </svg>
+                )}
+                {option === 'Fullscreen' && (
+                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
+                    <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="#222428"/>
+                  </svg>
+                )}
+              </span>
+              <span style={{ fontFamily: 'Open Sans, sans-serif', fontSize: 14, color: '#222428', paddingLeft: 8, paddingTop: 10, paddingBottom: 10, fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>{option}</span>
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
     </div>
   )
 }
@@ -645,46 +711,6 @@ function FeedbackCard({
           </div>
         </div>
       </div>
-
-      {layoutOpen && layoutPos && createPortal(
-        <div
-          ref={layoutMenuRef}
-          className="fixed z-[9999] bg-white flex flex-col rounded-[8px]"
-          style={{ top: layoutPos.top, right: layoutPos.right, padding: '16px 12px', gap: 4, boxShadow: '0px 0px 12px rgba(34,36,40,0.04), 0px 2px 8px rgba(34,36,40,0.12)' }}
-        >
-          {(['Right', 'Center', 'Fullscreen'] as const).map(option => (
-            <button
-              key={option}
-              className="flex items-center w-full rounded-[4px] hover:bg-[#F1F2F5] transition-colors text-left"
-              style={{ padding: '0 8px 0 0', gap: 0, background: selectedLayout === option ? '#F1F2F5' : 'transparent' }}
-              onClick={() => { setSelectedLayout(option); setLayoutOpen(false) }}
-            >
-              <span className="flex items-center justify-end shrink-0" style={{ padding: '12px 0 12px 8px' }}>
-                {option === 'Right' && (
-                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
-                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
-                    <rect x="7.5" y="2.5" width="4" height="7" rx="0.8" fill="#222428"/>
-                  </svg>
-                )}
-                {option === 'Center' && (
-                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
-                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
-                    <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="#222428"/>
-                  </svg>
-                )}
-                {option === 'Fullscreen' && (
-                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
-                    <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
-                    <rect x="1.5" y="1.5" width="11" height="9" rx="0.8" fill="#222428"/>
-                  </svg>
-                )}
-              </span>
-              <span style={{ fontFamily: 'Open Sans, sans-serif', fontSize: 14, color: '#222428', paddingLeft: 8, paddingTop: 10, paddingBottom: 10, fontVariationSettings: "'CTGR' 0, 'wdth' 100" }}>{option}</span>
-            </button>
-          ))}
-        </div>,
-        document.body
-      )}
 
       {menuOpen && menuPos && createPortal(
         <div

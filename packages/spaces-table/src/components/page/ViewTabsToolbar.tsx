@@ -12,8 +12,9 @@ import {
   IconFunnel,
   IconArrowsDownUp,
   IconHorizontalBlocks,
-  IconSquareArrowIn,
+
   IconFileSpreadsheet,
+  IconSquareArrowIn,
   IconColumnsThree,
   IconPlus,
   IconTable,
@@ -67,11 +68,27 @@ interface ViewTabsToolbarProps {
   variant?: 'page' | 'widget'
   companyFilter?: string[]
   onClearCompanyFilter?: (name: string) => void
+  onImportSource?: (source: 'jira' | 'miro' | 'csv') => void
+  showImportPopover?: boolean
+  onDismissImportPopover?: () => void
+  hideControls?: boolean
+  disableControls?: boolean
+  onOpenAiSidekick?: () => void
 }
 
-export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange, onDuplicateWidget, variant = 'page', companyFilter, onClearCompanyFilter }: ViewTabsToolbarProps) {
+export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTab, onTabChange, onAddView, onRenameTab, onDuplicateTab, onDeleteTab, onReorderTabs, newColumnMenuOpen, onNewColumnMenuOpenChange, onDuplicateWidget, variant = 'page', companyFilter, onClearCompanyFilter, onImportSource, showImportPopover, onDismissImportPopover, hideControls, disableControls, onOpenAiSidekick }: ViewTabsToolbarProps) {
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
   const [isImportMenuOpen, setIsImportMenuOpen] = useState(false)
+  const importBtnRef = useRef<HTMLSpanElement>(null)
+  const [importBtnRect, setImportBtnRect] = useState<{ x: number; y: number; width: number } | null>(null)
+
+  useEffect(() => {
+    if (showImportPopover && importBtnRef.current) {
+      const r = importBtnRef.current.getBoundingClientRect()
+      setImportBtnRect({ x: r.left + r.width / 2, y: r.bottom, width: r.width })
+    }
+    if (!showImportPopover) setImportBtnRect(null)
+  }, [showImportPopover])
   const [pendingTabId, setPendingTabId] = useState<string | null>(null)
   const [editingTabId, setEditingTabId] = useState<string | null>(null)
   const [editDraft, setEditDraft] = useState('')
@@ -239,7 +256,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
     }
   }
 
-  const visibleTabs = tabs.filter(t => !overflowTabIds.has(t.id))
+  const visibleTabs = hideControls ? tabs.slice(0, 1) : tabs.filter(t => !overflowTabIds.has(t.id))
   const overflowTabs = tabs.filter(t => overflowTabIds.has(t.id))
   const hasOverflow = overflowTabs.length > 0
   const activeInOverflow = overflowTabIds.has(activeTab)
@@ -279,6 +296,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
                     >
                       <Tabs.Trigger
                         value={tab.id}
+                        disabled={disableControls && tab.id !== tabs[0]?.id}
                         onDoubleClick={() => { if (tab.id === activeTab) startEditing(tab) }}
                         css={
                           editingTabId === tab.id
@@ -517,7 +535,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
         })()}
 
         {/* New View + button — hover-reveal, stays visible while menu is open */}
-        <div className={`shrink-0 transition-all duration-200 ease-out ${
+        {!hideControls && !disableControls && <div className={`shrink-0 transition-all duration-200 ease-out ${
           isAddMenuOpen
             ? 'opacity-100 scale-100 translate-x-0'
             : 'opacity-0 scale-[0.85] -translate-x-1.5 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:translate-x-0 group-hover:pointer-events-auto'
@@ -553,7 +571,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
             </DropdownMenu>
             <Tooltip.Content side="top" sideOffset={4}>Add a view</Tooltip.Content>
           </Tooltip>
-        </div>
+        </div>}
       </div>
 
       {/* Company filter chips */}
@@ -592,9 +610,10 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
 
       {/* Right: actions — disabled (no handlers) on canvas widget */}
       <div className="flex items-center gap-1 shrink-0 self-center">
+        {!hideControls && (<>
         <Tooltip>
           <Tooltip.Trigger asChild>
-            <IconButton aria-label="Search" variant="ghost" size="medium" css={{ borderRadius: 8 }}>
+            <IconButton aria-label="Search" variant="ghost" size="medium" disabled={disableControls} css={{ borderRadius: 8 }}>
               <IconMagnifyingGlass />
             </IconButton>
           </Tooltip.Trigger>
@@ -606,7 +625,26 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
 
         <Tooltip>
           <Tooltip.Trigger asChild>
-            <IconButton aria-label="Group" variant="ghost" size="medium" css={{ borderRadius: 8, cursor: 'default' }}>
+            <IconButton
+              aria-label="Sidekick"
+              variant="ghost"
+              size="medium"
+              disabled={disableControls}
+              onPress={variant !== 'widget' ? () => onOpenAiSidekick ? onOpenAiSidekick() : onToggleSidebar('ai-sidekick') : undefined}
+              css={activeSidebar === 'ai-sidekick' && variant !== 'widget' ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}
+            >
+              <IconSparksFilled />
+            </IconButton>
+          </Tooltip.Trigger>
+          <Tooltip.Content side="top" sideOffset={4}>
+            Sidekick
+            <Tooltip.Hotkey>⌘ + K</Tooltip.Hotkey>
+          </Tooltip.Content>
+        </Tooltip>
+
+        <Tooltip>
+          <Tooltip.Trigger asChild>
+            <IconButton aria-label="Group" variant="ghost" size="medium" disabled={disableControls} css={{ borderRadius: 8, cursor: 'default' }}>
               <IconHorizontalBlocks />
             </IconButton>
           </Tooltip.Trigger>
@@ -615,7 +653,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
 
         <Tooltip>
           <Tooltip.Trigger asChild>
-            <IconButton aria-label="Filter" variant="ghost" size="medium" css={{ borderRadius: 8 }}>
+            <IconButton aria-label="Filter" variant="ghost" size="medium" disabled={disableControls} css={{ borderRadius: 8 }}>
               <IconFunnel />
             </IconButton>
           </Tooltip.Trigger>
@@ -624,7 +662,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
 
         <Tooltip>
           <Tooltip.Trigger asChild>
-            <IconButton aria-label="Sort" variant="ghost" size="medium" css={{ borderRadius: 8 }}>
+            <IconButton aria-label="Sort" variant="ghost" size="medium" disabled={disableControls} css={{ borderRadius: 8 }}>
               <IconArrowsDownUp />
             </IconButton>
           </Tooltip.Trigger>
@@ -635,7 +673,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
           <Tooltip>
             <Tooltip.Trigger asChild>
               <DropdownMenu.Trigger asChild>
-                <IconButton aria-label="Import" variant="ghost" size="medium" css={isImportMenuOpen ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}>
+                <IconButton aria-label="Import" variant="ghost" size="medium" disabled={disableControls} css={isImportMenuOpen ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}>
                   <IconSquareArrowIn css={{ transform: 'rotate(180deg)' }} />
                 </IconButton>
               </DropdownMenu.Trigger>
@@ -645,25 +683,29 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
               <Tooltip.Hotkey>⌘ + I</Tooltip.Hotkey>
             </Tooltip.Content>
           </Tooltip>
-          <DropdownMenu.Content side="bottom" align="center" css={{ minWidth: 180 }}>
-            <DropdownMenu.Item css={{ cursor: 'default' }}>
+          <DropdownMenu.Content side="bottom" align="end" css={{ minWidth: MENU_WIDTH }}>
+            <DropdownMenu.Item onSelect={() => onImportSource?.('jira')}>
               <DropdownMenu.IconSlot><JiraLogo size={20} /></DropdownMenu.IconSlot>
               Jira
             </DropdownMenu.Item>
-            <DropdownMenu.Item css={{ cursor: 'default' }}>
+            <DropdownMenu.Item onSelect={() => onImportSource?.('csv')}>
               <DropdownMenu.IconSlot><IconFileSpreadsheet /></DropdownMenu.IconSlot>
               CSV
             </DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu>
 
+        </>)}
+
+        {!hideControls && (
         <Tooltip>
           <Tooltip.Trigger asChild>
             <IconButton
               aria-label="View settings"
               variant="ghost"
               size="medium"
-              onPress={undefined}
+              disabled={disableControls}
+              onPress={variant !== 'widget' ? () => onToggleSidebar('view-settings') : undefined}
               css={activeSidebar === 'view-settings' && variant !== 'widget' ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}
             >
               <IconSlidersY />
@@ -674,28 +716,14 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
             <Tooltip.Hotkey>⌘ + ,</Tooltip.Hotkey>
           </Tooltip.Content>
         </Tooltip>
+        )}
 
-        <Tooltip>
-          <Tooltip.Trigger asChild>
-            <IconButton
-              aria-label="Sidekick"
-              variant="ghost"
-              size="medium"
-              onPress={variant !== 'widget' ? () => onToggleSidebar('ai-sidekick') : undefined}
-              css={activeSidebar === 'ai-sidekick' && variant !== 'widget' ? { borderRadius: 8, background: '#F1F2F5' } : { borderRadius: 8 }}
-            >
-              <IconSparksFilled />
-            </IconButton>
-          </Tooltip.Trigger>
-          <Tooltip.Content side="top" sideOffset={4}>Sidekick</Tooltip.Content>
-        </Tooltip>
-
-        {variant !== 'widget' ? (
+        {hideControls ? null : variant !== 'widget' ? (
           <Tooltip>
-            <DropdownMenu open={newColumnMenuOpen} onOpen={() => onNewColumnMenuOpenChange(true)} onClose={() => onNewColumnMenuOpenChange(false)}>
+            <DropdownMenu open={disableControls ? false : newColumnMenuOpen} onOpen={() => !disableControls && onNewColumnMenuOpenChange(true)} onClose={() => onNewColumnMenuOpenChange(false)}>
               <Tooltip.Trigger asChild>
                 <DropdownMenu.Trigger asChild>
-                  <IconButton aria-label="New column" variant="ghost" size="medium" css={{ borderRadius: 8 }}>
+                  <IconButton aria-label="New column" variant="ghost" size="medium" disabled={disableControls} css={{ borderRadius: 8 }}>
                     <IconPlus />
                   </IconButton>
                 </DropdownMenu.Trigger>
@@ -756,6 +784,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
           </div>
         )
       })()}
+
     </div>
   )
 }

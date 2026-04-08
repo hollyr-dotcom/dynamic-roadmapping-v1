@@ -23,5 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# Local progress notes
-progress.md
+# Markdown files (private)
+*.md
+.vercel
