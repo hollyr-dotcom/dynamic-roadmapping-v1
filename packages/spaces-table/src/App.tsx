@@ -79,7 +79,7 @@ const ROADMAP_KANBAN_COLUMNS: Priority[] = ['now', 'next', 'later']
 
 export function App() {
   const [scrollFade, setScrollFade] = useState(0)
-  const [view, setView] = useState<'home' | 'app'>('home')
+  const [view, setView] = useState<'home' | 'app'>('app')
   const [isInitialLoad, setIsInitialLoad] = useState(false)
   const [emptyVariant] = useState<'hidden' | 'disabled'>('disabled')
   const [spaceName, setSpaceName] = useState('Project Galaxy')
@@ -88,7 +88,7 @@ export function App() {
   const [showImportPopover, setShowImportPopover] = useState(false)
   const [showSharePopover, setShowSharePopover] = useState(false)
   const [showShareDialog, setShowShareDialog] = useState(false)
-  const [activePage, setActivePage] = useState<PageId>('backlog')
+  const [activePage, setActivePage] = useState<PageId>('overview')
   const [overviewBgColor, setOverviewBgColor] = useState('#F2F4FC')
   const overviewRootRef = useRef<HTMLDivElement>(null)
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')

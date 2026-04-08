@@ -6,6 +6,7 @@ import {
   IconChartLine,
   IconChartProgress,
   IconSparks,
+  IconSparksFilled,
   IconLightning,
   IconChatTwo,
   IconSmileyChat,
@@ -117,6 +118,22 @@ companyARR['ov4'] = [
   { company: 'Spotify', arr: 175, contacts: 4  },
 ]
 
+function TypewriterText({ text, speed = 18 }: { text: string; speed?: number }) {
+  const [count, setCount] = useState(0)
+  useEffect(() => {
+    if (count >= text.length) return
+    const t = setTimeout(() => setCount(c => c + 1), speed)
+    return () => clearTimeout(t)
+  }, [count, text.length, speed])
+  return (
+    <span style={{ position: 'relative', display: 'block' }}>
+      {/* Invisible full text holds the final height from the start */}
+      <span style={{ visibility: 'hidden', userSelect: 'none' }} aria-hidden="true">{text}</span>
+      <span style={{ position: 'absolute', inset: 0 }}>{text.slice(0, count)}</span>
+    </span>
+  )
+}
+
 type CardIcon = 'chart-line' | 'chart-progress' | 'sparks' | 'lightning' | 'chat' | 'timeline' | 'insights-search' | 'rocket' | 'three-columns'
 
 type MatchTag = 'Growing evidence' | 'Fading evidence' | 'New evidence' | 'Missing in roadmap' | 'Weak evidence'
@@ -204,6 +221,7 @@ const CARD_GAP = 28
 export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onBgColorChange, bgRef }: { onDiveDeeper?: (cardId: string) => void; onAddToRoadmap?: (cardId: string) => void; onReprioritize?: (cardId: string) => void; onBgColorChange?: (color: string) => void; bgRef?: React.RefObject<HTMLElement> }) {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
   const [activeIndex, setActiveIndex] = useState(0)
+  const [descKey, setDescKey] = useState(0)
   const trackRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
 
@@ -249,7 +267,6 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onB
         titleRefs.current[i]!.style.fontSize = `${17 + 11 * progress}px`
         titleRefs.current[i]!.style.fontWeight = progress > 0.5 ? '400' : '600'
       }
-      if (descRefs.current[i]) descRefs.current[i]!.style.opacity = `${Math.max(0, (progress - 0.4) / 0.6)}`
       if (tagsRefs.current[i]) tagsRefs.current[i]!.style.opacity = `${Math.max(0, (progress - 0.6) / 0.4)}`
       if (actionsRefs.current[i]) actionsRefs.current[i]!.style.opacity = `${Math.max(0, (progress - 0.75) / 0.25)}`
       if (closeRefs.current[i]) {
@@ -295,10 +312,9 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onB
     const onScrollEnd = () => {
       applyProgress(track.scrollLeft)
       const idx = Math.round(track.scrollLeft / (CARD_W + CARD_GAP))
-      setActiveIndex(prev => {
-        const next = Math.max(0, Math.min(idx, visibleCardsLenRef.current - 1))
-        return prev === next ? prev : next
-      })
+      const next = Math.max(0, Math.min(idx, visibleCardsLenRef.current - 1))
+      setActiveIndex(prev => (prev === next ? prev : next))
+      setDescKey(k => k + 1)
     }
 
     track.addEventListener('scroll', onScroll, { passive: true })
@@ -313,6 +329,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onB
   const activeCard = visibleCards[safeIndex]
   const activeBg = activeCard ? MATCH_TAG_STYLE[activeCard.matchTag].bg : '#F2F4FC'
   useEffect(() => { onBgColorChange?.(activeBg) }, [activeBg, onBgColorChange])
+
 
   return (
     <div className="flex flex-col items-center w-full h-full select-none py-10">
