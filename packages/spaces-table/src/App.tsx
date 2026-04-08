@@ -180,6 +180,24 @@ export function App() {
   const toggleSidebar = useCallback((id: SidebarId) =>
     setActiveSidebar((prev) => (prev === id ? null : id)), [])
 
+  // When the AI icon or keyboard shortcut opens the sidekick without a specific context,
+  // reset all sidekick state so PanelBody remounts and shows the welcome screen.
+  const toggleSidebarFromToolbar = useCallback((id: SidebarId) => {
+    if (id === 'ai-sidekick') {
+      setActiveSidebar(prev => {
+        if (prev === 'ai-sidekick') return null
+        setSidekickFocusItemId(undefined)
+        setSidekickReprioritizeCardId(undefined)
+        setSidekickDiveDeepCardId(undefined)
+        setSidekickContextMessage(undefined)
+        setSidekickKey(k => k + 1)
+        return 'ai-sidekick'
+      })
+    } else {
+      toggleSidebar(id)
+    }
+  }, [toggleSidebar])
+
   const toggleCanvas = useCallback(() => {
     setCanvasOpen(prev => {
       if (!prev) {
@@ -260,7 +278,7 @@ export function App() {
 
       if (meta && e.key === 'k') {
         e.preventDefault()
-        toggleSidebar('ai-sidekick')
+        toggleSidebarFromToolbar('ai-sidekick')
       }
       // View settings sidebar disabled
       // if (meta && e.key === ',') {

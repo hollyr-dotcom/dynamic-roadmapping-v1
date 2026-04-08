@@ -1915,6 +1915,16 @@ function AppStoreReviewDetail({
             <SourceLogoChip source={card.source ?? 'App Store'} />
           </div>
         </div>
+        {(() => {
+          const bc = card.borderColor ?? ''
+          const typeLabel = bc === '#D1F09F' ? 'User praise' : bc === '#d4bbff' ? 'User request' : 'User problem'
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+              <span style={LABEL}>Feedback type</span>
+              <div style={{ backgroundColor: '#f1f2f5', color: '#222428', borderRadius: 6, padding: '0 8px', height: 28, display: 'inline-flex', alignItems: 'center', fontSize: 14, fontFamily: "'Open Sans', sans-serif" }}>{typeLabel}</div>
+            </div>
+          )
+        })()}
         {card.companies[0] && (
           <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
             <span style={LABEL}>Company</span>
@@ -2429,6 +2439,16 @@ function SurveyFeedbackDetail({
           <span style={LABEL}>Source</span>
           <SourceLogoChip source="SurveyMonkey" />
         </div>
+        {(() => {
+          const bc = card.borderColor ?? ''
+          const typeLabel = bc === '#D1F09F' ? 'User praise' : bc === '#d4bbff' ? 'User request' : 'User problem'
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+              <span style={LABEL}>Feedback type</span>
+              <div style={DATE_CHIP}>{typeLabel}</div>
+            </div>
+          )
+        })()}
         <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
           <span style={LABEL}>Survey started</span>
           <div style={DATE_CHIP}>{card.date}</div>

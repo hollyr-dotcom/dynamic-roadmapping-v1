@@ -6,10 +6,10 @@ import {
   DropdownMenu,
   IconSquaresTwoOverlap,
   IconTrash,
-  IconArrowsOutSimple,
   IconChatLinesTwo,
   Popover,
   IconInsights,
+  IconSparks,
 } from '@mirohq/design-system'
 import { CARDS, OVERVIEW_ROWS, MATCH_TAG_STYLE, confidenceTagStyle } from '../page/OverviewPage'
 import { MENU_WIDTH } from '../page/ViewTabsToolbar'
@@ -81,8 +81,8 @@ function RowContextMenu({ onClose, onViewInsights }: { onClose: () => void; onVi
       </DropdownMenu.Trigger>
       <DropdownMenu.Content side="bottom" align="start" alignOffset={-12} css={{ minWidth: MENU_WIDTH }}>
         <DropdownMenu.Item onSelect={() => { onViewInsights?.(); onClose() }}>
-          <DropdownMenu.IconSlot><IconArrowsOutSimple /></DropdownMenu.IconSlot>
-          Open in side panel
+          <DropdownMenu.IconSlot><IconSparks /></DropdownMenu.IconSlot>
+          Open in sidekick
         </DropdownMenu.Item>
         <DropdownMenu.Item onSelect={onClose}>
           <DropdownMenu.IconSlot><IconChatLinesTwo /></DropdownMenu.IconSlot>

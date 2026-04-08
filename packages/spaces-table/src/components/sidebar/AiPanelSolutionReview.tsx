@@ -1932,7 +1932,7 @@ export default function AiPanelSolutionReview({ onClose, activePage, focusItemId
                 style={{
                   flex: 1, minHeight: 0, background: '#fff', overflow: 'hidden',
                   animation: isClosing
-                    ? (slideDir === 'back' ? '_ai-slide-out-back 0.32s cubic-bezier(0.4, 0, 1, 1) both' : '_ai-slide-out 0.32s cubic-bezier(0.4, 0, 1, 1) both')
+                    ? '_ai-slide-out 0.32s cubic-bezier(0.4, 0, 1, 1) both'
                     : (slideDir === 'back' ? '_ai-slide-in-back 0.35s cubic-bezier(0.16, 1, 0.3, 1) both' : '_ai-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both'),
                 }}
               >
