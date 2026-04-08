@@ -118,18 +118,19 @@ companyARR['ov4'] = [
   { company: 'Spotify', arr: 175, contacts: 4  },
 ]
 
-function TypewriterText({ text, speed = 18 }: { text: string; speed?: number }) {
+function TypewriterText({ text, speed = 55 }: { text: string; speed?: number }) {
+  const words = text.split(' ')
   const [count, setCount] = useState(0)
   useEffect(() => {
-    if (count >= text.length) return
+    if (count >= words.length) return
     const t = setTimeout(() => setCount(c => c + 1), speed)
     return () => clearTimeout(t)
-  }, [count, text.length, speed])
+  }, [count, words.length, speed])
   return (
     <span style={{ position: 'relative', display: 'block' }}>
       {/* Invisible full text holds the final height from the start */}
       <span style={{ visibility: 'hidden', userSelect: 'none' }} aria-hidden="true">{text}</span>
-      <span style={{ position: 'absolute', inset: 0 }}>{text.slice(0, count)}</span>
+      <span style={{ position: 'absolute', inset: 0 }}>{words.slice(0, count).join(' ')}</span>
     </span>
   )
 }

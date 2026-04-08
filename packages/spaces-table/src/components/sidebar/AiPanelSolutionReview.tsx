@@ -475,13 +475,11 @@ function DependencyCard({ dependencies }: { dependencies: { from: SpaceRow; to: 
 
 /* ─── Impact card (gain/loss — matches prototype card styling) ─── */
 function ImpactCard({ title, type, items }: { title: string; type: 'lose' | 'gain'; items: { label: string; value: string }[] }) {
-  const bg = type === 'lose' ? '#FFF5F5' : '#F0FFF4';
-  const borderColor = type === 'lose' ? '#FED7D7' : '#C6F6D5';
-  const accent = type === 'lose' ? '#E53E3E' : '#38A169';
+  void type;
   return (
-    <div style={{ border: `1px solid ${borderColor}`, borderRadius: 12, overflow: "hidden", background: bg, boxShadow: "0px 2px 8px rgba(34,36,40,0.06)" }}>
-      <div style={{ padding: "14px 20px", display: "flex", alignItems: "center", gap: 8, borderBottom: `1px solid ${borderColor}` }}>
-        <span style={{ fontSize: 14, fontWeight: 700, color: accent }}>{type === 'lose' ? '▼' : '▲'} {title}</span>
+    <div style={{ borderRadius: 12, overflow: "hidden", background: "#fff", boxShadow: "0px 2px 8px rgba(34,36,40,0.08)" }}>
+      <div style={{ padding: "14px 20px", display: "flex", alignItems: "center", gap: 8, background: "#F1F2F5", borderBottom: "1px solid #E8E9EE" }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: "#222428", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>{title}</span>
       </div>
       <div style={{ padding: "8px 20px 16px", display: "flex", flexDirection: "column", gap: 0 }}>
         {items.map((item, i) => (
@@ -870,8 +868,8 @@ function buildFlow3(cutId: string, addId: string): MessageContent {
   }
 
   const cards: React.ReactNode[] = [
-    <ImpactCard key="lose" title={`Cutting: ${shortTitle(cutItem.title, 30)}`} type="lose" items={loseItems} />,
-    <ImpactCard key="gain" title={`Adding: ${shortTitle(addItem.title, 30)}`} type="gain" items={gainItems} />,
+    <ImpactCard key="lose" title={cutItem.title} type="lose" items={loseItems} />,
+    <ImpactCard key="gain" title={addItem.title} type="gain" items={gainItems} />,
   ];
 
   const netDiff = addItem.estRevenue - cutItem.estRevenue;
@@ -1081,14 +1079,14 @@ function buildOverviewReprioritizeFlow(cardId: string): MessageContent {
   const cards: React.ReactNode[] = [
     <ImpactCard
       key="gain"
-      title={`Signal: ${shortTitle(data.title, 35)}`}
+      title={data.title}
       type="gain"
       items={gainItems}
     />,
     potentialCut ? (
       <ImpactCard
         key="lose"
-        title={`Could slip: ${shortTitle(potentialCut.title, 35)}`}
+        title={potentialCut.title}
         type="lose"
         items={loseItems}
       />
