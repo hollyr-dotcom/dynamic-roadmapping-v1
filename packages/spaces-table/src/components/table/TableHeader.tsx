@@ -1,5 +1,4 @@
 import type { FieldDefinition } from '@spaces/shared'
-import { IconSortDescending } from '@mirohq/design-system'
 
 const STICKY_TOP = 64
 const GAP_COVER = '0 -12px 0 0 white'
@@ -21,7 +20,7 @@ export function TableHeader({ fields, className }: TableHeaderProps) {
         {fields.map((field) => (
           <th
             key={field.id}
-            className="text-left font-body font-semibold text-[#656B81] h-14 sticky z-10 bg-white"
+            className="text-left font-body font-semibold text-[#222428] h-14 sticky z-10 bg-white"
             style={{
               top: STICKY_TOP,
               boxShadow: GAP_COVER,
@@ -32,9 +31,7 @@ export function TableHeader({ fields, className }: TableHeaderProps) {
               paddingRight: '20px',
             }}
           >
-            <span className="inline-flex items-center truncate" style={{ gap: field.type === 'priority' ? 4 : undefined }}>
-              {/* @ts-expect-error -- MDS icon style prop */}
-              {field.type === 'priority' && <IconSortDescending size="small" style={{ color: '#7D8297', flexShrink: 0 }} />}
+            <span className="inline-flex items-center truncate">
               {field.label}
             </span>
           </th>
