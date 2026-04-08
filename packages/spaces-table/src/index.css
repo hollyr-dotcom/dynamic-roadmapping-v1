@@ -95,14 +95,17 @@ tbody tr:last-child td { border-bottom-color: transparent; }
 .row-number  { display: flex; color: #AEB2C0; }
 .row-dots    { display: none; }
 .row-comment { display: flex; visibility: hidden; pointer-events: none; }
+.row-menu    { display: flex; visibility: hidden; pointer-events: none; }
 
 tbody tr:hover .row-number             { display: none; }
 tbody tr:hover .row-dots               { display: flex; }
 tbody tr:hover .row-comment            { visibility: visible; pointer-events: auto; }
+tbody tr:hover .row-menu               { visibility: visible; pointer-events: auto; }
 
 tbody tr.row-menu-open .row-number       { display: none; }
 tbody tr.row-menu-open .row-dots         { display: flex; }
 tbody tr.row-menu-open .row-comment      { visibility: visible; pointer-events: auto; }
+tbody tr.row-menu-open .row-menu         { visibility: visible; pointer-events: auto; }
 
 /* ── Floating drag handle ────────────────────────────── */
 .row-drag-handle {

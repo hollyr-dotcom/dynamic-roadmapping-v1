@@ -14,10 +14,13 @@ export function TableHeader({ fields, className }: TableHeaderProps) {
     <thead className={className}>
       <tr>
         <th
-          className="pl-14 w-0 sticky z-10 bg-white"
-          style={{ top: STICKY_TOP, boxShadow: GAP_COVER }}
-          aria-hidden="true"
-        />
+          className="pl-14 sticky z-20 h-14 bg-white"
+          style={{ top: STICKY_TOP, boxShadow: `${GAP_COVER}, -56px 0 0 0 white` }}
+        >
+          <div className="flex items-center ml-2" style={{ width: 32, justifyContent: 'center' }}>
+            <span className="font-body font-semibold text-[#656B81] invisible" style={{ fontSize: '14px' }}>#</span>
+          </div>
+        </th>
         {fields.map((field) => (
           <th
             key={field.id}

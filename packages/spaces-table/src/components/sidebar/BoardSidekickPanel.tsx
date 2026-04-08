@@ -145,7 +145,7 @@ function CardThumbnail({ selected }: { selected?: boolean } = {}) {
 }
 
 /* ─── Input area ─── */
-function PanelInput({ onSend, showThumbnail, placeholder = "Ask for changes" }: { onSend: (text: string) => void; showThumbnail?: boolean; placeholder?: string }) {
+function PanelInput({ onSend, showThumbnail, placeholder = "What are you working on?" }: { onSend: (text: string) => void; showThumbnail?: boolean; placeholder?: string }) {
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -399,7 +399,7 @@ function PanelBody({ onWritePRD, isGenerating, isComplete, onViewDoc, onAddToBoa
               Hey Mike
             </p>
             <p style={{ margin: 0, fontSize: 14, color: "#222428", lineHeight: 1.5, opacity: 0, animation: "item-enter 0.35s cubic-bezier(0.16,1,0.3,1) 450ms forwards" }}>
-              I can help you explore this item.
+              Let's work together on this.
             </p>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -486,7 +486,7 @@ export default function BoardSidekickPanel({ onClose, onWritePRD, isGenerating, 
           <WorkingIndicator />
         </div>
       )}
-      <PanelInput onSend={() => {}} showThumbnail={!isGenerating && !isComplete} placeholder={docAdded ? "What's next?" : "Ask for changes"} />
+      <PanelInput onSend={() => {}} showThumbnail={!isGenerating && !isComplete} placeholder={docAdded ? "What's next?" : "What are you working on?"} />
     </div>
   );
 }
