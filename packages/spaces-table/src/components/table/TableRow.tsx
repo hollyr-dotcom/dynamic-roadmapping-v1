@@ -1,7 +1,7 @@
 
 import { useState } from 'react'
 import type { FieldDefinition, SpaceRow } from '@spaces/shared'
-import { IconDotsSixVertical, IconDotsThreeVertical, IconButton, IconChatPlus, IconCursor, DropdownMenu, IconSquaresTwoOverlap, IconTrash, IconArrowsOutSimple, IconRocket, IconChatLinesTwo, IconPlus, IconLink, Popover, IconInsights } from '@mirohq/design-system'
+import { IconDotsSixVertical, IconDotsThreeVertical, IconButton, IconChatPlus, IconCursor, DropdownMenu, IconSquaresTwoOverlap, IconTrash, IconArrowsOutSimple, IconRocket, IconChatLinesTwo, IconPlus, IconLink, Popover, Tooltip, IconInsights } from '@mirohq/design-system'
 
 function IconAddLineTop() {
   return (
@@ -68,40 +68,64 @@ export function TableRow({ row, idx, fields, onRowClick, onCompanyClick, isUpdat
           <span style={{ position: 'absolute', left: 28, top: '50%', transform: 'translateY(-50%)', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4262FF', zIndex: 1 }} />
         )}
         <div className="flex items-center w-full gap-0.5 ml-2">
-          {/* Row number / three-dots menu — swap in the same slot */}
+          {/* Row number / open-in-side-panel — swap in the same slot */}
           <div className="relative w-8 h-8 shrink-0">
             <div className="row-number w-8 h-8 flex items-center justify-center">
               {idx + 1}
             </div>
             <div className="row-dots absolute inset-0 flex items-center justify-center">
-              <DropdownMenu onOpen={() => setIsMenuOpen(true)} onClose={() => setIsMenuOpen(false)}>
-                <DropdownMenu.Trigger asChild>
+              <Tooltip>
+                <Tooltip.Trigger asChild>
                   <IconButton
-                    aria-label="Row options"
+                    aria-label="Open in side panel"
                     variant="ghost"
                     size="medium"
-                    css={isMenuOpen
-                      ? { borderRadius: 8, background: '#E6E6E6', color: '#656B81', '&:hover': { background: '#E6E6E6' } }
-                      : { borderRadius: 8, color: '#7D8297', '&:hover': { background: '#E9EAEF' } }
-                    }
+                    onPress={() => onRowClick?.(row)}
+                    css={{ borderRadius: 8, color: '#7D8297', '&:hover': { background: '#E9EAEF' } }}
                   >
-                    <IconDotsThreeVertical />
+                    <IconArrowsOutSimple />
                   </IconButton>
-                </DropdownMenu.Trigger>
+                </Tooltip.Trigger>
+                <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4} css={{ zIndex: 9999 }}>Open in side panel</Tooltip.Content></Tooltip.Portal>
+              </Tooltip>
+            </div>
+          </div>
+
+          {/* Comment button — hover only */}
+          <Tooltip>
+            <Tooltip.Trigger asChild>
+              <button
+                className="row-comment flex w-8 h-8 items-center justify-center rounded-lg hover:bg-[#E9EAEF] transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <IconChatPlus size="small" color="icon-neutrals-subtle" />
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4} css={{ zIndex: 9999 }}>Add comment</Tooltip.Content></Tooltip.Portal>
+          </Tooltip>
+
+          {/* Three-dots menu — hover only */}
+          <div className="row-menu flex items-center justify-center">
+            <DropdownMenu onOpen={() => setIsMenuOpen(true)} onClose={() => setIsMenuOpen(false)}>
+              <Tooltip>
+                <Tooltip.Trigger asChild>
+                  <DropdownMenu.Trigger asChild>
+                    <IconButton
+                      aria-label="More options"
+                      variant="ghost"
+                      size="medium"
+                      css={isMenuOpen
+                        ? { borderRadius: 8, background: '#E6E6E6', color: '#656B81', '&:hover': { background: '#E6E6E6' } }
+                        : { borderRadius: 8, color: '#7D8297', '&:hover': { background: '#E9EAEF' } }
+                      }
+                    >
+                      <IconDotsThreeVertical />
+                    </IconButton>
+                  </DropdownMenu.Trigger>
+                </Tooltip.Trigger>
+                <Tooltip.Portal><Tooltip.Content side="top" sideOffset={4} css={{ zIndex: 9999 }}>More options</Tooltip.Content></Tooltip.Portal>
+              </Tooltip>
                 <DropdownMenu.Content side="bottom" align="start" alignOffset={-12} css={{ minWidth: MENU_WIDTH }}>
-                  <DropdownMenu.Item onSelect={() => onRowClick?.(row)}>
-                    <DropdownMenu.IconSlot><IconArrowsOutSimple /></DropdownMenu.IconSlot>
-                    Open in side panel
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item>
-                    <DropdownMenu.IconSlot><IconChatLinesTwo /></DropdownMenu.IconSlot>
-                    View comments
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item>
-                    <DropdownMenu.IconSlot><IconLink /></DropdownMenu.IconSlot>
-                    Copy link
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Separator />
                   <DropdownMenu.Item onSelect={() => onAddToBoard?.(row.id)}>
                     <DropdownMenu.IconSlot><IconCursor /></DropdownMenu.IconSlot>
                     Work on this
@@ -112,6 +136,10 @@ export function TableRow({ row, idx, fields, onRowClick, onCompanyClick, isUpdat
                       Move to roadmap
                     </DropdownMenu.Item>
                   )}
+                  <DropdownMenu.Item>
+                    <DropdownMenu.IconSlot><IconLink /></DropdownMenu.IconSlot>
+                    Copy link
+                  </DropdownMenu.Item>
                   <DropdownMenu.Separator />
                   <DropdownMenu.Sub>
                     <DropdownMenu.SubTrigger>
@@ -144,16 +172,7 @@ export function TableRow({ row, idx, fields, onRowClick, onCompanyClick, isUpdat
                   </DropdownMenu.Item>
                 </DropdownMenu.Content>
               </DropdownMenu>
-            </div>
           </div>
-
-          {/* Comment button — hover only */}
-          <button
-            className="row-comment flex w-8 h-8 items-center justify-center rounded-lg hover:bg-[#E9EAEF] transition-colors"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <IconChatPlus size="small" color="icon-neutrals-subtle" />
-          </button>
         </div>
       </td>
 
