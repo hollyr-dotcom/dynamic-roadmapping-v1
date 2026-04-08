@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import type { SpaceRow } from '@spaces/shared'
 import { companyARR } from '@spaces/shared'
-import { Button, IconButton, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard, IconEyeOpen, IconInsightsSearch } from '@mirohq/design-system'
+import { Button, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard, IconEyeOpen, IconInsightsSearch, IconInformationMarkCircle } from '@mirohq/design-system'
 import {
   IconChartLine,
   IconChartProgress,
@@ -15,8 +15,7 @@ import {
   IconCross,
   IconPlus,
   IconTimelineFormat,
-  IconChevronLeft,
-  IconChevronRight,
+  IconRocket,
 } from '@mirohq/design-system'
 
 const TAG_BG: Record<string, string> = {
@@ -118,7 +117,7 @@ companyARR['ov4'] = [
   { company: 'Spotify', arr: 175, contacts: 4  },
 ]
 
-type CardIcon = 'chart-line' | 'chart-progress' | 'sparks' | 'lightning' | 'chat' | 'timeline' | 'insights-search'
+type CardIcon = 'chart-line' | 'chart-progress' | 'sparks' | 'lightning' | 'chat' | 'timeline' | 'insights-search' | 'rocket' | 'three-columns'
 
 type MatchTag = 'Growing evidence' | 'Fading evidence' | 'New evidence' | 'Missing in roadmap' | 'Weak evidence'
 
@@ -153,7 +152,7 @@ export const CARDS: {
   },
   {
     id: '2',
-    icon: 'timeline',
+    icon: 'rocket',
     tags: ['Customer'],
     matchTag: 'Missing in roadmap',
     title: 'Fix paste and CSV import fidelity — especially the 5-row truncation bug',
@@ -174,7 +173,7 @@ export const CARDS: {
   },
   {
     id: '4',
-    icon: 'insights-search',
+    icon: 'three-columns',
     tags: ['Customer'],
     matchTag: 'Weak evidence',
     title: 'Rein in AI table creation — make it suggestion-only with preview and opt-in controls',
@@ -193,20 +192,122 @@ function CardIcon({ type }: { type: CardIcon }) {
   if (type === 'chat') return <IconChatTwo {...props} />
   if (type === 'timeline') return <IconTimelineFormat {...props} />
   if (type === 'insights-search') return <IconInsightsSearch {...props} />
+  if (type === 'rocket') return <IconRocket {...props} />
+  if (type === 'three-columns') return <IconThreeColumnsVertical />
   return null
 }
 
 const CARD_W = 500
 const CARD_GAP = 28
 
-export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onBgColorChange }: { onDiveDeeper?: (cardId: string) => void; onAddToRoadmap?: (cardId: string) => void; onReprioritize?: (cardId: string) => void; onBgColorChange?: (color: string) => void }) {
+
+export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onBgColorChange, bgRef }: { onDiveDeeper?: (cardId: string) => void; onAddToRoadmap?: (cardId: string) => void; onReprioritize?: (cardId: string) => void; onBgColorChange?: (color: string) => void; bgRef?: React.RefObject<HTMLElement> }) {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
   const [activeIndex, setActiveIndex] = useState(0)
+  const trackRef = useRef<HTMLDivElement>(null)
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
+
+  // Refs to animated DOM nodes — updated every render, read in scroll handler without stale closure
+  const iconWrapperRefs = useRef<(HTMLDivElement | null)[]>([])
+  const iconRefs = useRef<(HTMLDivElement | null)[]>([])
+  const expandRefs = useRef<(HTMLDivElement | null)[]>([])
+  const titleRefs = useRef<(HTMLHeadingElement | null)[]>([])
+  const descRefs = useRef<(HTMLParagraphElement | null)[]>([])
+  const tagsRefs = useRef<(HTMLDivElement | null)[]>([])
+  const actionsRefs = useRef<(HTMLDivElement | null)[]>([])
+  const closeRefs = useRef<(HTMLDivElement | null)[]>([])
+  // Keep card count + card list current synchronously so the scroll handler never reads stale data
+  const visibleCardsLenRef = useRef(0)
+  const visibleCardsRef = useRef<typeof CARDS>([])
 
   const visibleCards = CARDS.filter((card) => !dismissed.has(card.id))
   const safeIndex = Math.min(activeIndex, Math.max(0, visibleCards.length - 1))
 
-  const goTo = (idx: number) => setActiveIndex(Math.max(0, Math.min(idx, visibleCards.length - 1)))
+  // Update synchronously during render (before effects/handlers can fire)
+  visibleCardsLenRef.current = visibleCards.length
+  visibleCardsRef.current = visibleCards
+
+  const goTo = useCallback((idx: number) => {
+    const clamped = Math.max(0, Math.min(idx, visibleCards.length - 1))
+    setActiveIndex(clamped)
+    if (trackRef.current) {
+      trackRef.current.scrollTo({ left: clamped * (CARD_W + CARD_GAP), behavior: 'smooth' })
+    }
+  }, [visibleCards.length])
+
+  // Stable function — only reads refs, never stale
+  const applyProgress = useCallback((sl: number) => {
+    const offset = sl / (CARD_W + CARD_GAP)
+    const len = visibleCardsLenRef.current
+    for (let i = 0; i < len; i++) {
+      const progress = Math.max(0, 1 - Math.abs(offset - i))
+      if (cardRefs.current[i]) cardRefs.current[i]!.style.alignSelf = progress >= 0.5 ? 'flex-start' : 'center'
+      if (iconWrapperRefs.current[i]) iconWrapperRefs.current[i]!.style.gridTemplateRows = `${progress}fr`
+      if (iconRefs.current[i]) iconRefs.current[i]!.style.opacity = `${Math.max(0, (progress - 0.4) / 0.6)}`
+      if (expandRefs.current[i]) expandRefs.current[i]!.style.gridTemplateRows = `${progress}fr`
+      if (titleRefs.current[i]) {
+        titleRefs.current[i]!.style.fontSize = `${17 + 11 * progress}px`
+        titleRefs.current[i]!.style.fontWeight = progress > 0.5 ? '400' : '600'
+      }
+      if (descRefs.current[i]) descRefs.current[i]!.style.opacity = `${Math.max(0, (progress - 0.4) / 0.6)}`
+      if (tagsRefs.current[i]) tagsRefs.current[i]!.style.opacity = `${Math.max(0, (progress - 0.6) / 0.4)}`
+      if (actionsRefs.current[i]) actionsRefs.current[i]!.style.opacity = `${Math.max(0, (progress - 0.75) / 0.25)}`
+      if (closeRefs.current[i]) {
+        const closeOpacity = Math.max(0, (progress - 0.75) / 0.25)
+        closeRefs.current[i]!.style.opacity = `${closeOpacity}`
+        closeRefs.current[i]!.style.pointerEvents = closeOpacity > 0 ? 'auto' : 'none'
+      }
+    }
+
+    // Gradient background: pan a linear-gradient between adjacent card colors as the user scrolls.
+    // background-size: 200% makes the gradient twice the viewport width; background-position
+    // shifts it left-to-right so at t=0 the viewport sits on the colorA half, at t=1 on colorB.
+    if (bgRef?.current) {
+      const cards = visibleCardsRef.current
+      const leftIdx = Math.max(0, Math.min(Math.floor(offset), cards.length - 1))
+      const rightIdx = Math.min(leftIdx + 1, cards.length - 1)
+      const t = Math.max(0, Math.min(1, offset - leftIdx))
+      const fallback = '#F2F4FC'
+      const colorA = cards[leftIdx] ? MATCH_TAG_STYLE[cards[leftIdx].matchTag].bg : fallback
+      const colorB = cards[rightIdx] ? MATCH_TAG_STYLE[cards[rightIdx].matchTag].bg : colorA
+      // 4-stop gradient: solid colorA | blend zone | solid colorB, each taking 1/3 of
+      // a 300%-wide background. background-position pans it so t=0 lands on solid colorA
+      // and t=1 lands on solid colorB, with the gradient zone crossing the viewport mid-scroll.
+      bgRef.current.style.backgroundImage = `linear-gradient(to right, ${colorA} 0%, ${colorA} 33%, ${colorB} 67%, ${colorB} 100%)`
+      bgRef.current.style.backgroundSize = '300% 100%'
+      bgRef.current.style.backgroundPosition = `${t * 100}% center`
+    }
+  }, [bgRef])
+
+  // After every React render, re-apply scroll-driven styles before paint.
+  // This prevents the JSX initial values (set by goTo's setActiveIndex) from
+  // flashing for one frame — useLayoutEffect runs synchronously before the browser paints.
+  useLayoutEffect(() => {
+    if (trackRef.current) applyProgress(trackRef.current.scrollLeft)
+  })
+
+  // Attach scroll listeners
+  useEffect(() => {
+    const track = trackRef.current
+    if (!track) return
+
+    const onScroll = () => applyProgress(track.scrollLeft)
+    const onScrollEnd = () => {
+      applyProgress(track.scrollLeft)
+      const idx = Math.round(track.scrollLeft / (CARD_W + CARD_GAP))
+      setActiveIndex(prev => {
+        const next = Math.max(0, Math.min(idx, visibleCardsLenRef.current - 1))
+        return prev === next ? prev : next
+      })
+    }
+
+    track.addEventListener('scroll', onScroll, { passive: true })
+    track.addEventListener('scrollend', onScrollEnd)
+    return () => {
+      track.removeEventListener('scroll', onScroll)
+      track.removeEventListener('scrollend', onScrollEnd)
+    }
+  }, [applyProgress])
 
   // Notify parent of active card's chip color whenever it changes
   const activeCard = visibleCards[safeIndex]
@@ -264,17 +365,34 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onB
               </Chip>
             </div>
 
-                  {/* Close button — active card only */}
-                  {isActive && (
-                    <div className="absolute top-5 right-5">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setDismissed(prev => new Set(prev).add(card.id)); goTo(Math.min(safeIndex, visibleCards.length - 2)) }}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+                  {/* Close button — fades in with the card via applyProgress */}
+                  <div
+                    ref={el => { closeRefs.current[idx] = el }}
+                    className="absolute top-5 right-5"
+                    style={{ opacity: isActive ? 1 : 0, pointerEvents: isActive ? 'auto' : 'none' }}
+                  >
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDismissed(prev => new Set(prev).add(card.id)); goTo(Math.min(safeIndex, visibleCards.length - 2)) }}
+                      className="w-7 h-7 flex items-center justify-center rounded-lg text-[#656B81] hover:bg-[#F1F2F5] transition-colors"
+                    >
+                      <IconCross size="small" />
+                    </button>
+                  </div>
+
+                  {/* Card icon — collapses to 0 height when inactive, no layout impact */}
+                  <div
+                    ref={el => { iconWrapperRefs.current[idx] = el }}
+                    style={{ display: 'grid', gridTemplateRows: isActive ? '1fr' : '0fr' }}
+                  >
+                    <div style={{ overflow: 'hidden' }}>
+                      <div
+                        ref={el => { iconRefs.current[idx] = el }}
+                        style={{ color: '#3C3F4A', paddingBottom: 4, opacity: isActive ? 1 : 0 }}
                       >
-                        <IconCross size="small" />
-                      </button>
+                        <CardIcon type={card.icon} />
+                      </div>
                     </div>
-                  )}
+                  </div>
 
           {/* Hover-reveal actions */}
           <div className="absolute bottom-7 left-7 flex items-center gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-[transform,opacity] duration-300 ease-out">
