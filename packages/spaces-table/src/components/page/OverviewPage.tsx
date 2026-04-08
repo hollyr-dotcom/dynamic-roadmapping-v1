@@ -241,7 +241,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onB
     const len = visibleCardsLenRef.current
     for (let i = 0; i < len; i++) {
       const progress = Math.max(0, 1 - Math.abs(offset - i))
-      if (cardRefs.current[i]) cardRefs.current[i]!.style.alignSelf = progress >= 0.5 ? 'flex-start' : 'center'
+      if (cardRefs.current[i]) cardRefs.current[i]!.style.alignSelf = 'center'
       if (iconWrapperRefs.current[i]) iconWrapperRefs.current[i]!.style.gridTemplateRows = `${progress}fr`
       if (iconRefs.current[i]) iconRefs.current[i]!.style.opacity = `${Math.max(0, (progress - 0.4) / 0.6)}`
       if (expandRefs.current[i]) expandRefs.current[i]!.style.gridTemplateRows = `${progress}fr`
@@ -315,7 +315,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onB
   useEffect(() => { onBgColorChange?.(activeBg) }, [activeBg, onBgColorChange])
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full select-none py-10">
+    <div className="flex flex-col items-center w-full h-full select-none py-10">
 
       {/* Carousel viewport */}
       <div className="relative w-full" style={{ minHeight: 340, overflow: 'clip', overflowClipMargin: '40px' }}>
@@ -472,7 +472,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onB
 
       {/* Dot indicators */}
       {visibleCards.length > 1 && (
-        <div className="flex items-center gap-[7px] mt-6">
+        <div className="flex items-center gap-[7px] mt-4">
           {visibleCards.map((_, idx) => (
             <button
               key={idx}
