@@ -491,22 +491,23 @@ export function App() {
             showShareTooltip={showShareTooltip}
           />
         </div>
-        {/* Scroll area — database title scrolls away, tabs stick under header */}
-        <div ref={scrollRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-y-auto overflow-x-auto page-scroll flex flex-col${pageTransitioning ? ' page-transitioning-out' : ''}`}>
-          <div className="sticky left-0 z-[9999]" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
-            <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} centered={activePage === 'overview'} />
-          </div>
+        {/* Database title — outside scroll container so its dropdown isn't clipped by overflow-x-hidden */}
+        <div className="sticky left-0 z-[9999]" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
+          <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} centered={activePage === 'overview'} />
+        </div>
+        {/* Scroll area — vertical + horizontal, table header sticks below toolbar */}
+        <div ref={scrollRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden page-scroll flex flex-col${pageTransitioning ? ' page-transitioning-out' : ''}`} style={{ paddingRight: (activePage === 'overview' && isRightOpen) ? 400 : 0, transition: 'padding-right 0.45s cubic-bezier(0.16,1,0.3,1)' }}>
           {activePage !== 'overview' && (
             <div className={`sticky top-0 left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
               <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} />
             </div>
           )}
 
-          {activePage === 'overview' && <OverviewPage onDiveDeeper={(cardId) => { setOverviewCardId(cardId); setSelectedRow(OVERVIEW_ROWS[cardId] ?? backlogData[0]); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onAddToRoadmap={(cardId) => { const row = OVERVIEW_ROWS[cardId]; if (row) { setMovedRow(row); setRoadmapItems(prev => [...prev, { ...row, id: `r-ov-${cardId}`, status: 'planning', priority: 'next' }]); setShowMoveSnackbar(true) } }} onReprioritize={() => { setActivePage('backlog'); setDatabaseTitle('Backlog'); setActiveTab('prioritization') }} />}
+          {activePage === 'overview' && <OverviewPage onDiveDeeper={(cardId) => { const row = OVERVIEW_ROWS[cardId]; if (row) { setSidekickFocusItemId(row.id); setActiveSidebar('ai-sidekick') } }} onAddToRoadmap={(cardId) => { const row = OVERVIEW_ROWS[cardId]; if (row) { setMovedRow(row); setRoadmapItems(prev => [...prev, { ...row, id: `r-ov-${cardId}`, status: 'planning', priority: 'next' }]); setShowMoveSnackbar(true) } }} onReprioritize={() => { setActivePage('backlog'); setDatabaseTitle('Backlog'); setActiveTab('prioritization') }} />}
 
           {/* Type-based view renderer */}
           {activePage !== 'overview' && activeTabConfig?.type === 'table' && (
-              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} />
+              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onOpenSidekick={(row) => { setSidekickFocusItemId(row.id); setActiveSidebar('ai-sidekick') }} />
           )}
           {activeTabConfig?.type === 'kanban' && (
             <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onCardSelectedChange={setKanbanCardSelected} />
@@ -540,26 +541,6 @@ export function App() {
         )}
       </div>
 
-      {/* AI Sidekick — rendered outside the sliding sidebar to avoid white flash on exit */}
-      <div
-        className="fixed z-[10000] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-        style={{
-          top: 56,
-          right: 8,
-          bottom: 8,
-          opacity: activeSidebar === 'ai-sidekick' ? 1 : 0,
-          transform: activeSidebar === 'ai-sidekick' ? 'translateX(0)' : 'translateX(16px)',
-          pointerEvents: activeSidebar === 'ai-sidekick' ? 'auto' : 'none',
-        }}
-      >
-        <div
-          className="rounded-xl overflow-hidden h-full"
-          style={{ width: 400, boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)', background: '#fff' }}
-        >
-          <AiPanelSolutionReview onClose={closeSidebar} activePage={activePage} focusItemId={sidekickFocusItemId} />
-        </div>
-      </div>
-
       {/* Right sidebar backdrop — suppressed on overview page and during ghost bar placement */}
       {isRightOpen && !ghostRowId && activePage !== 'overview' && activeSidebar !== 'ai-sidekick' && (
         <div
@@ -572,9 +553,8 @@ export function App() {
       <div
         className="fixed top-0 right-0 h-full z-50 transition-transform duration-[450ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{
-          width: activeSidebar === 'row-detail' ? (panelLayout === 'Fullscreen' ? window.innerWidth - 48 : panelLayout === 'Center' ? 720 + 48 : 460 + 24) : activeSidebar === 'ai-sidekick' ? 0 : 320,
-          transform: (isRightOpen && activeSidebar !== 'ai-sidekick' && !(activeSidebar === 'row-detail' && (panelLayout === 'Center' || panelLayout === 'Fullscreen'))) ? 'translateX(0)' : 'translateX(100%)',
-          pointerEvents: isRightOpen && activeSidebar !== 'ai-sidekick' ? 'auto' : 'none',
+          width: activeSidebar === 'row-detail' ? (panelLayout === 'Fullscreen' ? window.innerWidth - 48 : panelLayout === 'Center' ? 720 + 48 : 460 + 24) : activeSidebar === 'ai-sidekick' ? 420 + 36 : 320,
+          transform: (isRightOpen && !(activeSidebar === 'row-detail' && (panelLayout === 'Center' || panelLayout === 'Fullscreen'))) ? 'translateX(0)' : 'translateX(100%)',
         }}
       >
         {activeSidebar === 'row-detail' ? (
@@ -590,7 +570,14 @@ export function App() {
             </div>
           </div>
         ) : activeSidebar === 'ai-sidekick' ? (
-          <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }} />
+          <div style={{ position: 'absolute', top: 56, right: 8, bottom: 8, display: 'flex' }}>
+            <div
+              className="rounded-xl"
+              style={{ width: 400, boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)', background: '#fff' }}
+            >
+              <AiPanelSolutionReview onClose={closeSidebar} activePage={activePage} focusItemId={sidekickFocusItemId} />
+            </div>
+          </div>
         ) : (
           <SidebarShell side="right" onClose={closeSidebar} showClose={activeSidebar !== 'view-settings'} width={320}>
             {activeSidebar === 'view-settings' && <SidePanel onClose={closeSidebar} fields={pageFields} />}

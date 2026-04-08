@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
+  Button,
+  Checkbox,
+  DropdownMenu,
   IconButton,
   IconSquarePencil,
   IconClockCounterClockwise,
@@ -13,9 +16,17 @@ import {
   IconSparks,
   IconSparksFilled,
   IconInsights,
+  IconTable,
+  IconUsers,
+  IconChatLinesTwo,
+  IconArrowsDownUp,
+  IconBoard,
+  IconSquaresTwoOverlap,
+  IconEyeOpen,
 } from "@mirohq/design-system";
 import { roadmapData, sampleData, companyARR, customerQuotes, itemDependencies } from "@spaces/shared";
 import type { SpaceRow } from "@spaces/shared";
+import { OVERVIEW_ROWS } from "../page/OverviewPage";
 
 /* ─── Escher-style AI avatar (gradient circle + sparkle icon) ─── */
 function AgentAvatar({ size = 40 }: { size?: number }) {
@@ -75,6 +86,11 @@ function GradientSparks({ filled, size = "small" }: { filled?: boolean; size?: "
 
 /* ─── Panel Header ─── */
 function PanelHeader({ onClose }: { onClose?: () => void }) {
+  const handleClose = () => {
+    // Use onClose prop first, fall back to window global
+    const closeFn = onClose || (window as any).__closeAiPanel;
+    if (closeFn) closeFn();
+  };
   return (
     <div
       style={{
@@ -96,12 +112,12 @@ function PanelHeader({ onClose }: { onClose?: () => void }) {
           <span style={{ fontSize: 12, fontWeight: 600, color: "#222428" }}>AI Beta</span>
         </div>
       </div>
-      <div style={{ display: "flex", alignItems: "center", position: "relative", zIndex: 10 }}>
-        <IconButton aria-label="New chat" variant="ghost" size="medium" onPress={() => {}}><IconSquarePencil /></IconButton>
-        <IconButton aria-label="History" variant="ghost" size="medium" onPress={() => {}}><IconClockCounterClockwise /></IconButton>
-        <IconButton aria-label="Library" variant="ghost" size="medium" onPress={() => {}}><IconSquaresFour /></IconButton>
-        <IconButton aria-label="More" variant="ghost" size="medium" onPress={() => {}}><IconDotsThreeVertical /></IconButton>
-        <IconButton aria-label="Close" variant="ghost" size="medium" onPress={() => { onClose?.(); (window as any).__closeAiPanel?.(); }}><IconCross /></IconButton>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <IconButton aria-label="New chat" variant="ghost" size="medium"><IconSquarePencil /></IconButton>
+        <IconButton aria-label="History" variant="ghost" size="medium"><IconClockCounterClockwise /></IconButton>
+        <IconButton aria-label="Library" variant="ghost" size="medium"><IconSquaresFour /></IconButton>
+        <IconButton aria-label="More" variant="ghost" size="medium"><IconDotsThreeVertical /></IconButton>
+        <IconButton aria-label="Close" variant="ghost" size="medium" onPress={handleClose}><IconCross /></IconButton>
       </div>
     </div>
   );
@@ -130,11 +146,11 @@ function PromptPill({ label, onClick }: { label: string; onClick: () => void }) 
   );
 }
 
-/* ─── Checkbox option row ─── */
+/* ─── Checkbox option row (using Miro Checkbox) ─── */
 function CheckboxOption({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
+  const id = `cb-${label.replace(/\s+/g, '-').toLowerCase()}`;
   return (
     <div
-      onClick={() => onChange(!checked)}
       style={{
         display: "flex",
         alignItems: "center",
@@ -144,33 +160,19 @@ function CheckboxOption({ label, checked, onChange }: { label: string; checked: 
         background: checked ? "#E8ECFC" : "transparent",
         cursor: "pointer",
         transition: "background 150ms ease",
-        width: "100%",
-        boxSizing: "border-box",
       }}
+      onClick={() => onChange(!checked)}
     >
-      <div
-        style={{
-          width: 22,
-          height: 22,
-          borderRadius: 6,
-          border: checked ? "none" : "2px solid #c4c7d0",
-          background: checked ? "#3859FF" : "#fff",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-          transition: "all 150ms ease",
-        }}
-      >
-        {checked && (
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M3 7l3 3 5-5.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        )}
-      </div>
-      <span style={{ fontSize: 14, fontWeight: 400, color: "#222428", lineHeight: 1.4 }}>
+      <Checkbox
+        id={id}
+        checked={checked}
+        onChecked={() => onChange(true)}
+        onUnchecked={() => onChange(false)}
+        size="large"
+      />
+      <label htmlFor={id} style={{ fontSize: 14, fontWeight: 400, color: "#222428", lineHeight: 1.4, cursor: "pointer" }}>
         {label}
-      </span>
+      </label>
     </div>
   );
 }
@@ -287,30 +289,58 @@ function AnalysingIndicator({ steps }: { steps?: string[] }) {
   );
 }
 
-/* ─── AI Citation chip (mds-ai-citation style) ─── */
+/* ─── AI Citation chip with Miro DropdownMenu ─── */
 function CitationChip({ label }: { label?: string }) {
-  const [hovered, setHovered] = useState(false);
+  // Pick icon based on source
+  const getIcon = () => {
+    const l = (label || '').toLowerCase();
+    if (l.includes('customer') || l.includes('account') || l.includes('user')) return <IconUsers size="small" color="icon-secondary" />;
+    if (l.includes('feedback') || l.includes('quote') || l.includes('say')) return <IconChatLinesTwo size="small" color="icon-secondary" />;
+    if (l.includes('depend') || l.includes('block') || l.includes('risk')) return <IconArrowsDownUp size="small" color="icon-secondary" />;
+    if (l.includes('insight') || l.includes('research')) return <IconInsights size="small" color="icon-secondary" />;
+    return <IconTable size="small" color="icon-secondary" />;
+  };
+
   return (
-    <span
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 4,
-        padding: "2px 6px",
-        background: hovered ? "#DFE1E6" : "#E9EAEF",
-        borderRadius: 4,
-        cursor: "pointer",
-        verticalAlign: "middle",
-        marginLeft: 4,
-        transition: "background 150ms",
-        flexShrink: 0,
-        lineHeight: 1,
-      }}
-    >
-      <IconInsights size="small" color="icon-secondary" />
-      {label && <span style={{ fontSize: 12, fontWeight: 500, color: "#222428", whiteSpace: "nowrap" }}>{label}</span>}
+    <span style={{ display: "inline-flex", verticalAlign: "middle", marginLeft: 4 }}>
+      <DropdownMenu>
+        <DropdownMenu.Trigger asChild>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "2px 6px",
+              background: "#E9EAEF",
+              borderRadius: 4,
+              cursor: "pointer",
+              flexShrink: 0,
+              lineHeight: 1,
+            }}
+          >
+            {getIcon()}
+            {label && <span style={{ fontSize: 12, fontWeight: 500, color: "#222428", whiteSpace: "nowrap" }}>{label}</span>}
+          </span>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content side="bottom" align="start" sideOffset={4}>
+          <DropdownMenu.Item>
+            <DropdownMenu.IconSlot><IconBoard /></DropdownMenu.IconSlot>
+            Add to board
+          </DropdownMenu.Item>
+          <DropdownMenu.Item>
+            <DropdownMenu.IconSlot><IconSquaresTwoOverlap /></DropdownMenu.IconSlot>
+            Copy
+          </DropdownMenu.Item>
+          <DropdownMenu.Item>
+            <DropdownMenu.IconSlot><IconEyeOpen /></DropdownMenu.IconSlot>
+            View details
+          </DropdownMenu.Item>
+          <DropdownMenu.Item>
+            <DropdownMenu.IconSlot><IconInsights /></DropdownMenu.IconSlot>
+            Related evidence
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu>
     </span>
   );
 }
@@ -318,10 +348,9 @@ function CitationChip({ label }: { label?: string }) {
 /* ─── Evidence card (matches existing prototype card style) ─── */
 function EvidenceCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ borderRadius: 12, overflow: "hidden", background: "#fff", boxShadow: "0px 2px 8px rgba(34,36,40,0.08)" }}>
-      <div style={{ background: "#E8E0FF", display: "flex", alignItems: "center", gap: 8, padding: "14px 20px" }}>
-        <GradientSparks filled size="small" />
-        <span style={{ fontSize: 14, fontWeight: 700, color: "#3B2D7B", fontFamily: "var(--font-roobert)", fontFeatureSettings: "'ss01'" }}>{title}</span>
+    <div style={{ borderRadius: 12, overflow: "hidden", background: "#F7F8FA", border: "1px solid #E9EAEF" }}>
+      <div style={{ padding: "14px 20px", borderBottom: "1px solid #E9EAEF" }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>{title}</span>
       </div>
       <div style={{ padding: "4px 0" }}>
         {children}
@@ -370,74 +399,51 @@ function ImpactEstimates({ mentions, customers, revenue }: { mentions: number; c
   );
 }
 
-/* ─── Feedback card (matches existing prototype feedback cards) ─── */
-function FeedbackCard({ quote, role, type }: { quote: string; role: string; type: 'positive' | 'neutral' }) {
-  const bg = type === 'positive' ? '#F0FFF4' : '#F5F3FF';
-  const borderColor = type === 'positive' ? '#C6F6D5' : '#E8E0FF';
+/* ─── Feedback quote (inline text, no card) ─── */
+function FeedbackCard({ quote, role }: { quote: string; role: string; type?: 'positive' | 'neutral' }) {
   return (
-    <div style={{ background: bg, border: `1px solid ${borderColor}`, borderRadius: 12, padding: "16px 20px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-        <span style={{ fontSize: 16 }}>{type === 'positive' ? '♡' : '⚑'}</span>
-      </div>
-      <span style={{ fontSize: 13, color: "#222428", lineHeight: 1.6, display: "block" }}>
-        {quote}
-      </span>
-      <div style={{ fontSize: 12, color: "#7C3AED", fontWeight: 500, marginTop: 8 }}>{role}</div>
+    <div style={{ padding: "4px 0" }}>
+      <span style={{ fontSize: 14, fontStyle: "italic", color: "#222428", lineHeight: 1.6 }}>"{quote}"</span>
+      <div style={{ fontSize: 13, color: "#6f7489", marginTop: 4 }}>— {role}</div>
     </div>
   );
 }
 
-/* ─── Customer quote block (matches existing prototype quote style) ─── */
+/* ─── Customer quote (inline text, no card) ─── */
 function QuoteBlock({ company, quote, role }: { company: string; quote: string; role: string }) {
   return (
-    <div style={{ borderLeft: "3px solid #D4BBFF", padding: "12px 16px", background: "#FAFAFE", borderRadius: "0 8px 8px 0" }}>
-      <span style={{ fontSize: 13, fontStyle: "italic", color: "#222428", lineHeight: 1.6 }}>"{quote}"</span>
-      <div style={{ fontSize: 12, fontWeight: 600, color: "#7C3AED", marginTop: 6 }}>{company} — {role}</div>
+    <div style={{ padding: "4px 0" }}>
+      <span style={{ fontSize: 14, fontStyle: "italic", color: "#222428", lineHeight: 1.6 }}>"{quote}"</span>
+      <div style={{ fontSize: 13, color: "#6f7489", marginTop: 4 }}>— {company}, {role}</div>
     </div>
   );
 }
 
-/* ─── Dependency chain card ─── */
+/* ─── Dependency chain (inline bold text, no card) ─── */
 function DependencyCard({ dependencies }: { dependencies: { from: SpaceRow; to: SpaceRow; type: string }[] }) {
   return (
-    <div style={{ borderRadius: 12, background: "#fff", boxShadow: "0px 2px 8px rgba(34,36,40,0.08)", overflow: "hidden" }}>
-      <div style={{ background: "#FFF8F0", padding: "12px 20px", display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid #FFE8CC" }}>
-        <span style={{ fontSize: 14 }}>⚠️</span>
-        <span style={{ fontSize: 13, fontWeight: 700, color: "#9C4221" }}>Blocking dependencies</span>
-      </div>
-      <div style={{ padding: "8px 0" }}>
-        {dependencies.map((dep, i) => (
-          <div key={i} style={{ padding: "10px 20px", borderBottom: i < dependencies.length - 1 ? "1px solid #f1f2f5" : "none", display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#222428", lineHeight: 1.4 }}>{dep.from.title}</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, margin: "4px 0" }}>
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ flexShrink: 0 }}>
-                  <path d="M6 2v8M6 10l-2.5-2.5M6 10l2.5-2.5" stroke="#E53E3E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <span style={{ fontSize: 11, fontWeight: 600, color: "#E53E3E", textTransform: "uppercase", letterSpacing: "0.5px" }}>blocks</span>
-              </div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#222428", lineHeight: 1.4 }}>{dep.to.title}</div>
-            </div>
-          </div>
-        ))}
-      </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "4px 0" }}>
+      {dependencies.map((dep, i) => (
+        <div key={i} style={{ fontSize: 14, color: "#222428", lineHeight: 1.6 }}>
+          <span style={{ fontWeight: 700 }}>{dep.from.title}</span>
+          <span style={{ color: "#6f7489" }}> blocks </span>
+          <span style={{ fontWeight: 700 }}>{dep.to.title}</span>
+        </div>
+      ))}
     </div>
   );
 }
 
-/* ─── Impact card (gain/loss — matches prototype card styling) ─── */
-function ImpactCard({ title, type, items }: { title: string; type: 'lose' | 'gain'; items: { label: string; value: string }[] }) {
-  const bg = type === 'lose' ? '#FFF5F5' : '#F0FFF4';
-  const borderColor = type === 'lose' ? '#FED7D7' : '#C6F6D5';
-  const accent = type === 'lose' ? '#E53E3E' : '#38A169';
+/* ─── Impact card (grey card ONLY for number-heavy content) ─── */
+function ImpactCard({ title, items }: { title: string; type?: 'lose' | 'gain'; items: { label: string; value: string }[] }) {
   return (
-    <div style={{ border: `1px solid ${borderColor}`, borderRadius: 12, overflow: "hidden", background: bg, boxShadow: "0px 2px 8px rgba(34,36,40,0.06)" }}>
-      <div style={{ padding: "14px 20px", display: "flex", alignItems: "center", gap: 8, borderBottom: `1px solid ${borderColor}` }}>
-        <span style={{ fontSize: 14, fontWeight: 700, color: accent }}>{type === 'lose' ? '▼' : '▲'} {title}</span>
+    <div style={{ border: "1px solid #E9EAEF", borderRadius: 12, overflow: "hidden", background: "#F7F8FA" }}>
+      <div style={{ padding: "12px 20px", borderBottom: "1px solid #E9EAEF" }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>{title}</span>
       </div>
-      <div style={{ padding: "8px 20px 16px", display: "flex", flexDirection: "column", gap: 0 }}>
+      <div style={{ padding: "4px 0" }}>
         {items.map((item, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#222428", lineHeight: 1.5, padding: "8px 0", borderBottom: i < items.length - 1 ? "1px solid rgba(0,0,0,0.06)" : "none" }}>
+          <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#222428", lineHeight: 1.5, padding: "8px 20px", borderBottom: i < items.length - 1 ? "1px solid #E9EAEF" : "none" }}>
             <span>{item.label}</span>
             <span style={{ fontWeight: 700 }}>{item.value}</span>
           </div>
@@ -447,9 +453,9 @@ function ImpactCard({ title, type, items }: { title: string; type: 'lose' | 'gai
   );
 }
 
-/* ─── Helper: get item by ID from both tables ─── */
+/* ─── Helper: get item by ID from all tables ─── */
 function getItem(id: string): SpaceRow | undefined {
-  return roadmapData.find(r => r.id === id) || sampleData.find(r => r.id === id);
+  return roadmapData.find(r => r.id === id) || sampleData.find(r => r.id === id) || Object.values(OVERVIEW_ROWS).find(r => r.id === id);
 }
 
 /* ─── Helper: get Q2 items (priority: now, not done) ─── */
@@ -500,7 +506,7 @@ function buildFlow1Initial(): MessageContent {
   const formattedARR = totalARR >= 1000 ? `$${(totalARR / 1000).toFixed(1)}M` : `$${totalARR}K`;
 
   const cards: React.ReactNode[] = [
-    <div key="combined" style={{ borderRadius: 12, background: "#fff", boxShadow: "0px 2px 8px rgba(34,36,40,0.08)", overflow: "hidden" }}>
+    <div key="combined" style={{ borderRadius: 12, background: "#F7F8FA", border: "1px solid #E9EAEF", overflow: "hidden" }}>
       {/* Impact estimates */}
       <div style={{ padding: "16px 20px" }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#222428", marginBottom: 16 }}>Impact estimates</div>
@@ -525,9 +531,8 @@ function buildFlow1Initial(): MessageContent {
       </div>
       {/* Q2 items */}
       <div style={{ borderTop: "1px solid #F1F2F5" }}>
-        <div style={{ background: "#E8E0FF", display: "flex", alignItems: "center", gap: 8, padding: "12px 20px" }}>
-          <GradientSparks filled size="small" />
-          <span style={{ fontSize: 14, fontWeight: 700, color: "#3B2D7B" }}>Q2 Roadmap Coverage</span>
+        <div style={{ padding: "12px 20px", borderBottom: "1px solid #E9EAEF" }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>Q2 Roadmap Coverage</span>
         </div>
         {q2.map(item => (
           <EvidenceRow
@@ -627,7 +632,7 @@ function buildFlow1BacklogRanked(): MessageContent {
   const formattedARR = totalARR >= 1000 ? `$${(totalARR / 1000).toFixed(1)}M` : `$${totalARR}K`;
 
   const cards: React.ReactNode[] = [
-    <div key="backlog" style={{ borderRadius: 12, background: "#fff", boxShadow: "0px 2px 8px rgba(34,36,40,0.08)", overflow: "hidden" }}>
+    <div key="backlog" style={{ borderRadius: 12, background: "#F7F8FA", border: "1px solid #E9EAEF", overflow: "hidden" }}>
       <div style={{ padding: "16px 20px" }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#222428", marginBottom: 16 }}>Impact estimates</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px 16px" }}>
@@ -650,9 +655,8 @@ function buildFlow1BacklogRanked(): MessageContent {
         </div>
       </div>
       <div style={{ borderTop: "1px solid #F1F2F5" }}>
-        <div style={{ background: "#E8E0FF", display: "flex", alignItems: "center", gap: 8, padding: "12px 20px" }}>
-          <GradientSparks filled size="small" />
-          <span style={{ fontSize: 14, fontWeight: 700, color: "#3B2D7B" }}>Backlog by Revenue</span>
+        <div style={{ padding: "12px 20px", borderBottom: "1px solid #E9EAEF" }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>Backlog by Revenue</span>
         </div>
         {backlogOnly.slice(0, 6).map((item, i) => (
           <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "10px 20px", borderBottom: i < 5 ? "1px solid #f1f2f5" : "none" }}>
@@ -690,7 +694,7 @@ function buildFlow2(itemId: string): MessageContent {
 
   // Combined: Impact estimates + Top requesters in one block
   cards.push(
-    <div key="impact-block" style={{ borderRadius: 12, background: "#fff", boxShadow: "0px 2px 8px rgba(34,36,40,0.08)", overflow: "hidden" }}>
+    <div key="impact-block" style={{ borderRadius: 12, background: "#F7F8FA", border: "1px solid #E9EAEF", overflow: "hidden" }}>
       {/* Impact estimates 2x2 */}
       <div style={{ padding: "16px 20px" }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#222428", marginBottom: 16 }}>Impact estimates</div>
@@ -1189,33 +1193,54 @@ function PanelBody({ activePage, focusItemId }: { activePage?: string; focusItem
                 </span>
 
                 <span style={{ fontSize: 14, fontWeight: 400, color: "#222428", lineHeight: 1.5 }}>
-                  I scanned your Roadmap and Backlog. Here's what I found:
+                  {activePage === 'backlog'
+                    ? "I scanned your Backlog. Here's what I found:"
+                    : "I scanned your Roadmap and Backlog. Here's what I found:"}
                 </span>
 
-                {/* Suggested prompts — one per flow, short and crisp */}
+                {/* Suggested prompts — context-aware per page */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  <PromptPill
-                    label="Am I betting on the right things for Q2?"
-                    onClick={() => handlePillClick({ label: "Am I betting on the right things for Q2?", key: "flow1-initial" })}
-                  />
-                  <PromptPill
-                    label="Deep dive into my top roadmap item"
-                    onClick={() => {
-                      if (topItem) {
-                        const content = buildFlow2(topItem.id);
-                        addAiResponse(content, `Tell me about ${topItem.title}`);
-                      }
-                    }}
-                  />
-                  <PromptPill
-                    label="What happens if I swap a Q2 item?"
-                    onClick={() => {
-                      if (weakestQ2 && backlogTop) {
-                        const content = buildFlow3(weakestQ2.id, backlogTop.id);
-                        addAiResponse(content, `What if I cut ${weakestQ2.title} for ${backlogTop.title}?`);
-                      }
-                    }}
-                  />
+                  {activePage === 'backlog' ? (
+                    <>
+                      <PromptPill
+                        label="What should move to the roadmap?"
+                        onClick={() => handlePillClick({ label: "What should move to the roadmap?", key: "backlog-ranked" })}
+                      />
+                      <PromptPill
+                        label="Which items have the strongest signal?"
+                        onClick={() => handlePillClick({ label: "Which items have the strongest signal?", key: "flow1-initial" })}
+                      />
+                      <PromptPill
+                        label="Any items missing customer evidence?"
+                        onClick={() => handlePillClick({ label: "Any items missing customer evidence?", key: "no-evidence" })}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <PromptPill
+                        label="Am I betting on the right things for Q2?"
+                        onClick={() => handlePillClick({ label: "Am I betting on the right things for Q2?", key: "flow1-initial" })}
+                      />
+                      <PromptPill
+                        label="Deep dive into my top roadmap item"
+                        onClick={() => {
+                          if (topItem) {
+                            const content = buildFlow2(topItem.id);
+                            addAiResponse(content, `Tell me about ${topItem.title}`);
+                          }
+                        }}
+                      />
+                      <PromptPill
+                        label="What happens if I swap a Q2 item?"
+                        onClick={() => {
+                          if (weakestQ2 && backlogTop) {
+                            const content = buildFlow3(weakestQ2.id, backlogTop.id);
+                            addAiResponse(content, `What if I cut ${weakestQ2.title} for ${backlogTop.title}?`);
+                          }
+                        }}
+                      />
+                    </>
+                  )}
                 </div>
               </>
             );
@@ -1270,23 +1295,16 @@ function PanelBody({ activePage, focusItemId }: { activePage?: string; focusItem
                     </div>
                     {selectedFollowUp && (
                       <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
-                        <div
-                          onClick={() => {
+                        <Button
+                          size="medium"
+                          variant="primary"
+                          onPress={() => {
                             const pill = msg.pills!.find(p => p.key === selectedFollowUp);
                             if (pill) handlePillClick(pill);
                           }}
-                          style={{
-                            background: "#222428",
-                            color: "#fff",
-                            borderRadius: 8,
-                            padding: "8px 16px",
-                            fontSize: 14,
-                            fontWeight: 600,
-                            cursor: "pointer",
-                          }}
                         >
                           Go
-                        </div>
+                        </Button>
                       </div>
                     )}
                   </div>
