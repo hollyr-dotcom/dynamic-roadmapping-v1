@@ -169,7 +169,7 @@ function AiCursorIcon({ hovered }: { hovered: boolean }) {
 
   useEffect(() => {
     if (hovered) {
-      fillTimer.current = setTimeout(() => setFilled(true), 400)
+      fillTimer.current = setTimeout(() => setFilled(true), 300)
     } else {
       if (fillTimer.current) clearTimeout(fillTimer.current)
       setFilled(false)
@@ -190,24 +190,26 @@ function AiCursorIcon({ hovered }: { hovered: boolean }) {
       >
         <path d="M12.833 0.666672C12.833 2.04744 13.9523 3.16667 15.333 3.16667V4.16667C13.9523 4.16667 12.8331 5.28596 12.833 6.66667H11.833C11.8329 5.28596 10.7137 4.16667 9.33301 4.16667V3.16667C10.7137 3.16667 11.833 2.04744 11.833 0.666672H12.833Z" fill="#222428"/>
       </svg>
-      {/* Outline cursor — fades out when filled appears */}
+      {/* Outline cursor — shrinks on hover, fades when filled */}
       <svg
         width="16" height="16" viewBox="0 0 16 16" fill="none"
         style={{
           position: 'absolute', top: 0, left: 0,
           opacity: filled ? 0 : 1,
-          transition: 'opacity 200ms ease',
+          transform: hovered ? 'scale(0.85)' : 'scale(1)',
+          transition: 'opacity 150ms ease, transform 280ms cubic-bezier(0.16,1,0.3,1)',
         }}
       >
         <path d="M3.10789 15.0711L4.45762 15.454C6.11249 12.5535 9.272 10.7875 12.6096 10.8979L13.0083 9.49246L3.42524 2.54816L2.03027 3.32654L3.10789 15.0711ZM10.955 9.65027C8.35058 9.99694 5.95774 11.3272 4.28953 13.3558L3.45042 4.21263L10.955 9.65027Z" fill="#222428"/>
       </svg>
-      {/* Filled cursor — fades in after spark, fades out on mouse leave */}
+      {/* Filled cursor — bounces in after spark, fades out on mouse leave */}
       <svg
         width="16" height="16" viewBox="0 0 16 16" fill="none"
         style={{
           position: 'absolute', top: 0, left: 0,
           opacity: filled ? 1 : 0,
-          transition: 'opacity 200ms ease',
+          transition: filled ? 'none' : 'opacity 200ms ease',
+          animation: filled ? 'cursor-stamp 0.3s cubic-bezier(0.16,1,0.3,1) forwards' : 'none',
         }}
       >
         <path d="M3.10789 15.0711L4.45762 15.454C6.11249 12.5535 9.272 10.7875 12.6096 10.8979L13.0083 9.49246L3.42524 2.54816L2.03027 3.32654L3.10789 15.0711Z" fill="#222428"/>

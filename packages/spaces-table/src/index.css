@@ -262,10 +262,11 @@ tbody tr.row-menu-open td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
   80%  { transform: scale(1) rotate(360deg); }
   100% { transform: scale(1) rotate(360deg); }
 }
-/* Cursor stamp — clean fade in */
+/* Cursor stamp — fade in with scale bounce */
 @keyframes cursor-stamp {
-  0%   { opacity: 0; }
-  100% { opacity: 1; }
+  0%   { opacity: 0; transform: scale(1); }
+  50%  { opacity: 1; transform: scale(1.15); }
+  100% { opacity: 1; transform: scale(1); }
 }
 /* AI cursor gentle drift — very subtle */
 @keyframes cursor-drift {
