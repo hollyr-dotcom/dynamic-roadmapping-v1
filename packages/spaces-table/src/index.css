@@ -254,6 +254,42 @@ tbody tr.row-menu-open td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
   from { opacity: 1; transform: translateY(0); }
   to   { opacity: 0; transform: translateY(-8px); }
 }
+/* Cursor wavy drift — subtle human-like mouse movement */
+@keyframes cursor-wave-1 {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(0.8px, -0.6px); }
+  50% { transform: translate(-0.4px, 0.8px); }
+  75% { transform: translate(0.6px, 0.4px); }
+}
+@keyframes cursor-wave-2 {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-0.6px, 0.5px); }
+  45% { transform: translate(0.7px, -0.3px); }
+  70% { transform: translate(-0.3px, -0.7px); }
+  90% { transform: translate(0.5px, 0.6px); }
+}
+/* Rocket rumble — jittery propulsion feel */
+@keyframes rocket-rumble-ship {
+  0%, 100% { transform: translate(0, 0); }
+  15% { transform: translate(-0.25px, -0.35px); }
+  35% { transform: translate(0.3px, 0.2px); }
+  55% { transform: translate(-0.2px, 0.25px); }
+  75% { transform: translate(0.25px, -0.15px); }
+  90% { transform: translate(-0.15px, 0.3px); }
+}
+@keyframes rocket-rumble-flame {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(0.35px, 0.25px); }
+  40% { transform: translate(-0.25px, -0.3px); }
+  60% { transform: translate(0.2px, 0.35px); }
+  80% { transform: translate(-0.3px, -0.2px); }
+}
+@keyframes cursor-wave-3 {
+  0%, 100% { transform: translate(0, 0); }
+  30% { transform: translate(0.5px, 0.7px); }
+  60% { transform: translate(-0.7px, -0.4px); }
+  85% { transform: translate(0.4px, -0.6px); }
+}
 .prompt-pill:hover {
   border-color: #c2c5cf;
   background: #f9f9fb;

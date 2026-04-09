@@ -374,8 +374,8 @@ function SidekickInputBar({ onWorkOnCanvas, onMoveToRoadmap }: { onWorkOnCanvas?
             className="flex items-center gap-1.5 shrink-0"
             style={{
               border: '1px solid #e0e2e8',
-              borderRadius: 20,
-              padding: '6px 12px',
+              borderRadius: 8,
+              padding: '6px 10px 6px 8px',
               background: '#fff',
               fontSize: 13,
               fontWeight: 500,
@@ -434,7 +434,7 @@ function SidekickInputBar({ onWorkOnCanvas, onMoveToRoadmap }: { onWorkOnCanvas?
                     className="flex items-center"
                     style={{
                       border: '1px solid #e0e2e8',
-                      borderRadius: 20,
+                      borderRadius: 8,
                       padding: '5px 10px',
                       background: '#fff',
                       fontSize: 12,
