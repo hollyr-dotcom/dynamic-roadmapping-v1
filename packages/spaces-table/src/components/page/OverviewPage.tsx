@@ -3,12 +3,7 @@ import type { SpaceRow } from '@spaces/shared'
 import { companyARR } from '@spaces/shared'
 import { Button, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard, IconEyeOpen, IconInsightsSearch, IconInformationMarkCircle, IconTasks } from '@mirohq/design-system'
 import {
-  IconChartLine,
-  IconChartProgress,
-  IconSparks,
   IconSparksFilled,
-  IconLightning,
-  IconChatTwo,
   IconSmileyChat,
   IconGlobe,
   IconArrowDown,
@@ -16,7 +11,6 @@ import {
   IconCross,
   IconPlus,
   IconTimelineFormat,
-  IconRocket,
 } from '@mirohq/design-system'
 
 const TAG_BG: Record<string, string> = {
@@ -28,15 +22,6 @@ const TAG_BG: Record<string, string> = {
   Weakening: '#DEDAFF',
 }
 
-function IconThreeColumnsVertical() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2"  y="4" width="5" height="16" rx="1.5" fill="#3C3F4A" />
-      <rect x="9.5" y="4" width="5" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
-      <rect x="17" y="4" width="5" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  )
-}
 
 function GiftIcon() {
   return (
@@ -147,9 +132,16 @@ export const MATCH_TAG_STYLE: Record<MatchTag, { bg: string; text: string }> = {
   'Weak evidence':       { bg: '#FFF8D6', text: '#7F5F01' },
 }
 
+export const MATCH_TAG_EMOJI: Record<MatchTag, string> = {
+  'Growing evidence':   '📈',
+  'Fading evidence':    '📉',
+  'New evidence':       '✨',
+  'Missing in roadmap': '🗺️',
+  'Weak evidence':      '💭',
+}
+
 export const CARDS: {
   id: string
-  icon: CardIcon
   tags: string[]
   matchTag: MatchTag
   title: string
@@ -160,7 +152,6 @@ export const CARDS: {
 }[] = [
   {
     id: '1',
-    icon: 'chart-line',
     tags: ['Customer'],
     matchTag: 'Growing evidence',
     title: 'Accelerate large-table performance improvements — boards become unusable at ~100+ rows',
@@ -170,7 +161,6 @@ export const CARDS: {
   },
   {
     id: '2',
-    icon: 'rocket',
     tags: ['Customer'],
     matchTag: 'Missing in roadmap',
     title: 'Fix paste and CSV import fidelity — especially the 5-row truncation bug',
@@ -181,7 +171,6 @@ export const CARDS: {
   },
   {
     id: '3',
-    icon: 'chart-line',
     tags: ['Customer'],
     matchTag: 'Growing evidence',
     title: 'Add rich text editing inside table cells (bullets, bold, links)',
@@ -191,7 +180,6 @@ export const CARDS: {
   },
   {
     id: '4',
-    icon: 'three-columns',
     tags: ['Customer'],
     matchTag: 'Weak evidence',
     title: 'Rein in AI table creation — make it suggestion-only with preview and opt-in controls',
@@ -201,29 +189,23 @@ export const CARDS: {
   },
 ]
 
-function CardIcon({ type }: { type: CardIcon }) {
-  const props = { css: { width: 28, height: 28 } }
-  if (type === 'chart-line') return <IconChartLine {...props} />
-  if (type === 'chart-progress') return <IconChartProgress {...props} />
-  if (type === 'sparks') return <IconSparks {...props} />
-  if (type === 'lightning') return <IconLightning {...props} />
-  if (type === 'chat') return <IconChatTwo {...props} />
-  if (type === 'timeline') return <IconTimelineFormat {...props} />
-  if (type === 'insights-search') return <IconInsightsSearch {...props} />
-  if (type === 'rocket') return <IconRocket {...props} />
-  if (type === 'three-columns') return <IconThreeColumnsVertical />
-  return null
-}
 
 const CARD_W = 500
-const CARD_GAP = 28
+const CARD_H = 480
+const CARD_GAP = 40
 
 
-export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onBgColorChange, onGoToBacklog, bgRef }: { onDiveDeeper?: (cardId: string) => void; onAddToRoadmap?: (cardId: string) => void; onReprioritize?: (cardId: string) => void; onBgColorChange?: (color: string) => void; onGoToBacklog?: () => void; bgRef?: React.RefObject<HTMLElement> }) {
+export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onGoToBacklog }: { onDiveDeeper?: (cardId: string) => void; onAddToRoadmap?: (cardId: string) => void; onReprioritize?: (cardId: string) => void; onGoToBacklog?: () => void }) {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
   const [activeIndex, setActiveIndex] = useState(0)
   const [descKey, setDescKey] = useState(0)
+  const [trackHeight, setTrackHeight] = useState(700)
+  const [activeCardH, setActiveCardH] = useState(CARD_H)
   const trackRef = useRef<HTMLDivElement>(null)
+  // Measured height of an inactive (collapsed) card — used as the scroll step between snap points.
+  // When card i is active all other cards are inactive, so the distance between consecutive
+  // snap centers = inactiveH + CARD_GAP (not CARD_H + CARD_GAP).
+  const inactiveHRef = useRef(128)
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
 
   // Refs to animated DOM nodes — updated every render, read in scroll handler without stale closure
@@ -246,21 +228,25 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onB
   visibleCardsLenRef.current = visibleCards.length
   visibleCardsRef.current = visibleCards
 
+  // Kept current every render so stable effects can read without stale closures
+  const activeIndexRef = useRef(0)
+  activeIndexRef.current = safeIndex
+
   const goTo = useCallback((idx: number) => {
     const clamped = Math.max(0, Math.min(idx, visibleCards.length - 1))
     setActiveIndex(clamped)
     if (trackRef.current) {
-      trackRef.current.scrollTo({ left: clamped * (CARD_W + CARD_GAP), behavior: 'smooth' })
+      trackRef.current.scrollTo({ top: clamped * (inactiveHRef.current + CARD_GAP), behavior: 'smooth' })
     }
   }, [visibleCards.length])
 
   // Stable function — only reads refs, never stale
-  const applyProgress = useCallback((sl: number) => {
-    const offset = sl / (CARD_W + CARD_GAP)
+  const applyProgress = useCallback((st: number) => {
+    const offset = st / (inactiveHRef.current + CARD_GAP)
     const len = visibleCardsLenRef.current
     for (let i = 0; i < len; i++) {
       const progress = Math.max(0, 1 - Math.abs(offset - i))
-      if (cardRefs.current[i]) cardRefs.current[i]!.style.alignSelf = 'center'
+      if (cardRefs.current[i]) cardRefs.current[i]!.style.alignSelf = 'auto'
       if (iconWrapperRefs.current[i]) iconWrapperRefs.current[i]!.style.gridTemplateRows = `${progress}fr`
       if (iconRefs.current[i]) iconRefs.current[i]!.style.opacity = `${Math.max(0, (progress - 0.4) / 0.6)}`
       if (expandRefs.current[i]) expandRefs.current[i]!.style.gridTemplateRows = `${progress}fr`
@@ -277,31 +263,28 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onB
       }
     }
 
-    // Gradient background: pan a linear-gradient between adjacent card colors as the user scrolls.
-    // background-size: 200% makes the gradient twice the viewport width; background-position
-    // shifts it left-to-right so at t=0 the viewport sits on the colorA half, at t=1 on colorB.
-    if (bgRef?.current) {
-      const cards = visibleCardsRef.current
-      const leftIdx = Math.max(0, Math.min(Math.floor(offset), cards.length - 1))
-      const rightIdx = Math.min(leftIdx + 1, cards.length - 1)
-      const t = Math.max(0, Math.min(1, offset - leftIdx))
-      const fallback = '#F2F4FC'
-      const colorA = cards[leftIdx] ? MATCH_TAG_STYLE[cards[leftIdx].matchTag].bg : fallback
-      const colorB = cards[rightIdx] ? MATCH_TAG_STYLE[cards[rightIdx].matchTag].bg : colorA
-      // 4-stop gradient: solid colorA | blend zone | solid colorB, each taking 1/3 of
-      // a 300%-wide background. background-position pans it so t=0 lands on solid colorA
-      // and t=1 lands on solid colorB, with the gradient zone crossing the viewport mid-scroll.
-      bgRef.current.style.backgroundImage = `linear-gradient(to right, ${colorA} 0%, ${colorA} 33%, ${colorB} 67%, ${colorB} 100%)`
-      bgRef.current.style.backgroundSize = '300% 100%'
-      bgRef.current.style.backgroundPosition = `${t * 100}% center`
+  }, [])
+
+  useLayoutEffect(() => {
+    if (cardRefs.current[1]) inactiveHRef.current = cardRefs.current[1].offsetHeight
+  }, [])
+
+  // Measure the active card's actual rendered height once at mount.
+  // Card 0 is always active on first render (isActive=true → gridTemplateRows:'1fr') so its
+  // offsetHeight already reflects the fully-expanded size. Re-measuring on every render would
+  // change snapPad mid-scroll, interrupting the smooth animation.
+  useLayoutEffect(() => {
+    const card = cardRefs.current[0]
+    if (card) {
+      const h = card.offsetHeight
+      if (h > 0) setActiveCardH(h)
     }
-  }, [bgRef])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // After every React render, re-apply scroll-driven styles before paint.
-  // This prevents the JSX initial values (set by goTo's setActiveIndex) from
-  // flashing for one frame — useLayoutEffect runs synchronously before the browser paints.
   useLayoutEffect(() => {
-    if (trackRef.current) applyProgress(trackRef.current.scrollLeft)
+    if (trackRef.current) applyProgress(trackRef.current.scrollTop)
   })
 
   // Attach scroll listeners
@@ -309,41 +292,100 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onB
     const track = trackRef.current
     if (!track) return
 
-    const onScroll = () => applyProgress(track.scrollLeft)
+    const onScroll = () => applyProgress(track.scrollTop)
     const onScrollEnd = () => {
-      applyProgress(track.scrollLeft)
-      const idx = Math.round(track.scrollLeft / (CARD_W + CARD_GAP))
-      const next = Math.max(0, Math.min(idx, visibleCardsLenRef.current - 1))
+      applyProgress(track.scrollTop)
+      const step = inactiveHRef.current + CARD_GAP
+      const rawIdx = track.scrollTop / step
+      const next = Math.max(0, Math.min(Math.round(rawIdx), visibleCardsLenRef.current - 1))
       setActiveIndex(prev => (prev === next ? prev : next))
       setDescKey(k => k + 1)
+      const snapTo = next * step
+      if (Math.abs(track.scrollTop - snapTo) > 2) {
+        track.scrollTo({ top: snapTo, behavior: 'smooth' })
+      }
+    }
+
+    // Intercept wheel/trackpad to advance exactly one card per gesture
+    let busy = false
+    let accumY = 0
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      if (busy) return
+      accumY += e.deltaY
+      if (Math.abs(accumY) < 40) return
+      const dir = accumY > 0 ? 1 : -1
+      accumY = 0
+      busy = true
+      const len = visibleCardsLenRef.current
+      setActiveIndex(prev => {
+        const next = Math.max(0, Math.min(prev + dir, len - 1))
+        if (next !== prev) {
+          track.scrollTo({ top: next * (inactiveHRef.current + CARD_GAP), behavior: 'smooth' })
+        }
+        return next
+      })
+      setTimeout(() => { busy = false; accumY = 0 }, 500)
     }
 
     track.addEventListener('scroll', onScroll, { passive: true })
     track.addEventListener('scrollend', onScrollEnd)
+    track.addEventListener('wheel', onWheel, { passive: false })
     return () => {
       track.removeEventListener('scroll', onScroll)
       track.removeEventListener('scrollend', onScrollEnd)
+      track.removeEventListener('wheel', onWheel)
     }
   }, [applyProgress])
 
-  // Notify parent of active card's chip color whenever it changes
-  const activeCard = visibleCards[safeIndex]
-  const activeBg = visibleCards.length === 0 ? '#ffffff' : (activeCard ? MATCH_TAG_STYLE[activeCard.matchTag].bg : '#F2F4FC')
-  useEffect(() => { onBgColorChange?.(activeBg) }, [activeBg, onBgColorChange])
-
-  // When all cards are dismissed the scroll track unmounts so applyProgress never runs
-  // again — clear the gradient that was painted directly onto the DOM element.
+  // Arrow key navigation — uses refs so this effect never needs to re-attach
   useEffect(() => {
-    if (visibleCards.length === 0 && bgRef?.current) {
-      bgRef.current.style.backgroundImage = 'none'
-      bgRef.current.style.backgroundSize = ''
-      bgRef.current.style.backgroundPosition = ''
+    const onKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+      e.preventDefault()
+      const len = visibleCardsLenRef.current
+      const dir = e.key === 'ArrowDown' ? 1 : -1
+      const next = Math.max(0, Math.min(activeIndexRef.current + dir, len - 1))
+      if (trackRef.current) {
+        trackRef.current.scrollTo({ top: next * (inactiveHRef.current + CARD_GAP), behavior: 'smooth' })
+      }
+      setActiveIndex(next)
+      setDescKey(k => k + 1)
     }
-  }, [visibleCards.length, bgRef])
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Measure track height so snapPad keeps first/last cards snap-centered on all screen sizes
+  useEffect(() => {
+    if (visibleCards.length === 0) return
+    const track = trackRef.current
+    if (!track) return
+    setTrackHeight(track.clientHeight)
+    const ro = new ResizeObserver(() => setTrackHeight(track.clientHeight))
+    ro.observe(track)
+    return () => ro.disconnect()
+  }, [visibleCards.length])
+
+  // Measure an inactive card's height after mount — card 1 is always inactive at startup
+  useEffect(() => {
+    if (visibleCards.length < 2) return
+    const card = cardRefs.current[1]
+    if (card) inactiveHRef.current = card.offsetHeight
+  }, [visibleCards.length])
+
+  // snapPad = (trackHeight - activeCardH) / 2 centers the active card in the viewport.
+  // Using the measured activeCardH (not the CARD_H constant) ensures the last card can
+  // always reach its snap position and reach progress = 1.0.
+  const snapPad = Math.max(20, Math.round((trackHeight - activeCardH) / 2))
+
 
 
   return (
-    <div className="flex flex-col items-center w-full h-full select-none py-10">
+    <div className="flex flex-col items-center w-full h-full select-none pt-10">
 
       {/* Carousel viewport */}
       <div className="relative w-full" style={{ minHeight: 340, overflow: 'clip', overflowClipMargin: '40px' }}>
@@ -415,9 +457,9 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onB
                     <div style={{ overflow: 'hidden' }}>
                       <div
                         ref={el => { iconRefs.current[idx] = el }}
-                        style={{ color: '#3C3F4A', paddingBottom: 4, opacity: isActive ? 1 : 0 }}
+                        style={{ paddingBottom: 4, opacity: isActive ? 1 : 0 }}
                       >
-                        <CardIcon type={card.icon} />
+                        <span style={{ fontSize: 28, lineHeight: 1 }}>{MATCH_TAG_EMOJI[card.matchTag]}</span>
                       </div>
                     </div>
                   </div>
@@ -498,27 +540,6 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onB
         )}
       </div>
 
-      {/* Dot indicators */}
-      {visibleCards.length > 1 && (
-        <div className="flex items-center gap-[7px] mt-4">
-          {visibleCards.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => goTo(idx)}
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                backgroundColor: idx === safeIndex ? '#222428' : '#C2C5D1',
-                transition: 'width 0.3s ease, height 0.3s ease, background-color 0.3s ease',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-              }}
-            />
-          ))}
-        </div>
-      )}
 
     </div>
   )
