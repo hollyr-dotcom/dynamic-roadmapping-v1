@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { WorkOnThisButton } from '../WorkOnThisButton'
-import { WorkOnCanvasButton, MoveToRoadmapButton } from '../PromptButtons'
+import { WorkOnCanvasButton, MoveToRoadmapButton, WorkOnThisButton2 } from '../PromptButtons'
 
 /* ─── Tab bar ─── */
 const TABS = ['Work on this', 'Work on canvas', 'Move to roadmap'] as const
@@ -45,11 +44,7 @@ export function ButtonLab() {
 
       {/* Content */}
       <div className="flex-1 flex items-center justify-center">
-        {active === 'Work on this' && (
-          <div style={{ width: 200 }}>
-            <WorkOnThisButton />
-          </div>
-        )}
+        {active === 'Work on this' && <WorkOnThisButton2 />}
         {active === 'Work on canvas' && <WorkOnCanvasButton />}
         {active === 'Move to roadmap' && <MoveToRoadmapButton />}
       </div>

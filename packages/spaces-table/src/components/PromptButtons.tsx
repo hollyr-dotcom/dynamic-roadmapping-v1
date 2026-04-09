@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { IconCursor, IconCursorFilled, IconRocket } from '@mirohq/design-system'
 
 const EASE = 'cubic-bezier(0.16, 1, 0.3, 1)'
@@ -158,6 +158,90 @@ export function MoveToRoadmapButton({ onClick }: { onClick?: () => void }) {
         </div>
       </div>
       <span style={{ lineHeight: 1, whiteSpace: 'nowrap' }}>Move to roadmap</span>
+    </button>
+  )
+}
+
+/* ─── AI cursor icon: spark + cursor as two layers in a 16px box ─── */
+function AiCursorIcon({ hovered }: { hovered: boolean }) {
+  const [filled, setFilled] = useState(false)
+  const fillTimer = useRef<ReturnType<typeof setTimeout>>(null)
+
+  useEffect(() => {
+    if (hovered) {
+      fillTimer.current = setTimeout(() => setFilled(true), 400)
+    } else {
+      if (fillTimer.current) clearTimeout(fillTimer.current)
+      setFilled(false)
+    }
+    return () => { if (fillTimer.current) clearTimeout(fillTimer.current) }
+  }, [hovered])
+
+  return (
+    <div style={{ position: 'relative', width: 16, height: 16, flexShrink: 0 }}>
+      {/* Spark — one wind-up spin, then holds */}
+      <svg
+        width="16" height="16" viewBox="0 0 16 16" fill="none"
+        style={{
+          position: 'absolute', top: 0, left: 0,
+          animation: hovered ? 'spark-twinkle 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards' : 'none',
+          transformOrigin: '12.3px 3.4px',
+        }}
+      >
+        <path d="M12.833 0.666672C12.833 2.04744 13.9523 3.16667 15.333 3.16667V4.16667C13.9523 4.16667 12.8331 5.28596 12.833 6.66667H11.833C11.8329 5.28596 10.7137 4.16667 9.33301 4.16667V3.16667C10.7137 3.16667 11.833 2.04744 11.833 0.666672H12.833Z" fill="#222428"/>
+      </svg>
+      {/* Outline cursor — fades out when filled appears */}
+      <svg
+        width="16" height="16" viewBox="0 0 16 16" fill="none"
+        style={{
+          position: 'absolute', top: 0, left: 0,
+          opacity: filled ? 0 : 1,
+          transition: 'opacity 200ms ease',
+        }}
+      >
+        <path d="M3.10789 15.0711L4.45762 15.454C6.11249 12.5535 9.272 10.7875 12.6096 10.8979L13.0083 9.49246L3.42524 2.54816L2.03027 3.32654L3.10789 15.0711ZM10.955 9.65027C8.35058 9.99694 5.95774 11.3272 4.28953 13.3558L3.45042 4.21263L10.955 9.65027Z" fill="#222428"/>
+      </svg>
+      {/* Filled cursor — fades in after spark, fades out on mouse leave */}
+      <svg
+        width="16" height="16" viewBox="0 0 16 16" fill="none"
+        style={{
+          position: 'absolute', top: 0, left: 0,
+          opacity: filled ? 1 : 0,
+          transition: 'opacity 200ms ease',
+        }}
+      >
+        <path d="M3.10789 15.0711L4.45762 15.454C6.11249 12.5535 9.272 10.7875 12.6096 10.8979L13.0083 9.49246L3.42524 2.54816L2.03027 3.32654L3.10789 15.0711Z" fill="#222428"/>
+      </svg>
+    </div>
+  )
+}
+
+/* ─── Work on this — gray filled button with AI cursor icon ─── */
+export function WorkOnThisButton2({ onClick }: { onClick?: () => void }) {
+  const [hovered, setHovered] = useState(false)
+
+  return (
+    <button
+      className="relative flex items-center cursor-pointer"
+      style={{
+        border: '1px solid rgba(255,255,255,0)',
+        borderRadius: 8,
+        padding: '0 12px',
+        height: 32,
+        gap: 4,
+        background: hovered ? '#e4e4e0' : '#eeeeeb',
+        fontSize: 14,
+        fontWeight: 600,
+        color: '#222428',
+        fontFamily: 'var(--font-noto)',
+        transition: `background 200ms ${EASE}`,
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={onClick}
+    >
+      <AiCursorIcon hovered={hovered} />
+      <span style={{ lineHeight: 1, whiteSpace: 'nowrap' }}>Work on this</span>
     </button>
   )
 }

@@ -4,6 +4,7 @@ import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import type { SpaceRow } from '@spaces/shared'
 import { CompanyLogo } from '../CompanyLogo'
 import { WorkOnCanvasButton, MoveToRoadmapButton } from '../PromptButtons'
+import { WorkOnThisButton2 } from '../PromptButtons'
 import { SourceLogoChip } from './SourceLogoChip'
 import { CallTranscriptPanel, type TranscriptLine } from './CallTranscriptPanel'
 import {
@@ -29,6 +30,7 @@ import {
   IconChevronRight,
   IconDotsThree,
   IconInsights,
+  IconCalendarBlank,
   IconBoard,
   IconSquaresTwoOverlap,
   IconDocFormat,
@@ -50,6 +52,7 @@ import {
 } from '@mirohq/design-system'
 import { JiraLogo } from '../JiraLogo'
 import AiPanelSolutionReview, { PanelHeader as SidekickHeader, PanelInput as SidekickInput } from './AiPanelSolutionReview'
+import { SidekickPanelHeader } from './BoardSidekickPanel'
 
 function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
   const size = (props as { width?: number }).width ?? 24
@@ -105,6 +108,7 @@ interface RowDetailPanelProps {
   onOpenSidekick?: () => void
   onWorkOnCanvas?: () => void
   onMoveToRoadmap?: () => void
+  autoMorph?: boolean
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -521,10 +525,22 @@ function SidekickInputBar({ onWorkOnCanvas, onMoveToRoadmap }: { onWorkOnCanvas?
   )
 }
 
-export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, hideComments = false, overrideSummary, onOpenSidekick, onWorkOnCanvas, onMoveToRoadmap: onMoveToRoadmapProp }: RowDetailPanelProps) {
+export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, hideComments = false, overrideSummary, onOpenSidekick, onWorkOnCanvas, onMoveToRoadmap: onMoveToRoadmapProp, autoMorph = false }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   // Holly's sidekick state — disabled for v2 exploration, keeping code intact
   const [showSidekick, /* setShowSidekick */] = useState(false)
+  // Morph-to-sidekick: crossfade detail content → sidekick chat in-place
+  const [morphing, setMorphing] = useState(autoMorph)
+  const [morphPhase, setMorphPhase] = useState<'input' | 'message' | 'loading' | null>(autoMorph ? 'input' : null)
+
+  // Auto-morph: skip detail view, go straight to sidekick flow
+  useEffect(() => {
+    if (!autoMorph) return
+    const t1 = setTimeout(() => setMorphPhase('message'), 300)
+    const t2 = setTimeout(() => setMorphPhase('loading'), 900)
+    const t3 = setTimeout(() => onWorkOnCanvas?.(), 2700)
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
+  }, [autoMorph, onWorkOnCanvas])
   const [insightDismissed, setInsightDismissed] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null)
 
@@ -714,19 +730,43 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       }}
     >
 
-      {/* ── Header (full width) ──────────────────────────── */}
+      {/* ── Header (full width) — crossfades to sidekick header when morphing ─── */}
       {!showSidekick && !selectedPrompt && (
-      <div className="flex items-center gap-2 h-12 shrink-0 relative z-20 bg-white" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 12, borderBottom: 'none' }}>
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          {!hideInsightCallout && <JiraLogo size={18} />}
-          <p
-            className="flex-1 min-w-0 truncate text-[#222428] leading-[1.5]"
-            style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: '16px', fontFeatureSettings: "'ss01' 1" }}
-            title={hideInsightCallout ? row.title : (row.jiraKey ?? row.title)}
-          >
-            {hideInsightCallout ? row.title : (row.jiraKey ?? row.title)}
-          </p>
-        </div>
+      <div className="h-12 shrink-0 relative z-20 bg-white" style={{ borderBottom: 'none' }}>
+        {/* Original header — fades out when morphing */}
+        <div
+          className="absolute inset-0 flex items-center gap-2"
+          style={{
+            paddingLeft: selectedLayout !== 'Right' ? 24 : 16,
+            paddingRight: selectedLayout !== 'Right' ? 24 : 12,
+            opacity: morphing ? 0 : 1,
+            transition: 'opacity 250ms cubic-bezier(0.16,1,0.3,1)',
+            pointerEvents: morphing ? 'none' : 'auto',
+          }}
+        >
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            {!hideInsightCallout && <JiraLogo size={18} />}
+            <div
+              className="flex-1 min-w-0 flex items-center text-[#222428] leading-[1.5]"
+              style={{ fontFamily: "'Roobert PRO', sans-serif", fontWeight: 600, fontSize: '14px', fontFeatureSettings: "'ss01' 1" }}
+              title={row.jiraKey ? `${row.jiraKey}: ${row.title}` : row.title}
+            >
+              <span className="shrink-0">{row.jiraKey ?? row.title}</span>
+              <span
+                className="truncate"
+                style={{
+                  display: 'inline-block',
+                  maxWidth: activeTab !== 'Details' ? 300 : 0,
+                  opacity: activeTab !== 'Details' ? 1 : 0,
+                  transition: 'max-width 300ms cubic-bezier(0.16,1,0.3,1), opacity 200ms ease',
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {row.jiraKey ? `: ${row.title}` : ''}
+              </span>
+            </div>
+          </div>
         <div className="flex items-center gap-1 shrink-0">
           <Tooltip>
             <Tooltip.Trigger asChild>
@@ -791,6 +831,20 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
           </button>
         </div>
       </div>
+
+        {/* Sidekick header — fades in when morphing, uses exact same component */}
+        <div
+          className="absolute inset-0 bg-white"
+          style={{
+            opacity: morphing ? 1 : 0,
+            transition: 'opacity 300ms cubic-bezier(0.16,1,0.3,1)',
+            pointerEvents: morphing ? 'auto' : 'none',
+            zIndex: 5,
+          }}
+        >
+          <SidekickPanelHeader onClose={onClose} />
+        </div>
+      </div>
       )}
 
       <div className="absolute inset-0 bg-white flex flex-col overflow-hidden" style={{ zIndex: 30, transform: showSidekick ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)', pointerEvents: showSidekick ? 'auto' : 'none' }}>
@@ -840,11 +894,116 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       </div>
 
       {/* ── Content row (main panel + comments panel) ── */}
-      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, overflow: 'hidden' }}>
-      <div className="flex flex-col overflow-hidden relative" style={{ width: panelWidth, height: '100%', flexShrink: 0 }}>
+      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative' }}>
+
+      {/* Morph overlay — sidekick preview that fades in over the detail content */}
+      {morphing && (
+        <div
+          style={{
+            position: 'absolute', inset: 0, zIndex: 10,
+            display: 'flex', flexDirection: 'column',
+            background: 'white',
+            opacity: 0,
+            animation: 'item-enter 0.35s cubic-bezier(0.16,1,0.3,1) forwards',
+          }}
+        >
+          {/* Spacer pushes content to bottom */}
+          <div style={{ flex: 1 }} />
+
+          {/* "Work on this" user message — matches BoardSidekickPanel UserMessage exactly */}
+          {(morphPhase === 'message' || morphPhase === 'loading') && (
+            <div style={{ padding: '0 28px', marginBottom: 16 }}>
+              <div style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8,
+                opacity: 0,
+                animation: 'message-rise 0.4s cubic-bezier(0.16,1,0.3,1) forwards',
+              }}>
+                <div style={{
+                  background: '#f2f4fc', borderRadius: 8, padding: '12px 16px',
+                  maxWidth: 380, fontSize: 14, fontWeight: 400, color: '#222428',
+                  lineHeight: 1.4, fontFamily: 'var(--font-noto)',
+                  display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap',
+                }}>
+                  Work on <JiraLogo size={14} /> {row.jiraKey ?? row.title}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Loading message — appears after user message */}
+          <div style={{ padding: '0 24px', marginBottom: 12, height: 28, flexShrink: 0 }}>
+            {morphPhase === 'loading' && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0',
+                opacity: 0,
+                animation: 'loading-msg-in 0.5s cubic-bezier(0.16,1,0.3,1) forwards',
+              }}>
+                <span style={{ display: 'inline-flex', animation: 'sparkle-spin-once 0.6s ease-in-out 1' }}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3.66671 10.6667C3.66688 11.587 4.41301 12.3333 5.33337 12.3333V13C4.41293 13 3.66675 13.7462 3.66671 14.6667H3.00004C3 13.7462 2.25382 13 1.33337 13V12.3333C2.25374 12.3333 2.99986 11.587 3.00004 10.6667H3.66671Z" fill="url(#morph-sparkle-grad)"/>
+                    <path d="M7.11853 3.47136C7.33563 2.55955 8.66447 2.55793 8.88155 3.47136L8.89913 3.56577L8.92712 3.73634C9.25315 5.48605 10.6594 6.84426 12.4336 7.10027C13.4695 7.24967 13.475 8.74904 12.4336 8.8991C10.6021 9.16312 9.16315 10.6021 8.89913 12.4336C8.74908 13.475 7.24971 13.4695 7.1003 12.4336C6.83604 10.6022 5.39718 9.16302 3.5658 8.8991C2.52637 8.74915 2.52828 7.24998 3.5658 7.10027L3.73637 7.07228C5.48617 6.74595 6.84436 5.34007 7.1003 3.56577L7.11853 3.47136Z" fill="url(#morph-sparkle-grad)"/>
+                    <path d="M13 1.33334C13 2.25386 13.7462 3.00001 14.6667 3.00001V3.66668C13.7463 3.66668 13.0001 4.41287 13 5.33334H12.3334C12.3333 4.41287 11.5872 3.66668 10.6667 3.66668V3.00001C11.5872 3.00001 12.3334 2.25386 12.3334 1.33334H13Z" fill="url(#morph-sparkle-grad)"/>
+                    <defs>
+                      <linearGradient id="morph-sparkle-grad" x1="2.6429" y1="15.8572" x2="16.3334" y2="0.50001" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#322BFE"/><stop offset="0.25" stopColor="#6E3CFE"/><stop offset="0.5" stopColor="#A34CFF"/><stop offset="0.75" stopColor="#D05DFF"/><stop offset="1" stopColor="#F66EFF"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </span>
+                <span style={{
+                  fontSize: 14, fontWeight: 400, lineHeight: 1.4, fontFamily: 'var(--font-noto)',
+                  background: 'linear-gradient(42deg, #322BFE 0%, #6E3CFE 27%, #A34CFF 55%, #D05DFF 82%, #F66EFF 109%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}>
+                  Creating a new board
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Full input with controls — matches PanelInput exactly */}
+          <div style={{ flexShrink: 0, padding: '0 16px 16px' }}>
+            <div style={{ border: '1px solid #e0e2e8', borderRadius: 8, background: '#fff' }}>
+              <div style={{ padding: '12px 16px 4px' }}>
+                <textarea
+                  readOnly
+                  placeholder="Write a reply"
+                  rows={1}
+                  style={{
+                    width: '100%', border: 'none', outline: 'none', resize: 'none',
+                    fontSize: 14, fontWeight: 400, color: '#222428', lineHeight: 1.4,
+                    fontFamily: 'var(--font-noto)', background: 'transparent',
+                    minHeight: 24, maxHeight: 120, overflow: 'auto',
+                  }}
+                />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 8px 8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <IconButton aria-label="Add" variant="ghost" size="medium"><IconPlus /></IconButton>
+                </div>
+                <div style={{
+                  background: '#e9eaef', borderRadius: 20, width: 32, height: 32,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M7 12.5L7 1.5M7 1.5L2 6.5M7 1.5L12 6.5" stroke="#AEB2C0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="flex flex-col overflow-hidden relative" style={{
+        width: panelWidth, height: '100%', flexShrink: 0,
+        opacity: morphing ? 0 : 1,
+        transition: 'opacity 300ms cubic-bezier(0.16,1,0.3,1)',
+        pointerEvents: morphing ? 'none' : 'auto',
+      }}>
 
       {/* ── Tab bar ── */}
-      <div className="flex gap-1 px-3 pt-3 pb-4 shrink-0" style={{ pointerEvents: 'auto' }}>
+      <div className="flex gap-1 pb-4 shrink-0" style={{ pointerEvents: 'auto', paddingLeft: 16, paddingRight: 16 }}>
         {(selectedLayout === 'Fullscreen' || hideComments ? ['Details', 'Jira', 'Insights'] : ['Details', 'Jira', 'Insights', 'Comments']).map(tab => (
           <button
             key={tab}
@@ -899,130 +1058,72 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
       {/* ── Content ─────────────────────────── */}
       <div className="flex-1 min-h-0 overflow-hidden relative">
       {/* ── Main panel ─── */}
-      <div className="h-full overflow-y-auto panel-scroll flex flex-col gap-0 absolute inset-0" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 20, paddingRight: selectedLayout !== 'Right' ? 24 : 20, overflowAnchor: 'none' }}>
+      <div className="h-full overflow-y-auto panel-scroll flex flex-col gap-0 absolute inset-0" style={{ paddingLeft: selectedLayout !== 'Right' ? 24 : 16, paddingRight: selectedLayout !== 'Right' ? 24 : 16, overflowAnchor: 'none' }}>
 
         {activeTab === 'Details' && (
-          <>
-            {/* Title */}
-            <FieldRow label="Title" alignStart>
-              {editingField === 'title' ? (
-                <input
-                  autoFocus
-                  value={editValue}
-                  onChange={e => setEditValue(e.target.value)}
-                  onBlur={() => { setEditingField(null); triggerSaveToast() }}
-                  onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); if (e.key === 'Escape') setEditingField(null) }}
-                  className="text-[14px] text-[#222428] leading-[1.4] w-full px-2 py-1 rounded-md outline-none bg-white"
-                  style={{ border: '1.5px solid #4262FF', boxShadow: '0 0 0 3px rgba(66,98,255,0.12)' }}
-                />
-              ) : (
-                <div
-                  className="rounded px-2 py-1 w-full cursor-text hover:bg-[#F1F2F5] transition-colors"
-                  onClick={() => { setEditingField('title'); setEditValue(row.title) }}
-                >
-                  <p className="text-[14px] text-[#222428] leading-[1.4]">{row.title}</p>
-                </div>
-              )}
-            </FieldRow>
-
-            {/* Description */}
-            <FieldRow label="Description" alignStart>
-              {editingField === 'description' ? (
-                <textarea
-                  autoFocus
-                  value={editValue}
-                  onChange={e => setEditValue(e.target.value)}
-                  onBlur={() => { setEditingField(null); triggerSaveToast() }}
-                  onKeyDown={e => { if (e.key === 'Escape') setEditingField(null) }}
-                  className="text-[14px] text-[#222428] leading-[1.4] w-full px-2 py-1 rounded-md outline-none bg-white resize-none"
-                  style={{ minHeight: 56, border: '1.5px solid #4262FF', boxShadow: '0 0 0 3px rgba(66,98,255,0.12)' }}
-                />
-              ) : (
-                <div
-                  className="rounded px-2 py-1 w-full cursor-text hover:bg-[#F1F2F5] transition-colors"
-                  style={{ minHeight: 56 }}
-                  onClick={() => { setEditingField('description'); setEditValue(row.description ?? '') }}
-                >
-                  <p className="text-[14px] text-[#222428] leading-[1.4]">{row.description ?? '—'}</p>
-                </div>
-              )}
-            </FieldRow>
-
-            {/* Status */}
-            <FieldRow label="Status">
-              <div
-                className="inline-flex items-center rounded-[6px] px-2"
-                style={{ backgroundColor: chip.bg, color: chip.color, height: 28 }}
-              >
-                <span className="text-[14px] leading-[20px]" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-                  {priorityLabel}
-                </span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '16px 0 16px' }}>
+            {/* Title + Work on this */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {/* Editable title — auto-sizing textarea, no layout shift on focus */}
+              <div style={{ padding: '0 8px' }}>
+                <TitleTextarea value={row.title} onBlur={() => setEditingField(null)} onFocus={() => setEditingField('title')} />
               </div>
-            </FieldRow>
 
-            {/* Blocking */}
-            <FieldRow label="Blocking">
-              <span className="text-[14px] text-[#222428] leading-[1.4] px-2">—</span>
-            </FieldRow>
+              {/* Work on this button — hugs content */}
+              <div style={{ display: 'flex', padding: '0 4px' }}>
+                <WorkOnThisButton2 onClick={() => {
+                  setMorphing(true)
+                  setMorphPhase('input')
+                  setTimeout(() => setMorphPhase('message'), 600)
+                  setTimeout(() => setMorphPhase('loading'), 1200)
+                  setTimeout(() => onWorkOnCanvas?.(), 3000)
+                }} />
+              </div>
+            </div>
 
-            {/* Start / End dates (timeline only) */}
-            {timelineDates && (
-              <>
-                <FieldRow label="Start date">
-                  <span className="text-[14px] text-[#222428] leading-[1.4] px-2">{timelineDates.startDate}</span>
-                </FieldRow>
-                <FieldRow label="End date">
-                  <span className="text-[14px] text-[#222428] leading-[1.4] px-2">{timelineDates.endDate}</span>
-                </FieldRow>
-              </>
-            )}
+            {/* Properties */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {/* Priority */}
+              <PropertyRow label="Priority" compact>
+                <div
+                  className="inline-flex items-center rounded-[8px] px-2"
+                  style={{ backgroundColor: chip.bg, color: chip.color, height: 24 }}
+                >
+                  <span style={{ fontSize: 14, lineHeight: 1.4, fontFamily: 'var(--font-noto)' }}>
+                    {priorityLabel}
+                  </span>
+                </div>
+              </PropertyRow>
 
-            {/* Companies */}
-            {(() => {
-              const allCompanies = [...new Set([...row.companies, ...Object.keys(COMPANY_INFO)])]
-              const COLLAPSED = 4
-              const EXPANDED_FIRST_ROW = 8
-              const visibleCount = companiesExpanded ? EXPANDED_FIRST_ROW : COLLAPSED
-              const overflow = allCompanies.length - COLLAPSED
-              const overflowExpanded = allCompanies.length - EXPANDED_FIRST_ROW
-              return (
-                <FieldRow label="Companies" alignStart>
-                  <div className="flex flex-col gap-0 py-1 w-full">
-                    <div className="flex flex-wrap gap-2">
-                      {allCompanies.slice(0, visibleCount).map(name => (
-                        <CompanyLogo key={name} name={name} size={32} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
-                      ))}
-                      {!companiesExpanded && overflow > 0 && (
-                        <button
-                          onClick={() => setCompaniesExpanded(true)}
-                          className="inline-flex items-center justify-center transition-colors"
-                          style={{ backgroundColor: '#F1F2F5', color: '#656B81', height: 32, minWidth: 32, padding: '0 8px', borderRadius: 8, fontSize: 13, fontWeight: 600, flexShrink: 0 }}
-                        >
-                          +{overflow}
-                        </button>
-                      )}
-                    </div>
-                    {/* Accordion overflow */}
-                    <div style={{ maxHeight: companiesExpanded ? 200 : 0, overflow: 'hidden', transition: 'max-height 0.3s cubic-bezier(0.16,1,0.3,1)' }}>
-                      <div className="flex flex-wrap gap-2 pt-2">
-                        {overflowExpanded > 0 && allCompanies.slice(EXPANDED_FIRST_ROW).map(name => (
-                          <CompanyLogo key={name} name={name} size={32} onClick={() => { setSelectedCompany(name); onCompanyFilter?.(name) }} />
-                        ))}
-                        <button
-                          onClick={() => setCompaniesExpanded(false)}
-                          className="inline-flex items-center justify-center transition-colors"
-                          style={{ backgroundColor: '#E0E2E8', color: '#656B81', height: 32, width: 32, borderRadius: 8, fontSize: 16, flexShrink: 0 }}
-                        >
-                          −
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </FieldRow>
-              )
-            })()}
+              {/* Start date */}
+              <PropertyRow label="Start date" trailingIcon={<IconCalendarBlank css={{ width: 16, height: 16 }} />}>
+                <span style={{ fontSize: 14, color: '#222428', lineHeight: 1.4, fontFamily: 'var(--font-noto)' }}>
+                  {timelineDates?.startDate || '15 May 2026'}
+                </span>
+              </PropertyRow>
 
-          </>
+              {/* End date */}
+              <PropertyRow label="End date" trailingIcon={<IconCalendarBlank css={{ width: 16, height: 16 }} />}>
+                <span style={{ fontSize: 14, color: '#222428', lineHeight: 1.4, fontFamily: 'var(--font-noto)' }}>
+                  {timelineDates?.endDate || '20 May 2026'}
+                </span>
+              </PropertyRow>
+
+              {/* Mentions */}
+              <PropertyRow label="Mentions" trailingIcon={<IconInsights css={{ width: 16, height: 16 }} />}>
+                <span style={{ fontSize: 14, color: '#222428', lineHeight: 1.4, fontFamily: 'var(--font-noto)' }}>
+                  {row.mentions}
+                </span>
+              </PropertyRow>
+
+              {/* Customers */}
+              <PropertyRow label="Customers" trailingIcon={<IconInsights css={{ width: 16, height: 16 }} />}>
+                <span style={{ fontSize: 14, color: '#222428', lineHeight: 1.4, fontFamily: 'var(--font-noto)' }}>
+                  {row.customers || '—'}
+                </span>
+              </PropertyRow>
+            </div>
+          </div>
         )}
 
         {activeTab === 'Jira' && (
@@ -1227,10 +1328,10 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       </div>{/* end tabs content */}
 
-      {/* ── Sidekick input bar (canvas-style) ─── */}
-      {!selectedCompany && !selectedFeedbackCard && !callCard && !showArchive && !selectedPrompt && !showSidekick && (
+      {/* ── Sidekick input bar — disabled for feature-workoncanvas exploration ─── */}
+      {/* {!selectedCompany && !selectedFeedbackCard && !callCard && !showArchive && !selectedPrompt && !showSidekick && (
         <SidekickInputBar onWorkOnCanvas={onWorkOnCanvas} onMoveToRoadmap={onMoveToRoadmapProp} />
-      )}
+      )} */}
 
       {/* ── Detail overlay — sits below the 48px header so X button is never covered ─── */}
       <div className="absolute bg-white" style={{ zIndex: 10, top: 48, left: 0, right: 0, bottom: 0, transform: (callCard || showArchive || selectedFeedbackCard) ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)', pointerEvents: (callCard || showArchive || selectedFeedbackCard) ? 'auto' : 'none' }}>
@@ -2954,6 +3055,70 @@ export function FeedbackCardDetailView({
         document.body
       )}
     </>
+  )
+}
+
+/* Auto-sizing title textarea — uses ResizeObserver to catch width changes during panel animation */
+function TitleTextarea({ value, onBlur, onFocus }: { value: string; onBlur: () => void; onFocus: () => void }) {
+  const ref = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const resize = () => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px' }
+    resize()
+    const ro = new ResizeObserver(resize)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [value])
+
+  return (
+    <textarea
+      ref={ref}
+      defaultValue={value}
+      onBlur={onBlur}
+      onFocus={onFocus}
+      onChange={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
+      onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) e.currentTarget.blur(); if (e.key === 'Escape') e.currentTarget.blur() }}
+      rows={1}
+      style={{
+        width: '100%', border: 'none', outline: 'none', resize: 'none', padding: 0, margin: 0,
+        background: 'transparent', cursor: 'default', overflow: 'hidden',
+        fontSize: 20, fontWeight: 600, color: '#222428', lineHeight: 1.4,
+        fontFamily: "'Roobert PRO', sans-serif", fontFeatureSettings: "'ss01' 1",
+      }}
+    />
+  )
+}
+
+/* Property row — two-column layout: label left, value right with hover bg + trailing icon */
+function PropertyRow({ label, children, trailingIcon, compact }: { label: string; children: React.ReactNode; trailingIcon?: React.ReactNode; compact?: boolean }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div
+      style={{ display: 'flex', alignItems: 'center', height: 40, cursor: 'default' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div style={{ flex: 1, padding: 8, minWidth: 0 }}>
+        <span style={{ fontSize: 14, color: '#646b81', lineHeight: 1.5, fontFamily: 'var(--font-noto)', whiteSpace: 'nowrap' }}>
+          {label}
+        </span>
+      </div>
+      <div
+        style={{
+          flex: '0 1 270px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: `8px 12px 8px ${compact ? 8 : 12}px`, borderRadius: 12,
+          background: hovered ? '#f1f2f5' : 'transparent',
+          transition: 'background 150ms',
+        }}
+      >
+        {children}
+        <span style={{ opacity: hovered ? 1 : 0, transition: 'opacity 150ms', flexShrink: 0, display: 'flex', color: '#646b81' }}>
+          {trailingIcon || <IconChevronDown css={{ width: 16, height: 16 }} />}
+        </span>
+      </div>
+    </div>
   )
 }
 

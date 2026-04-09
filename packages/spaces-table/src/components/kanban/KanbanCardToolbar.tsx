@@ -76,11 +76,11 @@ export function KanbanCardToolbar({ onOpenSidePanel, onAddToBoard, onMoveToRoadm
       {onAddToBoard && (
         <Tooltip>
           <Tooltip.Trigger asChild>
-            <IconButton aria-label="Add to board" variant="ghost" size="medium" onPress={onAddToBoard}>
-              <IconPlusBox />
+            <IconButton aria-label="Work on this" variant="ghost" size="medium" onPress={onAddToBoard}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12.833 0.667C12.833 2.047 13.952 3.167 15.333 3.167V4.167C13.952 4.167 12.833 5.286 12.833 6.667H11.833C11.833 5.286 10.714 4.167 9.333 4.167V3.167C10.714 3.167 11.833 2.047 11.833 0.667H12.833Z" fill="currentColor"/><path d="M3.108 15.071L4.458 15.454C6.112 12.554 9.272 10.788 12.61 10.898L13.008 9.492L3.425 2.548L2.03 3.327L3.108 15.071ZM10.955 9.65C8.351 9.997 5.958 11.327 4.29 13.356L3.45 4.213L10.955 9.65Z" fill="currentColor"/></svg>
             </IconButton>
           </Tooltip.Trigger>
-          <Tooltip.Content side="top" sideOffset={4}>Add to board</Tooltip.Content>
+          <Tooltip.Content side="top" sideOffset={4}>Work on this</Tooltip.Content>
         </Tooltip>
       )}
 

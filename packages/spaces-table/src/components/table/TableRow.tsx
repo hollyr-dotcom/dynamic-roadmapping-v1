@@ -127,7 +127,9 @@ export function TableRow({ row, idx, fields, onRowClick, onCompanyClick, isUpdat
               </Tooltip>
                 <DropdownMenu.Content side="bottom" align="start" alignOffset={-12} css={{ minWidth: MENU_WIDTH }}>
                   <DropdownMenu.Item onSelect={() => onAddToBoard?.(row.id)}>
-                    <DropdownMenu.IconSlot><IconCursor /></DropdownMenu.IconSlot>
+                    <DropdownMenu.IconSlot>
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12.833 0.667C12.833 2.047 13.952 3.167 15.333 3.167V4.167C13.952 4.167 12.833 5.286 12.833 6.667H11.833C11.833 5.286 10.714 4.167 9.333 4.167V3.167C10.714 3.167 11.833 2.047 11.833 0.667H12.833Z" fill="currentColor"/><path d="M3.108 15.071L4.458 15.454C6.112 12.554 9.272 10.788 12.61 10.898L13.008 9.492L3.425 2.548L2.03 3.327L3.108 15.071ZM10.955 9.65C8.351 9.997 5.958 11.327 4.29 13.356L3.45 4.213L10.955 9.65Z" fill="currentColor"/></svg>
+                    </DropdownMenu.IconSlot>
                     Work on this
                   </DropdownMenu.Item>
                   {showMoveToRoadmap && (

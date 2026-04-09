@@ -234,7 +234,7 @@ export function CanvasRecordCard({
                 color: '#656B81',
                 lineHeight: 1.4,
               }}>
-                Fin-AI
+                FlexFund
               </span>
             </div>
           )}

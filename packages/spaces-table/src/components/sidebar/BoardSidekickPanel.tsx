@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { JiraLogo } from '../JiraLogo';
 import {
   IconButton,
   IconSquarePencil,
@@ -70,7 +71,7 @@ function GradientSparks({ filled, size = "small" }: { filled?: boolean; size?: "
 }
 
 /* ─── Panel Header ─── */
-function PanelHeader({ onClose }: { onClose?: () => void }) {
+export function SidekickPanelHeader({ onClose }: { onClose?: () => void }) {
   return (
     <div
       style={{
@@ -255,7 +256,7 @@ function PanelInput({ onSend, showThumbnail, placeholder = "What are you working
 }
 
 /* ─── User message bubble ─── */
-function UserMessage({ text, showThumbnail, riseIn }: { text: string; showThumbnail?: boolean; riseIn?: boolean }) {
+function UserMessage({ text, children, showThumbnail, riseIn }: { text?: string; children?: React.ReactNode; showThumbnail?: boolean; riseIn?: boolean }) {
   return (
     <div style={{
       display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8,
@@ -269,15 +270,16 @@ function UserMessage({ text, showThumbnail, riseIn }: { text: string; showThumbn
           background: "#f2f4fc",
           borderRadius: 8,
           padding: "12px 16px",
-          maxWidth: 304,
+          maxWidth: 380,
           fontSize: 14,
           fontWeight: 400,
           color: "#222428",
           lineHeight: 1.4,
           fontFamily: "var(--font-noto)",
+          display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap",
         }}
       >
-        {text}
+        {children || text}
       </div>
       {showThumbnail && <CardThumbnail />}
     </div>
@@ -381,7 +383,7 @@ function LoadingMessage({ text, phase = 'in', spin = 'once' }: { text: string; p
 /* ─── Panel Body ─── */
 type IntroPhase = 'sent' | 'loading-1' | 'loading-1-out' | 'loading-2' | 'loading-2-out' | 'loading-3' | 'loading-3-out' | 'reply' | 'done'
 
-function PanelBody({ introPhase, onWritePRD, isGenerating, isComplete, onViewDoc, onAddToBoard, selectedRowTitle, onPillClick }: {
+function PanelBody({ introPhase, onWritePRD, isGenerating, isComplete, onViewDoc, onAddToBoard, selectedRowTitle, selectedRowJiraKey, onPillClick, skipIntro }: {
   introPhase: IntroPhase;
   onWritePRD?: () => void;
   isGenerating?: boolean;
@@ -389,7 +391,9 @@ function PanelBody({ introPhase, onWritePRD, isGenerating, isComplete, onViewDoc
   onViewDoc?: () => void;
   onAddToBoard?: () => void;
   selectedRowTitle?: string;
+  selectedRowJiraKey?: string;
   onPillClick?: () => void;
+  skipIntro?: boolean;
 }) {
   const [activePill, setActivePill] = useState<string | null>(null);
   const [addedToBoard, setAddedToBoard] = useState(false);
@@ -415,13 +419,12 @@ function PanelBody({ introPhase, onWritePRD, isGenerating, isComplete, onViewDoc
       {/* Spacer pushes content to bottom */}
       <div style={{ flex: 1 }} />
 
-      {/* User message — rises up from behind the input */}
+      {/* User message — rises in normally, or appears instantly if skipping intro */}
       <div style={{
         marginBottom: 16,
-        opacity: 0,
-        animation: 'message-rise 0.4s cubic-bezier(0.16,1,0.3,1) forwards',
+        ...(skipIntro ? {} : { opacity: 0, animation: 'message-rise 0.4s cubic-bezier(0.16,1,0.3,1) forwards' }),
       }}>
-        <UserMessage text="Work on canvas" />
+        <UserMessage>Work on {selectedRowJiraKey && <><JiraLogo size={14} /> {selectedRowJiraKey}</>}</UserMessage>
       </div>
 
       {/* AI completion message — stays in chat once it appears */}
@@ -506,7 +509,7 @@ function PanelBody({ introPhase, onWritePRD, isGenerating, isComplete, onViewDoc
 }
 
 /* ─── Main export ─── */
-export default function BoardSidekickPanel({ onClose, onWritePRD, isGenerating, isComplete, onViewDoc, onAddToBoard, selectedRowTitle, spaceName, onCardReady, onLoadingComplete }: {
+export default function BoardSidekickPanel({ onClose, onWritePRD, isGenerating, isComplete, onViewDoc, onAddToBoard, selectedRowTitle, selectedRowJiraKey, spaceName, onCardReady, onLoadingComplete, skipIntro }: {
   onClose?: () => void;
   onWritePRD?: () => void;
   isGenerating?: boolean;
@@ -514,11 +517,13 @@ export default function BoardSidekickPanel({ onClose, onWritePRD, isGenerating, 
   onViewDoc?: () => void;
   onAddToBoard?: () => void;
   selectedRowTitle?: string;
+  selectedRowJiraKey?: string;
   spaceName?: string;
   onCardReady?: () => void;
   onLoadingComplete?: () => void;
+  skipIntro?: boolean;
 } = {}) {
-  const [introPhase, setIntroPhase] = useState<IntroPhase>('sent');
+  const [introPhase, setIntroPhase] = useState<IntroPhase>(skipIntro ? 'loading-2' : 'sent');
 
   // Stable refs for callbacks so the effect doesn't re-run
   const onCardReadyRef = useRef(onCardReady);
@@ -529,26 +534,39 @@ export default function BoardSidekickPanel({ onClose, onWritePRD, isGenerating, 
   // Intro animation sequence with cycling messages (each fades in, holds, fades out)
   useEffect(() => {
     const t: ReturnType<typeof setTimeout>[] = [];
-    t.push(setTimeout(() => setIntroPhase('loading-1'), 800));         // "Creating a new board" in
-    t.push(setTimeout(() => setIntroPhase('loading-1-out'), 2200));    // fade out
-    t.push(setTimeout(() => setIntroPhase('loading-2'), 2500));        // "Adding context" in
-    t.push(setTimeout(() => { onCardReadyRef.current?.() }, 3400));    // show card on canvas
-    t.push(setTimeout(() => setIntroPhase('loading-2-out'), 3900));    // fade out
-    t.push(setTimeout(() => setIntroPhase('loading-3'), 4200));        // "Inviting your team" in
-    t.push(setTimeout(() => setIntroPhase('loading-3-out'), 5500));    // fade out
-    t.push(setTimeout(() => {
-      setIntroPhase('reply');
-      onLoadingCompleteRef.current?.();
-    }, 5800));
-    t.push(setTimeout(() => setIntroPhase('done'), 6200));
+    if (skipIntro) {
+      // Skip user message + "Creating a new board" — already shown in morph overlay
+      t.push(setTimeout(() => { onCardReadyRef.current?.() }, 900));     // show card on canvas
+      t.push(setTimeout(() => setIntroPhase('loading-2-out'), 1400));    // fade out
+      t.push(setTimeout(() => setIntroPhase('loading-3'), 1700));        // "Inviting your team" in
+      t.push(setTimeout(() => setIntroPhase('loading-3-out'), 3000));    // fade out
+      t.push(setTimeout(() => {
+        setIntroPhase('reply');
+        onLoadingCompleteRef.current?.();
+      }, 3300));
+      t.push(setTimeout(() => setIntroPhase('done'), 3700));
+    } else {
+      t.push(setTimeout(() => setIntroPhase('loading-1'), 800));
+      t.push(setTimeout(() => setIntroPhase('loading-1-out'), 2200));
+      t.push(setTimeout(() => setIntroPhase('loading-2'), 2500));
+      t.push(setTimeout(() => { onCardReadyRef.current?.() }, 3400));
+      t.push(setTimeout(() => setIntroPhase('loading-2-out'), 3900));
+      t.push(setTimeout(() => setIntroPhase('loading-3'), 4200));
+      t.push(setTimeout(() => setIntroPhase('loading-3-out'), 5500));
+      t.push(setTimeout(() => {
+        setIntroPhase('reply');
+        onLoadingCompleteRef.current?.();
+      }, 5800));
+      t.push(setTimeout(() => setIntroPhase('done'), 6200));
+    }
     return () => t.forEach(clearTimeout);
-  }, []);
+  }, [skipIntro]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", maxWidth: "100%", background: "#fff", borderRadius: 8, position: "relative" }}>
       <AiGradientDefs />
-      <PanelHeader onClose={onClose} />
-      <PanelBody introPhase={introPhase} onWritePRD={onWritePRD} isGenerating={isGenerating} isComplete={isComplete} onViewDoc={onViewDoc} onAddToBoard={onAddToBoard} selectedRowTitle={selectedRowTitle} onPillClick={() => {}} />
+      <SidekickPanelHeader onClose={onClose} />
+      <PanelBody introPhase={introPhase} onWritePRD={onWritePRD} isGenerating={isGenerating} isComplete={isComplete} onViewDoc={onViewDoc} onAddToBoard={onAddToBoard} selectedRowTitle={selectedRowTitle} selectedRowJiraKey={selectedRowJiraKey} onPillClick={() => {}} skipIntro={skipIntro} />
       {/* Loading message — always takes space, content fades via opacity */}
       <div style={{ padding: '0 24px', marginBottom: 12, flexShrink: 0, height: 28 }}>
         {(() => {

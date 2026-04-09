@@ -139,7 +139,6 @@ export function WorkOnThisButton({ onPress, label = 'Work on this', size = 'medi
         height: config.height,
         padding: config.padding,
         minWidth: config.minWidth,
-        width: '100%',
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
