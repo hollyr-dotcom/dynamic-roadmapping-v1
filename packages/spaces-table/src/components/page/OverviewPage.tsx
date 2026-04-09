@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import type { SpaceRow } from '@spaces/shared'
 import { companyARR } from '@spaces/shared'
-import { Button, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard, IconEyeOpen, IconInsightsSearch, IconInformationMarkCircle } from '@mirohq/design-system'
+import { Button, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard, IconEyeOpen, IconInsightsSearch, IconInformationMarkCircle, IconTasks } from '@mirohq/design-system'
 import {
   IconChartLine,
   IconChartProgress,
@@ -219,7 +219,7 @@ const CARD_W = 500
 const CARD_GAP = 28
 
 
-export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onBgColorChange, bgRef }: { onDiveDeeper?: (cardId: string) => void; onAddToRoadmap?: (cardId: string) => void; onReprioritize?: (cardId: string) => void; onBgColorChange?: (color: string) => void; bgRef?: React.RefObject<HTMLElement> }) {
+export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onBgColorChange, onGoToBacklog, bgRef }: { onDiveDeeper?: (cardId: string) => void; onAddToRoadmap?: (cardId: string) => void; onReprioritize?: (cardId: string) => void; onBgColorChange?: (color: string) => void; onGoToBacklog?: () => void; bgRef?: React.RefObject<HTMLElement> }) {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
   const [activeIndex, setActiveIndex] = useState(0)
   const [descKey, setDescKey] = useState(0)
@@ -328,7 +328,7 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onB
 
   // Notify parent of active card's chip color whenever it changes
   const activeCard = visibleCards[safeIndex]
-  const activeBg = activeCard ? MATCH_TAG_STYLE[activeCard.matchTag].bg : '#F2F4FC'
+  const activeBg = visibleCards.length === 0 ? '#ffffff' : (activeCard ? MATCH_TAG_STYLE[activeCard.matchTag].bg : '#F2F4FC')
   useEffect(() => { onBgColorChange?.(activeBg) }, [activeBg, onBgColorChange])
 
 
