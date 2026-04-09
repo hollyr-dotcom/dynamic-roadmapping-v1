@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import type { SpaceRow } from '@spaces/shared'
 import { CompanyLogo } from '../CompanyLogo'
+import { WorkOnCanvasButton, MoveToRoadmapButton } from '../PromptButtons'
 import { SourceLogoChip } from './SourceLogoChip'
 import { CallTranscriptPanel, type TranscriptLine } from './CallTranscriptPanel'
 import {
@@ -340,19 +341,14 @@ function SidekickInputBar({ onWorkOnCanvas, onMoveToRoadmap }: { onWorkOnCanvas?
     setTimeout(() => onWorkOnCanvas?.(), 250)
   }
 
-  const prompts = [
-    { label: 'Work on canvas', icon: <IconCursor css={{ width: 16, height: 16 }} />, onClick: handleWorkOnCanvas },
-    { label: 'Move to roadmap', icon: <IconRocket css={{ width: 16, height: 16 }} />, onClick: onMoveToRoadmap },
-  ]
-
   const showPrompts = mode === 'prompts' && !exiting
   const showThumbnail = mode === 'composing'
   const showChat = mode === 'sent' || mode === 'reply'
   const inputBorderColor = mode === 'composing' ? '#4262FF' : hasText ? '#4262FF' : '#e0e2e8'
 
   return (
-    <div className="shrink-0" style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-      {/* Prompt pills — dip down behind the input on exit */}
+    <div className="shrink-0" style={{ padding: '8px 16px 16px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      {/* Prompt pills — above the input, dip down behind on exit */}
       <div
         style={{
           position: 'relative',
@@ -368,30 +364,8 @@ function SidekickInputBar({ onWorkOnCanvas, onMoveToRoadmap }: { onWorkOnCanvas?
           pointerEvents: showPrompts ? 'auto' : 'none',
         }}
       >
-        {prompts.map((p) => (
-          <button
-            key={p.label}
-            className="flex items-center gap-1.5 shrink-0"
-            style={{
-              border: '1px solid #e0e2e8',
-              borderRadius: 8,
-              padding: '6px 10px 6px 8px',
-              background: '#fff',
-              fontSize: 13,
-              fontWeight: 500,
-              color: '#222428',
-              fontFamily: 'var(--font-noto)',
-              cursor: 'pointer',
-              transition: 'border-color 0.15s, background 0.15s',
-            }}
-            onClick={p.onClick}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#c2c5cc'; e.currentTarget.style.background = '#f7f8fa' }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e0e2e8'; e.currentTarget.style.background = '#fff' }}
-          >
-            {p.icon}
-            {p.label}
-          </button>
-        ))}
+        <WorkOnCanvasButton onClick={handleWorkOnCanvas} />
+        <MoveToRoadmapButton onClick={onMoveToRoadmap} />
       </div>
 
       {/* Chat messages — appear after sending */}
