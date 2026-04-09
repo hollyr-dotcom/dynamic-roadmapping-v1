@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'react'
 
 interface CanvasOverlayProps {
   isOpen: boolean
+  interactive?: boolean
   panX: number
   panY: number
   zoom: number
@@ -24,15 +25,16 @@ function getGridSpacing(zoom: number) {
   return spacing
 }
 
-export function CanvasOverlay({ isOpen, panX, panY, zoom, smoothPanning, onPan, onZoom, onDeselect }: CanvasOverlayProps) {
+export function CanvasOverlay({ isOpen, interactive, panX, panY, zoom, smoothPanning, onPan, onZoom, onDeselect }: CanvasOverlayProps) {
   const ref = useRef<HTMLDivElement>(null)
+  const isInteractive = interactive ?? isOpen
   const gridSpacing = getGridSpacing(zoom)
   const screenSpacing = gridSpacing * zoom
 
   // Wheel handler with { passive: false } so we can preventDefault
   useEffect(() => {
     const el = ref.current
-    if (!el || !isOpen) return
+    if (!el || !isInteractive) return
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault()
@@ -50,7 +52,7 @@ export function CanvasOverlay({ isOpen, panX, panY, zoom, smoothPanning, onPan, 
 
     el.addEventListener('wheel', handleWheel, { passive: false })
     return () => el.removeEventListener('wheel', handleWheel)
-  }, [isOpen, zoom, onPan, onZoom])
+  }, [isInteractive, zoom, onPan, onZoom])
 
   return (
     <div
@@ -59,7 +61,7 @@ export function CanvasOverlay({ isOpen, panX, panY, zoom, smoothPanning, onPan, 
       style={{
         zIndex: 60,
         opacity: isOpen ? 1 : 0,
-        pointerEvents: isOpen ? 'auto' : 'none',
+        pointerEvents: isInteractive ? 'auto' : 'none',
         backgroundColor: '#F2F2F2',
         backgroundImage: 'radial-gradient(circle, #D5D8DE 1px, transparent 1px)',
         backgroundSize: `${screenSpacing}px ${screenSpacing}px`,

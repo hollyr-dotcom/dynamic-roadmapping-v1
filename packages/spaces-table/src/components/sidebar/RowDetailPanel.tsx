@@ -42,6 +42,10 @@ import {
   IconPaperPlaneFilledRight,
   IconBookmark,
   IconTasks,
+  IconButton,
+  IconPlus,
+  IconCursor,
+  IconRocket,
 } from '@mirohq/design-system'
 import { JiraLogo } from '../JiraLogo'
 import AiPanelSolutionReview, { PanelHeader as SidekickHeader, PanelInput as SidekickInput } from './AiPanelSolutionReview'
@@ -98,6 +102,8 @@ interface RowDetailPanelProps {
   hideComments?: boolean
   overrideSummary?: string
   onOpenSidekick?: () => void
+  onWorkOnCanvas?: () => void
+  onMoveToRoadmap?: () => void
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -302,7 +308,246 @@ export function generateFeedbackCards(row: SpaceRow) {
   }))
 }
 
-export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, hideComments = false, overrideSummary, onOpenSidekick }: RowDetailPanelProps) {
+/* ─── Card thumbnail (inline, matches BoardSidekickPanel) ─── */
+function CardThumbnail({ selected }: { selected?: boolean }) {
+  return (
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style={{ flexShrink: 0, borderRadius: 6, border: selected ? '1px solid #4262FF' : undefined }}>
+      <rect width="48" height="48" fill="#F2F2F2"/>
+      <path d="M2.20703 15.7241C2.20703 15.1147 2.70106 14.6207 3.31048 14.6207H44.6898C45.2992 14.6207 45.7932 15.1147 45.7932 15.7241V32.2758C45.7932 32.8853 45.2992 33.3793 44.6898 33.3793H3.31048C2.70106 33.3793 2.20703 32.8853 2.20703 32.2758V15.7241Z" fill="#A8E9FF"/>
+      <path d="M2.48242 15.7241C2.48242 15.2671 2.85294 14.8965 3.31001 14.8965H44.6893C45.1464 14.8965 45.5169 15.2671 45.5169 15.7241V31.8621C45.5169 32.2429 45.2081 32.5517 44.8272 32.5517H3.17208C2.79119 32.5517 2.48242 32.2429 2.48242 31.8621V15.7241Z" fill="white"/>
+      <rect x="4.1377" y="17.6552" width="39.7241" height="2.2069" rx="1.10345" fill="#C7CAD5"/>
+      <rect x="4.1377" y="20.9655" width="30.8966" height="2.2069" rx="1.10345" fill="#C7CAD5"/>
+      <rect x="4.1377" y="25.3793" width="5.51724" height="3.31034" rx="1.10345" fill="#C7CAD5"/>
+      <rect x="10.7588" y="25.3793" width="5.51724" height="3.31034" rx="1.10345" fill="#C7CAD5"/>
+      <rect x="17.3789" y="25.3793" width="5.51724" height="3.31034" rx="1.10345" fill="#C7CAD5"/>
+    </svg>
+  )
+}
+
+type SidekickMode = 'prompts' | 'composing' | 'sent' | 'reply'
+
+function SidekickInputBar({ onWorkOnCanvas, onMoveToRoadmap }: { onWorkOnCanvas?: () => void; onMoveToRoadmap?: () => void }) {
+  const [text, setText] = useState('')
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const hasText = text.trim().length > 0
+  const [mode, setMode] = useState<SidekickMode>('prompts')
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  const [exiting, setExiting] = useState(false)
+
+  const handleWorkOnCanvas = () => {
+    setExiting(true)
+    setTimeout(() => onWorkOnCanvas?.(), 250)
+  }
+
+  const prompts = [
+    { label: 'Work on canvas', icon: <IconCursor css={{ width: 16, height: 16 }} />, onClick: handleWorkOnCanvas },
+    { label: 'Move to roadmap', icon: <IconRocket css={{ width: 16, height: 16 }} />, onClick: onMoveToRoadmap },
+  ]
+
+  const showPrompts = mode === 'prompts' && !exiting
+  const showThumbnail = mode === 'composing'
+  const showChat = mode === 'sent' || mode === 'reply'
+  const inputBorderColor = mode === 'composing' ? '#4262FF' : hasText ? '#4262FF' : '#e0e2e8'
+
+  return (
+    <div className="shrink-0" style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      {/* Prompt pills — dip down behind the input on exit */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 0,
+          display: 'flex',
+          gap: 6,
+          marginBottom: showPrompts ? 8 : 0,
+          maxHeight: showPrompts ? 40 : 0,
+          opacity: showPrompts ? 1 : 0,
+          transform: showPrompts ? 'translateY(0)' : 'translateY(12px)',
+          transition: 'all 0.25s cubic-bezier(0.16,1,0.3,1)',
+          overflow: 'hidden',
+          pointerEvents: showPrompts ? 'auto' : 'none',
+        }}
+      >
+        {prompts.map((p) => (
+          <button
+            key={p.label}
+            className="flex items-center gap-1.5 shrink-0"
+            style={{
+              border: '1px solid #e0e2e8',
+              borderRadius: 20,
+              padding: '6px 12px',
+              background: '#fff',
+              fontSize: 13,
+              fontWeight: 500,
+              color: '#222428',
+              fontFamily: 'var(--font-noto)',
+              cursor: 'pointer',
+              transition: 'border-color 0.15s, background 0.15s',
+            }}
+            onClick={p.onClick}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#c2c5cc'; e.currentTarget.style.background = '#f7f8fa' }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e0e2e8'; e.currentTarget.style.background = '#fff' }}
+          >
+            {p.icon}
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Chat messages — appear after sending */}
+      {showChat && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 12 }}>
+          {/* User message */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, opacity: 0, animation: 'item-enter 0.35s cubic-bezier(0.16,1,0.3,1) forwards' }}>
+            <div style={{ background: '#f2f4fc', borderRadius: 8, padding: '10px 14px', maxWidth: '85%' }}>
+              <span style={{ fontSize: 14, color: '#222428', fontFamily: 'var(--font-noto)', lineHeight: 1.4 }}>Work on canvas</span>
+            </div>
+            <CardThumbnail />
+          </div>
+
+          {/* AI reply */}
+          {mode === 'reply' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, opacity: 0, animation: 'item-enter 0.35s cubic-bezier(0.16,1,0.3,1) 0.1s forwards' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'linear-gradient(135deg, #322BFE 0%, #A34CFF 55%, #F66EFF 100%)',
+                    flexShrink: 0,
+                  }}
+                >
+                  <IconSparksFilled css={{ width: 12, height: 12, color: 'white' }} />
+                </div>
+                <span style={{ fontSize: 14, color: '#222428', fontFamily: 'var(--font-noto)', lineHeight: 1.5 }}>
+                  Hey Mike, let's work together on this.
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, paddingLeft: 32 }}>
+                {['Write a PRD', 'Explore insights', 'Estimate with team'].map((label) => (
+                  <button
+                    key={label}
+                    className="flex items-center"
+                    style={{
+                      border: '1px solid #e0e2e8',
+                      borderRadius: 20,
+                      padding: '5px 10px',
+                      background: '#fff',
+                      fontSize: 12,
+                      fontWeight: 500,
+                      color: '#222428',
+                      fontFamily: 'var(--font-noto)',
+                      cursor: 'pointer',
+                      transition: 'border-color 0.15s, background 0.15s',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#c2c5cc'; e.currentTarget.style.background = '#f7f8fa' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e0e2e8'; e.currentTarget.style.background = '#fff' }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
+      )}
+
+      {/* Input box — sits above pills so they dip behind it */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          border: `1px solid ${inputBorderColor}`,
+          borderRadius: 8,
+          background: '#fff',
+          transition: 'border-color 0.2s, box-shadow 0.2s',
+          boxShadow: mode === 'composing' ? '0 0 0 3px rgba(66,98,255,0.08)' : 'none',
+        }}
+      >
+        <div style={{ padding: '12px 16px 4px' }}>
+          <textarea
+            ref={textareaRef}
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value)
+              e.target.style.height = 'auto'
+              e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                setText('')
+                if (textareaRef.current) textareaRef.current.style.height = 'auto'
+              }
+            }}
+            placeholder="Ask questions or make edits"
+            readOnly={mode === 'composing'}
+            style={{
+              width: '100%',
+              border: 'none',
+              outline: 'none',
+              resize: 'none',
+              fontSize: 14,
+              fontWeight: 400,
+              color: '#222428',
+              lineHeight: 1.4,
+              fontFamily: 'var(--font-noto)',
+              background: 'transparent',
+              minHeight: 24,
+              maxHeight: 120,
+              overflow: 'auto',
+            }}
+            rows={1}
+          />
+        </div>
+
+        {/* Thumbnail — slides in during composing */}
+        <div
+          style={{
+            maxHeight: showThumbnail ? 64 : 0,
+            opacity: showThumbnail ? 1 : 0,
+            padding: showThumbnail ? '8px 16px' : '0 16px',
+            transition: 'all 0.35s cubic-bezier(0.16,1,0.3,1)',
+            overflow: 'hidden',
+          }}
+        >
+          <CardThumbnail selected />
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 8px 8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <IconButton aria-label="Add" variant="ghost" size="medium"><IconPlus /></IconButton>
+          </div>
+          <div
+            onClick={() => { if (hasText) { setText(''); if (textareaRef.current) textareaRef.current.style.height = 'auto' } }}
+            style={{
+              background: (hasText || mode === 'composing') ? '#4262FF' : '#e9eaef',
+              borderRadius: 20,
+              width: 32,
+              height: 32,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: hasText ? 'pointer' : 'default',
+              transition: 'background 0.15s',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M7 12.5L7 1.5M7 1.5L2 6.5M7 1.5L12 6.5" stroke={(hasText || mode === 'composing') ? '#fff' : '#AEB2C0'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onRowUpdated, timelineDates, onCompanyFilter, activeCompanyFilter, selectedLayout: selectedLayoutProp, onLayoutChange, hideInsightCallout = false, hideComments = false, overrideSummary, onOpenSidekick, onWorkOnCanvas, onMoveToRoadmap: onMoveToRoadmapProp }: RowDetailPanelProps) {
   const [activeTab, setActiveTab] = useState('Details')
   // Holly's sidekick state — disabled for v2 exploration, keeping code intact
   const [showSidekick, /* setShowSidekick */] = useState(false)
@@ -360,7 +605,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
   const selectedLayout = selectedLayoutProp ?? layoutInternal
   const setSelectedLayout = (l: 'Halfscreen' | 'Right' | 'Fullscreen') => { setLayoutInternal(l); onLayoutChange?.(l) }
   const COMMENTS_WIDTH = 420
-  const panelWidth = selectedLayout === 'Halfscreen' ? window.innerWidth * 0.5 : selectedLayout === 'Fullscreen' ? window.innerWidth * 0.75 - COMMENTS_WIDTH : 460
+  const panelWidth = selectedLayout === 'Halfscreen' ? window.innerWidth * 0.5 : selectedLayout === 'Fullscreen' ? window.innerWidth * 0.75 - COMMENTS_WIDTH : '100%'
   const layoutButtonRef = useRef<HTMLButtonElement>(null)
   const layoutMenuRef = useRef<HTMLDivElement>(null)
 
@@ -1008,26 +1253,9 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
 
       </div>{/* end tabs content */}
 
-      {/* ── Comment input bar (Details / Jira / Insights tabs) ─── */}
+      {/* ── Sidekick input bar (canvas-style) ─── */}
       {!selectedCompany && !selectedFeedbackCard && !callCard && !showArchive && !selectedPrompt && !showSidekick && (
-        <div className="shrink-0" style={{ padding: '16px' }}>
-          <div
-            className="flex items-center gap-1.5"
-            style={{ border: '1px solid #E0E2E8', borderRadius: 12, padding: '8px 12px', background: 'white', cursor: 'text' }}
-            onClick={() => {/* setShowSidekick(true) — disabled for v2 */}}
-          >
-            <textarea
-              readOnly
-              placeholder="Ask about your roadmap."
-              rows={2}
-              className="flex-1 text-[14px] outline-none bg-transparent min-w-0 resize-none cursor-text"
-              style={{ fontFamily: 'Open Sans, sans-serif', color: '#AEB2C0' }}
-            />
-            <button onClick={e => { e.stopPropagation(); /* setShowSidekick(true) — disabled for v2 */ }} className="shrink-0 text-[#9DA3B4]">
-              <IconPaperPlaneFilledRight css={{ width: 20, height: 20 }} />
-            </button>
-          </div>
-        </div>
+        <SidekickInputBar onWorkOnCanvas={onWorkOnCanvas} onMoveToRoadmap={onMoveToRoadmapProp} />
       )}
 
       {/* ── Detail overlay — sits below the 48px header so X button is never covered ─── */}

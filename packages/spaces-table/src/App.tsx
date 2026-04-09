@@ -25,6 +25,7 @@ import { CanvasOverlay } from './components/canvas/CanvasOverlay'
 import { CanvasTableWidget } from './components/canvas/CanvasTableWidget'
 import { CanvasNavPanels } from './components/canvas/CanvasNavPanels'
 import { CanvasCreationToolbar } from './components/canvas/CanvasCreationToolbar'
+import { CanvasGhostChrome } from './components/canvas/CanvasGhostChrome'
 import { CanvasFeedbackCard, type FeedbackCardData } from './components/canvas/CanvasFeedbackCard'
 import { CanvasRecordCard } from './components/canvas/CanvasRecordCard'
 import { MoveToRoadmapSnackbar } from './components/page/MoveToRoadmapSnackbar'
@@ -96,7 +97,8 @@ const ROADMAP_KANBAN_COLUMNS: Priority[] = ['now', 'next', 'later']
 
 export function App() {
   const [scrollFade, setScrollFade] = useState(0)
-  const [view, setView] = useState<'home' | 'app'>('home')
+  // DEV: skip homepage, start with data + side panel open for faster testing
+  const [view, setView] = useState<'home' | 'app'>('app')
   const [isInitialLoad, setIsInitialLoad] = useState(false)
   const [emptyVariant] = useState<'hidden' | 'disabled'>('disabled')
   const [spaceName, setSpaceName] = useState('Project Galaxy')
@@ -107,7 +109,8 @@ export function App() {
   const [showShareDialog, setShowShareDialog] = useState(false)
   const [activePage, setActivePage] = useState<PageId>('backlog')
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
-  const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
+  // DEV: start with row-detail open
+  const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>('row-detail')
   const [pendingImport, setPendingImport] = useState<'jira' | 'miro' | 'csv' | 'backlog' | null>(null)
   const [backlogHasData, setBacklogHasData] = useState(true)
   const [roadmapHasData, setRoadmapHasData] = useState(true)
@@ -124,7 +127,8 @@ export function App() {
   })
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  const [selectedRow, setSelectedRow] = useState<SpaceRow | null>(null)
+  // DEV: start with first row selected
+  const [selectedRow, setSelectedRow] = useState<SpaceRow | null>(sampleData[0])
   const [overviewCardId, setOverviewCardId] = useState<string | null>(null)
   const [selectedRowDates, setSelectedRowDates] = useState<{ startDate: string; endDate: string } | undefined>(undefined)
   const [selectedJiraRow, setSelectedJiraRow] = useState<SpaceRow | null>(null)
@@ -137,6 +141,7 @@ export function App() {
   const [sidekickContextMessage, setSidekickContextMessage] = useState<string | undefined>(undefined)
   const [sidekickKey, setSidekickKey] = useState(0)
   const [canvasOpen, setCanvasOpen] = useState(false)
+  const [canvasTransitionPhase, setCanvasTransitionPhase] = useState<'idle' | 'loading' | 'complete'>('idle')
   const [navHovered, setNavHovered] = useState(false)
   const [kanbanCardSelected, setKanbanCardSelected] = useState(false)
 
@@ -149,6 +154,7 @@ export function App() {
   const [smoothPanning, setSmoothPanning] = useState(false)
   const [boardName, setBoardName] = useState<string | null>(null)
   const [boardSidekickOpen, setBoardSidekickOpen] = useState(false)
+  const [sidekickTransitioning, setSidekickTransitioning] = useState(false)
   const [boardIconIndex, setBoardIconIndex] = useState<number>(0)
   const [flowStreaming, setFlowStreaming] = useState(false)
   const [flowCardMounted, setFlowCardMounted] = useState(false)
@@ -253,9 +259,18 @@ export function App() {
       const target = e.target as HTMLElement
       const isEditing = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
 
+      if (e.key === 'Escape' && canvasTransitionPhase !== 'idle' && !canvasOpen) {
+        e.preventDefault()
+        setSidekickTransitioning(false)
+        setCanvasTransitionPhase('idle')
+        return
+      }
+
       if (e.key === 'Escape' && canvasOpen) {
         e.preventDefault()
         setCanvasOpen(false)
+        setCanvasTransitionPhase('idle')
+        setSidekickTransitioning(false)
         setPanX(0)
         setPanY(0)
         setZoom(1)
@@ -648,13 +663,13 @@ export function App() {
 
   return (
     <div className="relative w-screen h-screen bg-white overflow-hidden">
-      {/* Main app layout — scales down when canvas opens */}
+      {/* Main app layout — scales down when canvas opens or loading transition starts */}
       <div
         className="flex w-full h-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{
-          transform: canvasOpen ? 'scale(0.92)' : undefined,
-          opacity: canvasOpen ? 0 : 1,
-          pointerEvents: canvasOpen ? 'none' : 'auto',
+          transform: (canvasOpen || canvasTransitionPhase === 'loading') ? 'scale(0.92)' : undefined,
+          opacity: (canvasOpen || canvasTransitionPhase === 'loading') ? 0 : 1,
+          pointerEvents: (canvasOpen || canvasTransitionPhase === 'loading') ? 'none' : 'auto',
         }}
       >
       {/* Main content — shifts right when left sidebar is open.
@@ -941,23 +956,24 @@ export function App() {
 
       {/* Right sidebar — fixed overlay, slides in over the top nav */}
       <div
-        className="fixed top-0 right-0 h-full z-50"
+        className="fixed z-50"
         style={{
-          width: activeSidebar === 'row-detail' ? (panelLayout === 'Fullscreen' ? window.innerWidth * 0.75 : panelLayout === 'Halfscreen' ? window.innerWidth * 0.5 + 24 : 460 + 24) : activeSidebar === 'ai-sidekick' ? 0 : 320,
+          top: 64, right: 8, bottom: 8,
+          width: activeSidebar === 'row-detail' ? (panelLayout === 'Fullscreen' ? window.innerWidth * 0.75 : panelLayout === 'Halfscreen' ? window.innerWidth * 0.5 : 436) : activeSidebar === 'ai-sidekick' ? 0 : 320,
           transform: (isRightOpen && activeSidebar !== 'ai-sidekick' && !(activeSidebar === 'row-detail' && panelLayout === 'Fullscreen')) ? 'translateX(0)' : 'translateX(100%)',
           transition: 'transform 450ms cubic-bezier(0.16,1,0.3,1), width 450ms cubic-bezier(0.16,1,0.3,1)',
           pointerEvents: isRightOpen && activeSidebar !== 'ai-sidekick' ? 'auto' : 'none',
         }}
       >
         {activeSidebar === 'row-detail' ? (
-          <div className="h-full py-6 flex" style={{ paddingLeft: 12, paddingRight: 12 }}>
+          <div className="h-full flex">
             <div
-              className="flex-1 overflow-hidden rounded-xl"
+              className="flex-1 overflow-hidden rounded-xl relative"
               style={{ boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)' }}
             >
               {isJiraDetailOpen && selectedJiraRow
                 ? <JiraDetailPanel row={selectedJiraRow} onClose={() => { setIsJiraDetailOpen(false); closeSidebar() }} />
-                : selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} initialCompany={initialCompany} onAddToBoard={handleAddToBoard} onRowUpdated={handleRowUpdated} timelineDates={selectedRowDates} onCompanyFilter={handleCompanyFilter} activeCompanyFilter={companyFilter.length > 0 ? companyFilter : null} selectedLayout={panelLayout} onLayoutChange={setPanelLayout} hideInsightCallout={activePage === 'overview'} hideComments={activePage === 'overview'} overrideSummary={activePage === 'overview' && overviewCardId ? OVERVIEW_CARD_SUMMARIES[overviewCardId] : undefined} onOpenSidekick={() => { setSidekickSource('panel'); setActiveSidebar('ai-sidekick'); setSidekickFocusItemId(selectedRow.id) }} />
+                : selectedRow && <RowDetailPanel row={selectedRow} onClose={closeSidebar} initialCompany={initialCompany} onAddToBoard={handleAddToBoard} onRowUpdated={handleRowUpdated} timelineDates={selectedRowDates} onCompanyFilter={handleCompanyFilter} activeCompanyFilter={companyFilter.length > 0 ? companyFilter : null} selectedLayout={panelLayout} onLayoutChange={setPanelLayout} hideInsightCallout={activePage === 'overview'} hideComments={activePage === 'overview'} overrideSummary={activePage === 'overview' && overviewCardId ? OVERVIEW_CARD_SUMMARIES[overviewCardId] : undefined} onOpenSidekick={() => { setSidekickSource('panel'); setActiveSidebar('ai-sidekick'); setSidekickFocusItemId(selectedRow.id) }} onWorkOnCanvas={() => { setSidekickTransitioning(true); setTimeout(() => setCanvasTransitionPhase('loading'), 800) }} onMoveToRoadmap={() => handleMoveToRoadmap(selectedRow.id)} />
               }
             </div>
           </div>
@@ -972,7 +988,8 @@ export function App() {
 
       {/* Canvas overlay */}
       <CanvasOverlay
-        isOpen={canvasOpen}
+        isOpen={canvasOpen || canvasTransitionPhase !== 'idle'}
+        interactive={canvasOpen}
         panX={panX}
         panY={panY}
         zoom={zoom}
@@ -981,6 +998,9 @@ export function App() {
         onZoom={zoomTo}
         onDeselect={() => setSelectedWidgetId(null)}
       />
+
+      {/* Ghost chrome — visible during canvas loading transition */}
+      <CanvasGhostChrome isVisible={canvasTransitionPhase === 'loading' && !canvasOpen} />
 
       {/* Canvas table widgets */}
       {widgets.filter(w => w.type === 'table' || (!w.type)).map(widget => {
@@ -1090,6 +1110,55 @@ export function App() {
       {/* Canvas creation toolbar — left edge, vertically centred */}
       <CanvasCreationToolbar isOpen={canvasOpen} isMenuOpen={canvasOpen && activeSidebar === 'space-menu'} />
 
+      {/* Transitioning sidekick — persists outside main app layout during canvas open */}
+      {sidekickTransitioning && (
+        <div
+          className="fixed z-[10000] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+          style={{
+            top: 64,
+            right: 8,
+            bottom: 8,
+            width: 436,
+          }}
+        >
+          <div
+            className="h-full overflow-hidden rounded-xl flex flex-col"
+            style={{
+              boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)',
+              background: '#fff',
+            }}
+          >
+            <BoardSidekickPanel
+              onClose={() => { setSidekickTransitioning(false); setCanvasTransitionPhase('idle'); closeSidebar() }}
+              onWritePRD={handleWritePRD}
+              isGenerating={flowStreaming}
+              isComplete={!flowStreaming && flowProgress >= 1}
+              onAddToBoard={() => setDocAccepted(true)}
+
+              selectedRowTitle={selectedRow?.title}
+              spaceName={spaceName}
+              onCardReady={() => {
+                if (selectedRow) handleAddRecordToBoard(selectedRow.id)
+              }}
+              onLoadingComplete={() => {
+                setCanvasTransitionPhase('complete')
+              }}
+              onViewDoc={() => {
+                const docWidget = widgets.find(w => w.type === 'document')
+                if (docWidget) {
+                  const targetX = -docWidget.x + (window.innerWidth - 400 - 8 - 600) / 2
+                  const targetY = -docWidget.y + (window.innerHeight - 400) / 2
+                  setSmoothPanning(true)
+                  setPanX(targetX)
+                  setPanY(targetY)
+                  setTimeout(() => setSmoothPanning(false), 700)
+                }
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Board Sidekick + Flow progress — stacked column on the right */}
       <div
         className="fixed z-[10000] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
@@ -1100,16 +1169,16 @@ export function App() {
           display: 'flex',
           flexDirection: 'column',
           gap: 8,
-          width: 400,
-          opacity: canvasOpen && boardSidekickOpen ? 1 : 0,
-          transform: canvasOpen && boardSidekickOpen ? 'translateX(0)' : 'translateX(16px)',
-          pointerEvents: canvasOpen && boardSidekickOpen ? 'auto' : 'none',
+          width: 436,
+          opacity: canvasOpen && boardSidekickOpen && !sidekickTransitioning ? 1 : 0,
+          transform: canvasOpen && boardSidekickOpen && !sidekickTransitioning ? 'translateX(0)' : 'translateX(16px)',
+          pointerEvents: canvasOpen && boardSidekickOpen && !sidekickTransitioning ? 'auto' : 'none',
         }}
       >
         {/* Sidekick panel */}
         <div
-          className="rounded-xl overflow-hidden flex-1 min-h-0"
-          style={{ width: 400, boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)', background: '#fff' }}
+          className="h-full overflow-hidden rounded-xl flex flex-col"
+          style={{ boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)', background: '#fff' }}
         >
           <BoardSidekickPanel
             onClose={() => setBoardSidekickOpen(false)}
@@ -1117,7 +1186,6 @@ export function App() {
             isGenerating={flowStreaming}
             isComplete={!flowStreaming && flowProgress >= 1}
             onAddToBoard={() => setDocAccepted(true)}
-            docAdded={docAccepted}
             onViewDoc={() => {
               const docWidget = widgets.find(w => w.type === 'document')
               if (!docWidget) return

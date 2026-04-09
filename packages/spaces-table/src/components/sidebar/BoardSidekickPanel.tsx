@@ -158,14 +158,16 @@ function PanelInput({ onSend, showThumbnail, placeholder = "What are you working
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => textareaRef.current?.focus(), 400);
-    return () => clearTimeout(timer);
-  }, []);
+    if (showThumbnail) {
+      const timer = setTimeout(() => textareaRef.current?.focus(), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [showThumbnail]);
 
   const hasText = text.trim().length > 0;
 
   return (
-    <div style={{ flexShrink: 0, padding: "0 24px 24px", display: "flex", flexDirection: "column" }}>
+    <div style={{ flexShrink: 0, padding: "0 16px 16px", display: "flex", flexDirection: "column" }}>
       <div
         style={{
           border: `1px solid ${hasText ? "#4262FF" : "#e0e2e8"}`,
@@ -173,7 +175,7 @@ function PanelInput({ onSend, showThumbnail, placeholder = "What are you working
           background: "#fff",
           position: "relative",
           zIndex: 2,
-          transition: "border-color 0.15s",
+          transition: "border-color 0.2s",
         }}
       >
         <div style={{ padding: "12px 16px 4px" }}>
@@ -211,45 +213,57 @@ function PanelInput({ onSend, showThumbnail, placeholder = "What are you working
           />
         </div>
 
-        {showThumbnail && (
-          <div style={{ padding: "8px 16px" }}>
-            <CardThumbnail selected />
-          </div>
-        )}
+        <div
+          style={{
+            maxHeight: showThumbnail ? 64 : 0,
+            opacity: showThumbnail ? 1 : 0,
+            padding: showThumbnail ? "8px 16px" : "0 16px",
+            transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+            overflow: "hidden",
+          }}
+        >
+          <CardThumbnail selected />
+        </div>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px 8px" }}>
           <div style={{ display: "flex", alignItems: "center" }}>
             <IconButton aria-label="Add" variant="ghost" size="medium"><IconPlus /></IconButton>
           </div>
 
-          <div
-            onClick={handleSend}
-            style={{
-              background: hasText ? "#4262FF" : "#e9eaef",
-              borderRadius: 20,
-              width: 32,
-              height: 32,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: hasText ? "pointer" : "default",
-              transition: "background 0.15s",
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M7 12.5L7 1.5M7 1.5L2 6.5M7 1.5L12 6.5" stroke={hasText ? "#fff" : "#AEB2C0"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <div
+              onClick={handleSend}
+              style={{
+                background: hasText ? "#4262FF" : "#e9eaef",
+                borderRadius: 20,
+                width: 32,
+                height: 32,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: hasText ? "pointer" : "default",
+                transition: "background 0.15s",
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M7 12.5L7 1.5M7 1.5L2 6.5M7 1.5L12 6.5" stroke={hasText ? "#fff" : "#AEB2C0"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
           </div>
-        </div>
       </div>
     </div>
   );
 }
 
 /* ─── User message bubble ─── */
-function UserMessage({ text, showThumbnail }: { text: string; showThumbnail?: boolean }) {
+function UserMessage({ text, showThumbnail, riseIn }: { text: string; showThumbnail?: boolean; riseIn?: boolean }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, animation: "item-enter 0.35s cubic-bezier(0.16,1,0.3,1) forwards" }}>
+    <div style={{
+      display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8,
+      opacity: 0,
+      animation: riseIn
+        ? 'message-rise 0.4s cubic-bezier(0.16,1,0.3,1) forwards'
+        : 'item-enter 0.35s cubic-bezier(0.16,1,0.3,1) forwards',
+    }}>
       <div
         style={{
           background: "#f2f4fc",
@@ -271,9 +285,9 @@ function UserMessage({ text, showThumbnail }: { text: string; showThumbnail?: bo
 }
 
 /* ─── AI response text ─── */
-function AiMessage({ text, children }: { text: string; children?: React.ReactNode }) {
+function AiMessage({ text, children, delay = 0 }: { text: string; children?: React.ReactNode; delay?: number }) {
   return (
-    <div style={{ display: "flex", gap: 8, paddingRight: 32, animation: "item-enter 0.35s cubic-bezier(0.16,1,0.3,1) forwards" }}>
+    <div style={{ display: "flex", gap: 8, paddingRight: 32, opacity: 0, animation: `item-enter 0.4s cubic-bezier(0.16,1,0.3,1) ${delay}ms forwards` }}>
       <div style={{ flex: 1 }}>
         <p style={{ margin: "0 0 16px", fontSize: 14, color: "#222428", lineHeight: 1.6, fontFamily: "var(--font-noto)" }}>
           {text}
@@ -335,37 +349,47 @@ function GradientSparkleIcon() {
   );
 }
 
-/* ─── Working indicator with spinning gradient sparkle ─── */
-function WorkingIndicator() {
+/* ─── Loading message — gradient text, single-spin sparkle, fade in/out ─── */
+function LoadingMessage({ text, phase = 'in', spin = 'once' }: { text: string; phase?: 'in' | 'out'; spin?: 'once' | 'infinite' }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", animation: "item-enter 0.35s cubic-bezier(0.16,1,0.3,1) forwards" }}>
-      <span style={{ display: "inline-flex", animation: "sparkle-spin 3s ease-in-out infinite" }}>
+    <div
+      key={text}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '6px 0',
+        animation: phase === 'in'
+          ? 'loading-msg-in 0.5s cubic-bezier(0.16,1,0.3,1) forwards'
+          : 'loading-msg-out 0.4s ease-in forwards',
+      }}
+    >
+      <span style={{ display: 'inline-flex', animation: spin === 'infinite' ? 'sparkle-spin 3s ease-in-out infinite' : 'sparkle-spin-once 0.6s ease-in-out 1' }}>
         <GradientSparkleIcon />
       </span>
-      <span
-        className="gradient-sparkle"
-        style={{
-          fontSize: 14,
-          fontWeight: 600,
-          fontFamily: "var(--font-noto)",
-          background: "linear-gradient(42deg, #322BFE 0%, #6E3CFE 27%, #A34CFF 55%, #D05DFF 82%, #F66EFF 109%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-        }}
-      >
-        Working on it...
+      <span style={{
+        fontSize: 14, fontWeight: 400, lineHeight: 1.4,
+        fontFamily: 'var(--font-noto)',
+        background: 'linear-gradient(42deg, #322BFE 0%, #6E3CFE 27%, #A34CFF 55%, #D05DFF 82%, #F66EFF 109%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+      }}>
+        {text}
       </span>
     </div>
   );
 }
 
 /* ─── Panel Body ─── */
-function PanelBody({ onWritePRD, isGenerating, isComplete, onViewDoc, onAddToBoard }: {
+type IntroPhase = 'sent' | 'loading-1' | 'loading-1-out' | 'loading-2' | 'loading-2-out' | 'loading-3' | 'loading-3-out' | 'reply' | 'done'
+
+function PanelBody({ introPhase, onWritePRD, isGenerating, isComplete, onViewDoc, onAddToBoard, selectedRowTitle, onPillClick }: {
+  introPhase: IntroPhase;
   onWritePRD?: () => void;
   isGenerating?: boolean;
   isComplete?: boolean;
   onViewDoc?: () => void;
   onAddToBoard?: () => void;
+  selectedRowTitle?: string;
+  onPillClick?: () => void;
 }) {
   const [activePill, setActivePill] = useState<string | null>(null);
   const [addedToBoard, setAddedToBoard] = useState(false);
@@ -373,88 +397,104 @@ function PanelBody({ onWritePRD, isGenerating, isComplete, onViewDoc, onAddToBoa
 
   // Auto-scroll when new content appears
   useEffect(() => {
-    if (activePill || isComplete || addedToBoard) {
+    if (introPhase === 'reply' || activePill || isComplete || addedToBoard) {
       setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 100);
     }
-  }, [activePill, isGenerating, isComplete, addedToBoard]);
+  }, [introPhase, activePill, isGenerating, isComplete, addedToBoard]);
 
   const handlePillClick = (label: string) => {
     setActivePill(label);
+    onPillClick?.();
     if (label === "Write a PRD") onWritePRD?.();
   };
 
+  const introDone = introPhase === 'reply' || introPhase === 'done';
+
   return (
-    <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "0 28px 24px", display: "flex", flexDirection: "column" }} className="panel-scroll">
+    <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "0 28px 8px", display: "flex", flexDirection: "column" }} className="panel-scroll">
       {/* Spacer pushes content to bottom */}
       <div style={{ flex: 1 }} />
 
-      {/* Greeting — hidden once a pill is selected */}
-      {!activePill && (
-        <>
-          <div style={{ marginBottom: 12, opacity: 0, animation: "item-enter 0.35s cubic-bezier(0.16,1,0.3,1) 200ms forwards" }}>
-            <AgentAvatar size={40} />
-          </div>
-          <div style={{ marginBottom: 16 }}>
-            <p style={{ margin: "0 0 8px", fontSize: 18, fontWeight: 600, color: "#222428", fontFamily: "var(--font-roobert)", fontFeatureSettings: "'ss01'", opacity: 0, animation: "item-enter 0.35s cubic-bezier(0.16,1,0.3,1) 350ms forwards" }}>
-              Hey Mike
-            </p>
-            <p style={{ margin: 0, fontSize: 14, color: "#222428", lineHeight: 1.5, opacity: 0, animation: "item-enter 0.35s cubic-bezier(0.16,1,0.3,1) 450ms forwards" }}>
-              Let's work together on this.
-            </p>
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {[
-              { label: "Write a PRD" },
-              { label: "Explore insights" },
-              { label: "Start an estimation session" },
-              { label: "Import designs" },
-              { label: "Make a prototype" },
-              { label: "Share with team" },
-            ].map((pill, i) => (
-              <div key={pill.label} style={{ opacity: 0, animation: `item-enter 0.35s cubic-bezier(0.16,1,0.3,1) ${600 + i * 50}ms forwards` }}>
-                <PromptPill label={pill.label} onClick={() => handlePillClick(pill.label)} />
-              </div>
-            ))}
-          </div>
-        </>
+      {/* User message — rises up from behind the input */}
+      <div style={{
+        marginBottom: 16,
+        opacity: 0,
+        animation: 'message-rise 0.4s cubic-bezier(0.16,1,0.3,1) forwards',
+      }}>
+        <UserMessage text="Work on canvas" />
+      </div>
+
+      {/* AI completion message — stays in chat once it appears */}
+      {introDone && (
+        <p style={{
+          margin: "0 0 16px", fontSize: 14, color: "#222428", lineHeight: 1.5,
+          fontFamily: "var(--font-noto)",
+          opacity: 0, animation: "item-enter 0.35s cubic-bezier(0.16,1,0.3,1) forwards",
+        }}>
+          I've created a new board for {selectedRowTitle || 'this item'}, and I've invited your team. What are we working on?
+        </p>
+      )}
+
+      {/* Prompt pills — hidden once one is clicked */}
+      {introDone && !activePill && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {[
+            { label: "Write a PRD" },
+            { label: "Explore insights" },
+            { label: "Start an estimation session" },
+            { label: "Import designs" },
+            { label: "Make a prototype" },
+            { label: "Share with team" },
+          ].map((pill, i) => (
+            <div key={pill.label} style={{ opacity: 0, animation: `item-enter 0.35s cubic-bezier(0.16,1,0.3,1) ${300 + i * 60}ms forwards` }}>
+              <PromptPill label={pill.label} onClick={() => handlePillClick(pill.label)} />
+            </div>
+          ))}
+        </div>
       )}
 
       {/* Chat flow after pill selection */}
       {activePill && (
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-          {/* User message */}
-          <UserMessage text={activePill} showThumbnail />
+          {/* User message — rises up like "Work on canvas" */}
+          <UserMessage text={activePill} showThumbnail riseIn />
 
-          {/* AI response while generating */}
+          {/* AI response — appears after user message settles */}
           {(isGenerating || isComplete) && (
-            <AiMessage text="I'll create a Product Requirements Document for you on the canvas.">
+            <AiMessage text="I'll create a Product Requirements Document for you on the canvas." delay={500}>
               {isComplete && (
                 <>
-                  <DocSummaryCard title="Product Requirements Document" onClick={onViewDoc} />
+                  <div style={{ opacity: 0, animation: "item-enter 0.4s cubic-bezier(0.16,1,0.3,1) 200ms forwards" }}>
+                    <DocSummaryCard title="Product Requirements Document" onClick={onViewDoc} />
+                  </div>
+                  <p style={{ margin: "16px 0 12px", fontSize: 14, color: "#222428", lineHeight: 1.6, fontFamily: "var(--font-noto)", opacity: 0, animation: "item-enter 0.4s cubic-bezier(0.16,1,0.3,1) 400ms forwards" }}>
+                    Done. What next?
+                  </p>
                   {!addedToBoard && (
-                    <>
-                      <p style={{ margin: "16px 0 12px", fontSize: 14, color: "#222428", lineHeight: 1.6, fontFamily: "var(--font-noto)" }}>
-                        Done. What next?
-                      </p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                        <PromptPill label="Add to board" onClick={() => { setAddedToBoard(true); onAddToBoard?.() }} />
-                        <PromptPill label="Make changes" onClick={() => {}} />
-                      </div>
-                    </>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      {["Add to board", "Make changes"].map((label, i) => (
+                        <div key={label} style={{ opacity: 0, animation: `item-enter 0.35s cubic-bezier(0.16,1,0.3,1) ${550 + i * 60}ms forwards` }}>
+                          <PromptPill label={label} onClick={label === "Add to board" ? () => { setAddedToBoard(true); onAddToBoard?.() } : () => {}} />
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </>
               )}
             </AiMessage>
           )}
 
-          {/* Add to board follow-up */}
+          {/* Add to board — user message + AI reply */}
           {addedToBoard && (
             <>
-              <UserMessage text="Add to board" />
-              <AiMessage text="Done! The document has been added to your board.">
+              <UserMessage text="Add to board" riseIn />
+              <AiMessage text="Done! The document has been added to your board." delay={400}>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  <PromptPill label="Share with team" onClick={() => {}} />
-                  <PromptPill label="Copy doc link" onClick={() => {}} />
+                  {["Share with team", "Copy doc link"].map((label, i) => (
+                    <div key={label} style={{ opacity: 0, animation: `item-enter 0.35s cubic-bezier(0.16,1,0.3,1) ${200 + i * 60}ms forwards` }}>
+                      <PromptPill label={label} onClick={() => {}} />
+                    </div>
+                  ))}
                 </div>
               </AiMessage>
             </>
@@ -466,27 +506,76 @@ function PanelBody({ onWritePRD, isGenerating, isComplete, onViewDoc, onAddToBoa
 }
 
 /* ─── Main export ─── */
-export default function BoardSidekickPanel({ onClose, onWritePRD, isGenerating, isComplete, onViewDoc, onAddToBoard, docAdded }: {
+export default function BoardSidekickPanel({ onClose, onWritePRD, isGenerating, isComplete, onViewDoc, onAddToBoard, selectedRowTitle, spaceName, onCardReady, onLoadingComplete }: {
   onClose?: () => void;
   onWritePRD?: () => void;
   isGenerating?: boolean;
   isComplete?: boolean;
   onViewDoc?: () => void;
   onAddToBoard?: () => void;
-  docAdded?: boolean;
+  selectedRowTitle?: string;
+  spaceName?: string;
+  onCardReady?: () => void;
+  onLoadingComplete?: () => void;
 } = {}) {
+  const [introPhase, setIntroPhase] = useState<IntroPhase>('sent');
+
+  // Stable refs for callbacks so the effect doesn't re-run
+  const onCardReadyRef = useRef(onCardReady);
+  const onLoadingCompleteRef = useRef(onLoadingComplete);
+  onCardReadyRef.current = onCardReady;
+  onLoadingCompleteRef.current = onLoadingComplete;
+
+  // Intro animation sequence with cycling messages (each fades in, holds, fades out)
+  useEffect(() => {
+    const t: ReturnType<typeof setTimeout>[] = [];
+    t.push(setTimeout(() => setIntroPhase('loading-1'), 800));         // "Creating a new board" in
+    t.push(setTimeout(() => setIntroPhase('loading-1-out'), 2200));    // fade out
+    t.push(setTimeout(() => setIntroPhase('loading-2'), 2500));        // "Adding context" in
+    t.push(setTimeout(() => { onCardReadyRef.current?.() }, 3400));    // show card on canvas
+    t.push(setTimeout(() => setIntroPhase('loading-2-out'), 3900));    // fade out
+    t.push(setTimeout(() => setIntroPhase('loading-3'), 4200));        // "Inviting your team" in
+    t.push(setTimeout(() => setIntroPhase('loading-3-out'), 5500));    // fade out
+    t.push(setTimeout(() => {
+      setIntroPhase('reply');
+      onLoadingCompleteRef.current?.();
+    }, 5800));
+    t.push(setTimeout(() => setIntroPhase('done'), 6200));
+    return () => t.forEach(clearTimeout);
+  }, []);
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", maxWidth: "100%", background: "#fff", borderRadius: 8 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", maxWidth: "100%", background: "#fff", borderRadius: 8, position: "relative" }}>
       <AiGradientDefs />
       <PanelHeader onClose={onClose} />
-      <PanelBody onWritePRD={onWritePRD} isGenerating={isGenerating} isComplete={isComplete} onViewDoc={onViewDoc} onAddToBoard={onAddToBoard} />
+      <PanelBody introPhase={introPhase} onWritePRD={onWritePRD} isGenerating={isGenerating} isComplete={isComplete} onViewDoc={onViewDoc} onAddToBoard={onAddToBoard} selectedRowTitle={selectedRowTitle} onPillClick={() => {}} />
+      {/* Loading message — always takes space, content fades via opacity */}
+      <div style={{ padding: '0 24px', marginBottom: 12, flexShrink: 0, height: 28 }}>
+        {(() => {
+          const isLoading = introPhase.startsWith('loading');
+          if (!isLoading) return null;
+          const loadingMessages: Record<string, string> = {
+            'loading-1': 'Creating a new board',
+            'loading-2': `Adding context from ${spaceName || 'Project Galaxy'} backlog`,
+            'loading-3': 'Inviting your team',
+          };
+          const key = introPhase.replace('-out', '');
+          const phase = introPhase.endsWith('-out') ? 'out' as const : 'in' as const;
+          const text = loadingMessages[key] || '';
+          return <LoadingMessage key={key} text={text} phase={phase} />;
+        })()}
+      </div>
       {/* Working indicator — above chat input */}
       {isGenerating && !isComplete && (
-        <div style={{ padding: "0 28px" }}>
-          <WorkingIndicator />
+        <div style={{ padding: "0 24px", marginBottom: 12, height: 28, flexShrink: 0 }}>
+          <LoadingMessage text="Working on it..." spin="infinite" />
         </div>
       )}
-      <PanelInput onSend={() => {}} showThumbnail={!isGenerating && !isComplete} placeholder={docAdded ? "What's next?" : "What are you working on?"} />
+      <PanelInput
+        onSend={() => {}}
+        showThumbnail={['loading-3', 'loading-3-out', 'reply', 'done'].includes(introPhase) && !isGenerating && !isComplete}
+        placeholder="Write a reply"
+      />
     </div>
   );
 }
