@@ -516,7 +516,7 @@ export function App() {
   }
 
   return (
-    <div ref={overviewRootRef} className="relative w-screen h-screen overflow-hidden" style={{ backgroundColor: activePage === 'overview' ? overviewBgColor : '#ffffff', backgroundImage: activePage !== 'overview' ? 'none' : undefined, transition: activePage === 'overview' ? undefined : 'background-color 0.4s ease' }}>
+    <div ref={overviewRootRef} className="relative w-screen h-screen overflow-hidden" style={{ backgroundColor: activePage === 'overview' ? overviewBgColor : '#ffffff', backgroundImage: activePage !== 'overview' ? 'none' : undefined, transition: 'background-color 0.6s ease' }}>
       {/* Main app layout — scales down when canvas opens */}
       <div
         className="flex w-full h-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"

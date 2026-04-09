@@ -331,6 +331,16 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onB
   const activeBg = visibleCards.length === 0 ? '#ffffff' : (activeCard ? MATCH_TAG_STYLE[activeCard.matchTag].bg : '#F2F4FC')
   useEffect(() => { onBgColorChange?.(activeBg) }, [activeBg, onBgColorChange])
 
+  // When all cards are dismissed the scroll track unmounts so applyProgress never runs
+  // again — clear the gradient that was painted directly onto the DOM element.
+  useEffect(() => {
+    if (visibleCards.length === 0 && bgRef?.current) {
+      bgRef.current.style.backgroundImage = 'none'
+      bgRef.current.style.backgroundSize = ''
+      bgRef.current.style.backgroundPosition = ''
+    }
+  }, [visibleCards.length, bgRef])
+
 
   return (
     <div className="flex flex-col items-center w-full h-full select-none py-10">
