@@ -280,7 +280,7 @@ function StreamingText({ text, speed = 80, onComplete, onProgress }: { text: str
   return <>{words.slice(0, count).join(' ')}</>;
 }
 
-/* ─── Analysing indicator (spinner + text + expanding steps) ─── */
+/* ─── Analysing indicator (collapsible step list with agent icon) ─── */
 function AnalysingIndicator({ steps }: { steps?: string[] }) {
   const [revealed, setRevealed] = useState(0);
   const [expanded, setExpanded] = useState(true);
@@ -291,18 +291,17 @@ function AnalysingIndicator({ steps }: { steps?: string[] }) {
     return () => clearTimeout(t);
   }, [revealed, steps?.length]);
 
-  // Get the current step label for the header
   const currentStep = steps?.[Math.min(revealed, (steps?.length ?? 1) - 1)] || 'Analysing';
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      {/* Header row — icon + label + chevron */}
+      {/* Header row — agent icon + current step + chevron */}
       <div
         onClick={() => setExpanded(!expanded)}
         style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "4px 0" }}
       >
-        <IconSparks size="small" color="icon-secondary" />
-        <span style={{ fontSize: 14, fontWeight: 400, color: "#AEB2C0", lineHeight: 1.5 }}>
+        <img src="/logo-spinner.png" alt="" width={20} height={20} style={{ flexShrink: 0 }} />
+        <span style={{ fontSize: 14, fontWeight: 400, color: "#656B81", lineHeight: 1.5 }}>
           {currentStep}
         </span>
         <IconChevronDown size="small" color="icon-secondary" css={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 200ms' } as any} />
@@ -310,13 +309,13 @@ function AnalysingIndicator({ steps }: { steps?: string[] }) {
 
       {/* Expanded steps with left border */}
       {expanded && steps && steps.length > 0 && (
-        <div style={{ marginLeft: 8, borderLeft: "1.5px solid #E9EAEF", paddingLeft: 16, display: "flex", flexDirection: "column", gap: 4, marginTop: 4 }}>
+        <div style={{ marginLeft: 10, borderLeft: "1.5px solid #E9EAEF", paddingLeft: 16, display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
           {steps.map((step, i) => (
             <div
               key={i}
               style={{
                 fontSize: 13,
-                color: "#AEB2C0",
+                color: "#656B81",
                 lineHeight: 1.5,
                 opacity: i <= revealed ? 1 : 0,
                 transition: "opacity 300ms ease-out",
@@ -326,16 +325,49 @@ function AnalysingIndicator({ steps }: { steps?: string[] }) {
               }}
             >
               {i < revealed ? (
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
-                  <circle cx="7" cy="7" r="6" stroke="#AEB2C0" strokeWidth="1" fill="none" />
-                  <path d="M4.5 7l2 2 3.5-3.5" stroke="#AEB2C0" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+                  <circle cx="8" cy="8" r="7" stroke="#AEB2C0" strokeWidth="1" fill="none" />
+                  <path d="M5 8l2.5 2.5L11 6" stroke="#AEB2C0" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               ) : (
-                <IconSparks size="small" color="icon-secondary" />
+                <img src="/logo-spinner.png" alt="" width={16} height={16} style={{ flexShrink: 0 }} />
               )}
               <span>
-                {step}
+                <span style={{ fontWeight: 600, color: "#656B81" }}>Sidekick</span>{" "}{step}
               </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Completed steps (collapsed, expandable) ─── */
+function CompletedSteps({ steps }: { steps: string[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const lastStep = steps[steps.length - 1] || 'Done';
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 0, marginBottom: 8 }}>
+      <div
+        onClick={() => setExpanded(!expanded)}
+        style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "4px 0" }}
+      >
+        <span style={{ fontSize: 13, fontWeight: 400, color: "#AEB2C0", lineHeight: 1.5 }}>
+          {lastStep}
+        </span>
+        <IconChevronDown size="small" color="icon-secondary" css={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 200ms' } as any} />
+      </div>
+      {expanded && (
+        <div style={{ marginLeft: 8, borderLeft: "1.5px solid #E9EAEF", paddingLeft: 16, display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+          {steps.map((step, i) => (
+            <div key={i} style={{ fontSize: 13, color: "#AEB2C0", lineHeight: 1.5, display: "flex", alignItems: "center", gap: 8 }}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+                <circle cx="8" cy="8" r="7" stroke="#AEB2C0" strokeWidth="1" fill="none" />
+                <path d="M5 8l2.5 2.5L11 6" stroke="#AEB2C0" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span><span style={{ fontWeight: 600 }}>Sidekick</span> {step}</span>
             </div>
           ))}
         </div>
@@ -2358,7 +2390,7 @@ function LinkIcon() {
     <span ref={ref} style={{ position: "relative", display: "inline-flex", verticalAlign: "middle", marginLeft: 4 }}>
       <span
         onClick={(e) => { e.stopPropagation(); setGlobalDropdown(open ? null : chipId); }}
-        style={{ display: "inline-flex", cursor: "pointer", background: open ? "#E0E2E8" : "#F1F2F5", borderRadius: 4, padding: 2, transition: "background 150ms" }}
+        style={{ display: "inline-flex", cursor: "pointer", background: open ? "#CADAFF" : "#E8EEFF", borderRadius: 4, padding: 2, transition: "background 150ms" }}
       >
         <IconLink size="small" color="#3859FF" />
       </span>
@@ -2536,6 +2568,7 @@ function PanelBody({ activePage, focusItemId, onApplyReprioritize, onApplySwap }
         text: resolvedText,
         cards: content.cards,
         pills: content.pills,
+        loadingSteps: content.loadingSteps,
       }]);
       scrollToBottom();
     };
@@ -2642,7 +2675,7 @@ function PanelBody({ activePage, focusItemId, onApplyReprioritize, onApplySwap }
         textPromise.then(() => setTimeout(() => {
           setIsTyping(false);
           const aiId = ++msgIdRef.current;
-          setMessages(prev => [...prev, { id: aiId, role: 'ai', text: resolvedText, cards: content.cards, pills: content.pills }]);
+          setMessages(prev => [...prev, { id: aiId, role: 'ai', text: resolvedText, cards: content.cards, pills: content.pills, loadingSteps: content.loadingSteps }]);
           scrollToBottom();
         }, 1000));
       }, loadDuration);
@@ -2656,7 +2689,7 @@ function PanelBody({ activePage, focusItemId, onApplyReprioritize, onApplySwap }
       textPromise.then(() => setTimeout(() => {
         setIsTyping(false);
         const aiId = ++msgIdRef.current;
-        setMessages(prev => [...prev, { id: aiId, role: 'ai', text: resolvedText, cards: content.cards, pills: content.pills }]);
+        setMessages(prev => [...prev, { id: aiId, role: 'ai', text: resolvedText, cards: content.cards, pills: content.pills, loadingSteps: content.loadingSteps }]);
         scrollToBottom();
       }, 1200));
     }
@@ -2746,7 +2779,7 @@ function PanelBody({ activePage, focusItemId, onApplyReprioritize, onApplySwap }
                         transition: "box-shadow 150ms",
                       }}
                     >
-                      <span style={{ fontSize: 16, fontWeight: 400, color: "#222428", lineHeight: 1.4, textAlign: "center", fontStyle: i === 2 ? 'italic' : 'normal', fontFamily: "var(--font-roobert)", fontFeatureSettings: "'ss01'", maxWidth: "70%", margin: "0 auto" }}>
+                      <span style={{ fontSize: 20, fontWeight: 400, color: "#222428", lineHeight: 1.35, textAlign: "center", fontStyle: i === 2 ? 'italic' : 'normal', fontFamily: "'Apris', serif", letterSpacing: '0.02em', maxWidth: "80%", margin: "0 auto" }}>
                         {pill.label}
                       </span>
                       <div style={{ display: "flex", justifyContent: "flex-end", width: "100%", color: "#191812" }}>
@@ -2773,6 +2806,10 @@ function PanelBody({ activePage, focusItemId, onApplyReprioritize, onApplySwap }
 
             return (
               <React.Fragment key={msg.id}>
+                {/* Completed loading steps — collapsed, expandable */}
+                {msg.loadingSteps && msg.loadingSteps.length > 0 && (
+                  <CompletedSteps steps={msg.loadingSteps} />
+                )}
                 {/* AI text with link icons on bold findings */}
                 <div>
                   <span style={{ fontSize: 14, fontWeight: 400, color: "#222428", lineHeight: 1.6, whiteSpace: "pre-line" }}>
@@ -2830,8 +2867,7 @@ function PanelBody({ activePage, focusItemId, onApplyReprioritize, onApplySwap }
           {/* Analysing indicator with steps */}
           {isLoading && <AnalysingIndicator steps={activeLoadingSteps} />}
 
-          {/* Typing indicator */}
-          {isTyping && <TypingIndicator />}
+          {/* Typing dots removed — loading steps are sufficient */}
         </div>
       </div>
       <PanelInput onSend={handleChatSend} />
@@ -2862,7 +2898,7 @@ export function PanelInput({ onSend }: { onSend: (text: string) => void }) {
           alignItems: "center",
           gap: 8,
           background: "#F4F4F1",
-          borderRadius: 16,
+          borderRadius: 12,
           padding: "10px 14px 10px 18px",
         }}
       >
