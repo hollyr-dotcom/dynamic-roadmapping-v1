@@ -711,6 +711,8 @@ export function App() {
                     contextUserMessage={sidekickContextMessage}
                     onApplyReprioritize={handleApplyReprioritize}
                     onApplySwap={handleApplySwap}
+                    liveRoadmapItems={roadmapItems}
+                    liveBacklogItems={backlogData}
                     layoutButton={
                       <Tooltip>
                         <Tooltip.Trigger asChild>
@@ -868,7 +870,7 @@ export function App() {
               className="rounded-xl"
               style={{ width: 400, boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)', background: '#fff' }}
             >
-              <AiPanelSolutionReview key={sidekickKey} onClose={closeSidebar} activePage={activePage} focusItemId={sidekickFocusItemId} onApplyReprioritize={handleApplyReprioritize} onApplySwap={handleApplySwap} />
+              <AiPanelSolutionReview key={sidekickKey} onClose={closeSidebar} activePage={activePage} focusItemId={sidekickFocusItemId} onApplyReprioritize={handleApplyReprioritize} onApplySwap={handleApplySwap} liveRoadmapItems={roadmapItems} liveBacklogItems={backlogData} />
             </div>
           </div>
         ) : (

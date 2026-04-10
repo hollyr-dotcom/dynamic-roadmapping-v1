@@ -27,7 +27,31 @@ import {
   IconEyeOpen,
   IconArrowLeft,
 } from "@mirohq/design-system";
-import { roadmapData, sampleData, companyARR, customerQuotes, itemDependencies, demandTrend, itemHistory } from "@spaces/shared";
+import { roadmapData as _staticRoadmap, sampleData as _staticBacklog, companyARR, customerQuotes, itemDependencies, demandTrend, itemHistory } from "@spaces/shared";
+
+/* ─── Live state refs — updated each render by the component ─── */
+/* All builders read from these instead of the static imports, so they
+   reflect any changes the user has applied during this session. */
+let _liveRoadmap: SpaceRow[] = _staticRoadmap;
+let _liveBacklog: SpaceRow[] = _staticBacklog;
+/** Call once per render to sync live state */
+function syncLiveState(roadmap: SpaceRow[], backlog: SpaceRow[]) {
+  _liveRoadmap = roadmap;
+  _liveBacklog = backlog;
+}
+/** Accessors used by all builders */
+const roadmapData: SpaceRow[] = new Proxy([] as SpaceRow[], {
+  get(_target, prop) { return Reflect.get(_liveRoadmap, prop); },
+  has(_target, prop) { return Reflect.has(_liveRoadmap, prop); },
+  ownKeys() { return Reflect.ownKeys(_liveRoadmap); },
+  getOwnPropertyDescriptor(_target, prop) { return Object.getOwnPropertyDescriptor(_liveRoadmap, prop); },
+});
+const sampleData: SpaceRow[] = new Proxy([] as SpaceRow[], {
+  get(_target, prop) { return Reflect.get(_liveBacklog, prop); },
+  has(_target, prop) { return Reflect.has(_liveBacklog, prop); },
+  ownKeys() { return Reflect.ownKeys(_liveBacklog); },
+  getOwnPropertyDescriptor(_target, prop) { return Object.getOwnPropertyDescriptor(_liveBacklog, prop); },
+});
 import { generateNarrative, classifyIntent } from "../../lib/openai";
 import type { ClassifiedIntent } from "../../lib/openai";
 import type { SpaceRow } from "@spaces/shared";
@@ -3102,7 +3126,10 @@ function ViewDetailsView({ itemLabel, onBack }: { itemLabel: string; onBack: () 
 }
 
 /* ─── Main export ─── */
-export default function AiPanelSolutionReview({ onClose, activePage, focusItemId, onApplyReprioritize, onApplySwap }: { onClose?: () => void; activePage?: string; focusItemId?: string; onApplyReprioritize?: (itemId: string, newPriority: string, reason: string) => void; onApplySwap?: (cutId: string, addId: string, reason: string) => void } = {}) {
+export default function AiPanelSolutionReview({ onClose, activePage, focusItemId, onApplyReprioritize, onApplySwap, liveRoadmapItems, liveBacklogItems }: { onClose?: () => void; activePage?: string; focusItemId?: string; onApplyReprioritize?: (itemId: string, newPriority: string, reason: string) => void; onApplySwap?: (cutId: string, addId: string, reason: string) => void; liveRoadmapItems?: SpaceRow[]; liveBacklogItems?: SpaceRow[] } = {}) {
+  // Sync live state so all builders see applied changes
+  syncLiveState(liveRoadmapItems || _staticRoadmap, liveBacklogItems || _staticBacklog);
+
   const [panelView, setPanelView] = useState<'chat' | 'related-evidence' | 'view-details'>('chat');
   const [viewContext, setViewContext] = useState('');
 
