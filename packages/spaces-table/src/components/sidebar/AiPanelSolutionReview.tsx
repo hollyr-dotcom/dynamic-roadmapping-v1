@@ -26,6 +26,7 @@ import {
   IconSquaresTwoOverlap,
   IconEyeOpen,
   IconArrowLeft,
+  IconArrowUp,
 } from "@mirohq/design-system";
 import { roadmapData as _staticRoadmap, sampleData as _staticBacklog, companyARR, customerQuotes, itemDependencies, demandTrend, itemHistory } from "@spaces/shared";
 
@@ -2898,8 +2899,9 @@ export function PanelInput({ onSend }: { onSend: (text: string) => void }) {
           alignItems: "center",
           gap: 8,
           background: "#F4F4F1",
-          borderRadius: 12,
-          padding: "10px 14px 10px 18px",
+          borderRadius: 16,
+          height: 48,
+          padding: "0 14px 0 18px",
         }}
       >
         <textarea
@@ -2935,20 +2937,20 @@ export function PanelInput({ onSend }: { onSend: (text: string) => void }) {
           } as any}
           rows={1}
         />
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-          {/* Mic icon - 16px */}
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ cursor: "pointer", flexShrink: 0 }}>
-            <path d="M8 1a2 2 0 0 0-2 2v4a2 2 0 0 0 4 0V3a2 2 0 0 0-2-2Z" stroke="#222428" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M12 7a4 4 0 0 1-8 0M8 11v3.5M6 14.5h4" stroke="#222428" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          {/* Mic icon */}
+          <svg width="16" height="16" viewBox="4 1 16 22" fill="none" style={{ cursor: "pointer", flexShrink: 0 }}>
+            <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" stroke="#222428" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M19 10a7 7 0 0 1-14 0M12 17v4M9 21h6" stroke="#222428" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           {/* AI icon */}
           {hasText ? (
             <div
               onClick={handleSend}
               style={{
-                width: 28,
-                height: 28,
-                borderRadius: 14,
+                width: 32,
+                height: 32,
+                borderRadius: 12,
                 background: "#222428",
                 display: "flex",
                 alignItems: "center",
@@ -2956,12 +2958,10 @@ export function PanelInput({ onSend }: { onSend: (text: string) => void }) {
                 cursor: "pointer",
               }}
             >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M2 6h8M10 6L6.5 2.5M10 6L6.5 9.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              <IconArrowUp size="small" css={{ color: '#FFFFFF' }} />
             </div>
           ) : (
-            <img src="/icon-voice-llm.png" width={25} height={25} alt="AI" style={{ cursor: "pointer" }} />
+            <img src="/icon-voice-llm.png" width={26} height={26} alt="AI" style={{ cursor: "pointer" }} />
           )}
         </div>
       </div>

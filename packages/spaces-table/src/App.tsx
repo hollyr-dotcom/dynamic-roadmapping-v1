@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { Button, IconButton, IconCross, Tooltip } from '@mirohq/design-system'
+import { Button, IconButton, IconCross, IconArrowUp, Tooltip } from '@mirohq/design-system'
 import { ShareSpaceDialog } from './components/page/ShareSpaceDialog'
 import { sampleData, fields, roadmapData, roadmapFields } from '@spaces/shared'
 import type { Priority, SpaceRow, Status } from '@spaces/shared'
@@ -116,6 +116,7 @@ export function App() {
   const [sidekickFocusItemId, setSidekickFocusItemId] = useState<string | undefined>(undefined)
   const [sidekickSource, setSidekickSource] = useState<'toolbar' | 'panel'>('toolbar')
   const [sidekickContextMessage, setSidekickContextMessage] = useState<string | undefined>(undefined)
+  const [floatingBarText, setFloatingBarText] = useState('')
   const [sidekickKey, setSidekickKey] = useState(0)
   const [canvasOpen, setCanvasOpen] = useState(false)
   const [navHovered, setNavHovered] = useState(false)
@@ -634,6 +635,97 @@ export function App() {
           )}
           </>)}
         </div>
+
+        {/* Floating prompt bar — opens Sidekick on type/enter */}
+        {activeSidebar !== 'ai-sidekick' && hasData && (
+          <div style={{
+            position: 'sticky',
+            bottom: 12,
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            width: 436,
+            height: 64,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            padding: 8,
+            background: '#FFFFFF',
+            boxShadow: '0px 6px 16px rgba(34, 36, 40, 0.12), 0px 0px 8px rgba(34, 36, 40, 0.06)',
+            borderRadius: 24,
+            zIndex: 30,
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              background: '#F4F4F1',
+              borderRadius: 16,
+              height: 48,
+              width: '100%',
+              padding: '0 14px 0 18px',
+            }}>
+              <input
+                type="text"
+                value={floatingBarText}
+                onChange={(e) => setFloatingBarText(e.target.value)}
+                placeholder="What shall we do next?"
+                style={{
+                  flex: 1,
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: 14,
+                  fontWeight: 400,
+                  color: '#222428',
+                  lineHeight: 1.4,
+                  fontFamily: "'Open Sans', sans-serif",
+                  background: 'transparent',
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && floatingBarText.trim()) {
+                    setSidekickContextMessage(floatingBarText.trim());
+                    setSidekickKey(k => k + 1);
+                    setSidekickSource('toolbar');
+                    setActiveSidebar('ai-sidekick');
+                    setFloatingBarText('');
+                  }
+                }}
+              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                <svg width="16" height="16" viewBox="4 1 16 22" fill="none" style={{ cursor: 'pointer', flexShrink: 0 }}>
+                  <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" stroke="#222428" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M19 10a7 7 0 0 1-14 0M12 17v4M9 21h6" stroke="#222428" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                {floatingBarText.trim() ? (
+                  <div
+                    onClick={() => {
+                      if (floatingBarText.trim()) {
+                        setSidekickContextMessage(floatingBarText.trim());
+                        setSidekickKey(k => k + 1);
+                        setSidekickSource('toolbar');
+                        setActiveSidebar('ai-sidekick');
+                        setFloatingBarText('');
+                      }
+                    }}
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 12,
+                      background: '#222428',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <IconArrowUp size="small" css={{ color: '#FFFFFF' }} />
+                  </div>
+                ) : (
+                  <img src="/icon-voice-llm.png" width={26} height={26} alt="AI" style={{ cursor: 'pointer' }} />
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       </div>
 
