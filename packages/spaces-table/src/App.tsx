@@ -192,10 +192,10 @@ export function App() {
     // Visual highlight
     setUpdatedRows(prev => new Set([...prev, itemId]))
     setTimeout(() => setUpdatedRows(prev => { const next = new Set(prev); next.delete(itemId); return next }), 10000)
-    // Switch to table view and scroll to the changed row (keep Sidekick open)
+    // Switch to kanban view (now/next/later) so PM sees the priority change in context
     setTimeout(() => {
-      if (activePage === 'roadmap') setActiveTab('all-items-roadmap')
-      else if (activePage === 'backlog') setActiveTab('all-items')
+      if (activePage !== 'roadmap') setActivePage('roadmap')
+      setActiveTab('kanban')
       setTimeout(() => {
         const row = document.querySelector(`[data-row-id="${itemId}"]`)
         if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -225,10 +225,10 @@ export function App() {
     // Visual highlight both
     setUpdatedRows(prev => new Set([...prev, cutId, addId]))
     setTimeout(() => setUpdatedRows(prev => { const next = new Set(prev); next.delete(cutId); next.delete(addId); return next }), 10000)
-    // Switch to table view and scroll to the added item (keep Sidekick open)
+    // Switch to kanban view (now/next/later) so PM sees both items in their new columns
     setTimeout(() => {
-      if (activePage === 'roadmap') setActiveTab('all-items-roadmap')
-      else if (activePage === 'backlog') setActiveTab('all-items')
+      if (activePage !== 'roadmap') setActivePage('roadmap')
+      setActiveTab('kanban')
       setTimeout(() => {
         const row = document.querySelector(`[data-row-id="${addId}"]`)
         if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' })

@@ -13,15 +13,15 @@ interface NarrativeResponse {
 
 export async function generateNarrative(req: NarrativeRequest): Promise<NarrativeResponse> {
   const systemPrompts: Record<string, string> = {
-    uc1: `Add ONE sentence of strategic commentary. The user already sees the ranked list. Do not repeat item names or numbers. Just the takeaway. Max 20 words.`,
+    uc1: `Add ONE sentence of strategic commentary. The user already sees the ranked list. Do not repeat item names or numbers. Just the takeaway. Max 20 words. Speak as a teammate — say "you should" not "the PM should".`,
 
-    uc2: `Add ONE sentence about what the PM should do about these mismatches. Do not repeat the findings. Max 20 words.`,
+    uc2: `Add ONE sentence about what to do about these mismatches. Do not repeat the findings. Max 20 words. Speak as a teammate — say "you should" not "the PM should".`,
 
-    uc3: `Add ONE sentence about whether this trade is worth it. Do not repeat the items or numbers. Max 20 words.`,
+    uc3: `Add ONE sentence about whether this trade is worth it. Do not repeat the items or numbers. Max 20 words. Speak as a teammate — say "you should" not "the PM should".`,
 
-    uc4: `Add ONE sentence summarizing the overall direction of these changes. Do not repeat the individual items. Max 20 words.`,
+    uc4: `Add ONE sentence summarizing the overall direction of these changes. Do not repeat the individual items. Max 20 words. Speak as a teammate — say "you should" not "the PM should".`,
 
-    uc5: `Add ONE sentence about what the PM should prioritize first. Do not repeat the items. Max 20 words.`,
+    uc5: `Add ONE sentence about what to prioritize first. Do not repeat the items. Max 20 words. Speak as a teammate — say "you should" not "the PM should".`,
   };
 
   try {

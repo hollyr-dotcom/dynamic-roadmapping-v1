@@ -66,6 +66,7 @@ export function KanbanCard({ row, fields, borderColor, isSelected, onSelect, onO
   return (
     <div
       className="relative"
+      data-row-id={row.id}
       style={{ zIndex: isSelected ? 50 : undefined, cursor: onSelect ? 'pointer' : undefined }}
       onClick={onSelect}
     >
