@@ -844,14 +844,23 @@ function buildUC1Theme(requestedTheme?: string): MessageContent {
     return `• **${item.title}** — ${trendLabel(trend?.direction || 'stable')}, ${status}`;
   }).join('\n')}`;
 
-  // Promote pill for the best candidate in this theme
-  const promotable = t.items.find(item => !roadmapData.find(r => r.id === item.id) || item.priority !== 'now');
+  // Context-aware pills: promote only if theme is healthy, demote if dying
+  const allDeclining = decliningItems.length === t.items.length;
+  const promotable = !allDeclining ? t.items.find(item => {
+    const trend = getTrend(item.id);
+    return (trend?.direction === 'growing' || trend?.direction === 'stable') && (!roadmapData.find(r => r.id === item.id) || item.priority !== 'now');
+  }) : null;
+  const demotable = allDeclining ? t.items.find(item => {
+    const onRM = roadmapData.find(r => r.id === item.id);
+    return onRM && (onRM.priority === 'now' || onRM.priority === 'next');
+  }) : null;
 
   return {
     text,
     loadingSteps: ["Scanning for patterns…", "Grouping by theme…"],
     pills: [
       ...(promotable ? [{ label: `Promote ${promotable.title.split(' ').slice(0, 3).join(' ')}`, key: `reprioritize-promote-${promotable.id}` }] : []),
+      ...(demotable ? [{ label: `Move ${shortTitle(demotable.title, 20)} down`, key: `reprioritize-demote-${demotable.id}` }] : []),
       { label: "Show the evidence ranking", key: "flow1-initial" },
       ...(themes.length > 1 ? [{ label: `Deep dive into ${themes[1].name}`, key: `uc1-theme-${themes[1].name}` }] : []),
     ],
