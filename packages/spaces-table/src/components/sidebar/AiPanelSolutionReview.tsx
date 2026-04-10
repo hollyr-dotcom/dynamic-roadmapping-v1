@@ -876,13 +876,18 @@ function buildFlow1NoEvidence(): MessageContent {
     };
   }
 
+  // Assess risk: how much ARR is riding on unvalidated bets?
+  const totalBlindARR = noQuotes.reduce((s, r) => s + r.estRevenue, 0);
+  const highestBlind = noQuotes.sort((a, b) => b.estRevenue - a.estRevenue)[0];
+
   const bulletLines = noQuotes.map(item => {
-    const jk = ('jiraKey' in item) ? (item as any).jiraKey + ' ' : '';
-    return `• ${jk}**${item.title}** — ${item.mentions} mentions, ${item.customers} customers, $${item.estRevenue}K. Numbers only, no verbatim feedback.`;
+    const trend = getTrend(item.id);
+    const risk = trend?.direction === 'declining' ? 'declining demand — highest risk' : trend?.direction === 'growing' ? 'growing demand — validate soon' : 'stable';
+    return `• **${item.title}** — $${item.estRevenue}K, ${risk}`;
   }).join('\n');
 
   return {
-    text: `## Items without customer evidence\n\n${noQuotes.length} Q2 items have numbers but no customer quotes. You're betting on signals without hearing the "why."\n\n─── Items ─────────────────────────\n${bulletLines}`,
+    text: `## Blind bets in your Q2\n\n$${totalBlindARR}K of your Q2 ARR has no customer quotes behind it. If the quantitative signals are misleading, you won't catch it until it's too late.\n\n─── What to do ────────────────────\nSchedule customer interviews for these ${noQuotes.length} items — starting with **${highestBlind.title}** ($${highestBlind.estRevenue}K), your biggest unvalidated bet.\n\n─── Items ─────────────────────────\n${bulletLines}`,
     loadingSteps: [
       "Scanning customer evidence…",
       "Checking Insights research data…",
@@ -1132,9 +1137,10 @@ function buildFlow2(itemId: string): MessageContent {
       "Checking cross-table dependencies…",
     ],
     pills: [
-      { label: "Is this big enough to bump something from Q2?", key: "bump-q2" },
-      { label: "What depends on this?", key: "deps-detail" },
-      { label: "Back to Q2 overview", key: "flow1-initial" },
+      ...(!onRM ? [{ label: `Add to roadmap`, key: `reprioritize-promote-${item.id}` }] : []),
+      ...(onRM && trendF2?.direction === 'growing' && onRM.priority !== 'now' ? [{ label: `Move up in priority`, key: `reprioritize-promote-${item.id}` }] : []),
+      ...(deps.blocks.length > 0 || deps.dependsOn.length > 0 ? [{ label: "Show dependency chain", key: `flow2-${deps.blocks[0]?.id || deps.dependsOn[0]?.id || item.id}` }] : []),
+      { label: "Where is my roadmap out of sync?", key: "uc2-mismatch" },
     ],
   };
 }
@@ -1158,21 +1164,39 @@ function buildFlow3(cutId: string, addId: string): MessageContent {
   ];
 
   const netDiff = addItem.estRevenue - cutItem.estRevenue;
+  const custDiff = addItem.customers - cutItem.customers;
 
   const cutDir = cutTrend?.direction || 'stable';
   const addDir = addTrend?.direction || 'stable';
 
+  // Strategic fit analysis
   let verdict = '';
-  if (netDiff >= 0) verdict = `Net gain of +$${netDiff}K. This trade works.`;
-  else if (cutDir === 'declining' && addDir === 'growing') verdict = `Net loss of -$${Math.abs(netDiff)}K, but you're trading declining for growing demand.`;
-  else verdict = `Net loss of -$${Math.abs(netDiff)}K.`;
+  if (cutDir === 'declining' && addDir === 'growing') {
+    verdict = `Good trade — you're replacing declining demand with growing demand.`;
+  } else if (netDiff >= 50) {
+    verdict = `Strong trade — net gain of $${netDiff}K and ${custDiff >= 0 ? `+${custDiff}` : custDiff} accounts.`;
+  } else if (netDiff >= 0) {
+    verdict = `Neutral on revenue (+$${netDiff}K), but ${addDir === 'growing' ? 'the incoming item has growing momentum' : 'both items have similar demand trajectories'}.`;
+  } else if (addDir === 'growing') {
+    verdict = `Short-term revenue dip (-$${Math.abs(netDiff)}K), but ${addItem.title.split(' ').slice(0, 3).join(' ')} has growing demand — this bet improves over time.`;
+  } else {
+    verdict = `Risky — net loss of $${Math.abs(netDiff)}K and both items have ${addDir} demand. Make sure there's a strategic reason beyond the numbers.`;
+  }
 
-  let riskLine = '';
-  if (cutDeps.blocks.length > 0) riskLine = `\n• Risk: ${cutItem.title} blocks ${cutDeps.blocks.map(d => d.title).join(', ')}`;
+  // Risk assessment
+  const risks: string[] = [];
+  if (cutDeps.blocks.length > 0) risks.push(`Moving ${shortTitle(cutItem.title, 25)} down will stall ${cutDeps.blocks.map(d => shortTitle(d.title, 20)).join(' and ')}`);
+  if (addDeps.dependsOn.length > 0) risks.push(`${shortTitle(addItem.title, 25)} depends on ${addDeps.dependsOn.map(d => shortTitle(d.title, 20)).join(' and ')} — make sure those ship first`);
+  const hasQuotes = customerQuotes[cutItem.id] && customerQuotes[cutItem.id].length > 0;
+  if (hasQuotes) risks.push(`Customers have specifically quoted ${shortTitle(cutItem.title, 25)} — expect pushback`);
 
-  const fullText = `## Replacing ${cutItem.title.split(' ').slice(0, 4).join(' ')} with ${addItem.title.split(' ').slice(0, 4).join(' ')}\n\n${verdict}\n\n─── Details ───────────────────────${riskLine}\n• ${addItem.title} has no blocking dependencies — clean addition`;
+  const riskSection = risks.length > 0
+    ? `\n\n─── Risks ─────────────────────────\n${risks.map(r => `• ${r}`).join('\n')}`
+    : '';
 
-  const dataForAI3 = { cutting: { title: cutItem.title, revenue: cutItem.estRevenue, customers: cutItem.customers, trend: cutDir, blocks: cutDeps.blocks.map(d => d.title) }, adding: { title: addItem.title, revenue: addItem.estRevenue, customers: addItem.customers, trend: addDir }, netRevenueDelta: netDiff, cutRankInQ2 };
+  const fullText = `## Replacing ${shortTitle(cutItem.title, 30)} with ${shortTitle(addItem.title, 30)}\n\n${verdict}${riskSection}`;
+
+  const dataForAI3 = { cutting: { title: cutItem.title, revenue: cutItem.estRevenue, customers: cutItem.customers, trend: cutDir, blocks: cutDeps.blocks.map(d => d.title) }, adding: { title: addItem.title, revenue: addItem.estRevenue, customers: addItem.customers, trend: addDir }, netRevenueDelta: netDiff };
 
   return {
     text: fullText,
@@ -1261,31 +1285,36 @@ function buildAddToQ2(addItemId: string): MessageContent {
 }
 
 function buildAltCut(): MessageContent {
-  const q2 = getQ2Items().sort((a, b) => a.estRevenue - b.estRevenue);
-  const safest = q2.find(item => {
+  const q2 = getQ2Items();
+  // Rank by cut safety: lowest evidence + no deps + no quotes = safest
+  const ranked = q2.map(item => {
     const deps = getDeps(item.id);
-    return deps.blocks.length === 0 && (!customerQuotes[item.id] || customerQuotes[item.id].length === 0);
-  });
-
-  const lines = q2.slice(0, 3).map((item, i) => {
-    const deps = getDeps(item.id);
+    const trend = getTrend(item.id);
     const hasQuotes = customerQuotes[item.id] && customerQuotes[item.id].length > 0;
-    const risk = deps.blocks.length > 0 ? 'blocks other items' : hasQuotes ? 'has customer quotes' : 'no dependencies, no quotes';
-    return `${i + 1}. **${shortTitle(item.title, 35)}** — $${item.estRevenue}K, ${item.customers} customers. ${risk}.`;
-  }).join('\n\n');
+    const score = evidenceScore(item);
+    const safetyScore = score + (deps.blocks.length * 50) + (hasQuotes ? 20 : 0);
+    return { item, deps, trend, hasQuotes, safetyScore };
+  }).sort((a, b) => a.safetyScore - b.safetyScore);
 
-  let recommendation = '';
+  const safest = ranked[0];
+
+  let text = `## Easiest Q2 items to move down\n\n`;
   if (safest) {
-    recommendation = `\n\nIf you need room, **${shortTitle(safest.title, 35)}** is the cleanest cut: decent revenue signal but no qualitative backing and nothing depends on it.`;
-  } else if (q2.length > 0) {
-    recommendation = `\n\nNo items are completely safe to cut — all have dependencies or customer quotes. You may need to descope rather than cut entirely.`;
+    const reason = safest.trend?.direction === 'declining' ? 'declining demand' : !safest.hasQuotes ? 'no customer quotes backing it' : 'weakest evidence in Q2';
+    text += `**${safest.item.title}** is the safest — ${reason}, nothing depends on it.\n\n`;
   }
+  text += `─── All options by risk ────────────\n`;
+  text += ranked.slice(0, 4).map((r, i) => {
+    const risk = r.deps.blocks.length > 0 ? 'blocks other items' : r.hasQuotes ? 'has customer quotes' : 'clean — no dependencies or quotes';
+    return `• **${shortTitle(r.item.title, 35)}** — $${r.item.estRevenue}K, ${r.item.customers} customers. ${risk}.`;
+  }).join('\n');
 
   return {
-    text: `I couldn't identify a specific item to add. Which item did you mean?\n\nIn the meantime, here are your Q2 items by lowest evidence strength — these would be the safest to cut if you need room:\n\n${lines}${recommendation}`,
+    text,
     pills: [
-      { label: "Am I betting on the right things for Q2?", key: "flow1-initial" },
+      ...(safest ? [{ label: `Move ${shortTitle(safest.item.title, 20)} down`, key: `reprioritize-demote-${safest.item.id}` }] : []),
       { label: "Where is my roadmap out of sync?", key: "uc2-mismatch" },
+      { label: "Rank everything by evidence", key: "flow1-initial" },
     ],
   };
 }
@@ -1326,8 +1355,16 @@ function buildReprioritize(itemId: string, action: 'promote' | 'demote'): Messag
       </div>,
     ];
 
+    const allScored = [...roadmapData.filter(r => r.status !== 'done'), ...sampleData].map(i => ({ item: i, score: evidenceScore(i) })).sort((a, b) => b.score - a.score);
+    const rank = allScored.findIndex(s => s.item.id === item.id) + 1;
+    const promoteReason = trend?.direction === 'growing'
+      ? `demand is growing and ${item.customers} accounts worth $${item.estRevenue}K are asking for it`
+      : rank <= 5
+        ? `it ranks #${rank} by evidence — $${item.estRevenue}K ARR from ${item.customers} accounts`
+        : `${item.customers} accounts are requesting it with $${item.estRevenue}K in addressable ARR`;
+
     return {
-      text: `**${item.title}** is in your backlog but not on the roadmap. The evidence supports adding it — demand is ${trend?.direction || 'stable'} and multiple accounts are asking for it.${deps.blocks.length > 0 ? ` This would also unblock ${deps.blocks.map(d => `**${d.title}**`).join(' and ')}.` : ''}\n\nSee the proposed change below:`,
+      text: `**${item.title}** is in your backlog but not on the roadmap. Add it — ${promoteReason}.${deps.blocks.length > 0 ? ` This would also unblock ${deps.blocks.map(d => `**${d.title}**`).join(' and ')}.` : ''}`,
       cards,
       loadingSteps: [
         `Evaluating ${item.title.split(' ').slice(0, 4).join(' ')}…`,
@@ -1392,9 +1429,26 @@ function buildReprioritize(itemId: string, action: 'promote' | 'demote'): Messag
     </div>,
   ];
 
+  // Build specific evidence reason
+  const recency = recencyLabel(itemId);
+  const allScored = [...roadmapData.filter(r => r.status !== 'done'), ...sampleData].map(i => ({ item: i, score: evidenceScore(i) })).sort((a, b) => b.score - a.score);
+  const rank = allScored.findIndex(s => s.item.id === item.id) + 1;
+
+  let evidenceReason = '';
+  if (action === 'promote') {
+    if (trend?.direction === 'growing') evidenceReason = `Demand is growing (+${trend.mentionsDelta} mentions recently) and ${item.customers} accounts are asking for it.`;
+    else if (rank <= 5) evidenceReason = `It ranks #${rank} by evidence — $${item.estRevenue}K ARR across ${item.customers} accounts.`;
+    else if (item.customers > 30) evidenceReason = `${item.customers} accounts are requesting this, with $${item.estRevenue}K in addressable ARR.`;
+    else evidenceReason = `$${item.estRevenue}K in addressable ARR and ${trend?.direction === 'stable' ? 'steady' : trend?.direction || 'steady'} demand${recency ? ` (last mentioned ${recency})` : ''}.`;
+  } else {
+    if (trend?.direction === 'declining') evidenceReason = `Demand is declining (${trend.mentionsDelta} mentions) and it ranks #${rank} by evidence — below items that are lower priority.`;
+    else if (rank > allScored.length * 0.6) evidenceReason = `It ranks #${rank} out of ${allScored.length} by evidence — other ${currentPriority}-priority items have stronger signals.`;
+    else evidenceReason = `At $${item.estRevenue}K and ${item.customers} accounts, the evidence doesn't justify ${currentPriority} priority${recency ? ` (last mention: ${recency})` : ''}.`;
+  }
+
   const text = action === 'promote'
-    ? `Promote **${item.title}** from *${currentPriority}* to *${newPriority}*.\n\nDemand is ${trend?.direction || 'stable'} and evidence supports a higher priority.${impactItems.length > 0 ? ` This would also unblock ${impactItems.map(d => `**${d.title}**`).join(' and ')}.` : ''}`
-    : `Demote **${item.title}** from *${currentPriority}* to *${newPriority}*.\n\nDemand is ${trend?.direction || 'declining'} and evidence doesn't support its current position.${impactItems.length > 0 ? ` Note: ${impactItems.map(d => `**${d.title}**`).join(' and ')} depend${impactItems.length === 1 ? 's' : ''} on this.` : ''}`;
+    ? `Move **${item.title}** up from *${currentPriority}* to *${newPriority}*.\n\n${evidenceReason}${impactItems.length > 0 ? ` This would also unblock ${impactItems.map(d => `**${d.title}**`).join(' and ')}.` : ''}`
+    : `Move **${item.title}** down from *${currentPriority}* to *${newPriority}*.\n\n${evidenceReason}${impactItems.length > 0 ? ` Note: ${impactItems.map(d => `**${d.title}**`).join(' and ')} depend${impactItems.length === 1 ? 's' : ''} on this — check with eng before moving.` : ''}`;
 
   return {
     text,
@@ -1556,12 +1610,28 @@ function buildUC2Mismatch(): MessageContent {
 
   const typeLabels: Record<string, string> = { 'over-invested': 'Getting more priority than demand supports', 'under-invested': 'Not getting the priority demand deserves', 'missing': 'Strong demand but not on your roadmap' };
 
+  // Build root cause per finding
+  function mismatchRootCause(f: typeof findings[0]): string {
+    const trend = getTrend(f.item.id);
+    const recency = recencyLabel(f.item.id);
+    if (f.type === 'over-invested') {
+      if (trend?.direction === 'declining') return `Demand has been dropping — likely a stale priority that hasn't been revisited.`;
+      if (f.item.customers < 20) return `Only ${f.item.customers} accounts are asking — may have been elevated by a single loud voice.`;
+      if (recency && (recency.includes('Jan') || recency.includes('Feb'))) return `Last mentioned ${recency} — no recent signals to justify its position.`;
+      return `Evidence doesn't match its priority — review whether this was a gut call or data-driven.`;
+    } else if (f.type === 'under-invested') {
+      if (trend?.direction === 'growing') return `Demand is accelerating but priority hasn't caught up.`;
+      return `Strong evidence ($${f.item.estRevenue}K, ${f.item.customers} accounts) but sitting at ${f.item.priority} priority.`;
+    } else {
+      if (trend?.direction === 'growing') return `Growing demand from ${f.item.customers} accounts — this should be on your radar.`;
+      return `${f.item.customers} accounts worth $${f.item.estRevenue}K are asking for this.`;
+    }
+  }
+
   const text = findings.length === 0
     ? `## Plan vs demand\n\nYour priorities match customer demand. No gaps found.`
-    : `## Plan vs demand\n\n${findings.length} gaps found. Biggest: **${findings[0].item.title}**.\n\n─── Mismatches ────────────────────\n${findings.map((f, i) => {
-        const jiraKey = ('jiraKey' in f.item) ? (f.item as any).jiraKey : '';
-        const trend = getTrend(f.item.id);
-        return `• ${jiraKey ? jiraKey + ' ' : ''}**${f.item.title}** — $${f.item.estRevenue}K, ${f.item.customers} customers, ${trendLabel(trend?.direction || 'stable')}. ${typeLabels[f.type]}.`;
+    : `## Plan vs demand\n\n${findings.length} gaps between your plan and what customers want. Biggest: **${findings[0].item.title}**.\n\n─── Mismatches ────────────────────\n${findings.map((f) => {
+        return `• **${f.item.title}** — ${typeLabels[f.type]}. ${mismatchRootCause(f)}`;
       }).join('\n')}`;
 
   // Change card for the top actionable finding
@@ -1627,44 +1697,55 @@ function buildUC4Summary(audience: 'leadership' | 'engineering' | 'cs'): Message
   const bullets: string[] = [];
 
   if (audience === 'leadership') {
-    intro = `## Q2 update for ${audienceLabels[audience]}\n\n${changes.length} changes worth flagging:\n\n─── Changes ───────────────────────`;
+    // Leadership cares about: strategic direction, ARR impact, risk to goals
+    const totalARRImpact = changes.reduce((sum, c) => sum + (c.item?.estRevenue || 0), 0);
+    intro = `## Q2 roadmap update\n\n${changes.length} changes affecting ~$${totalARRImpact}K in addressable ARR.\n\n─── What shifted and why ──────────`;
     for (const c of changes.slice(0, 5)) {
       if (c.changeType === 'priority-changed') {
-        bullets.push(`**${c.item!.title}** moved from ${c.from} to ${c.to}. ${c.reason}`);
+        const direction = priorityNum(c.to!) > priorityNum(c.from!) ? 'Elevated' : 'Deprioritized';
+        bullets.push(`**${c.item!.title}** ($${c.item!.estRevenue}K ARR) — ${direction}. ${c.reason}`);
       } else if (c.changeType === 'status-changed') {
-        bullets.push(`**${c.item!.title}** is now ${c.to}. ${c.reason}`);
+        bullets.push(`**${c.item!.title}** ($${c.item!.estRevenue}K ARR) — now ${c.to}. ${c.reason}`);
       } else if (c.changeType === 'added') {
-        bullets.push(`**${c.item!.title}** added to roadmap. ${c.reason}`);
+        bullets.push(`**${c.item!.title}** ($${c.item!.estRevenue}K ARR) — added to roadmap based on customer demand. ${c.reason}`);
       } else if (c.changeType === 'removed') {
-        bullets.push(`**${c.item!.title}** removed. ${c.reason}`);
+        bullets.push(`**${c.item!.title}** — removed. ${c.reason} This frees capacity for higher-impact work.`);
       } else if (c.changeType === 'scope-changed') {
-        bullets.push(`**${c.item!.title}** scope changed from "${c.from}" to "${c.to}". ${c.reason}`);
+        bullets.push(`**${c.item!.title}** — scope adjusted from "${c.from}" to "${c.to}". ${c.reason}`);
       }
     }
   } else if (audience === 'engineering') {
-    intro = `## Q2 update for ${audienceLabels[audience]}\n\n${changes.length} changes to action:\n\n─── Changes ───────────────────────`;
+    // Eng cares about: what to start/stop, capacity impact, dependencies
+    intro = `## Q2 engineering update\n\n${changes.length} changes that affect your sprint planning.\n\n─── Action items ──────────────────`;
     for (const c of changes.slice(0, 5)) {
+      const deps = getDeps(c.item!.id);
+      const depNote = deps.blocks.length > 0 ? ` Blocks ${deps.blocks.map(d => shortTitle(d.title, 20)).join(', ')}.` : '';
       if (c.changeType === 'status-changed' && c.to === 'in-progress') {
-        bullets.push(`**${c.item!.title}** is now in progress — start planning. ${c.reason}`);
+        bullets.push(`**Start:** ${c.item!.title} — begin capacity planning.${depNote}`);
       } else if (c.changeType === 'scope-changed') {
-        bullets.push(`**${c.item!.title}** scope reduced to "${c.to}". Adjust estimates accordingly.`);
+        bullets.push(`**Rescope:** ${c.item!.title} — from "${c.from}" to "${c.to}". Re-estimate effort.`);
       } else if (c.changeType === 'priority-changed') {
-        bullets.push(`**${c.item!.title}** priority ${c.from} → ${c.to}. ${Number(priorityNum(c.to!)) > Number(priorityNum(c.from!)) ? 'Moving up.' : 'Deprioritized.'}`);
+        const up = priorityNum(c.to!) > priorityNum(c.from!);
+        bullets.push(`**${up ? 'Accelerate' : 'Pause'}:** ${c.item!.title} — ${c.from} → ${c.to}.${up ? ' Needs eng allocation.' : ' Free up that capacity.'}${depNote}`);
       } else if (c.changeType === 'removed') {
-        bullets.push(`**${c.item!.title}** removed from roadmap. Stop any active work.`);
+        bullets.push(`**Stop:** ${c.item!.title} — removed from roadmap. Halt any active work.${depNote}`);
       }
     }
   } else {
-    intro = `## Q2 update for customers\n\n${changes.length} updates:\n\n─── Changes ───────────────────────`;
+    // CS cares about: what to tell customers, timeline expectations, shipped features
+    intro = `## Customer-facing update\n\n${changes.length} changes your accounts may ask about.\n\n─── Talking points ────────────────`;
     for (const c of changes.slice(0, 5)) {
+      const accountCount = c.item!.customers;
       if (c.changeType === 'status-changed' && c.to === 'done') {
-        bullets.push(`**${c.item!.title}** has shipped. Let affected accounts know.`);
+        bullets.push(`**Shipped:** ${c.item!.title} — reach out to the ${accountCount} accounts that requested this.`);
       } else if (c.changeType === 'priority-changed' && c.to === 'now') {
-        bullets.push(`**${c.item!.title}** is now top priority for Q2. Accounts asking about this can expect progress.`);
+        bullets.push(`**Coming soon:** ${c.item!.title} — ${accountCount} accounts asked for this. Now top priority for Q2.`);
       } else if (c.changeType === 'added') {
-        bullets.push(`**${c.item!.title}** is now on the roadmap. ${c.reason}`);
+        bullets.push(`**New on roadmap:** ${c.item!.title} — ${accountCount} accounts requested it. Now officially planned.`);
       } else if (c.changeType === 'scope-changed') {
-        bullets.push(`**${c.item!.title}** scope adjusted to "${c.to}". Set expectations accordingly.`);
+        bullets.push(`**Scope change:** ${c.item!.title} — adjusted to "${c.to}". Set expectations with the ${accountCount} accounts tracking this.`);
+      } else if (c.changeType === 'removed') {
+        bullets.push(`**Deprioritized:** ${c.item!.title} — prepare talking points for ${accountCount} accounts that were expecting this.`);
       }
     }
   }
@@ -1739,10 +1820,26 @@ function buildUC5Drift(): MessageContent {
   flags.sort((a, b) => Math.abs(b.trend.mentionsDelta) - Math.abs(a.trend.mentionsDelta));
   const top = flags.slice(0, 5);
 
+  // Severity bucketing based on magnitude
+  const bucketed = top.map(f => {
+    const magnitude = Math.abs(f.trend.mentionsDelta);
+    const severity = magnitude >= 15 ? 'critical' : magnitude >= 8 ? 'warning' : 'info';
+    const severityLabel = severity === 'critical' ? '🔴' : severity === 'warning' ? '🟡' : '🔵';
+    return { ...f, severity, severityLabel };
+  });
+
+  const criticalCount = bucketed.filter(b => b.severity === 'critical').length;
+  const warningCount = bucketed.filter(b => b.severity === 'warning').length;
+
+  let summaryLine = '';
+  if (criticalCount > 0) summaryLine = `${criticalCount} need immediate attention`;
+  if (warningCount > 0) summaryLine += `${summaryLine ? ', ' : ''}${warningCount} worth watching`;
+  if (!summaryLine) summaryLine = 'Minor shifts — nothing urgent';
+
   const text = top.length === 0
     ? `## What shifted\n\nNothing drifted. Your roadmap still matches demand.`
-    : `## What shifted\n\n${top.length} ${top.length === 1 ? 'item needs' : 'items need'} attention. Most urgent: **${top[0].item.title}**.\n\n─── Items to review ───────────────\n${top.map((f, i) =>
-        `• **${f.item.title}** — $${f.item.estRevenue}K, ${f.item.customers} customers. ${f.issue}. *${f.action}.*`
+    : `## What shifted\n\n${top.length} ${top.length === 1 ? 'item has' : 'items have'} drifted. ${summaryLine}.\n\n─── Items to review ───────────────\n${bucketed.map((f) =>
+        `• ${f.severityLabel} **${f.item.title}** — ${f.issue}. *${f.action}.*`
       ).join('\n')}`;
 
   const dataForAI5 = { driftItems: top.map(f => ({ title: f.item.title, revenue: f.item.estRevenue, customers: f.item.customers, trend: f.trend.direction, mentionsDelta: f.trend.mentionsDelta, issue: f.issue, action: f.action })) };
@@ -2033,9 +2130,6 @@ function routePillKey(key: string): MessageContent {
     case 'backlog-ranked': return buildFlow1BacklogRanked();
     case 'strongest-ignored': return buildFlow1BacklogRanked();
     case 'alt-cut': return buildAltCut();
-    case 'descope': return routeInputRegex('descope');
-    case 'bump-q2': return routeInputRegex('bump');
-    case 'deps-detail': return routeInputRegex('dependencies');
     case 'flow2-top-backlog': {
       const top = sampleData.filter(s => !roadmapData.find(r => r.title === s.title)).sort((a, b) => b.estRevenue - a.estRevenue)[0];
       return top ? buildFlow2(top.id) : routeInputRegex('backlog');

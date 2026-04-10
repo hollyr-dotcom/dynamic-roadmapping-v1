@@ -31,6 +31,9 @@
         "vitest": "^4.0.18",
       },
     },
+    "packages/api": {
+      "name": "@spaces/api",
+    },
     "packages/shared": {
       "name": "@spaces/shared",
       "version": "0.0.0",
@@ -687,6 +690,8 @@
     "@rollup/rollup-win32-x64-gnu": ["@rollup/rollup-win32-x64-gnu@4.59.0", "", { "os": "win32", "cpu": "x64" }, "sha512-laBkYlSS1n2L8fSo1thDNGrCTQMmxjYY5G0WFWjFFYZkKPjsMBsgJfGf4TLxXrF6RyhI60L8TMOjBMvXiTcxeA=="],
 
     "@rollup/rollup-win32-x64-msvc": ["@rollup/rollup-win32-x64-msvc@4.59.0", "", { "os": "win32", "cpu": "x64" }, "sha512-2HRCml6OztYXyJXAvdDXPKcawukWY2GpR5/nxKp4iBgiO3wcoEGkAaqctIbZcNB6KlUQBIqt8VYkNSj2397EfA=="],
+
+    "@spaces/api": ["@spaces/api@workspace:packages/api"],
 
     "@spaces/shared": ["@spaces/shared@workspace:packages/shared"],
 
