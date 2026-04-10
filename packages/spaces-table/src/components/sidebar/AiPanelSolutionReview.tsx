@@ -568,13 +568,51 @@ function shortTitle(title: string, maxLen = 40) {
    SCRIPTED FLOW RESPONSES
    ═══════════════════════════════════════════════════════════════ */
 
+/* ─── Intent roots (drives pill guardrails) ─── */
+type IntentRoot = 'architect' | 'debug' | 'refine' | 'expand';
+
 type MessageContent = {
   text: string;
   textPromise?: Promise<string>;
   cards?: React.ReactNode[];
   pills?: { label: string; key: string }[];
   loadingSteps?: string[];
+  intentRoot?: IntentRoot;
 };
+
+/**
+ * Pill guardrails — enforces 3 rules from the response framework:
+ * 1. Consistency: pills build on the answer, never negate it
+ * 2. Progression: step 2, edge case, or optimization — not "start over"
+ * 3. No contradictions: never suggest the opposite of what we just said
+ *
+ * Takes the intent root + the builder's raw pill candidates, returns max 3 validated pills.
+ */
+function buildGuardedPills(
+  root: IntentRoot,
+  candidates: { label: string; key: string }[],
+  context: { allDeclining?: boolean; recommendedAction?: 'promote' | 'demote' | 'add' | 'cut' | 'swap' | null }
+): { label: string; key: string }[] {
+  const filtered = candidates.filter(pill => {
+    // Rule 3: No contradictions — if we recommended demoting, don't offer a promote pill
+    if (context.allDeclining && pill.key.includes('promote')) return false;
+    if (context.recommendedAction === 'demote' && pill.key.includes('promote')) return false;
+    if (context.recommendedAction === 'promote' && pill.key.includes('demote')) return false;
+    // Rule 1: Don't loop back to the same view we're on
+    // (handled by each builder — they shouldn't include their own key)
+    return true;
+  });
+
+  // Rule 2: Progression — ensure at least one pill moves forward
+  // "flow1-initial" is a "start over" key — only allow it as the last pill
+  const forward = filtered.filter(p => p.key !== 'flow1-initial');
+  const reset = filtered.find(p => p.key === 'flow1-initial');
+
+  const result = forward.slice(0, 2);
+  if (reset && result.length < 3) result.push(reset);
+
+  return result.slice(0, 3);
+}
 
 function buildFlow1Initial(): MessageContent {
   // 1. Read ALL items from both tables
@@ -855,15 +893,18 @@ function buildUC1Theme(requestedTheme?: string): MessageContent {
     return onRM && (onRM.priority === 'now' || onRM.priority === 'next');
   }) : null;
 
+  const rawPills = [
+    ...(promotable ? [{ label: `Promote ${promotable.title.split(' ').slice(0, 3).join(' ')}`, key: `reprioritize-promote-${promotable.id}` }] : []),
+    ...(demotable ? [{ label: `Move ${shortTitle(demotable.title, 20)} down`, key: `reprioritize-demote-${demotable.id}` }] : []),
+    ...(themes.length > 1 ? [{ label: `Deep dive into ${themes[1].name}`, key: `uc1-theme-${themes[1].name}` }] : []),
+    { label: "Show the evidence ranking", key: "flow1-initial" },
+  ];
+
   return {
     text,
     loadingSteps: ["Scanning for patterns…", "Grouping by theme…"],
-    pills: [
-      ...(promotable ? [{ label: `Promote ${promotable.title.split(' ').slice(0, 3).join(' ')}`, key: `reprioritize-promote-${promotable.id}` }] : []),
-      ...(demotable ? [{ label: `Move ${shortTitle(demotable.title, 20)} down`, key: `reprioritize-demote-${demotable.id}` }] : []),
-      { label: "Show the evidence ranking", key: "flow1-initial" },
-      ...(themes.length > 1 ? [{ label: `Deep dive into ${themes[1].name}`, key: `uc1-theme-${themes[1].name}` }] : []),
-    ],
+    pills: buildGuardedPills('architect', rawPills, { allDeclining, recommendedAction: allDeclining ? 'demote' : promotable ? 'promote' : null }),
+    intentRoot: 'architect',
   };
 }
 
@@ -1217,12 +1258,12 @@ function buildFlow3(cutId: string, addId: string): MessageContent {
       "Mapping dependency chains…",
       "Ranking Q2 items by cut safety…",
     ],
-    // Fix 11: Replace descope with leadership summary
-    pills: [
+    pills: buildGuardedPills('expand', [
       { label: "Apply this swap", key: `apply-swap-${cutItem.id}-${addItem.id}` },
       { label: "What else could we cut instead?", key: "alt-cut" },
       { label: "Write a trade-off summary for leadership", key: "uc4-leadership" },
-    ],
+    ], { recommendedAction: 'swap' }),
+    intentRoot: 'expand',
   };
 }
 
@@ -1467,11 +1508,13 @@ function buildReprioritize(itemId: string, action: 'promote' | 'demote'): Messag
       "Checking downstream impact…",
       "Preparing change preview…",
     ],
-    pills: [
+    pills: buildGuardedPills('refine', [
       { label: "Apply this change", key: `apply-reprioritize-${itemId}-${newPriority}` },
+      { label: "What's the downstream impact?", key: `flow2-${itemId}` },
       { label: "Show me alternatives", key: "alt-cut" },
       { label: "Back to overview", key: "flow1-initial" },
-    ],
+    ], { recommendedAction: action }),
+    intentRoot: 'refine',
   };
 }
 
@@ -1657,18 +1700,19 @@ function buildUC2Mismatch(): MessageContent {
 
   const dataForAI2 = { mismatches: findings.map(f => ({ type: f.type, title: f.item.title, priority: f.item.priority, revenue: f.item.estRevenue, customers: f.item.customers, trend: getTrend(f.item.id)?.direction })) };
 
-  // Fix 6: Add "Add to roadmap" pill for missing items
   const missingItem = findings.find(f => f.type === 'missing');
   const underInvested = findings.find(f => f.type === 'under-invested');
+  const overInvested = findings.find(f => f.type === 'over-invested');
 
-  const pills: { label: string; key: string }[] = findings.length === 0
+  const rawPills: { label: string; key: string }[] = findings.length === 0
     ? [
-        { label: "Show me the full evidence ranking", key: "flow1-initial" },
         { label: "Has anything drifted?", key: "uc5-drift" },
+        { label: "Show me the full evidence ranking", key: "flow1-initial" },
       ]
     : [
         ...(missingItem ? [{ label: `Add ${missingItem.item.title.split(' ').slice(0, 3).join(' ')} to roadmap`, key: `reprioritize-promote-${missingItem.item.id}` }] : []),
         ...(underInvested && underInvested.item.priority !== 'now' && !missingItem ? [{ label: "Promote the under-invested item", key: `reprioritize-promote-${underInvested.item.id}` }] : []),
+        ...(overInvested ? [{ label: `Move ${shortTitle(overInvested.item.title, 20)} down`, key: `reprioritize-demote-${overInvested.item.id}` }] : []),
         { label: "Deep dive into the top mismatch", key: `flow2-${findings[0].item.id}` },
         { label: "Rank everything by evidence", key: "flow1-initial" },
       ];
@@ -1681,7 +1725,8 @@ function buildUC2Mismatch(): MessageContent {
       "Cross-referencing priorities with evidence…",
       "Identifying gaps…",
     ],
-    pills,
+    pills: buildGuardedPills('debug', rawPills, { recommendedAction: overInvested ? 'demote' : missingItem ? 'add' : null }),
+    intentRoot: 'debug',
   };
 }
 
@@ -1853,16 +1898,19 @@ function buildUC5Drift(): MessageContent {
 
   const dataForAI5 = { driftItems: top.map(f => ({ title: f.item.title, revenue: f.item.estRevenue, customers: f.item.customers, trend: f.trend.direction, mentionsDelta: f.trend.mentionsDelta, issue: f.issue, action: f.action })) };
 
-  const pills: { label: string; key: string }[] = top.length === 0
+  // Context-aware pills: growing items → promote, declining items → demote
+  const growingDrift = top.find(f => f.trend.direction === 'growing' && f.item.priority !== 'now');
+  const decliningDrift = top.find(f => f.trend.direction === 'declining' && (f.item.priority === 'now' || f.item.priority === 'next'));
+  const topAction = growingDrift ? 'promote' as const : decliningDrift ? 'demote' as const : null;
+
+  const rawPills: { label: string; key: string }[] = top.length === 0
     ? [
-        { label: "Am I betting on the right things?", key: "flow1-initial" },
         { label: "Show the full backlog ranked", key: "backlog-ranked" },
+        { label: "Am I betting on the right things?", key: "flow1-initial" },
       ]
     : [
-        ...(() => {
-          const promotable = top.find(f => f.item.priority !== 'now');
-          return promotable ? [{ label: "Promote the top drifted item", key: `reprioritize-promote-${promotable.item.id}` }] : [];
-        })(),
+        ...(growingDrift ? [{ label: `Promote ${shortTitle(growingDrift.item.title, 20)}`, key: `reprioritize-promote-${growingDrift.item.id}` }] : []),
+        ...(decliningDrift && !growingDrift ? [{ label: `Move ${shortTitle(decliningDrift.item.title, 20)} down`, key: `reprioritize-demote-${decliningDrift.item.id}` }] : []),
         { label: "Where is my roadmap out of sync?", key: "uc2-mismatch" },
         { label: "Rank everything by evidence", key: "flow1-initial" },
       ];
@@ -1875,7 +1923,8 @@ function buildUC5Drift(): MessageContent {
       "Identifying drift patterns…",
       "Ranking by urgency…",
     ],
-    pills,
+    pills: buildGuardedPills('debug', rawPills, { recommendedAction: topAction }),
+    intentRoot: 'debug',
   };
 }
 
