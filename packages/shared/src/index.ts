@@ -2,4 +2,5 @@ export type { FieldType, FieldDefinition, FilterField, FilterCondition, Priority
 export { fields, roadmapFields } from './fields.ts'
 export { FILTER_FIELDS, OPERATORS, STATUS_VALUES, NO_VALUE_OPS, defaultCondition } from './filterConfig.ts'
 export type { SpaceRow } from './sampleData.ts'
-export { sampleData, roadmapData, companyARR, customerQuotes, itemDependencies } from './sampleData.ts'
+export { sampleData, roadmapData, companyARR, customerQuotes, itemDependencies, demandTrend, itemHistory } from './sampleData.ts'
+export type { DemandTrend, ItemChange } from './sampleData.ts'

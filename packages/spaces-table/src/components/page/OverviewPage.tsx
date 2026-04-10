@@ -15,7 +15,6 @@ import {
   IconCross,
   IconPlus,
   IconTimelineFormat,
-  IconEyeOpen,
   IconArrowRight,
   IconSparksFilled,
 } from '@mirohq/design-system'

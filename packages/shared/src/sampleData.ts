@@ -47,7 +47,6 @@ export const roadmapData: SpaceRow[] = [
   { id: "r8",  title: "Open Banking API integration for third-party account aggregation",           mentions: 16,  customers: 18,  estRevenue: 80,  companies: ["ZenDesk", "Jira", "Atlassian"],           priority: "next", status: "planning" },
   { id: "r9",  title: "Push notification engine for price alerts and goal milestones",              mentions: 10,  customers: 8,   estRevenue: 35,  companies: ["Asana", "Linear", "Google"],              priority: "next", status: "planning" },
   // Up next — on the horizon
-  { id: "r10", title: "Natural language search across transactions and accounts",                   mentions: 48,  customers: 53,  estRevenue: 190, companies: ["Apple", "Google", "Slack", "Jira"],       priority: "later", status: "planning" },
   { id: "r11", title: "Fraud detection model v2 — anomaly scoring for high-value transfers",       mentions: 23,  customers: 19,  estRevenue: 85,  companies: ["Apple", "Google", "ZenDesk"],             priority: "later", status: "planning" },
   // Done — shipped
   { id: "r12", title: "Dark mode across web and mobile apps",                                       mentions: 6,   customers: 5,   estRevenue: 0,   companies: ["Apple", "Google", "Notion", "Atlassian", "Jira"], priority: "now", status: "done" },
@@ -100,6 +99,36 @@ export const companyARR: Record<string, { company: string; arr: number; contacts
     { company: "Jira", arr: 25, contacts: 6 },
     { company: "Atlassian", arr: 15, contacts: 5 },
   ],
+  r9: [
+    { company: "Asana", arr: 15, contacts: 3 },
+    { company: "Linear", arr: 10, contacts: 3 },
+    { company: "Google", arr: 10, contacts: 2 },
+  ],
+  "6": [
+    { company: "Apple", arr: 80, contacts: 18 },
+    { company: "Google", arr: 60, contacts: 15 },
+    { company: "Slack", arr: 30, contacts: 12 },
+    { company: "Jira", arr: 20, contacts: 8 },
+  ],
+  r11: [
+    { company: "ZenDesk", arr: 35, contacts: 7 },
+    { company: "Jira", arr: 25, contacts: 6 },
+    { company: "Atlassian", arr: 20, contacts: 5 },
+  ],
+  r12: [
+    { company: "Figma", arr: 20, contacts: 3 },
+    { company: "Airbnb", arr: 15, contacts: 3 },
+    { company: "Shopify", arr: 10, contacts: 3 },
+  ],
+  r13: [
+    { company: "Notion", arr: 30, contacts: 6 },
+    { company: "Asana", arr: 20, contacts: 5 },
+  ],
+  r14: [
+    { company: "Figma", arr: 20, contacts: 4 },
+    { company: "Airbnb", arr: 15, contacts: 3 },
+    { company: "Linear", arr: 10, contacts: 2 },
+  ],
 }
 
 export const customerQuotes: Record<string, { company: string; quote: string; role: string }[]> = {
@@ -129,3 +158,82 @@ export const itemDependencies: { from: string; to: string; type: 'blocks' | 'dep
   { from: "r8", to: "r4", type: "related" },         // fraud detection related to multi-currency (FX risk)
   { from: "r3", to: "r7", type: "depends-on" },      // budgeting insights feed into tax-loss harvesting
 ]
+
+/* ─── Demand trends (for UC1 ranking + UC5 drift detection) ─── */
+
+export interface DemandTrend {
+  itemId: string
+  direction: 'growing' | 'stable' | 'declining'
+  mentionsDelta: number      // change in mentions over last 30 days
+  lastMentionDate: string    // ISO date
+}
+
+export const demandTrend: DemandTrend[] = [
+  // Roadmap items
+  { itemId: "r1",  direction: "growing",   mentionsDelta: +22,  lastMentionDate: "2026-03-28" },
+  { itemId: "r2",  direction: "stable",    mentionsDelta: +3,   lastMentionDate: "2026-03-30" },
+  { itemId: "r3",  direction: "stable",    mentionsDelta: +1,   lastMentionDate: "2026-03-25" },
+  { itemId: "r4",  direction: "growing",   mentionsDelta: +18,  lastMentionDate: "2026-03-29" },
+  { itemId: "r5",  direction: "declining", mentionsDelta: -8,   lastMentionDate: "2026-02-28" },
+  { itemId: "r6",  direction: "stable",    mentionsDelta: +2,   lastMentionDate: "2026-03-20" },
+  { itemId: "r7",  direction: "declining", mentionsDelta: -4,   lastMentionDate: "2026-02-15" },
+  { itemId: "r8",  direction: "growing",   mentionsDelta: +8,   lastMentionDate: "2026-03-27" },
+  { itemId: "r9",  direction: "declining", mentionsDelta: -6,   lastMentionDate: "2026-02-10" },
+  // r10 removed from roadmap — Natural language search is now backlog-only (id: "6")
+
+  { itemId: "r11", direction: "growing",   mentionsDelta: +5,   lastMentionDate: "2026-03-26" },
+  { itemId: "r12", direction: "stable",    mentionsDelta: 0,    lastMentionDate: "2026-03-10" },
+  { itemId: "r13", direction: "stable",    mentionsDelta: +1,   lastMentionDate: "2026-03-05" },
+  { itemId: "r14", direction: "stable",    mentionsDelta: 0,    lastMentionDate: "2026-02-20" },
+  // Backlog items (using sampleData IDs)
+  { itemId: "1",   direction: "growing",   mentionsDelta: +22,  lastMentionDate: "2026-03-28" },
+  { itemId: "2",   direction: "stable",    mentionsDelta: +3,   lastMentionDate: "2026-03-30" },
+  { itemId: "3",   direction: "stable",    mentionsDelta: +1,   lastMentionDate: "2026-03-25" },
+  { itemId: "4",   direction: "growing",   mentionsDelta: +18,  lastMentionDate: "2026-03-29" },
+  { itemId: "5",   direction: "declining", mentionsDelta: -8,   lastMentionDate: "2026-02-28" },
+  { itemId: "6",   direction: "growing",   mentionsDelta: +15,  lastMentionDate: "2026-03-30" },
+  { itemId: "7",   direction: "stable",    mentionsDelta: +2,   lastMentionDate: "2026-03-20" },
+  { itemId: "8",   direction: "growing",   mentionsDelta: +8,   lastMentionDate: "2026-03-27" },
+  { itemId: "9",   direction: "declining", mentionsDelta: -6,   lastMentionDate: "2026-02-10" },
+  { itemId: "10",  direction: "declining", mentionsDelta: -4,   lastMentionDate: "2026-02-15" },
+  { itemId: "11",  direction: "growing",   mentionsDelta: +5,   lastMentionDate: "2026-03-26" },
+  { itemId: "12",  direction: "stable",    mentionsDelta: 0,    lastMentionDate: "2026-02-20" },
+  { itemId: "13",  direction: "stable",    mentionsDelta: +1,   lastMentionDate: "2026-03-05" },
+  { itemId: "14",  direction: "declining", mentionsDelta: -3,   lastMentionDate: "2026-02-18" },
+  { itemId: "15",  direction: "declining", mentionsDelta: -2,   lastMentionDate: "2026-01-30" },
+  { itemId: "16",  direction: "stable",    mentionsDelta: 0,    lastMentionDate: "2026-02-05" },
+  { itemId: "17",  direction: "stable",    mentionsDelta: +1,   lastMentionDate: "2026-03-01" },
+  { itemId: "18",  direction: "declining", mentionsDelta: -1,   lastMentionDate: "2026-02-12" },
+]
+
+/* ─── Item change history (for UC4 summaries + UC5 drift) ─── */
+
+export interface ItemChange {
+  date: string
+  itemId: string
+  changeType: 'priority-changed' | 'status-changed' | 'added' | 'removed' | 'scope-changed'
+  from?: string
+  to?: string
+  reason?: string
+}
+
+export const itemHistory: ItemChange[] = [
+  { date: "2026-03-28", itemId: "r4",  changeType: "priority-changed", from: "next", to: "now",       reason: "Multi-currency demand grew 40% — 18 new mentions from APAC accounts" },
+  { date: "2026-03-25", itemId: "r12", changeType: "status-changed",   from: "in-progress", to: "done", reason: "Dark mode shipped to all platforms" },
+  { date: "2026-03-22", itemId: "r5",  changeType: "priority-changed", from: "now", to: "next",       reason: "Automated savings demand declining — deprioritized to make room" },
+  { date: "2026-03-20", itemId: "r8",  changeType: "status-changed",   from: "planning", to: "in-progress", reason: "Fraud detection v2 kicked off after two near-miss events at ZenDesk" },
+  { date: "2026-03-18", itemId: "15",  changeType: "added",            to: "roadmap",                  reason: "Leadership mandate: crypto asset support for enterprise accounts" },
+  { date: "2026-03-15", itemId: "r9",  changeType: "priority-changed", from: "next", to: "later",     reason: "Push notifications demand dropped — no new mentions since January" },
+  { date: "2026-03-12", itemId: "r7",  changeType: "scope-changed",    from: "Full automation", to: "Advisory only", reason: "Tax-loss harvesting descoped to advisory after compliance review" },
+  { date: "2026-03-10", itemId: "r13", changeType: "status-changed",   from: "planning", to: "done",  reason: "Accessibility audit completed across all flows" },
+  { date: "2026-03-08", itemId: "r1",  changeType: "status-changed",   from: "planning", to: "in-progress", reason: "AI portfolio advisor started — strongest customer signal" },
+  { date: "2026-03-05", itemId: "r11", changeType: "priority-changed", from: "later", to: "next",     reason: "Open Banking demand growing — 5 new enterprise mentions" },
+  { date: "2026-03-01", itemId: "r14", changeType: "status-changed",   from: "in-progress", to: "done", reason: "Financial literacy hub shipped" },
+  { date: "2026-02-25", itemId: "9",   changeType: "removed",          from: "backlog",                reason: "Social investing deprioritized — demand declining, only 21 mentions" },
+  { date: "2026-02-20", itemId: "r3",  changeType: "scope-changed",    from: "Full forecasting engine", to: "Spending prediction MVP", reason: "Smart budgeting descoped to MVP to ship faster" },
+  { date: "2026-02-18", itemId: "r6",  changeType: "priority-changed", from: "later", to: "next",     reason: "Recurring investment plans moved up after Asana feedback" },
+  { date: "2026-02-15", itemId: "r2",  changeType: "status-changed",   from: "planning", to: "in-progress", reason: "Transaction categorisation started — ML model ready" },
+]
+
+/* ─── Expanded companyARR for remaining items ─── */
+// (appended to existing companyARR above — add these programmatically or paste into the existing object)

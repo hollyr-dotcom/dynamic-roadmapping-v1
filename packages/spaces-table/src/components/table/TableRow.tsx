@@ -107,6 +107,7 @@ export function TableRow({ row, idx, fields, isSelected, onToggleSelect, onDesel
 
   return (
     <tr
+      data-row-id={row.id}
       className={isSelected ? 'row-selected' : ''}
       style={{ height: '56px', ...importStyle }}
     >

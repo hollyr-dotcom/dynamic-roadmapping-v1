@@ -173,8 +173,76 @@ export function App() {
     setSelectedRow(null)
   }, [])
 
-  const toggleSidebar = useCallback((id: SidebarId) =>
-    setActiveSidebar((prev) => (prev === id ? null : id)), [])
+  // Sidekick apply actions — actually mutate roadmap/backlog state
+  const handleApplyReprioritize = useCallback((itemId: string, newPriority: string, _reason: string) => {
+    const isOnRoadmap = roadmapItems.find(r => r.id === itemId);
+    const isInBacklog = backlogData.find(b => b.id === itemId);
+
+    if (isOnRoadmap) {
+      // Item already on roadmap — just change priority
+      setRoadmapItems(prev => prev.map(item =>
+        item.id === itemId ? { ...item, priority: newPriority as any } : item
+      ))
+    } else if (isInBacklog) {
+      // Item in backlog, not on roadmap — move it to roadmap
+      setBacklogData(prev => prev.filter(item => item.id !== itemId))
+      setRoadmapItems(prev => [...prev, { ...isInBacklog, priority: newPriority as any, status: 'planning' as any }])
+    }
+
+    // Visual highlight
+    setUpdatedRows(prev => new Set([...prev, itemId]))
+    setTimeout(() => setUpdatedRows(prev => { const next = new Set(prev); next.delete(itemId); return next }), 10000)
+    // Switch to table view and scroll to the changed row (keep Sidekick open)
+    setTimeout(() => {
+      if (activePage === 'roadmap') setActiveTab('all-items-roadmap')
+      else if (activePage === 'backlog') setActiveTab('all-items')
+      setTimeout(() => {
+        const row = document.querySelector(`[data-row-id="${itemId}"]`)
+        if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 300)
+    }, 500)
+  }, [activePage, roadmapItems, backlogData])
+
+  const handleApplySwap = useCallback((cutId: string, addId: string, _reason: string) => {
+    // Demote the cut item to 'later'
+    setRoadmapItems(prev => prev.map(item =>
+      item.id === cutId ? { ...item, priority: 'later' as any } : item
+    ))
+    setBacklogData(prev => prev.map(item =>
+      item.id === cutId ? { ...item, priority: 'later' as any } : item
+    ))
+    // Promote the add item to 'now'
+    const addInBacklog = backlogData.find(b => b.id === addId)
+    if (addInBacklog) {
+      // Move from backlog to roadmap
+      setBacklogData(prev => prev.filter(r => r.id !== addId))
+      setRoadmapItems(prev => [...prev, { ...addInBacklog, priority: 'now' as any, status: 'planning' as any }])
+    } else {
+      setRoadmapItems(prev => prev.map(item =>
+        item.id === addId ? { ...item, priority: 'now' as any } : item
+      ))
+    }
+    // Visual highlight both
+    setUpdatedRows(prev => new Set([...prev, cutId, addId]))
+    setTimeout(() => setUpdatedRows(prev => { const next = new Set(prev); next.delete(cutId); next.delete(addId); return next }), 10000)
+    // Switch to table view and scroll to the added item (keep Sidekick open)
+    setTimeout(() => {
+      if (activePage === 'roadmap') setActiveTab('all-items-roadmap')
+      else if (activePage === 'backlog') setActiveTab('all-items')
+      setTimeout(() => {
+        const row = document.querySelector(`[data-row-id="${addId}"]`)
+        if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 300)
+    }, 500)
+  }, [backlogData, activePage])
+
+  const toggleSidebar = useCallback((id: SidebarId) => {
+    setActiveSidebar((prev) => {
+      if (prev === id) return null;
+      if (id === 'ai-sidekick') setSidekickKey(k => k + 1);
+      return id;
+    });
+  }, [])
 
   const toggleCanvas = useCallback(() => {
     setCanvasOpen(prev => {
@@ -556,13 +624,13 @@ export function App() {
             <DataTable key={`empty-${activePage}`} data={[]} fields={pageFields} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={(title) => { closeSidebar(); setShowSharePopover(false); setHasData(true); if (activePage === 'roadmap') { setRoadmapItems([{ id: 'new-1', title: title || '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'now', status: 'planning' }]) } else { setBacklogData([{ id: 'new-1', title: title || '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]) }; setTimeout(() => setShowImportPopover(true), 800) }} activePage={activePage} animateIn={!isInitialLoad} onEmptyInteract={closeSidebar} />
           ) : (<>
           {activePage !== 'overview' && activeTabConfig?.type === 'table' && (
-              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onOpenSidekick={(row) => { setSidekickFocusItemId(row.id); setActiveSidebar('ai-sidekick') }} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={(title) => { setShowSharePopover(false); setHasData(true); setBacklogData([{ id: 'new-1', title: title || '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]); setTimeout(() => setShowImportPopover(true), 800) }} activePage={activePage} />
+              <DataTable key={activeTab} data={viewData} fields={pageFields} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onCompanyClick={(row, name) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(name); setActiveSidebar('row-detail'); handleCompanyFilter(name) }} updatedRows={updatedRows} insightsAllDots={insightsAllDots} onTableInteract={() => setInsightsAllDots(false)} isImporting={isImporting} onImportComplete={handleImportComplete} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onOpenSidekick={(row) => { setSidekickFocusItemId(row.id); setSidekickKey(k => k + 1); setActiveSidebar('ai-sidekick') }} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={(title) => { setShowSharePopover(false); setHasData(true); setBacklogData([{ id: 'new-1', title: title || '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]); setTimeout(() => setShowImportPopover(true), 800) }} activePage={activePage} />
           )}
           {activeTabConfig?.type === 'kanban' && (
             <KanbanBoard key={activeTab} data={viewData} fields={pageFields} columns={activePage === 'roadmap' ? ROADMAP_KANBAN_COLUMNS : undefined} onRowClick={(row) => { setSelectedRow(row); setSelectedRowDates(undefined); setInitialCompany(undefined); setActiveSidebar('row-detail') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onCardSelectedChange={setKanbanCardSelected} />
           )}
           {activeTabConfig?.type === 'timeline' && (
-            <TimelinePlaceholder key={activeTab} data={roadmapItems} parentScrollRef={scrollRef} onRowClick={(row) => { setSidekickFocusItemId(row.id); setActiveSidebar('ai-sidekick') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onBarSelectedChange={setKanbanCardSelected} ghostRowId={ghostRowId ?? undefined} onBarPlaced={(rowId, startDate, endDate) => { setSelectedRowDates({ startDate, endDate }); setGhostRowId(null) }} />
+            <TimelinePlaceholder key={activeTab} data={roadmapItems} parentScrollRef={scrollRef} onRowClick={(row) => { setSidekickFocusItemId(row.id); setSidekickKey(k => k + 1); setActiveSidebar('ai-sidekick') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onBarSelectedChange={setKanbanCardSelected} ghostRowId={ghostRowId ?? undefined} onBarPlaced={(rowId, startDate, endDate) => { setSelectedRowDates({ startDate, endDate }); setGhostRowId(null) }} />
           )}
           </>)}
         </div>
@@ -641,6 +709,8 @@ export function App() {
                     activePage={activePage}
                     focusItemId={sidekickFocusItemId}
                     contextUserMessage={sidekickContextMessage}
+                    onApplyReprioritize={handleApplyReprioritize}
+                    onApplySwap={handleApplySwap}
                     layoutButton={
                       <Tooltip>
                         <Tooltip.Trigger asChild>
@@ -679,6 +749,8 @@ export function App() {
                 activePage={activePage}
                 focusItemId={sidekickFocusItemId}
                 contextUserMessage={sidekickContextMessage}
+                onApplyReprioritize={handleApplyReprioritize}
+                onApplySwap={handleApplySwap}
                 layoutButton={
                   <Tooltip>
                     <Tooltip.Trigger asChild>
@@ -796,7 +868,7 @@ export function App() {
               className="rounded-xl"
               style={{ width: 400, boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)', background: '#fff' }}
             >
-              <AiPanelSolutionReview onClose={closeSidebar} activePage={activePage} focusItemId={sidekickFocusItemId} />
+              <AiPanelSolutionReview key={sidekickKey} onClose={closeSidebar} activePage={activePage} focusItemId={sidekickFocusItemId} onApplyReprioritize={handleApplyReprioritize} onApplySwap={handleApplySwap} />
             </div>
           </div>
         ) : (

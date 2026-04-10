@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, createContext, useContext } from "react";
+import { createPortal } from "react-dom";
 import {
   Button,
   Checkbox,
@@ -21,12 +22,36 @@ import {
   IconChatLinesTwo,
   IconArrowsDownUp,
   IconBoard,
+  IconLink,
   IconSquaresTwoOverlap,
   IconEyeOpen,
+  IconArrowLeft,
 } from "@mirohq/design-system";
-import { roadmapData, sampleData, companyARR, customerQuotes, itemDependencies } from "@spaces/shared";
+import { roadmapData, sampleData, companyARR, customerQuotes, itemDependencies, demandTrend, itemHistory } from "@spaces/shared";
+import { generateNarrative, classifyIntent } from "../../lib/openai";
+import type { ClassifiedIntent } from "../../lib/openai";
 import type { SpaceRow } from "@spaces/shared";
 import { OVERVIEW_ROWS } from "../page/OverviewPage";
+
+/* ─── Navigation context for sub-views ─── */
+const NavigateContext = createContext<(view: string, context?: string) => void>(() => {});
+
+/* ─── Global dropdown state (avoids re-render issues with inline components) ─── */
+let globalDropdownId: string | null = null;
+let globalDropdownListeners: (() => void)[] = [];
+function setGlobalDropdown(id: string | null) {
+  globalDropdownId = id;
+  globalDropdownListeners.forEach(fn => fn());
+}
+function useGlobalDropdown(id: string) {
+  const [, rerender] = useState(0);
+  useEffect(() => {
+    const fn = () => rerender(n => n + 1);
+    globalDropdownListeners.push(fn);
+    return () => { globalDropdownListeners = globalDropdownListeners.filter(f => f !== fn); };
+  }, []);
+  return globalDropdownId === id;
+}
 
 /* ─── Escher-style AI avatar (gradient circle + sparkle icon) ─── */
 function AgentAvatar({ size = 40 }: { size?: number }) {
@@ -85,7 +110,7 @@ function GradientSparks({ filled, size = "small" }: { filled?: boolean; size?: "
 }
 
 /* ─── Panel Header ─── */
-function PanelHeader({ onClose }: { onClose?: () => void }) {
+export function PanelHeader({ onClose }: { onClose?: () => void }) {
   const handleClose = () => {
     // Use onClose prop first, fall back to window global
     const closeFn = onClose || (window as any).__closeAiPanel;
@@ -97,25 +122,21 @@ function PanelHeader({ onClose }: { onClose?: () => void }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        paddingLeft: 24,
-        paddingRight: 12,
-        height: 56,
+        paddingLeft: 20,
+        paddingRight: 8,
+        height: 48,
         flexShrink: 0,
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-        <span style={{ fontSize: 16, fontWeight: 600, color: "#222428", fontFamily: "var(--font-roobert)", fontFeatureSettings: "'ss01'" }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: "#222428", fontFamily: "var(--font-roobert)", fontFeatureSettings: "'ss01'" }}>
           Sidekick
         </span>
-        <IconChevronDown size="small" color="icon-primary" />
-        <div style={{ background: "#f1f2f5", borderRadius: 4, padding: "0 6px", height: 20, display: "flex", alignItems: "center", marginLeft: 4 }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: "#222428" }}>AI Beta</span>
-        </div>
+        <IconChevronDown size="small" color="icon-secondary" />
       </div>
-      <div style={{ display: "flex", alignItems: "center" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
         <IconButton aria-label="New chat" variant="ghost" size="medium"><IconSquarePencil /></IconButton>
         <IconButton aria-label="History" variant="ghost" size="medium"><IconClockCounterClockwise /></IconButton>
-        <IconButton aria-label="Library" variant="ghost" size="medium"><IconSquaresFour /></IconButton>
         <IconButton aria-label="More" variant="ghost" size="medium"><IconDotsThreeVertical /></IconButton>
         <IconButton aria-label="Close" variant="ghost" size="medium" onPress={handleClose}><IconCross /></IconButton>
       </div>
@@ -180,9 +201,9 @@ function CheckboxOption({ label, checked, onChange }: { label: string; checked: 
 /* ─── User message bubble ─── */
 function UserBubble({ text }: { text: string }) {
   return (
-    <div style={{ display: "flex", justifyContent: "flex-end", paddingLeft: 32 }}>
-      <div style={{ background: "#f1f2f5", borderRadius: 8, padding: 12 }}>
-        <span style={{ fontSize: 14, fontWeight: 400, color: "#222428", lineHeight: 1.4 }}>{text}</span>
+    <div style={{ display: "flex", justifyContent: "flex-end", paddingLeft: 48 }}>
+      <div style={{ background: "#F4F4F1", borderRadius: 16, padding: "12px 16px" }}>
+        <span style={{ fontSize: 14, fontWeight: 400, color: "#222428", lineHeight: 1.5 }}>{text}</span>
       </div>
     </div>
   );
@@ -238,49 +259,59 @@ function StreamingText({ text, speed = 80, onComplete, onProgress }: { text: str
 /* ─── Analysing indicator (spinner + text + expanding steps) ─── */
 function AnalysingIndicator({ steps }: { steps?: string[] }) {
   const [revealed, setRevealed] = useState(0);
+  const [expanded, setExpanded] = useState(true);
 
   useEffect(() => {
     if (!steps || revealed >= steps.length) return;
-    const t = setTimeout(() => setRevealed(r => r + 1), 500);
+    const t = setTimeout(() => setRevealed(r => r + 1), 600);
     return () => clearTimeout(t);
   }, [revealed, steps?.length]);
 
+  // Get the current step label for the header
+  const currentStep = steps?.[Math.min(revealed, (steps?.length ?? 1) - 1)] || 'Analysing';
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <svg width="20" height="20" viewBox="0 0 20 20" style={{ flexShrink: 0, animation: "spin 1.2s linear infinite" }}>
-          <circle cx="10" cy="10" r="8" stroke="#e0e2e8" strokeWidth="2.5" fill="none" />
-          <path d="M10 2a8 8 0 0 1 8 8" stroke="#7C3AED" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-        </svg>
-        <span style={{ fontSize: 14, fontWeight: 400, color: "#222428", lineHeight: 1.5 }}>
-          Sidekick is analysing
+    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      {/* Header row — icon + label + chevron */}
+      <div
+        onClick={() => setExpanded(!expanded)}
+        style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "4px 0" }}
+      >
+        <IconSparks size="small" color="icon-secondary" />
+        <span style={{ fontSize: 14, fontWeight: 400, color: "#AEB2C0", lineHeight: 1.5 }}>
+          {currentStep}
         </span>
+        <IconChevronDown size="small" color="icon-secondary" css={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 200ms' } as any} />
       </div>
-      {steps && steps.length > 0 && (
-        <div style={{ paddingLeft: 30, display: "flex", flexDirection: "column", gap: 6 }}>
+
+      {/* Expanded steps with left border */}
+      {expanded && steps && steps.length > 0 && (
+        <div style={{ marginLeft: 8, borderLeft: "1.5px solid #E9EAEF", paddingLeft: 16, display: "flex", flexDirection: "column", gap: 4, marginTop: 4 }}>
           {steps.map((step, i) => (
             <div
               key={i}
               style={{
                 fontSize: 13,
-                color: i < revealed ? "#222428" : "#6f7489",
+                color: "#AEB2C0",
                 lineHeight: 1.5,
                 opacity: i <= revealed ? 1 : 0,
-                transform: i <= revealed ? "translateY(0)" : "translateY(4px)",
-                transition: "all 300ms ease-out",
+                transition: "opacity 300ms ease-out",
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
               }}
             >
               {i < revealed ? (
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ flexShrink: 0 }}>
-                  <path d="M2.5 6l2.5 2.5 4.5-5" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+                  <circle cx="7" cy="7" r="6" stroke="#AEB2C0" strokeWidth="1" fill="none" />
+                  <path d="M4.5 7l2 2 3.5-3.5" stroke="#AEB2C0" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               ) : (
-                <div style={{ width: 12, height: 12, flexShrink: 0 }} />
+                <IconSparks size="small" color="icon-secondary" />
               )}
-              {step}
+              <span>
+                {step}
+              </span>
             </div>
           ))}
         </div>
@@ -289,58 +320,92 @@ function AnalysingIndicator({ steps }: { steps?: string[] }) {
   );
 }
 
-/* ─── AI Citation chip with Miro DropdownMenu ─── */
+/* ─── AI Citation chip with dropdown ─── */
 function CitationChip({ label }: { label?: string }) {
-  // Pick icon based on source
-  const getIcon = () => {
-    const l = (label || '').toLowerCase();
-    if (l.includes('customer') || l.includes('account') || l.includes('user')) return <IconUsers size="small" color="icon-secondary" />;
-    if (l.includes('feedback') || l.includes('quote') || l.includes('say')) return <IconChatLinesTwo size="small" color="icon-secondary" />;
-    if (l.includes('depend') || l.includes('block') || l.includes('risk')) return <IconArrowsDownUp size="small" color="icon-secondary" />;
-    if (l.includes('insight') || l.includes('research')) return <IconInsights size="small" color="icon-secondary" />;
-    return <IconTable size="small" color="icon-secondary" />;
-  };
+  const chipId = useRef(`chip-${Math.random().toString(36).slice(2, 8)}`).current;
+  const open = useGlobalDropdown(chipId);
+  const ref = useRef<HTMLSpanElement>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const navigate = useContext(NavigateContext);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (ref.current?.contains(target)) return;
+      if (dropdownRef.current?.contains(target)) return;
+      setGlobalDropdown(null);
+    };
+    const t = setTimeout(() => document.addEventListener("mousedown", handler), 150);
+    return () => { clearTimeout(t); document.removeEventListener("mousedown", handler); };
+  }, [open]);
+
+  const icon = (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+      <path d="M6.5 2.5H4.5C3.4 2.5 2.5 3.4 2.5 4.5V11.5C2.5 12.6 3.4 13.5 4.5 13.5H11.5C12.6 13.5 13.5 12.6 13.5 11.5V9.5M9.5 2.5H13.5M13.5 2.5V6.5M13.5 2.5L7.5 8.5" stroke="#4262FF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
 
   return (
-    <span style={{ display: "inline-flex", verticalAlign: "middle", marginLeft: 4 }}>
-      <DropdownMenu>
-        <DropdownMenu.Trigger asChild>
-          <span
+    <span ref={ref} style={{ position: "relative", display: "inline-flex", verticalAlign: "middle", marginLeft: 4 }}>
+      <span
+        onClick={(e) => { e.stopPropagation(); setGlobalDropdown(open ? null : chipId); }}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 4,
+          padding: "2px 6px",
+          background: open ? "#DFE1E6" : "#E9EAEF",
+          borderRadius: 4,
+          cursor: "pointer",
+          flexShrink: 0,
+          lineHeight: 1,
+        }}
+      >
+        {icon}
+        {label && <span style={{ fontSize: 12, fontWeight: 500, color: "#4262FF", whiteSpace: "nowrap" }}>{label}</span>}
+      </span>
+      {open && (() => {
+        const rect = ref.current?.getBoundingClientRect();
+        if (!rect) return null;
+        const items = [
+          { icon: <IconBoard size="small" />, text: "Add to board", onClick: () => setGlobalDropdown(null) },
+          { icon: <IconSquaresTwoOverlap size="small" />, text: "Copy", onClick: () => setGlobalDropdown(null) },
+          { icon: <IconEyeOpen size="small" />, text: "View details", onClick: () => { setGlobalDropdown(null); navigate('view-details', label || ''); } },
+          { icon: <IconInsights size="small" />, text: "Related evidence", onClick: () => { setGlobalDropdown(null); navigate('related-evidence', label || ''); } },
+        ];
+        return createPortal(
+          <div
+            ref={(el) => { dropdownRef.current = el; }}
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-              padding: "2px 6px",
-              background: "#E9EAEF",
-              borderRadius: 4,
-              cursor: "pointer",
-              flexShrink: 0,
-              lineHeight: 1,
+              position: "fixed",
+              top: rect.bottom + 4,
+              left: rect.left,
+              background: "#FFFFFF",
+              border: "0.5px solid #E9EAEF",
+              borderRadius: 8,
+              boxShadow: "0px 2px 4px rgba(34, 36, 40, 0.08)",
+              padding: "4px 0",
+              zIndex: 99999,
+              minWidth: 180,
             }}
           >
-            {getIcon()}
-            {label && <span style={{ fontSize: 12, fontWeight: 500, color: "#222428", whiteSpace: "nowrap" }}>{label}</span>}
-          </span>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Content side="bottom" align="start" sideOffset={4}>
-          <DropdownMenu.Item>
-            <DropdownMenu.IconSlot><IconBoard /></DropdownMenu.IconSlot>
-            Add to board
-          </DropdownMenu.Item>
-          <DropdownMenu.Item>
-            <DropdownMenu.IconSlot><IconSquaresTwoOverlap /></DropdownMenu.IconSlot>
-            Copy
-          </DropdownMenu.Item>
-          <DropdownMenu.Item>
-            <DropdownMenu.IconSlot><IconEyeOpen /></DropdownMenu.IconSlot>
-            View details
-          </DropdownMenu.Item>
-          <DropdownMenu.Item>
-            <DropdownMenu.IconSlot><IconInsights /></DropdownMenu.IconSlot>
-            Related evidence
-          </DropdownMenu.Item>
-        </DropdownMenu.Content>
-      </DropdownMenu>
+            {items.map((item, i) => (
+              <div
+                key={i}
+                onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); item.onClick(); }}
+                onMouseEnter={e => (e.currentTarget.style.background = "#F7F8FA")}
+                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", cursor: "pointer", fontSize: 14, color: "#222428" }}
+              >
+                <span style={{ display: "flex", color: "#6f7489" }}>{item.icon}</span>
+                {item.text}
+              </div>
+            ))}
+          </div>,
+          document.body
+        );
+      })()}
     </span>
   );
 }
@@ -348,7 +413,7 @@ function CitationChip({ label }: { label?: string }) {
 /* ─── Evidence card (matches existing prototype card style) ─── */
 function EvidenceCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ borderRadius: 12, overflow: "hidden", background: "#F7F8FA", border: "1px solid #E9EAEF" }}>
+    <div style={{ borderRadius: 12, overflow: "hidden", background: "#FFFFFF", border: "1px solid #E9EAEF" }}>
       <div style={{ padding: "14px 20px", borderBottom: "1px solid #E9EAEF" }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>{title}</span>
       </div>
@@ -365,8 +430,8 @@ function EvidenceRow({ label, value, subtext, highlight }: { label: string; valu
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "10px 20px", borderBottom: "1px solid #f1f2f5" }}>
       <span style={{ fontSize: 13, fontWeight: 400, color: "#222428", lineHeight: 1.4, flex: 1 }}>{label}</span>
       <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12 }}>
-        <span style={{ fontSize: 14, fontWeight: 700, color: highlight ? "#7C3AED" : "#222428", lineHeight: 1.4 }}>{value}</span>
-        {subtext && <div style={{ fontSize: 12, color: "#6f7489", fontWeight: 400 }}>{subtext}</div>}
+        <span style={{ fontSize: 14, fontWeight: 700, color: "#222428", lineHeight: 1.4 }}>{value}</span>
+        {subtext && <div style={{ fontSize: 12, color: highlight ? "#E53E3E" : "#6f7489", fontWeight: highlight ? 600 : 400 }}>{subtext}</div>}
       </div>
     </div>
   );
@@ -453,6 +518,28 @@ function ImpactCard({ title, items }: { title: string; type?: 'lose' | 'gain'; i
   );
 }
 
+/* ─── Change card (before → after for every suggestion) ─── */
+function ChangeCard({ changes }: { changes: { item: string; from: string; to: string; reason?: string }[] }) {
+  return (
+    <div style={{ border: "1px solid #E9EAEF", borderRadius: 12, background: "#FFFFFF", overflow: "hidden" }}>
+      <div style={{ padding: "12px 20px", borderBottom: "1px solid #E9EAEF" }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>Proposed changes</span>
+      </div>
+      {changes.map((c, i) => (
+        <div key={i} style={{ padding: "12px 20px", borderBottom: i < changes.length - 1 ? "1px solid #E9EAEF" : "none" }}>
+          <div style={{ fontSize: 13, color: "#222428", fontWeight: 600, marginBottom: 4 }}>{c.item}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+            <span style={{ color: "#6f7489", textDecoration: "line-through" }}>{c.from}</span>
+            <span style={{ color: "#6f7489" }}>→</span>
+            <span style={{ color: "#38A169", fontWeight: 600 }}>{c.to}</span>
+          </div>
+          {c.reason && <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>{c.reason}</div>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ─── Helper: get item by ID from all tables ─── */
 function getItem(id: string): SpaceRow | undefined {
   return roadmapData.find(r => r.id === id) || sampleData.find(r => r.id === id) || Object.values(OVERVIEW_ROWS).find(r => r.id === id);
@@ -483,31 +570,130 @@ function shortTitle(title: string, maxLen = 40) {
 
 type MessageContent = {
   text: string;
+  textPromise?: Promise<string>;
   cards?: React.ReactNode[];
   pills?: { label: string; key: string }[];
   loadingSteps?: string[];
 };
 
 function buildFlow1Initial(): MessageContent {
-  const q2 = getQ2Items().sort((a, b) => b.estRevenue - a.estRevenue);
+  // 1. Read ALL items from both tables
+  const allItems = [...roadmapData.filter(r => r.status !== 'done'), ...sampleData.filter(s => !roadmapData.find(r => r.title === s.title))];
+
+  // 2. Rank by composite evidence score (ARR + customers + mentions + trend + recency)
+  const scored = allItems.map(item => {
+    const trend = getTrend(item.id);
+    const score = evidenceScore(item);
+    const onRoadmap = roadmapData.find(r => r.id === item.id);
+    return { item, score, trend, onRoadmap, priorityNum: priorityNum(item.priority) };
+  }).sort((a, b) => b.score - a.score);
+
+  const top5 = scored.slice(0, 5);
+  const q2 = getQ2Items();
   const totalARR = q2.reduce((s, r) => s + r.estRevenue, 0);
-  const noQuotes = q2.filter(r => !customerQuotes[r.id] || customerQuotes[r.id].length === 0);
-
-  // Find overlooked backlog item
-  const backlogHighSignal = sampleData
-    .filter(s => !roadmapData.find(r => r.title === s.title))
-    .sort((a, b) => b.estRevenue - a.estRevenue)[0];
-
   const totalMentions = q2.reduce((s, r) => s + r.mentions, 0);
   const totalCustomers = q2.reduce((s, r) => s + r.customers, 0);
-
-  const text = `Your ${q2.length} Q2 items cover a combined $${(totalARR / 1000).toFixed(1)}M estimated revenue. Here's how they stack up:`;
-
   const formattedARR = totalARR >= 1000 ? `$${(totalARR / 1000).toFixed(1)}M` : `$${totalARR}K`;
 
+  // 3. Surface disagreements — unique insight per finding, no repetitive comparisons
+  const disagreements: string[] = [];
+
+  for (const { item, score, onRoadmap } of scored.slice(0, 10)) {
+    if (disagreements.length >= 2) break;
+    const pNum = priorityNum(item.priority);
+    const evidenceRank = scored.findIndex(s => s.item.id === item.id) + 1;
+    const trend = getTrend(item.id);
+    if (evidenceRank <= 5 && (pNum <= 2 || !onRoadmap)) {
+      if (!onRoadmap) {
+        disagreements.push(`${item.title} ranks #${evidenceRank} but isn't on your roadmap — a blind spot.`);
+      } else {
+        disagreements.push(`${item.title} ranks #${evidenceRank} but is only ${item.priority} priority.`);
+      }
+    }
+    if (evidenceRank > 7 && pNum >= 3) {
+      const trendNote = trend?.direction === 'declining' ? 'Demand is declining.' : trend?.direction === 'stable' ? 'Demand has been flat.' : '';
+      disagreements.push(`${item.title} is ${item.priority} but ranks #${evidenceRank}. ${trendNote}`);
+    }
+  }
+
+  // 4. Group by theme — find items sharing 2+ companies
+  const companyMap: Record<string, typeof scored> = {};
+  for (const s of scored.slice(0, 15)) {
+    for (const company of s.item.companies) {
+      if (!companyMap[company]) companyMap[company] = [];
+      companyMap[company].push(s);
+    }
+  }
+  // Find themes: groups of 3+ items sharing keywords in titles
+  const titleWords = scored.slice(0, 15).map(s => ({
+    s,
+    words: s.item.title.toLowerCase().split(/\s+/).filter(w => w.length >= 4),
+  }));
+  const themes: { name: string; items: typeof scored; combinedARR: number; uniqueAccounts: number }[] = [];
+  const themeKeywords: Record<string, typeof scored> = {};
+  const themeNames: Record<string, string> = {
+    'transaction': 'Transaction & categorisation',
+    'investment': 'Investment & portfolio',
+    'savings': 'Savings & budgeting',
+    'currency': 'Multi-currency & FX',
+    'security': 'Security & access control',
+    'fraud': 'Security & access control',
+  };
+  for (const tw of titleWords) {
+    for (const w of tw.words) {
+      const themeName = themeNames[w];
+      if (themeName) {
+        if (!themeKeywords[themeName]) themeKeywords[themeName] = [];
+        if (!themeKeywords[themeName].find(s => s.item.id === tw.s.item.id)) {
+          themeKeywords[themeName].push(tw.s);
+        }
+      }
+    }
+  }
+  for (const [name, items] of Object.entries(themeKeywords)) {
+    if (items.length >= 2) {
+      const uniqueCompanies = new Set(items.flatMap(i => i.item.companies));
+      themes.push({
+        name,
+        items,
+        combinedARR: items.reduce((s, i) => s + i.item.estRevenue, 0),
+        uniqueAccounts: uniqueCompanies.size,
+      });
+    }
+  }
+  themes.sort((a, b) => b.combinedARR - a.combinedARR);
+
+  // 5. Zero/weak evidence items
+  const noQuotes = q2.filter(r => !customerQuotes[r.id] || customerQuotes[r.id].length === 0);
+  const weakEvidence = scored.filter(s => s.priorityNum >= 3 && s.score < scored[Math.floor(scored.length / 2)]?.score);
+
+  // Build structured text
+  const onRoadmapCount = top5.filter(s => s.onRoadmap).length;
+  const notOnRoadmapCount = top5.length - onRoadmapCount;
+
+  let text = `## Your Q2 priorities by evidence\n\n`;
+  if (notOnRoadmapCount > 0) {
+    const notOnRoadmapItems = top5.filter(s => !s.onRoadmap).map(s => `**${s.item.title}**`);
+    text += `${onRoadmapCount} of your top 5 are on the roadmap. ${notOnRoadmapItems.join(', ')} ${notOnRoadmapCount === 1 ? 'isn\'t' : 'aren\'t'} — that's a gap worth closing.`;
+  } else {
+    text += `All top 5 are on your roadmap. Priorities align with demand.`;
+  }
+
+  if (disagreements.length > 0) {
+    text += `\n\n─── What stands out ───────────────\n${disagreements.slice(0, 2).map(d => `• ${d}`).join('\n')}`;
+  }
+
+  if (noQuotes.length > 0) {
+    text += `\n\n─── No customer quotes ────────────\n${noQuotes.map(item => `• ${('jiraKey' in item ? (item as any).jiraKey + ' ' : '')}**${item.title}** — ${item.mentions} mentions, ${item.customers} customers but no verbatim feedback`).join('\n')}`;
+  }
+
+  if (disagreements.length === 0 && noQuotes.length === 0) {
+    text += `\nNo gaps found.`;
+  }
+
+  // Card: impact estimates + ranked table
   const cards: React.ReactNode[] = [
-    <div key="combined" style={{ borderRadius: 12, background: "#F7F8FA", border: "1px solid #E9EAEF", overflow: "hidden" }}>
-      {/* Impact estimates */}
+    <div key="combined" style={{ borderRadius: 12, background: "#FFFFFF", border: "1px solid #E9EAEF", overflow: "hidden" }}>
       <div style={{ padding: "16px 20px" }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#222428", marginBottom: 16 }}>Impact estimates</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px 16px" }}>
@@ -529,45 +715,145 @@ function buildFlow1Initial(): MessageContent {
           </div>
         </div>
       </div>
-      {/* Q2 items */}
       <div style={{ borderTop: "1px solid #F1F2F5" }}>
         <div style={{ padding: "12px 20px", borderBottom: "1px solid #E9EAEF" }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>Q2 Roadmap Coverage</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>Top 5 by evidence strength</span>
         </div>
-        {q2.map(item => (
-          <EvidenceRow
-            key={item.id}
-            label={item.title}
-            value={`$${item.estRevenue}K`}
-            subtext={`${item.customers} customers · ${item.mentions} mentions`}
-          />
-        ))}
+        {top5.map(({ item, trend, onRoadmap }) => {
+          const recency = recencyLabel(item.id);
+          return (
+            <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "10px 20px", borderBottom: "1px solid #f1f2f5" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 400, color: "#222428", lineHeight: 1.4 }}>{item.title}</div>
+                {!onRoadmap && (
+                  <span style={{ display: "inline-block", fontSize: 11, fontWeight: 600, color: "#E53E3E", background: "#FFF5F5", borderRadius: 4, padding: "1px 6px", marginTop: 4 }}>Not on roadmap</span>
+                )}
+              </div>
+              <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12 }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "#222428", lineHeight: 1.4 }}>${item.estRevenue}K</span>
+                <div style={{ fontSize: 12, color: "#6f7489", fontWeight: 400 }}>{item.customers} accounts · {trendLabel(trend?.direction || 'stable')}</div>
+                {recency && <div style={{ fontSize: 11, color: "#AEB2C0", fontWeight: 400 }}>Last mentioned {recency}</div>}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>,
   ];
 
-  const findings: string[] = [];
-  if (noQuotes.length > 0) {
-    findings.push(`${noQuotes.length} of your Q2 items have no customer quotes linked: ${noQuotes.map(r => shortTitle(r.title, 30)).join(', ')}. High mention counts but no qualitative evidence.`);
-  }
-  if (backlogHighSignal) {
-    findings.push(`Meanwhile, "${shortTitle(backlogHighSignal.title, 45)}" sits in your backlog with $${backlogHighSignal.estRevenue}K revenue from ${backlogHighSignal.customers} customers — worth a second look.`);
-  }
+  // Build pills — include promote if there's a disagreement
+  const promotable = disagreements.length > 0 ? scored.find(s => s.priorityNum <= 2 && scored.indexOf(s) < 5) : null;
+  const pills: { label: string; key: string }[] = [
+    ...(promotable ? [{ label: "Reprioritize based on this ranking", key: `reprioritize-promote-${promotable.item.id}` }] : []),
+    ...(themes.length > 0 ? [{ label: `Deep dive into ${themes[0].name}`, key: `uc1-theme-${themes[0].name}` }] : []),
+    { label: "Show items with weak evidence", key: "no-evidence" },
+  ];
 
-  const fullText = text + (findings.length > 0 ? '\n\n' + findings.join('\n\n') : '');
+  const dataForAI = { top5: top5.map(s => ({ title: s.item.title, revenue: s.item.estRevenue, customers: s.item.customers, trend: s.trend?.direction, priority: s.item.priority })), disagreements: disagreements.slice(0, 2), themes: themes.slice(0, 1).map(t => ({ name: t.name, count: t.items.length, arr: t.combinedARR })), noQuoteCount: noQuotes.length };
 
   return {
-    text: fullText,
+    text,
+    textPromise: generateNarrative({ useCase: "uc1", structuredData: dataForAI, fallbackText: text }).then(r =>
+      r.fromAI ? text + '\n\n' + r.text : text
+    ),
     cards,
     loadingSteps: [
-      "Reading Roadmap table…",
-      "Cross-referencing Backlog data…",
-      "Analyzing customer evidence…",
+      "Reading Roadmap and Backlog tables…",
+      "Scoring by evidence strength…",
+      "Detecting themes and disagreements…",
     ],
+    pills,
+  };
+}
+
+function buildUC1Theme(requestedTheme?: string): MessageContent {
+  const allItems = [...roadmapData.filter(r => r.status !== 'done'), ...sampleData.filter(s => !roadmapData.find(r => r.title === s.title))];
+  const themeNames: Record<string, string> = {
+    'transaction': 'Transaction & categorisation',
+    'investment': 'Investment & portfolio',
+    'savings': 'Savings & budgeting',
+    'currency': 'Multi-currency & FX',
+    'budget': 'Savings & budgeting',
+    'portfolio': 'Investment & portfolio',
+    'fraud': 'Security & risk',
+    'security': 'Security & risk',
+  };
+  const themeGroups: Record<string, SpaceRow[]> = {};
+  for (const item of allItems) {
+    const words = item.title.toLowerCase().split(/\s+/);
+    for (const w of words) {
+      const theme = themeNames[w];
+      if (theme) {
+        if (!themeGroups[theme]) themeGroups[theme] = [];
+        if (!themeGroups[theme].find(i => i.id === item.id)) themeGroups[theme].push(item);
+      }
+    }
+  }
+
+  let themes = Object.entries(themeGroups)
+    .filter(([, items]) => items.length >= 2)
+    .map(([name, items]) => ({
+      name,
+      items,
+      combinedARR: items.reduce((s, i) => s + i.estRevenue, 0),
+      totalCustomers: items.reduce((s, i) => s + i.customers, 0),
+      totalMentions: items.reduce((s, i) => s + i.mentions, 0),
+    }))
+    .sort((a, b) => b.combinedARR - a.combinedARR);
+
+  // Filter to requested theme if specified
+  if (requestedTheme) {
+    const filtered = themes.filter(t => t.name.toLowerCase() === requestedTheme.toLowerCase());
+    if (filtered.length > 0) themes = filtered;
+  }
+
+  if (themes.length === 0) {
+    return { text: `## ${requestedTheme || 'Themes'}\n\nNo items found for this theme.`, pills: [{ label: "Show the evidence ranking", key: "flow1-initial" }] };
+  }
+
+  const t = themes[0];
+  const onRoadmapItems = t.items.filter(item => roadmapData.find(r => r.id === item.id));
+  const notOnRoadmap = t.items.filter(item => !roadmapData.find(r => r.id === item.id));
+  const growingItems = t.items.filter(item => getTrend(item.id)?.direction === 'growing');
+  const decliningItems = t.items.filter(item => getTrend(item.id)?.direction === 'declining');
+
+  // Strategic insight about this theme
+  let verdict = '';
+  let recommendation = '';
+  if (decliningItems.length === t.items.length) {
+    verdict = `This theme is dying. All ${t.items.length} items show declining demand — customers are moving on.`;
+    recommendation = `Consider pulling back investment here and reallocating to growing themes.`;
+  } else if (decliningItems.length > 0 && growingItems.length > 0) {
+    verdict = `Mixed signals. Some items in this theme are growing while others are fading — the demand is shifting, not disappearing.`;
+    recommendation = `Double down on the growing items and consider descoping the declining ones.`;
+  } else if (notOnRoadmap.length > 0) {
+    verdict = `You're leaving demand on the table. ${notOnRoadmap.length} of ${t.items.length} items aren't on your roadmap but customers are asking for them.`;
+    recommendation = `The combined signal ($${t.combinedARR}K from ${t.totalCustomers} customers) is strong enough to justify a dedicated initiative.`;
+  } else if (growingItems.length === t.items.length) {
+    verdict = `This theme is accelerating. Every item is growing — customers are converging on this need.`;
+    recommendation = `This is your strongest cluster. Consider treating it as a single initiative rather than separate items.`;
+  } else {
+    verdict = `Stable demand across ${t.items.length} items. Customers consistently want this but it's not getting louder.`;
+    recommendation = `Keep current investment level. No urgency to change.`;
+  }
+
+  const text = `## ${t.name}\n\n${verdict}\n\n${recommendation}\n\n─── Items ─────────────────────────\n${t.items.map(item => {
+    const onRM = roadmapData.find(r => r.id === item.id);
+    const trend = getTrend(item.id);
+    const status = onRM ? `${item.priority}, ${onRM.status || 'planning'}` : 'Not on roadmap';
+    return `• **${item.title}** — ${trendLabel(trend?.direction || 'stable')}, ${status}`;
+  }).join('\n')}`;
+
+  // Promote pill for the best candidate in this theme
+  const promotable = t.items.find(item => !roadmapData.find(r => r.id === item.id) || item.priority !== 'now');
+
+  return {
+    text,
+    loadingSteps: ["Scanning for patterns…", "Grouping by theme…"],
     pills: [
-      { label: "Which Q2 items have no evidence?", key: "no-evidence" },
-      { label: "What should I be worried about?", key: "worried" },
-      { label: "Show the full backlog ranked by revenue", key: "backlog-ranked" },
+      ...(promotable ? [{ label: `Promote ${promotable.title.split(' ').slice(0, 3).join(' ')}`, key: `reprioritize-promote-${promotable.id}` }] : []),
+      { label: "Show the evidence ranking", key: "flow1-initial" },
+      ...(themes.length > 1 ? [{ label: `Deep dive into ${themes[1].name}`, key: `uc1-theme-${themes[1].name}` }] : []),
     ],
   };
 }
@@ -580,8 +866,23 @@ function buildFlow1NoEvidence(): MessageContent {
     `${i + 1}. **${shortTitle(item.title)}** — ${item.mentions} mentions, ${item.customers} customers, $${item.estRevenue}K. High signal but all quantitative; no verbatim customer quotes attached.`
   ).join('\n\n');
 
+  if (noQuotes.length === 0) {
+    return {
+      text: `All your Q2 items have customer quotes linked. Your evidence coverage is solid.`,
+      pills: [
+        { label: "Show the evidence ranking", key: "flow1-initial" },
+        { label: "Has anything drifted?", key: "uc5-drift" },
+      ],
+    };
+  }
+
+  const bulletLines = noQuotes.map(item => {
+    const jk = ('jiraKey' in item) ? (item as any).jiraKey + ' ' : '';
+    return `• ${jk}**${item.title}** — ${item.mentions} mentions, ${item.customers} customers, $${item.estRevenue}K. Numbers only, no verbatim feedback.`;
+  }).join('\n');
+
   return {
-    text: `These ${noQuotes.length} Q2 items have mention counts but no linked customer quotes:\n\n${lines}\n\nThis doesn't mean customers don't want them — it means you're betting on numbers without hearing the "why." Consider connecting customer evidence before committing.`,
+    text: `## Items without customer evidence\n\n${noQuotes.length} Q2 items have numbers but no customer quotes. You're betting on signals without hearing the "why."\n\n─── Items ─────────────────────────\n${bulletLines}`,
     loadingSteps: [
       "Scanning customer evidence…",
       "Checking Insights research data…",
@@ -606,17 +907,49 @@ function buildFlow1Worried(): MessageContent {
     cards.push(<DependencyCard key="deps" dependencies={depPairs} />);
   }
 
+  // Dynamic analysis
+  const q2 = getQ2Items();
+  const noQuotes = q2.filter(r => !customerQuotes[r.id] || customerQuotes[r.id].length === 0);
+  const decliningQ2 = q2.filter(r => getTrend(r.id)?.direction === 'declining');
+  const backlogBlindSpots = sampleData
+    .filter(s => !roadmapData.find(r => r.title === s.title))
+    .filter(s => evidenceScore(s) > evidenceScore(q2[q2.length - 1] || s))
+    .slice(0, 2);
+
+  // Assess overall risk level
+  const riskCount = depPairs.length + noQuotes.length + decliningQ2.length + backlogBlindSpots.length;
+  const riskLevel = riskCount >= 5 ? 'Your Q2 has real exposure.' : riskCount >= 2 ? 'A couple of things to watch.' : 'Your Q2 is in good shape.';
+
+  let text = `## What should worry you\n\n${riskLevel}`;
+
+  if (depPairs.length > 0) {
+    text += `\n\n─── Dependency risk ────────────────\n${depPairs.length} blocking chains. If ${depPairs[0].from.title.split(' ').slice(0, 4).join(' ')} slips, ${depPairs[0].to.title.split(' ').slice(0, 4).join(' ')} is stuck too.`;
+  }
+
+  if (decliningQ2.length > 0) {
+    text += `\n\n─── Fading demand ─────────────────\n${decliningQ2.map(item => `• ${item.title} — demand is declining but still ${item.priority} priority`).join('\n')}`;
+  }
+
+  if (noQuotes.length > 0) {
+    text += `\n\n─── Blind bets ────────────────────\n${noQuotes.length} Q2 items have zero customer quotes. You're investing based on numbers alone — if the numbers are wrong, there's no qualitative signal to catch it.`;
+  }
+
+  if (backlogBlindSpots.length > 0) {
+    text += `\n\n─── Missed opportunities ──────────\n${backlogBlindSpots.map(item => `• ${item.title} — stronger evidence than some Q2 items but not on your roadmap`).join('\n')}`;
+  }
+
   return {
-    text: `Here's what I'd flag:\n\nYou have ${deps.length} blocking dependencies in your Q2 roadmap. If any upstream item slips, the downstream ones are stuck.\n\n**Evidence gaps:** 3 items have zero customer quotes — you're prioritising based on numbers alone.\n\n**Backlog blind spot:** "Natural language search" has $190K revenue and 48 mentions in your backlog but isn't on the roadmap.`,
+    text,
     cards,
     loadingSteps: [
       "Mapping dependency chains…",
       "Checking evidence coverage…",
-      "Scanning backlog for blind spots…",
+      "Scanning for blind spots…",
     ],
     pills: [
-      { label: "Which Q2 items have no evidence?", key: "no-evidence" },
-      { label: "Tell me about dependency risks", key: "worried" },
+      ...(noQuotes.length > 0 ? [{ label: "Show me the blind bets", key: "no-evidence" }] : []),
+      ...(backlogBlindSpots.length > 0 ? [{ label: "Where is my roadmap out of sync?", key: "uc2-mismatch" }] : []),
+      { label: "Show the evidence ranking", key: "flow1-initial" },
     ],
   };
 }
@@ -624,15 +957,16 @@ function buildFlow1Worried(): MessageContent {
 function buildFlow1BacklogRanked(): MessageContent {
   const backlogOnly = sampleData
     .filter(s => !roadmapData.find(r => r.title === s.title))
-    .sort((a, b) => b.estRevenue - a.estRevenue);
+    .map(item => ({ item, score: evidenceScore(item), trend: getTrend(item.id) }))
+    .sort((a, b) => b.score - a.score);
 
-  const totalMentions = backlogOnly.reduce((s, r) => s + r.mentions, 0);
-  const totalCustomers = backlogOnly.reduce((s, r) => s + r.customers, 0);
-  const totalARR = backlogOnly.reduce((s, r) => s + r.estRevenue, 0);
+  const totalMentions = backlogOnly.reduce((s, r) => s + r.item.mentions, 0);
+  const totalCustomers = backlogOnly.reduce((s, r) => s + r.item.customers, 0);
+  const totalARR = backlogOnly.reduce((s, r) => s + r.item.estRevenue, 0);
   const formattedARR = totalARR >= 1000 ? `$${(totalARR / 1000).toFixed(1)}M` : `$${totalARR}K`;
 
   const cards: React.ReactNode[] = [
-    <div key="backlog" style={{ borderRadius: 12, background: "#F7F8FA", border: "1px solid #E9EAEF", overflow: "hidden" }}>
+    <div key="backlog" style={{ borderRadius: 12, background: "#FFFFFF", border: "1px solid #E9EAEF", overflow: "hidden" }}>
       <div style={{ padding: "16px 20px" }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#222428", marginBottom: 16 }}>Impact estimates</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px 16px" }}>
@@ -656,26 +990,39 @@ function buildFlow1BacklogRanked(): MessageContent {
       </div>
       <div style={{ borderTop: "1px solid #F1F2F5" }}>
         <div style={{ padding: "12px 20px", borderBottom: "1px solid #E9EAEF" }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>Backlog by Revenue</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>Backlog by evidence strength</span>
         </div>
-        {backlogOnly.slice(0, 6).map((item, i) => (
-          <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "10px 20px", borderBottom: i < 5 ? "1px solid #f1f2f5" : "none" }}>
-            <span style={{ fontSize: 13, fontWeight: 400, color: "#222428", lineHeight: 1.4, flex: 1 }}>{item.title}</span>
-            <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12 }}>
-              <span style={{ fontSize: 14, fontWeight: 700, color: "#222428" }}>${item.estRevenue}K</span>
-              <div style={{ fontSize: 12, color: "#6f7489" }}>{item.customers} customers · {item.priority}</div>
+        {backlogOnly.slice(0, 6).map(({ item, trend }, i) => {
+          const recency = recencyLabel(item.id);
+          return (
+            <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "10px 20px", borderBottom: i < 5 ? "1px solid #f1f2f5" : "none" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 400, color: "#222428", lineHeight: 1.4 }}>{item.title}</div>
+              </div>
+              <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12 }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "#222428" }}>${item.estRevenue}K</span>
+                <div style={{ fontSize: 12, color: "#6f7489" }}>{item.customers} accounts · {trendLabel(trend?.direction || 'stable')}</div>
+                {recency && <div style={{ fontSize: 11, color: "#AEB2C0" }}>Last mentioned {recency}</div>}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>,
   ];
 
+  const topItem = backlogOnly[0];
+
   return {
-    text: `Here are your highest-revenue backlog items that aren't currently on the roadmap:`,
+    text: `Your backlog ranked by evidence strength. These aren't on your roadmap yet:`,
     cards,
+    loadingSteps: [
+      "Reading Backlog table…",
+      "Scoring by evidence strength…",
+    ],
     pills: [
-      { label: "Tell me more about the top one", key: "flow2-top-backlog" },
+      ...(topItem ? [{ label: "Deep dive into the top one", key: `flow2-${topItem.item.id}` }] : []),
+      ...(topItem && topItem.item.priority !== 'now' ? [{ label: "Promote the top backlog item", key: `reprioritize-promote-${topItem.item.id}` }] : []),
       { label: "Am I betting on the right things for Q2?", key: "flow1-initial" },
     ],
   };
@@ -694,7 +1041,7 @@ function buildFlow2(itemId: string): MessageContent {
 
   // Combined: Impact estimates + Top requesters in one block
   cards.push(
-    <div key="impact-block" style={{ borderRadius: 12, background: "#F7F8FA", border: "1px solid #E9EAEF", overflow: "hidden" }}>
+    <div key="impact-block" style={{ borderRadius: 12, background: "#FFFFFF", border: "1px solid #E9EAEF", overflow: "hidden" }}>
       {/* Impact estimates 2x2 */}
       <div style={{ padding: "16px 20px" }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#222428", marginBottom: 16 }}>Impact estimates</div>
@@ -754,8 +1101,30 @@ function buildFlow2(itemId: string): MessageContent {
 
   const depText = depLines.length > 0 ? `\n\n**Cross-table connections:**\n${depLines.map(l => `• ${l}`).join('\n')}` : '\n\nNo blocking dependencies found.';
 
+  const trendF2 = getTrend(item.id);
+  const onRM = roadmapData.find(r => r.id === item.id);
+  const allScored = [...roadmapData.filter(r => r.status !== 'done'), ...sampleData].map(i => ({ item: i, score: evidenceScore(i) })).sort((a, b) => b.score - a.score);
+  const rank = allScored.findIndex(s => s.item.id === item.id) + 1;
+
+  let verdict = '';
+  if (!onRM && rank <= 5) {
+    verdict = `This ranks #${rank} by evidence but isn't on your roadmap. That's a significant gap — consider adding it.`;
+  } else if (onRM && trendF2?.direction === 'declining') {
+    verdict = `Demand is declining. At ${onRM.priority} priority, this may be getting more investment than the evidence supports.`;
+  } else if (onRM && trendF2?.direction === 'growing') {
+    verdict = `Demand is growing and it's already ${onRM.priority} priority. Good alignment — this is a well-placed bet.`;
+  } else if (rank <= 3) {
+    verdict = `This is one of your strongest items by evidence (#${rank}). ${onRM ? 'Well prioritized.' : 'Not on your roadmap yet.'}`;
+  } else {
+    verdict = `Ranks #${rank} by evidence. ${onRM ? `Currently ${onRM.priority} priority.` : 'Not on your roadmap.'}`;
+  }
+
+  const fallback = `## ${item.title}\n\n${verdict}${depText}`;
+  const dataForAI = { title: item.title, jiraKey, revenue: item.estRevenue, customers: item.customers, mentions: item.mentions, trend: getTrend(item.id)?.direction, topRequesters: arr.slice(0, 3).map(a => ({ company: a.company, arr: a.arr })), quotes: quotes.map(q => q.quote.slice(0, 80)), deps: depLines };
+
   return {
-    text: `**${item.title}**${jiraKey ? ` (${jiraKey})` : ''} has $${item.estRevenue}K estimated revenue from ${item.customers} customers across ${item.companies.length} accounts.${depText}`,
+    text: fallback,
+    textPromise: generateNarrative({ useCase: "uc1", structuredData: dataForAI, fallbackText: fallback }).then(r => r.fromAI ? fallback + '\n\n' + r.text : fallback),
     cards,
     loadingSteps: [
       `Reading ${jiraKey || item.id} from Roadmap table…`,
@@ -777,54 +1146,116 @@ function buildFlow3(cutId: string, addId: string): MessageContent {
 
   const cutDeps = getDeps(cutId);
   const addDeps = getDeps(addId);
+  const cutTrend = getTrend(cutId);
+  const addTrend = getTrend(addId);
 
-  const loseItems: { label: string; value: string }[] = [
-    { label: "Est. Revenue", value: `$${cutItem.estRevenue}K` },
-    { label: "Customers", value: `${cutItem.customers}` },
-    { label: "Mentions", value: `${cutItem.mentions}` },
-  ];
-  if (cutDeps.blocks.length > 0) {
-    loseItems.push({ label: "Blocks", value: cutDeps.blocks.map(d => shortTitle(d.title, 25)).join(', ') });
-  }
-
-  const gainItems: { label: string; value: string }[] = [
-    { label: "Est. Revenue", value: `$${addItem.estRevenue}K` },
-    { label: "Customers", value: `${addItem.customers}` },
-    { label: "Mentions", value: `${addItem.mentions}` },
-  ];
-  if (addDeps.blocks.length > 0) {
-    gainItems.push({ label: "Blocks", value: addDeps.blocks.map(d => shortTitle(d.title, 25)).join(', ') });
-  }
-
+  // Change card showing both items
   const cards: React.ReactNode[] = [
-    <ImpactCard key="lose" title={`Cutting: ${shortTitle(cutItem.title, 30)}`} type="lose" items={loseItems} />,
-    <ImpactCard key="gain" title={`Adding: ${shortTitle(addItem.title, 30)}`} type="gain" items={gainItems} />,
+    <ChangeCard key="swap-changes" changes={[
+      { item: cutItem.title, from: cutItem.priority, to: 'later', reason: `$${cutItem.estRevenue}K, ${cutItem.customers} customers, ${trendLabel(cutTrend?.direction || 'stable')}` },
+      { item: addItem.title, from: addItem.priority, to: 'now (Q2)', reason: `$${addItem.estRevenue}K, ${addItem.customers} customers, ${trendLabel(addTrend?.direction || 'stable')}` },
+    ]} />,
   ];
 
   const netDiff = addItem.estRevenue - cutItem.estRevenue;
-  const netText = netDiff >= 0
-    ? `Net: +$${netDiff}K revenue, but`
-    : `Net: -$${Math.abs(netDiff)}K revenue.`;
 
-  let riskText = '';
-  if (cutDeps.blocks.length > 0) {
-    const downstream = cutDeps.blocks.map(d => `"${shortTitle(d.title, 30)}" ($${d.estRevenue}K)`).join(' and ');
-    riskText = ` Cutting ${shortTitle(cutItem.title, 25)} also affects ${downstream}, which depend${cutDeps.blocks.length === 1 ? 's' : ''} on it.`;
-  }
+  const cutDir = cutTrend?.direction || 'stable';
+  const addDir = addTrend?.direction || 'stable';
+
+  let verdict = '';
+  if (netDiff >= 0) verdict = `Net gain of +$${netDiff}K. This trade works.`;
+  else if (cutDir === 'declining' && addDir === 'growing') verdict = `Net loss of -$${Math.abs(netDiff)}K, but you're trading declining for growing demand.`;
+  else verdict = `Net loss of -$${Math.abs(netDiff)}K.`;
+
+  let riskLine = '';
+  if (cutDeps.blocks.length > 0) riskLine = `\n• Risk: ${cutItem.title} blocks ${cutDeps.blocks.map(d => d.title).join(', ')}`;
+
+  const fullText = `## Replacing ${cutItem.title.split(' ').slice(0, 4).join(' ')} with ${addItem.title.split(' ').slice(0, 4).join(' ')}\n\n${verdict}\n\n─── Details ───────────────────────${riskLine}\n• ${addItem.title} has no blocking dependencies — clean addition`;
+
+  const dataForAI3 = { cutting: { title: cutItem.title, revenue: cutItem.estRevenue, customers: cutItem.customers, trend: cutDir, blocks: cutDeps.blocks.map(d => d.title) }, adding: { title: addItem.title, revenue: addItem.estRevenue, customers: addItem.customers, trend: addDir }, netRevenueDelta: netDiff, cutRankInQ2 };
 
   return {
-    text: `Here's the trade-off:\n\n${netText}${riskText}\n\n${addDeps.blocks.length === 0 && addDeps.dependsOn.length === 0 ? `"${shortTitle(addItem.title, 30)}" has no blocking dependencies — it's a clean addition.` : ''}`,
+    text: fullText,
+    textPromise: generateNarrative({ useCase: "uc3", structuredData: dataForAI3, fallbackText: fullText }).then(r => r.fromAI ? fullText + '\n\n' + r.text : fullText),
     cards,
     loadingSteps: [
-      `Reading ${shortTitle(cutItem.title, 25)}…`,
-      `Reading ${shortTitle(addItem.title, 25)}…`,
+      `Reading ${cutItem.title.split(' ').slice(0, 4).join(' ')}…`,
+      `Reading ${addItem.title.split(' ').slice(0, 4).join(' ')}…`,
       "Mapping dependency chains…",
-      "Comparing evidence strength…",
+      "Ranking Q2 items by cut safety…",
+    ],
+    // Fix 11: Replace descope with leadership summary
+    pills: [
+      { label: "Apply this swap", key: `apply-swap-${cutItem.id}-${addItem.id}` },
+      { label: "What else could we cut instead?", key: "alt-cut" },
+      { label: "Write a trade-off summary for leadership", key: "uc4-leadership" },
+    ],
+  };
+}
+
+/* ─── UC3: "Add X to Q2, what do I cut?" (mandate-driven) ─── */
+function buildAddToQ2(addItemId: string): MessageContent {
+  const addItem = getItem(addItemId);
+  if (!addItem) return { text: "I couldn't find that item. Could you try again?" };
+
+  const addTrend = getTrend(addItemId);
+  const q2 = getQ2Items();
+
+  // Rank all Q2 items by cut safety (weakest evidence + no deps + declining = safest)
+  const cutCandidates = q2.map(item => {
+    const deps = getDeps(item.id);
+    const trend = getTrend(item.id);
+    const hasQuotes = customerQuotes[item.id] && customerQuotes[item.id].length > 0;
+    const score = evidenceScore(item);
+    const safetyScore = score + (deps.blocks.length * 50) + (hasQuotes ? 20 : 0);
+    const safetyLabel = deps.blocks.length > 0 ? 'risky — blocks other items' : hasQuotes ? 'has customer quotes' : trend?.direction === 'declining' ? 'safest — declining demand' : 'moderate';
+    return { item, score, deps, trend, hasQuotes, safetyScore, safetyLabel };
+  }).sort((a, b) => a.safetyScore - b.safetyScore);
+
+  const recommended = cutCandidates[0];
+  const netDiff = addItem.estRevenue - (recommended?.item.estRevenue ?? 0);
+
+  // Cards: show the incoming item + recommended cut
+  // Change card instead of ImpactCards
+  const cards: React.ReactNode[] = [];
+  if (recommended) {
+    cards.push(<ChangeCard key="trade-changes" changes={[
+      { item: recommended.item.title, from: recommended.item.priority, to: 'later', reason: recommended.safetyLabel },
+      { item: addItem.title, from: roadmapData.find(r => r.id === addItemId) ? 'current priority' : 'Not on roadmap', to: 'now (Q2)', reason: `$${addItem.estRevenue}K ARR, ${addItem.customers} customers, ${trendLabel(addTrend?.direction || 'stable')}` },
+    ]} />);
+  }
+
+  // Structured text
+  let text = `## Making room for ${addItem.title}\n\n`;
+  if (recommended) {
+    const recTrend = recommended.trend?.direction || 'stable';
+    const reason = recTrend === 'declining' ? 'Declining demand, no customer quotes.'
+      : recommended.deps.blocks.length === 0 ? 'Weakest evidence in Q2, nothing depends on it.'
+      : 'Weakest evidence, but blocks other items.';
+    text += `Move **${recommended.item.title}** down. ${reason}`;
+  } else {
+    text += `You'd need to move something down.`;
+  }
+
+  text += `\n\n─── Other options ─────────────────\n${cutCandidates.slice(1, 4).map((c, i) =>
+    `• **${c.item.title}** — $${c.item.estRevenue}K, ${c.item.customers} customers. ${c.safetyLabel}.`
+  ).join('\n')}`;
+
+  const dataForAI3 = { adding: { title: addItem.title, revenue: addItem.estRevenue, trend: addTrend?.direction }, recommendedCut: recommended ? { title: recommended.item.title, revenue: recommended.item.estRevenue, trend: recommended.trend?.direction, safetyLabel: recommended.safetyLabel } : null, allOptions: cutCandidates.map(c => ({ title: c.item.title, safetyLabel: c.safetyLabel })) };
+
+  return {
+    text,
+    textPromise: generateNarrative({ useCase: "uc3", structuredData: dataForAI3, fallbackText: text }).then(r => r.fromAI ? text + '\n\n' + r.text : text),
+    cards,
+    loadingSteps: [
+      `Evaluating ${addItem.title.split(' ').slice(0, 4).join(' ')}…`,
+      "Ranking Q2 items by cut safety…",
+      "Calculating net impact…",
     ],
     pills: [
-      { label: "What else could we cut instead?", key: "alt-cut" },
-      { label: "What if we descope to MVP?", key: "descope" },
-      { label: "Back to Q2 overview", key: "flow1-initial" },
+      ...(recommended ? [{ label: `Drop ${recommended.item.title.split(' ').slice(0, 3).join(' ')} and add it`, key: `apply-swap-${recommended.item.id}-${addItemId}` }] : []),
+      { label: "Show me a different cut option", key: "alt-cut" },
+      { label: "Write a trade-off summary for leadership", key: "uc4-leadership" },
     ],
   };
 }
@@ -846,13 +1277,499 @@ function buildAltCut(): MessageContent {
   let recommendation = '';
   if (safest) {
     recommendation = `\n\nIf you need room, **${shortTitle(safest.title, 35)}** is the cleanest cut: decent revenue signal but no qualitative backing and nothing depends on it.`;
+  } else if (q2.length > 0) {
+    recommendation = `\n\nNo items are completely safe to cut — all have dependencies or customer quotes. You may need to descope rather than cut entirely.`;
   }
 
   return {
-    text: `Looking at your Q2 items by lowest evidence strength:\n\n${lines}${recommendation}`,
+    text: `I couldn't identify a specific item to add. Which item did you mean?\n\nIn the meantime, here are your Q2 items by lowest evidence strength — these would be the safest to cut if you need room:\n\n${lines}${recommendation}`,
     pills: [
       { label: "Am I betting on the right things for Q2?", key: "flow1-initial" },
+      { label: "Where is my roadmap out of sync?", key: "uc2-mismatch" },
     ],
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REPRIORITIZE ACTION — before/after diff with confirmation
+   ═══════════════════════════════════════════════════════════════ */
+
+function buildReprioritize(itemId: string, action: 'promote' | 'demote'): MessageContent {
+  const item = getItem(itemId);
+  if (!item) return { text: "I couldn't find that item." };
+
+  const onRoadmap = roadmapData.find(r => r.id === item.id);
+
+  // If item is NOT on the roadmap, "promote" means "add to roadmap"
+  if (!onRoadmap && action === 'promote') {
+    const trend = getTrend(itemId);
+    const deps = getDeps(itemId);
+    const cards: React.ReactNode[] = [
+      <div key="diff" style={{ border: "1px solid #E9EAEF", borderRadius: 12, background: "#FFFFFF", overflow: "hidden" }}>
+        <div style={{ padding: "12px 20px", borderBottom: "1px solid #E9EAEF" }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>Proposed change</span>
+        </div>
+        <div style={{ padding: "12px 20px", display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 13, color: "#6f7489" }}>Item</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>{item.title}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 13, color: "#6f7489" }}>Action</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#38A169" }}>Add to roadmap (next)</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 13, color: "#6f7489" }}>Evidence</span>
+            <span style={{ fontSize: 13, color: "#222428" }}>${item.estRevenue}K · {item.customers} customers · {trend ? trendLabel(trend.direction) : 'stable'}</span>
+          </div>
+        </div>
+      </div>,
+    ];
+
+    return {
+      text: `**${item.title}** is in your backlog but not on the roadmap. The evidence supports adding it — demand is ${trend?.direction || 'stable'} and multiple accounts are asking for it.${deps.blocks.length > 0 ? ` This would also unblock ${deps.blocks.map(d => `**${d.title}**`).join(' and ')}.` : ''}\n\nSee the proposed change below:`,
+      cards,
+      loadingSteps: [
+        `Evaluating ${item.title.split(' ').slice(0, 4).join(' ')}…`,
+        "Checking roadmap capacity…",
+      ],
+      pills: [
+        { label: "Add to roadmap", key: `apply-reprioritize-${itemId}-next` },
+        { label: "Show me what I'd need to cut", key: "alt-cut" },
+        { label: "Back to ranking", key: "flow1-initial" },
+      ],
+    };
+  }
+
+  const currentPriority = onRoadmap ? onRoadmap.priority : item.priority;
+  const priorityOrder: string[] = ['icebox', 'later', 'triage', 'next', 'now'];
+  const currentIdx = priorityOrder.indexOf(currentPriority);
+  const newPriority = action === 'promote'
+    ? priorityOrder[Math.min(currentIdx + 1, priorityOrder.length - 1)]
+    : priorityOrder[Math.max(currentIdx - 1, 0)];
+
+  if (newPriority === currentPriority) {
+    return {
+      text: `**${item.title}** is already at ${action === 'promote' ? 'the highest' : 'the lowest'} priority (${currentPriority}). No change needed.`,
+      pills: [{ label: "Show the evidence ranking", key: "flow1-initial" }],
+    };
+  }
+
+  const trend = getTrend(itemId);
+  const deps = getDeps(itemId);
+  const impactItems = action === 'promote' ? deps.blocks : deps.dependsOn;
+
+  // Build before/after diff card
+  const cards: React.ReactNode[] = [
+    <div key="diff" style={{ border: "1px solid #E9EAEF", borderRadius: 12, background: "#FFFFFF", overflow: "hidden" }}>
+      <div style={{ padding: "12px 20px", borderBottom: "1px solid #E9EAEF" }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>Proposed change</span>
+      </div>
+      <div style={{ padding: "12px 20px", display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 13, color: "#6f7489" }}>Item</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>{shortTitle(item.title, 30)}</span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 13, color: "#6f7489" }}>Priority</span>
+          <span style={{ fontSize: 13 }}>
+            <span style={{ color: "#6f7489", textDecoration: "line-through" }}>{currentPriority}</span>
+            <span style={{ color: "#222428", margin: "0 6px" }}>→</span>
+            <span style={{ fontWeight: 700, color: action === 'promote' ? "#38A169" : "#E53E3E" }}>{newPriority}</span>
+          </span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 13, color: "#6f7489" }}>Evidence</span>
+          <span style={{ fontSize: 13, color: "#222428" }}>${item.estRevenue}K · {item.customers} customers · {trend ? trendLabel(trend.direction) : 'stable'}</span>
+        </div>
+        {impactItems.length > 0 && (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <span style={{ fontSize: 13, color: "#6f7489" }}>{action === 'promote' ? 'Unblocks' : 'Affected'}</span>
+            <span style={{ fontSize: 13, color: "#222428", textAlign: "right" }}>{impactItems.map(d => shortTitle(d.title, 25)).join(', ')}</span>
+          </div>
+        )}
+      </div>
+    </div>,
+  ];
+
+  const text = action === 'promote'
+    ? `Promote **${item.title}** from *${currentPriority}* to *${newPriority}*.\n\nDemand is ${trend?.direction || 'stable'} and evidence supports a higher priority.${impactItems.length > 0 ? ` This would also unblock ${impactItems.map(d => `**${d.title}**`).join(' and ')}.` : ''}`
+    : `Demote **${item.title}** from *${currentPriority}* to *${newPriority}*.\n\nDemand is ${trend?.direction || 'declining'} and evidence doesn't support its current position.${impactItems.length > 0 ? ` Note: ${impactItems.map(d => `**${d.title}**`).join(' and ')} depend${impactItems.length === 1 ? 's' : ''} on this.` : ''}`;
+
+  return {
+    text,
+    cards,
+    loadingSteps: [
+      `Evaluating ${shortTitle(item.title, 25)}…`,
+      "Checking downstream impact…",
+      "Preparing change preview…",
+    ],
+    pills: [
+      { label: "Apply this change", key: `apply-reprioritize-${itemId}-${newPriority}` },
+      { label: "Show me alternatives", key: "alt-cut" },
+      { label: "Back to overview", key: "flow1-initial" },
+    ],
+  };
+}
+
+/* ─── Apply reprioritization (mock — shows confirmation) ─── */
+function buildApplyConfirmation(itemId: string, newPriority: string): MessageContent {
+  const item = getItem(itemId);
+  if (!item) return { text: "Item not found." };
+
+  return {
+    text: `## Change applied\n\n**${item.title}** is now *${newPriority}*.\n\nYou may want to let your team know — especially if this changes sprint scope or timelines. You can also write a summary for stakeholders.`,
+    pills: [
+      { label: "Write an update for leadership", key: "uc4-leadership" },
+      { label: "What else needs attention?", key: "uc5-drift" },
+    ],
+  };
+}
+
+/* ─── Apply swap (mock — shows confirmation for UC3) ─── */
+function buildApplySwap(cutId: string, addId: string): MessageContent {
+  const cutItem = getItem(cutId);
+  const addItem = getItem(addId);
+  if (!cutItem || !addItem) return { text: "Items not found." };
+
+  return {
+    text: `Done. Here's what changed:\n\n• **${cutItem.title}** moved from *${cutItem.priority}* to *later*\n• **${addItem.title}** moved to *now* (Q2)\n\nBoth changes are logged with evidence attribution. Your roadmap timeline has been updated.\n\n*Net impact: +$${addItem.estRevenue - cutItem.estRevenue}K addressable ARR, ${addItem.customers - cutItem.customers >= 0 ? '+' : ''}${addItem.customers - cutItem.customers} accounts.*`,
+    pills: [
+      { label: "Write a trade-off summary for leadership", key: "uc4-leadership" },
+      { label: "What else needs attention?", key: "uc5-drift" },
+      { label: "Undo this change", key: "flow1-initial" },
+    ],
+  };
+}
+
+/* ─── Helper: compute evidence score for an item ─── */
+function evidenceScore(item: SpaceRow): number {
+  const trend = demandTrend.find(t => t.itemId === item.id);
+  const trendBonus = trend ? (trend.direction === 'growing' ? 1.2 : trend.direction === 'declining' ? 0.7 : 1.0) : 1.0;
+  // Recency bonus: items mentioned in last 14 days get 1.15x, 14-30 days get 1.0x, older get 0.85x
+  const now = new Date('2026-04-01'); // fixed date for consistent demo
+  const lastMention = trend?.lastMentionDate ? new Date(trend.lastMentionDate) : null;
+  const daysSince = lastMention ? Math.floor((now.getTime() - lastMention.getTime()) / 86400000) : 60;
+  const recencyBonus = daysSince <= 14 ? 1.15 : daysSince <= 30 ? 1.0 : 0.85;
+  return ((item.mentions * 0.3) + (item.customers * 0.4) + (item.estRevenue / 10 * 0.3)) * trendBonus * recencyBonus;
+}
+
+/* ─── Helper: priority to numeric ─── */
+function priorityNum(p: string): number {
+  return { now: 4, next: 3, later: 2, triage: 1, icebox: 0 }[p] ?? 0;
+}
+
+/* ─── Helper: get trend for item ─── */
+function getTrend(id: string) {
+  return demandTrend.find(t => t.itemId === id);
+}
+
+/* ─── Helper: trend label ─── */
+function trendLabel(dir: string): string {
+  return dir === 'growing' ? '↑ growing' : dir === 'declining' ? '↓ declining' : '→ stable';
+}
+
+/* ─── Helper: recency label ─── */
+function recencyLabel(itemId: string): string {
+  const trend = demandTrend.find(t => t.itemId === itemId);
+  if (!trend?.lastMentionDate) return '';
+  const d = new Date(trend.lastMentionDate);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[d.getMonth()]} ${d.getDate()}`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UC2: PLAN VS DEMAND MISMATCH
+   ═══════════════════════════════════════════════════════════════ */
+
+function buildUC2Mismatch(): MessageContent {
+  const allItems = [...roadmapData.filter(r => r.status !== 'done'), ...sampleData.filter(s => !roadmapData.find(r => r.title === s.title))];
+  const scored = allItems.map(item => ({
+    item,
+    score: evidenceScore(item),
+    priorityN: priorityNum(item.priority),
+    evidenceRank: 0,
+    onRoadmap: !!roadmapData.find(r => r.id === item.id),
+  }));
+  scored.sort((a, b) => b.score - a.score);
+  scored.forEach((s, i) => { s.evidenceRank = i + 1; });
+
+  const median = scored[Math.floor(scored.length / 2)]?.score ?? 0;
+  const topQuartile = scored[Math.floor(scored.length * 0.25)]?.score ?? 0;
+
+  // Find reference items for comparison
+  const weakestQ2Item = scored.filter(s => s.priorityN >= 3).sort((a, b) => a.score - b.score)[0];
+  const strongestNonQ2 = scored.find(s => s.priorityN <= 2 || !s.onRoadmap);
+
+  const findings: { type: 'over-invested' | 'under-invested' | 'missing'; item: SpaceRow; detail: string; severity: number }[] = [];
+
+  // Over-invested: high priority but low evidence — each gets a unique insight, no repetitive comparison
+  const usedComparisonIds = new Set<string>();
+  for (const s of scored) {
+    if (s.priorityN >= 3 && s.score < median && findings.length < 4) {
+      const trend = getTrend(s.item.id);
+      const recency = recencyLabel(s.item.id);
+      const severity = s.evidenceRank - (scored.length - s.priorityN * 3);
+      // Unique insight per finding instead of always comparing to the same item
+      let insight = '';
+      if (trend?.direction === 'declining') {
+        insight = ' Demand is declining — the signal is getting weaker, not stronger.';
+      } else if (s.item.estRevenue < 100) {
+        insight = ' The revenue impact is small relative to other Q2 items.';
+      } else if (!recency || recency.includes('Feb') || recency.includes('Jan')) {
+        insight = ' No recent mentions — this may be a stale priority.';
+      }
+      findings.push({
+        type: 'over-invested',
+        item: s.item,
+        severity: Math.abs(severity),
+        detail: `**${s.item.title}** is *${s.item.priority}* but ranks #${s.evidenceRank} by evidence — $${s.item.estRevenue}K, ${s.item.customers} customers, ${trendLabel(trend?.direction || 'stable')}${recency ? `, last mentioned ${recency}` : ''}.${insight}`,
+      });
+    }
+  }
+
+  // Under-invested / Missing: low priority but strong evidence
+  for (const s of scored) {
+    if (s.priorityN <= 2 && s.score > topQuartile && findings.length < 4) {
+      const trend = getTrend(s.item.id);
+      const recency = recencyLabel(s.item.id);
+      const type = s.onRoadmap ? 'under-invested' as const : 'missing' as const;
+      // Unique insight per finding
+      let insight = '';
+      if (trend?.direction === 'growing') {
+        insight = ' Demand is growing — this is gaining momentum.';
+      } else if (s.item.customers > 40) {
+        insight = ' A large number of accounts are asking for this.';
+      }
+      const severity = (scored.length - s.evidenceRank) + s.priorityN * 5;
+      findings.push({
+        type,
+        item: s.item,
+        severity: Math.abs(severity),
+        detail: `**${s.item.title}** ${s.onRoadmap ? `is only *${s.item.priority}*` : 'isn\'t on your roadmap'} but has $${s.item.estRevenue}K revenue from ${s.item.customers} customers, ${trendLabel(trend?.direction || 'stable')}${recency ? `, last mentioned ${recency}` : ''}.${insight}`,
+      });
+    }
+  }
+
+  // Fix 2: Sort by severity (biggest gap first)
+  findings.sort((a, b) => b.severity - a.severity);
+
+  const typeLabels: Record<string, string> = { 'over-invested': 'Getting more priority than demand supports', 'under-invested': 'Not getting the priority demand deserves', 'missing': 'Strong demand but not on your roadmap' };
+
+  const text = findings.length === 0
+    ? `## Plan vs demand\n\nYour priorities match customer demand. No gaps found.`
+    : `## Plan vs demand\n\n${findings.length} gaps found. Biggest: **${findings[0].item.title}**.\n\n─── Mismatches ────────────────────\n${findings.map((f, i) => {
+        const jiraKey = ('jiraKey' in f.item) ? (f.item as any).jiraKey : '';
+        const trend = getTrend(f.item.id);
+        return `• ${jiraKey ? jiraKey + ' ' : ''}**${f.item.title}** — $${f.item.estRevenue}K, ${f.item.customers} customers, ${trendLabel(trend?.direction || 'stable')}. ${typeLabels[f.type]}.`;
+      }).join('\n')}`;
+
+  // Change card for the top actionable finding
+  const changeCards: React.ReactNode[] = [];
+  if (findings.length > 0) {
+    const topChanges = findings.slice(0, 2).map(f => ({
+      item: f.item.title,
+      from: f.type === 'missing' ? 'Not on roadmap' : `${f.item.priority}`,
+      to: f.type === 'over-invested' ? 'Consider moving down' : f.type === 'missing' ? 'Add to roadmap' : 'Consider moving up',
+      reason: typeLabels[f.type],
+    }));
+    changeCards.push(<ChangeCard key="uc2-changes" changes={topChanges} />);
+  }
+
+  const dataForAI2 = { mismatches: findings.map(f => ({ type: f.type, title: f.item.title, priority: f.item.priority, revenue: f.item.estRevenue, customers: f.item.customers, trend: getTrend(f.item.id)?.direction })) };
+
+  // Fix 6: Add "Add to roadmap" pill for missing items
+  const missingItem = findings.find(f => f.type === 'missing');
+  const underInvested = findings.find(f => f.type === 'under-invested');
+
+  const pills: { label: string; key: string }[] = findings.length === 0
+    ? [
+        { label: "Show me the full evidence ranking", key: "flow1-initial" },
+        { label: "Has anything drifted?", key: "uc5-drift" },
+      ]
+    : [
+        ...(missingItem ? [{ label: `Add ${missingItem.item.title.split(' ').slice(0, 3).join(' ')} to roadmap`, key: `reprioritize-promote-${missingItem.item.id}` }] : []),
+        ...(underInvested && underInvested.item.priority !== 'now' && !missingItem ? [{ label: "Promote the under-invested item", key: `reprioritize-promote-${underInvested.item.id}` }] : []),
+        { label: "Deep dive into the top mismatch", key: `flow2-${findings[0].item.id}` },
+        { label: "Rank everything by evidence", key: "flow1-initial" },
+      ];
+
+  return {
+    text,
+    textPromise: generateNarrative({ useCase: "uc2", structuredData: dataForAI2, fallbackText: text }).then(r => r.fromAI ? text + '\n\n' + r.text : text),
+    cards: changeCards,
+    loadingSteps: [
+      "Cross-referencing priorities with evidence…",
+      "Identifying gaps…",
+    ],
+    pills,
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UC4: SUMMARIZE CHANGES FOR AUDIENCE
+   ═══════════════════════════════════════════════════════════════ */
+
+function buildUC4Summary(audience: 'leadership' | 'engineering' | 'cs'): MessageContent {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 30);
+  const recent = itemHistory.filter(h => new Date(h.date) >= cutoff);
+
+  const changes = recent.map(h => {
+    const item = getItem(h.itemId);
+    return { ...h, item };
+  }).filter(c => c.item);
+
+  const audienceLabels = { leadership: 'Leadership', engineering: 'Engineering', cs: 'Customer Success' };
+
+  // Build narrative per audience
+  let intro = '';
+  const bullets: string[] = [];
+
+  if (audience === 'leadership') {
+    intro = `## Q2 update for ${audienceLabels[audience]}\n\n${changes.length} changes worth flagging:\n\n─── Changes ───────────────────────`;
+    for (const c of changes.slice(0, 5)) {
+      if (c.changeType === 'priority-changed') {
+        bullets.push(`**${c.item!.title}** moved from ${c.from} to ${c.to}. ${c.reason}`);
+      } else if (c.changeType === 'status-changed') {
+        bullets.push(`**${c.item!.title}** is now ${c.to}. ${c.reason}`);
+      } else if (c.changeType === 'added') {
+        bullets.push(`**${c.item!.title}** added to roadmap. ${c.reason}`);
+      } else if (c.changeType === 'removed') {
+        bullets.push(`**${c.item!.title}** removed. ${c.reason}`);
+      } else if (c.changeType === 'scope-changed') {
+        bullets.push(`**${c.item!.title}** scope changed from "${c.from}" to "${c.to}". ${c.reason}`);
+      }
+    }
+  } else if (audience === 'engineering') {
+    intro = `## Q2 update for ${audienceLabels[audience]}\n\n${changes.length} changes to action:\n\n─── Changes ───────────────────────`;
+    for (const c of changes.slice(0, 5)) {
+      if (c.changeType === 'status-changed' && c.to === 'in-progress') {
+        bullets.push(`**${c.item!.title}** is now in progress — start planning. ${c.reason}`);
+      } else if (c.changeType === 'scope-changed') {
+        bullets.push(`**${c.item!.title}** scope reduced to "${c.to}". Adjust estimates accordingly.`);
+      } else if (c.changeType === 'priority-changed') {
+        bullets.push(`**${c.item!.title}** priority ${c.from} → ${c.to}. ${Number(priorityNum(c.to!)) > Number(priorityNum(c.from!)) ? 'Moving up.' : 'Deprioritized.'}`);
+      } else if (c.changeType === 'removed') {
+        bullets.push(`**${c.item!.title}** removed from roadmap. Stop any active work.`);
+      }
+    }
+  } else {
+    intro = `## Q2 update for customers\n\n${changes.length} updates:\n\n─── Changes ───────────────────────`;
+    for (const c of changes.slice(0, 5)) {
+      if (c.changeType === 'status-changed' && c.to === 'done') {
+        bullets.push(`**${c.item!.title}** has shipped. Let affected accounts know.`);
+      } else if (c.changeType === 'priority-changed' && c.to === 'now') {
+        bullets.push(`**${c.item!.title}** is now top priority for Q2. Accounts asking about this can expect progress.`);
+      } else if (c.changeType === 'added') {
+        bullets.push(`**${c.item!.title}** is now on the roadmap. ${c.reason}`);
+      } else if (c.changeType === 'scope-changed') {
+        bullets.push(`**${c.item!.title}** scope adjusted to "${c.to}". Set expectations accordingly.`);
+      }
+    }
+  }
+
+  if (bullets.length === 0) {
+    bullets.push('No significant changes in the last 30 days.');
+  }
+
+  const text = `${intro}\n${bullets.map(b => `• ${b}`).join('\n')}`;
+
+  // No card — the text IS the artifact the PM will copy-paste
+
+  const otherAudiences = (['leadership', 'engineering', 'cs'] as const).filter(a => a !== audience);
+
+  const dataForAI4 = { audience, changes: recent.map(h => ({ date: h.date, item: getItem(h.itemId)?.title, changeType: h.changeType, from: h.from, to: h.to, reason: h.reason })) };
+
+  return {
+    text,
+    textPromise: generateNarrative({ useCase: "uc4", structuredData: dataForAI4, fallbackText: text }).then(r => r.fromAI ? text + '\n\n' + r.text : text),
+    loadingSteps: [
+      "Scanning change history…",
+      `Framing for ${audienceLabels[audience]}…`,
+    ],
+    pills: [
+      { label: "Copy to clipboard", key: `copy-summary` },
+      { label: `Rewrite for ${audienceLabels[otherAudiences[0]]}`, key: `uc4-${otherAudiences[0]}` },
+      { label: `Rewrite for ${audienceLabels[otherAudiences[1]]}`, key: `uc4-${otherAudiences[1]}` },
+    ],
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UC5: DRIFT DETECTION
+   ═══════════════════════════════════════════════════════════════ */
+
+function buildUC5Drift(): MessageContent {
+  const flags: { item: SpaceRow; trend: typeof demandTrend[number]; issue: string; action: string }[] = [];
+
+  // Growing demand but plan unchanged
+  for (const trend of demandTrend.filter(t => t.direction === 'growing' && t.mentionsDelta >= 10)) {
+    const item = getItem(trend.itemId);
+    if (!item) continue;
+    const onRoadmap = roadmapData.find(r => r.id === item.id);
+    if (!onRoadmap) {
+      flags.push({ item, trend, issue: `Demand grew +${trend.mentionsDelta} mentions but not on your roadmap`, action: 'Consider adding to roadmap' });
+    } else if (onRoadmap.priority !== 'now') {
+      flags.push({ item, trend, issue: `Demand grew +${trend.mentionsDelta} mentions but still ${onRoadmap.priority} priority`, action: 'Consider promoting' });
+    }
+  }
+
+  // Declining demand but still prioritized
+  for (const trend of demandTrend.filter(t => t.direction === 'declining' && t.mentionsDelta <= -4)) {
+    const item = getItem(trend.itemId);
+    if (!item) continue;
+    const onRoadmap = roadmapData.find(r => r.id === item.id);
+    if (onRoadmap && (onRoadmap.priority === 'now' || onRoadmap.priority === 'next')) {
+      flags.push({ item, trend, issue: `Demand dropped ${trend.mentionsDelta} mentions but still ${onRoadmap.priority} priority`, action: 'Consider deprioritizing' });
+    }
+  }
+
+  // Scope changes from history
+  const scopeChanges = itemHistory.filter(h => h.changeType === 'scope-changed');
+  for (const sc of scopeChanges) {
+    const item = getItem(sc.itemId);
+    const trend = getTrend(sc.itemId);
+    if (item && trend) {
+      flags.push({ item, trend, issue: `Scope changed from "${sc.from}" to "${sc.to}"`, action: 'Review if scope matches current demand' });
+    }
+  }
+
+  // Sort by magnitude
+  flags.sort((a, b) => Math.abs(b.trend.mentionsDelta) - Math.abs(a.trend.mentionsDelta));
+  const top = flags.slice(0, 5);
+
+  const text = top.length === 0
+    ? `## What shifted\n\nNothing drifted. Your roadmap still matches demand.`
+    : `## What shifted\n\n${top.length} ${top.length === 1 ? 'item needs' : 'items need'} attention. Most urgent: **${top[0].item.title}**.\n\n─── Items to review ───────────────\n${top.map((f, i) =>
+        `• **${f.item.title}** — $${f.item.estRevenue}K, ${f.item.customers} customers. ${f.issue}. *${f.action}.*`
+      ).join('\n')}`;
+
+  const dataForAI5 = { driftItems: top.map(f => ({ title: f.item.title, revenue: f.item.estRevenue, customers: f.item.customers, trend: f.trend.direction, mentionsDelta: f.trend.mentionsDelta, issue: f.issue, action: f.action })) };
+
+  const pills: { label: string; key: string }[] = top.length === 0
+    ? [
+        { label: "Am I betting on the right things?", key: "flow1-initial" },
+        { label: "Show the full backlog ranked", key: "backlog-ranked" },
+      ]
+    : [
+        ...(() => {
+          const promotable = top.find(f => f.item.priority !== 'now');
+          return promotable ? [{ label: "Promote the top drifted item", key: `reprioritize-promote-${promotable.item.id}` }] : [];
+        })(),
+        { label: "Where is my roadmap out of sync?", key: "uc2-mismatch" },
+        { label: "Rank everything by evidence", key: "flow1-initial" },
+      ];
+
+  return {
+    text,
+    textPromise: generateNarrative({ useCase: "uc5", structuredData: dataForAI5, fallbackText: text }).then(r => r.fromAI ? text + '\n\n' + r.text : text),
+    loadingSteps: [
+      "Comparing current vs historical demand…",
+      "Identifying drift patterns…",
+      "Ranking by urgency…",
+    ],
+    pills,
   };
 }
 
@@ -860,15 +1777,26 @@ function buildAltCut(): MessageContent {
    FLOW ROUTING — matches user input to a flow response
    ═══════════════════════════════════════════════════════════════ */
 
-function routeInput(text: string): MessageContent {
+function routeInputRegex(text: string): MessageContent {
   const lower = text.toLowerCase().trim();
 
-  // Flow 1 triggers
-  if (/betting|right things|q2 overview|q2 items/i.test(lower)) return buildFlow1Initial();
+  // UC1: Prioritize by evidence
+  if (/betting|right things|q2 overview|q2 items|prioriti[sz]e.*evidence|strongest.*signal|customer signal/i.test(lower)) return buildFlow1Initial();
   if (/no evidence|zero.*evidence|no.*quotes/i.test(lower)) return buildFlow1NoEvidence();
   if (/worried|risk|concern|flag/i.test(lower)) return buildFlow1Worried();
-  if (/backlog.*rank|rank.*backlog|full backlog/i.test(lower)) return buildFlow1BacklogRanked();
-  if (/strongest.*ignor/i.test(lower)) return buildFlow1BacklogRanked();
+  if (/backlog.*rank|rank.*backlog|full backlog|strongest.*ignor/i.test(lower)) return buildFlow1BacklogRanked();
+
+  // UC2: Plan vs demand mismatch
+  if (/out of sync|mismatch|where.*wrong|over.?invest|under.?invest|sync.*demand|what.*missing|am i missing/i.test(lower)) return buildUC2Mismatch();
+
+  // UC4: Summarize changes for audience
+  if (/summarize|summary|update.*leadership|leadership.*update|write.*leadership/i.test(lower)) return buildUC4Summary('leadership');
+  if (/update.*eng|eng.*update|write.*eng|what.*changed.*eng/i.test(lower)) return buildUC4Summary('engineering');
+  if (/update.*cs|cs.*update|tell.*customer|customer success/i.test(lower)) return buildUC4Summary('cs');
+  if (/what changed|what.*different|changes.*since/i.test(lower)) return buildUC4Summary('leadership');
+
+  // UC5: Drift detection
+  if (/drift|hasn.?t.*looked|needs attention|stale|anything.*know|shifted|what.*changed.*since.*last/i.test(lower)) return buildUC5Drift();
 
   // Flow 3 triggers — "cut X for Y" / "swap X for Y" / "replace X with Y"
   const cutMatch = lower.match(/cut(?:ting)?\s+(.+?)\s+(?:for|to make room for|and add|replace with)\s+(.+)/i)
@@ -877,10 +1805,28 @@ function routeInput(text: string): MessageContent {
   if (cutMatch) {
     const cutName = cutMatch[1].trim();
     const addName = cutMatch[2].trim();
-    const allItems = [...roadmapData, ...sampleData];
-    const cutItem = allItems.find(r => r.title.toLowerCase().includes(cutName));
-    const addItem = allItems.find(r => r.title.toLowerCase().includes(addName));
+    const allItemsF3 = [...roadmapData, ...sampleData];
+    const cutItem = allItemsF3.find(r => r.title.toLowerCase().includes(cutName));
+    const addItem = allItemsF3.find(r => r.title.toLowerCase().includes(addName));
     if (cutItem && addItem) return buildFlow3(cutItem.id, addItem.id);
+  }
+
+  // Flow 3 — standalone cut/add without a pair
+  if (/we\s+need\s+to\s+cut|cut\s+one|which.*cut|least.*impact/i.test(lower)) return buildAltCut();
+  if (/add\s+.+\s+to\s+q2|add.*to.*roadmap|leadership.*add|leadership.*wants|what do i trade/i.test(lower)) {
+    // Try to find the item they want to add
+    const allItemsAdd = [...roadmapData, ...sampleData];
+    // Match patterns like "add X to Q2", "add X to roadmap", "leadership wants me to add X"
+    const addMatch = lower.match(/add\s+(.+?)\s+to/i) || lower.match(/add\s+(.+?)[\.\?]?\s*$/i);
+    if (addMatch) {
+      const searchTerm = addMatch[1].trim().replace(/to q2|to roadmap|to the roadmap/i, '').trim();
+      const addItem = allItemsAdd.find(r => {
+        const keywords = searchTerm.split(/\s+/).filter(w => w.length >= 4);
+        return keywords.filter(w => r.title.toLowerCase().includes(w)).length >= 1;
+      });
+      if (addItem) return buildAddToQ2(addItem.id);
+    }
+    return buildAltCut();
   }
 
   // Flow 3 drill-ins
@@ -895,23 +1841,47 @@ function routeInput(text: string): MessageContent {
     };
   }
 
-  // Flow 2 triggers — item-specific questions
-  const allItems = [...roadmapData, ...sampleData];
-  for (const item of allItems) {
-    const keywords = item.title.toLowerCase().split(/\s+/).filter(w => w.length > 4);
-    const matchCount = keywords.filter(w => lower.includes(w)).length;
-    if (matchCount >= 2) return buildFlow2(item.id);
-  }
-
-  // "bump" something from Q2
-  if (/bump|promote|move.*roadmap/i.test(lower)) {
+  // Promote/bump — check BEFORE Flow 2 item matching so "promote X" doesn't trigger a deep dive
+  if (/bump|promote|demote|prioriti[sz]e|move.*roadmap|reprioritize/i.test(lower)) {
+    const isDemote = /demote/i.test(lower);
+    const action = isDemote ? 'demote' as const : 'promote' as const;
+    const allItemsForPromote = [...roadmapData, ...sampleData];
+    const mentioned = allItemsForPromote.find(item => {
+      const keywords = item.title.toLowerCase().split(/\s+/).filter(w => w.length >= 4);
+      return keywords.filter(w => lower.includes(w)).length >= 2;
+    });
+    if (mentioned) {
+      if (action === 'promote' && mentioned.priority === 'now') {
+        return { text: `**${mentioned.title}** is already at the highest priority (now). No change needed.`, pills: [{ label: "Has anything drifted?", key: "uc5-drift" }] };
+      }
+      if (action === 'demote' && mentioned.priority === 'icebox') {
+        return { text: `**${mentioned.title}** is already at the lowest priority (icebox). No change needed.`, pills: [{ label: "Has anything drifted?", key: "uc5-drift" }] };
+      }
+      return buildReprioritize(mentioned.id, action);
+    }
+    // No specific item — find the best candidate
+    const scored = allItemsForPromote
+      .filter(item => item.priority !== 'now')
+      .map(item => ({ item, score: evidenceScore(item) }))
+      .sort((a, b) => b.score - a.score);
+    if (scored[0]) {
+      return buildReprioritize(scored[0].item.id, 'promote');
+    }
     return {
-      text: "To make room on the Q2 roadmap, you'd need to cut or descope an existing item. Your lowest-evidence items are the safest candidates. Want me to show you which Q2 items have the weakest backing?",
+      text: "All your high-evidence items are already at the highest priority. Nothing to promote right now.",
       pills: [
-        { label: "What else could we cut instead?", key: "alt-cut" },
-        { label: "Am I betting on the right things for Q2?", key: "flow1-initial" },
+        { label: "Am I betting on the right things?", key: "flow1-initial" },
+        { label: "Has anything drifted?", key: "uc5-drift" },
       ],
     };
+  }
+
+  // Flow 2 triggers — item-specific questions (runs after promote check)
+  const allItems = [...roadmapData, ...sampleData];
+  for (const item of allItems) {
+    const keywords = item.title.toLowerCase().split(/\s+/).filter(w => w.length >= 4);
+    const matchCount = keywords.filter(w => lower.includes(w)).length;
+    if (matchCount >= 2) return buildFlow2(item.id);
   }
 
   // Deps
@@ -933,14 +1903,125 @@ function routeInput(text: string): MessageContent {
     };
   }
 
-  // Fallback
+  // Fallback — try to be helpful
   return {
-    text: "I can help you explore your roadmap evidence. Try asking me:\n\n• \"Am I betting on the right things for Q2?\"\n• \"Why do customers keep asking about [feature]?\"\n• \"What if I cut [feature A] for [feature B]?\"",
+    text: "I didn't quite catch that. Here are some things I can help with:\n\n• *Prioritize* — \"Rank my backlog by evidence\" or \"Am I betting on the right things?\"\n• *Validate* — \"Where is my roadmap out of sync with demand?\"\n• *Trade off* — \"What if I cut [item A] for [item B]?\"\n• *Summarize* — \"Write a leadership update\" or \"What should CS tell customers?\"\n• *Check drift* — \"Has anything drifted?\" or \"What needs attention?\"",
     pills: [
-      { label: "Am I betting on the right things for Q2?", key: "flow1-initial" },
-      { label: "Show the full backlog ranked by revenue", key: "backlog-ranked" },
+      { label: "Am I betting on the right things?", key: "flow1-initial" },
+      { label: "Where is my roadmap out of sync?", key: "uc2-mismatch" },
+      { label: "Has anything drifted?", key: "uc5-drift" },
     ],
   };
+}
+
+/* ─── Map AI-classified intent to builder ─── */
+function mapIntentToBuilder(classified: ClassifiedIntent): MessageContent {
+  const { intent, itemName, itemName2, audience, action } = classified;
+
+  // Strict item matching — requires real keyword overlap, not loose substring
+  const findItem = (name?: string) => {
+    if (!name) return null;
+    const lower = name.toLowerCase().trim();
+    const all = [...roadmapData, ...sampleData];
+
+    // Skip very short or obviously non-item text
+    if (lower.length < 4) return null;
+
+    // 1. Exact title match
+    const exact = all.find(r => r.title.toLowerCase() === lower);
+    if (exact) return exact;
+
+    // 2. Title contains the full search term (only for terms 8+ chars to avoid false matches)
+    if (lower.length >= 8) {
+      const contains = all.find(r => r.title.toLowerCase().includes(lower));
+      if (contains) return contains;
+    }
+
+    // 3. Keyword overlap — extract meaningful words and require matches
+    const searchWords = lower.replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length >= 4);
+    if (searchWords.length === 0) return null;
+
+    let bestMatch: SpaceRow | null = null;
+    let bestCount = 0;
+    for (const item of all) {
+      const titleLower = item.title.toLowerCase();
+      const matchCount = searchWords.filter(w => titleLower.includes(w)).length;
+      // Need at least 2 keyword matches, or 1 if the word is very specific (7+ chars)
+      if (matchCount >= 2 && matchCount > bestCount) {
+        bestMatch = item;
+        bestCount = matchCount;
+      }
+      if (matchCount === 1 && searchWords.length === 1 && searchWords[0].length >= 7 && bestCount === 0) {
+        bestMatch = item;
+        bestCount = matchCount;
+      }
+    }
+    return bestMatch;
+  };
+
+  const item1 = findItem(itemName);
+  const item2 = findItem(itemName2);
+
+  switch (intent) {
+    case 'rank':
+      // If question seems backlog-specific, use backlog ranker
+      if (itemName?.toLowerCase().includes('backlog')) return buildFlow1BacklogRanked();
+      return buildFlow1Initial();
+    case 'mismatch':
+      return buildUC2Mismatch();
+    case 'add-to-q2':
+      if (item1) return buildAddToQ2(item1.id);
+      return buildAltCut();
+    case 'swap':
+    case 'trade-off':
+      if (item1 && item2) return buildFlow3(item1.id, item2.id);
+      if (item1) return buildAddToQ2(item1.id);
+      return buildAltCut();
+    case 'cut':
+      return buildAltCut();
+    case 'summarize':
+      return buildUC4Summary((audience as 'leadership' | 'engineering' | 'cs') || 'leadership');
+    case 'drift':
+      return buildUC5Drift();
+    case 'deep-dive':
+      if (item1) return buildFlow2(item1.id);
+      return buildFlow1Initial();
+    case 'promote':
+      if (item1) return buildReprioritize(item1.id, 'promote');
+      // No specific item — find best candidate
+      const bestPromote = [...roadmapData, ...sampleData]
+        .filter(i => i.priority !== 'now')
+        .map(i => ({ item: i, score: evidenceScore(i) }))
+        .sort((a, b) => b.score - a.score)[0];
+      return bestPromote ? buildReprioritize(bestPromote.item.id, 'promote') : buildFlow1Initial();
+    case 'demote':
+      if (item1) return buildReprioritize(item1.id, 'demote');
+      return buildFlow1Initial();
+    case 'no-evidence':
+      return buildFlow1NoEvidence();
+    case 'dependencies':
+      return routeInputRegex('dependencies');
+    case 'theme':
+      return buildUC1Theme();
+    default:
+      return routeInputRegex(classified.intent);
+  }
+}
+
+/* ─── Async intent routing (AI first, regex fallback) ─── */
+async function routeInputAsync(text: string): Promise<MessageContent> {
+  // Build item lists for the classifier
+  const roadmapTitles = roadmapData.filter(r => r.status !== 'done').map(r => ({ title: r.title, priority: r.priority }));
+  const backlogTitles = sampleData.filter(s => !roadmapData.find(r => r.title === s.title)).map(s => ({ title: s.title, priority: s.priority }));
+
+  // Try AI classifier
+  const classified = await classifyIntent(text, roadmapTitles, backlogTitles);
+  if (classified) {
+    return mapIntentToBuilder(classified);
+  }
+
+  // Fallback to regex
+  return routeInputRegex(text);
 }
 
 /* ─── Pill key → response routing ─── */
@@ -952,33 +2033,219 @@ function routePillKey(key: string): MessageContent {
     case 'backlog-ranked': return buildFlow1BacklogRanked();
     case 'strongest-ignored': return buildFlow1BacklogRanked();
     case 'alt-cut': return buildAltCut();
-    case 'descope': return routeInput('descope');
-    case 'bump-q2': return routeInput('bump');
-    case 'deps-detail': return routeInput('dependencies');
+    case 'descope': return routeInputRegex('descope');
+    case 'bump-q2': return routeInputRegex('bump');
+    case 'deps-detail': return routeInputRegex('dependencies');
     case 'flow2-top-backlog': {
       const top = sampleData.filter(s => !roadmapData.find(r => r.title === s.title)).sort((a, b) => b.estRevenue - a.estRevenue)[0];
-      return top ? buildFlow2(top.id) : routeInput('backlog');
+      return top ? buildFlow2(top.id) : routeInputRegex('backlog');
     }
-    default: return routeInput(key);
+    // UC2
+    case 'uc2-mismatch': return buildUC2Mismatch();
+    case 'uc2-action': {
+      // Find the top under-invested item and suggest promoting it
+      const allScored = [...roadmapData.filter(r => r.status !== 'done'), ...sampleData]
+        .map(item => ({ item, score: evidenceScore(item), priority: priorityNum(item.priority) }))
+        .sort((a, b) => b.score - a.score);
+      const underInvested = allScored.find(s => s.priority <= 2 && s.score > allScored[Math.floor(allScored.length * 0.25)]?.score);
+      if (underInvested) return buildReprioritize(underInvested.item.id, 'promote');
+      return buildFlow1Initial();
+    }
+    // UC4
+    case 'uc4-leadership': return buildUC4Summary('leadership');
+    case 'uc4-engineering': return buildUC4Summary('engineering');
+    case 'uc4-cs': return buildUC4Summary('cs');
+    case 'uc4-biggest': {
+      const recent = itemHistory.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+      return recent ? buildFlow2(recent.itemId) : buildUC4Summary('leadership');
+    }
+    // UC5
+    case 'uc5-drift': return buildUC5Drift();
+    case 'uc1-theme': return buildUC1Theme();
+    default: {
+      // Handle dynamic theme keys
+      if (key.startsWith('uc1-theme-')) {
+        const themeName = key.slice('uc1-theme-'.length);
+        return buildUC1Theme(themeName);
+      }
+      // Reprioritize actions
+      const promoteMatch = key.match(/^reprioritize-promote-(.+)$/);
+      if (promoteMatch) return buildReprioritize(promoteMatch[1], 'promote');
+      const demoteMatch = key.match(/^reprioritize-demote-(.+)$/);
+      if (demoteMatch) return buildReprioritize(demoteMatch[1], 'demote');
+      const applyMatch = key.match(/^apply-reprioritize-(.+?)-(.+)$/);
+      if (applyMatch) return buildApplyConfirmation(applyMatch[1], applyMatch[2]);
+      const swapMatch = key.match(/^apply-swap-(.+?)-(.+)$/);
+      if (swapMatch) return buildApplySwap(swapMatch[1], swapMatch[2]);
+      if (key === 'copy-summary') return { text: "Copied to clipboard. You can paste it into Slack, email, or a doc." };
+      return routeInputRegex(key);
+    }
   }
 }
 
 /* ─── Render text with bold → bold + citation chip ─── */
 function renderTextWithLinks(text: string): React.ReactNode[] {
-  const parts = text.split(/(\*\*.*?\*\*|\n)/g);
+  const lines = text.split('\n');
+  const elements: React.ReactNode[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Empty line = spacing
+    if (trimmed === '') {
+      elements.push(<div key={`sp-${i}`} style={{ height: 8 }} />);
+      continue;
+    }
+
+    // Section header: --- Title ---
+    const sectionMatch = trimmed.match(/^───\s*(.+?)\s*───+$/);
+    if (sectionMatch) {
+      elements.push(
+        <div key={`sec-${i}`} style={{ fontSize: 11, fontWeight: 700, color: "#6f7489", textTransform: "uppercase", letterSpacing: "0.5px", marginTop: 12, marginBottom: 4 }}>
+          {sectionMatch[1]}
+        </div>
+      );
+      continue;
+    }
+
+    // Main header: ## Title
+    if (trimmed.startsWith('## ')) {
+      elements.push(
+        <div key={`h-${i}`} style={{ fontSize: 15, fontWeight: 700, color: "#222428", marginBottom: 4, fontFamily: "var(--font-roobert)", fontFeatureSettings: "'ss01'" }}>
+          {trimmed.slice(3)}
+        </div>
+      );
+      continue;
+    }
+
+    // Bullet: • text
+    if (trimmed.startsWith('• ') || trimmed.startsWith('- ')) {
+      const bulletText = trimmed.slice(2);
+      elements.push(
+        <div key={`b-${i}`} style={{ display: "flex", gap: 8, fontSize: 14, color: "#222428", lineHeight: 1.5, paddingLeft: 4 }}>
+          <span style={{ color: "#6f7489", flexShrink: 0 }}>•</span>
+          <span>{renderInlineFormatting(bulletText)}</span>
+        </div>
+      );
+      continue;
+    }
+
+    // Numbered list: 1. text
+    const numMatch = trimmed.match(/^(\d+)\.\s+(.+)$/);
+    if (numMatch) {
+      elements.push(
+        <div key={`n-${i}`} style={{ display: "flex", gap: 8, fontSize: 14, color: "#222428", lineHeight: 1.5, paddingLeft: 4 }}>
+          <span style={{ color: "#6f7489", flexShrink: 0, minWidth: 16 }}>{numMatch[1]}.</span>
+          <span>{renderInlineFormatting(numMatch[2])}</span>
+        </div>
+      );
+      continue;
+    }
+
+    // Regular text with inline formatting
+    elements.push(
+      <div key={`t-${i}`} style={{ fontSize: 14, color: "#222428", lineHeight: 1.6 }}>
+        {renderInlineFormatting(trimmed)}
+      </div>
+    );
+  }
+
+  return elements;
+}
+
+/* ─── Inline formatting: **bold** and *italic* ─── */
+/* ─── Simple link icon (blue, no dropdown) ─── */
+function LinkIcon() {
+  const chipId = useRef(`link-${Math.random().toString(36).slice(2, 6)}`).current;
+  const open = useGlobalDropdown(chipId);
+  const ref = useRef<HTMLSpanElement>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const navigate = useContext(NavigateContext);
+
+  useEffect(() => {
+    if (!open) return;
+    let active = false;
+    const t = setTimeout(() => { active = true; }, 200);
+    const handler = (e: MouseEvent) => {
+      if (!active) return;
+      const target = e.target as Node;
+      if (ref.current?.contains(target)) return;
+      if (dropdownRef.current?.contains(target)) return;
+      setGlobalDropdown(null);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => { clearTimeout(t); document.removeEventListener("mousedown", handler); };
+  }, [open]);
+
+  return (
+    <span ref={ref} style={{ position: "relative", display: "inline-flex", verticalAlign: "middle", marginLeft: 4 }}>
+      <span
+        onClick={(e) => { e.stopPropagation(); setGlobalDropdown(open ? null : chipId); }}
+        style={{ display: "inline-flex", cursor: "pointer", background: open ? "#E0E2E8" : "#F1F2F5", borderRadius: 4, padding: 2, transition: "background 150ms" }}
+      >
+        <IconLink size="small" color="#3859FF" />
+      </span>
+      {open && (() => {
+        const rect = ref.current?.getBoundingClientRect();
+        if (!rect) return null;
+        const items = [
+          { icon: <IconBoard size="small" />, text: "Add to board", onClick: () => setGlobalDropdown(null) },
+          { icon: <IconSquaresTwoOverlap size="small" />, text: "Copy", onClick: () => setGlobalDropdown(null) },
+          { icon: <IconEyeOpen size="small" />, text: "View details", onClick: () => { setGlobalDropdown(null); navigate('view-details', ''); } },
+          { icon: <IconInsights size="small" />, text: "Related evidence", onClick: () => { setGlobalDropdown(null); navigate('related-evidence', ''); } },
+        ];
+        return createPortal(
+          <div
+            ref={(el) => { dropdownRef.current = el; }}
+            style={{
+              position: "fixed",
+              top: rect.bottom + 4,
+              left: rect.left,
+              background: "#FFFFFF",
+              border: "0.5px solid #E9EAEF",
+              borderRadius: 8,
+              boxShadow: "0px 2px 4px rgba(34, 36, 40, 0.08)",
+              padding: "4px 0",
+              zIndex: 99999,
+              minWidth: 180,
+            }}
+          >
+            {items.map((item, i) => (
+              <div
+                key={i}
+                onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); item.onClick(); }}
+                onMouseEnter={e => (e.currentTarget.style.background = "#F7F8FA")}
+                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", cursor: "pointer", fontSize: 14, color: "#222428" }}
+              >
+                <span style={{ display: "flex", color: "#6f7489" }}>{item.icon}</span>
+                {item.text}
+              </div>
+            ))}
+          </div>,
+          document.body
+        );
+      })()}
+    </span>
+  );
+}
+
+function renderInlineFormatting(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*.*?\*\*|\*[^*]+\*)/g);
   return parts.map((part, i) => {
-    if (part === '\n') return <br key={i} />;
     if (part.startsWith('**') && part.endsWith('**')) {
       const inner = part.slice(2, -2);
-      // Derive a short citation label — use first 2-3 words
-      const words = inner.split(/\s+/);
-      const label = words.length > 3 ? words.slice(0, 2).join(' ') : inner;
-      return (
-        <span key={i}>
-          <span style={{ fontWeight: 700 }}>{inner}</span>
-          <CitationChip label={label} />
-        </span>
-      );
+      // Short bold (2 words or less, or ends with :) = label, no link icon
+      const isLabel = inner.split(/\s+/).length <= 2 || inner.endsWith(':');
+      if (isLabel) {
+        return <span key={i} style={{ fontWeight: 700 }}>{inner}</span>;
+      }
+      // Item reference = bold + link icon
+      return <span key={i}><span style={{ fontWeight: 700 }}>{inner}</span><LinkIcon /></span>;
+    }
+    if (part.startsWith('*') && part.endsWith('*')) {
+      return <span key={i} style={{ color: "#6f7489" }}>{part.slice(1, -1)}</span>;
     }
     return <span key={i}>{part}</span>;
   });
@@ -997,7 +2264,7 @@ interface Message {
   loadingSteps?: string[];
 }
 
-function PanelBody({ activePage, focusItemId }: { activePage?: string; focusItemId?: string }) {
+function PanelBody({ activePage, focusItemId, onApplyReprioritize, onApplySwap }: { activePage?: string; focusItemId?: string; onApplyReprioritize?: (itemId: string, newPriority: string, reason: string) => void; onApplySwap?: (cutId: string, addId: string, reason: string) => void }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -1074,10 +2341,28 @@ function PanelBody({ activePage, focusItemId }: { activePage?: string; focusItem
   }, []);
 
   const addAiResponse = (content: MessageContent, userText: string) => {
-    // Add user bubble
     setSelectedFollowUp(null);
     const userId = ++msgIdRef.current;
     setMessages(prev => [...prev, { id: userId, role: 'user', text: userText }]);
+
+    // Start resolving AI text in background (if promise exists)
+    let resolvedText = content.text;
+    const aiTextPromise = content.textPromise
+      ? content.textPromise.then(t => { resolvedText = t; }).catch(() => {})
+      : Promise.resolve();
+
+    const showMessage = () => {
+      setIsTyping(false);
+      const aiId = ++msgIdRef.current;
+      setMessages(prev => [...prev, {
+        id: aiId,
+        role: 'ai',
+        text: resolvedText,
+        cards: content.cards,
+        pills: content.pills,
+      }]);
+      scrollToBottom();
+    };
 
     const steps = content.loadingSteps;
     scrollToBottom();
@@ -1090,38 +2375,45 @@ function PanelBody({ activePage, focusItemId }: { activePage?: string; focusItem
         setActiveLoadingSteps([]);
         setIsTyping(true);
         scrollToBottom();
-        setTimeout(() => {
-          setIsTyping(false);
-          const aiId = ++msgIdRef.current;
-          setMessages(prev => [...prev, {
-            id: aiId,
-            role: 'ai',
-            text: content.text,
-            cards: content.cards,
-            pills: content.pills,
-          }]);
-          scrollToBottom();
-        }, 1000);
+        // Wait for AI text to resolve before showing message
+        aiTextPromise.then(() => setTimeout(showMessage, 1000));
       }, loadDuration);
     } else {
       setIsTyping(true);
       scrollToBottom();
-      setTimeout(() => {
-        setIsTyping(false);
-        const aiId = ++msgIdRef.current;
-        setMessages(prev => [...prev, {
-          id: aiId,
-          role: 'ai',
-          text: content.text,
-          cards: content.cards,
-          pills: content.pills,
-        }]);
-        scrollToBottom();
-      }, 1200);
+      aiTextPromise.then(() => setTimeout(showMessage, 1200));
     }
   };
 
   const handlePillClick = (pill: { label: string; key: string }) => {
+    // Copy to clipboard
+    if (pill.key === 'copy-summary') {
+      const lastAi = [...messages].reverse().find(m => m.role === 'ai');
+      if (lastAi) navigator.clipboard?.writeText(lastAi.text.replace(/\*\*/g, '').replace(/\*/g, ''));
+      addAiResponse(routePillKey(pill.key), pill.label);
+      return;
+    }
+    // Apply reprioritize — actually mutate state
+    const applyReprioritizeMatch = pill.key.match(/^apply-reprioritize-(.+?)-(.+)$/);
+    if (applyReprioritizeMatch) {
+      const [, itemId, newPriority] = applyReprioritizeMatch;
+      const item = getItem(itemId);
+      const reason = `Evidence-based reprioritization — $${item?.estRevenue || 0}K ARR, ${item?.customers || 0} customers, demand ${getTrend(itemId)?.direction || 'stable'}`;
+      try { onApplyReprioritize?.(itemId, newPriority, reason); } catch { /* mutation failed silently */ }
+      addAiResponse(routePillKey(pill.key), pill.label);
+      return;
+    }
+    // Apply swap — actually mutate both items
+    const applySwapMatch = pill.key.match(/^apply-swap-(.+?)-(.+)$/);
+    if (applySwapMatch) {
+      const [, cutId, addId] = applySwapMatch;
+      const cutItem = getItem(cutId);
+      const addItem = getItem(addId);
+      const reason = `Trade-off swap — cut ${cutItem?.title || cutId} for ${addItem?.title || addId}`;
+      try { onApplySwap?.(cutId, addId, reason); } catch { /* mutation failed silently */ }
+      addAiResponse(routePillKey(pill.key), pill.label);
+      return;
+    }
     // Handle dynamic flow2/flow3 pill keys
     const flow2Match = pill.key.match(/^flow2-(.+)$/);
     if (flow2Match) {
@@ -1137,9 +2429,61 @@ function PanelBody({ activePage, focusItemId }: { activePage?: string; focusItem
     addAiResponse(content, pill.label);
   };
 
-  const handleChatSend = (text: string) => {
-    const content = routeInput(text);
-    addAiResponse(content, text);
+  const handleChatSend = async (text: string) => {
+    // Show user bubble + loading immediately
+    const userId = ++msgIdRef.current;
+    setMessages(prev => [...prev, { id: userId, role: 'user', text }]);
+    setSelectedFollowUp(null);
+    setIsLoading(true);
+    setActiveLoadingSteps(["Understanding your question…", "Analyzing roadmap data…"]);
+    scrollToBottom();
+
+    // Classify intent via AI (falls back to regex)
+    let content: MessageContent;
+    try {
+      content = await routeInputAsync(text);
+    } catch {
+      content = routeInputRegex(text);
+    }
+
+    // Now show the response with its own loading steps (if any)
+    setIsLoading(false);
+    setActiveLoadingSteps([]);
+    if (content.loadingSteps && content.loadingSteps.length > 0) {
+      setIsLoading(true);
+      setActiveLoadingSteps(content.loadingSteps);
+      const loadDuration = content.loadingSteps.length * 600 + 1500;
+      setTimeout(() => {
+        setIsLoading(false);
+        setActiveLoadingSteps([]);
+        setIsTyping(true);
+        scrollToBottom();
+        // Resolve AI text promise if exists
+        let resolvedText = content.text;
+        const textPromise = content.textPromise
+          ? content.textPromise.then(t => { resolvedText = t; }).catch(() => {})
+          : Promise.resolve();
+        textPromise.then(() => setTimeout(() => {
+          setIsTyping(false);
+          const aiId = ++msgIdRef.current;
+          setMessages(prev => [...prev, { id: aiId, role: 'ai', text: resolvedText, cards: content.cards, pills: content.pills }]);
+          scrollToBottom();
+        }, 1000));
+      }, loadDuration);
+    } else {
+      setIsTyping(true);
+      scrollToBottom();
+      let resolvedText = content.text;
+      const textPromise = content.textPromise
+        ? content.textPromise.then(t => { resolvedText = t; }).catch(() => {})
+        : Promise.resolve();
+      textPromise.then(() => setTimeout(() => {
+        setIsTyping(false);
+        const aiId = ++msgIdRef.current;
+        setMessages(prev => [...prev, { id: aiId, role: 'ai', text: resolvedText, cards: content.cards, pills: content.pills }]);
+        scrollToBottom();
+      }, 1200));
+    }
   };
 
   // One contextual suggestion based on page state
@@ -1158,12 +2502,13 @@ function PanelBody({ activePage, focusItemId }: { activePage?: string; focusItem
           overflowX: "hidden",
           display: "flex",
           flexDirection: "column",
+          background: "#FFFFFF",
           minWidth: 0,
         }}
       >
-        <div style={{ flex: 1 }} />
+        {messages.length > 0 && <div style={{ flex: 1 }} />}
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 20, padding: "0 24px 24px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 20, padding: messages.length > 0 ? "0 24px 24px" : "0", flex: messages.length === 0 ? 1 : undefined }}>
 
           {/* Insight card entry point (only before first message) */}
           {messages.length === 0 && (() => {
@@ -1178,71 +2523,64 @@ function PanelBody({ activePage, focusItemId }: { activePage?: string; focusItem
               .filter(s => !roadmapData.find(r => r.title === s.title))
               .sort((a, b) => b.estRevenue - a.estRevenue)[0];
 
+            const pillSets: Record<string, { label: string; key: string }[]> = {
+              backlog: [
+                { label: "Rank my backlog by customer evidence", key: "backlog-ranked" },
+                { label: "What should move to the roadmap?", key: "uc2-mismatch" },
+                { label: "Which items have the strongest signal?", key: "flow1-initial" },
+              ],
+              overview: [
+                { label: "Summarize Q2 changes for leadership", key: "uc4-leadership" },
+                { label: "What needs my attention?", key: "uc5-drift" },
+                { label: "Am I betting on the right things?", key: "flow1-initial" },
+              ],
+              roadmap: [
+                { label: "Am I betting on the right things for Q2?", key: "flow1-initial" },
+                { label: "Where is my roadmap out of sync?", key: "uc2-mismatch" },
+                { label: "Has anything drifted?", key: "uc5-drift" },
+              ],
+            };
+            const pills = pillSets[activePage || 'roadmap'] || pillSets.roadmap;
+
             return (
-              <>
-                <div style={{ display: "flex", alignItems: "center", position: "relative" }}>
-                  <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", width: 72, height: 44, borderRadius: 22, background: "#F1F2F5" }} />
-                  <div style={{ position: "relative", zIndex: 1 }}><AgentAvatar size={48} /></div>
-                  <div style={{ position: "relative", zIndex: 1, width: 28, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <IconChevronDown size="small" color="icon-secondary" />
-                  </div>
+              <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "stretch", height: "100%", minHeight: 0 }}>
+
+                {/* Centered "For you" label */}
+                <div style={{ textAlign: "center", paddingBottom: 12 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: "#42413A" }}>For you</span>
                 </div>
 
-                <span style={{ fontSize: 20, fontWeight: 600, color: "#656b81", lineHeight: 1.4, fontFamily: "var(--font-roobert)", fontFeatureSettings: "'ss01'" }}>
-                  Hey Shreya,
-                </span>
-
-                <span style={{ fontSize: 14, fontWeight: 400, color: "#222428", lineHeight: 1.5 }}>
-                  {activePage === 'backlog'
-                    ? "I scanned your Backlog. Here's what I found:"
-                    : "I scanned your Roadmap and Backlog. Here's what I found:"}
-                </span>
-
-                {/* Suggested prompts — context-aware per page */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {activePage === 'backlog' ? (
-                    <>
-                      <PromptPill
-                        label="What should move to the roadmap?"
-                        onClick={() => handlePillClick({ label: "What should move to the roadmap?", key: "backlog-ranked" })}
-                      />
-                      <PromptPill
-                        label="Which items have the strongest signal?"
-                        onClick={() => handlePillClick({ label: "Which items have the strongest signal?", key: "flow1-initial" })}
-                      />
-                      <PromptPill
-                        label="Any items missing customer evidence?"
-                        onClick={() => handlePillClick({ label: "Any items missing customer evidence?", key: "no-evidence" })}
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <PromptPill
-                        label="Am I betting on the right things for Q2?"
-                        onClick={() => handlePillClick({ label: "Am I betting on the right things for Q2?", key: "flow1-initial" })}
-                      />
-                      <PromptPill
-                        label="Deep dive into my top roadmap item"
-                        onClick={() => {
-                          if (topItem) {
-                            const content = buildFlow2(topItem.id);
-                            addAiResponse(content, `Tell me about ${topItem.title}`);
-                          }
-                        }}
-                      />
-                      <PromptPill
-                        label="What happens if I swap a Q2 item?"
-                        onClick={() => {
-                          if (weakestQ2 && backlogTop) {
-                            const content = buildFlow3(weakestQ2.id, backlogTop.id);
-                            addAiResponse(content, `What if I cut ${weakestQ2.title} for ${backlogTop.title}?`);
-                          }
-                        }}
-                      />
-                    </>
-                  )}
+                {/* Suggestion cards */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "0 16px" }}>
+                  {pills.map((pill, i) => (
+                    <div
+                      key={pill.key}
+                      onClick={() => handlePillClick(pill)}
+                      onMouseEnter={e => (e.currentTarget.style.boxShadow = "0px 2px 8px rgba(34,36,40,0.06)")}
+                      onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}
+                      style={{
+                        background: "#FAFAFC",
+                        border: "1px solid #F4F4F1",
+                        borderRadius: 12,
+                        padding: "20px",
+                        cursor: "pointer",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 12,
+                        transition: "box-shadow 150ms",
+                      }}
+                    >
+                      <span style={{ fontSize: 16, fontWeight: 400, color: "#222428", lineHeight: 1.4, textAlign: "center", fontStyle: i === 2 ? 'italic' : 'normal', fontFamily: "var(--font-roobert)", fontFeatureSettings: "'ss01'", maxWidth: "70%", margin: "0 auto" }}>
+                        {pill.label}
+                      </span>
+                      <div style={{ display: "flex", justifyContent: "flex-end", width: "100%", color: "#191812" }}>
+                        <IconArrowRight size="small" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </>
+
+              </div>
             );
           })()}
 
@@ -1326,7 +2664,7 @@ function PanelBody({ activePage, focusItemId }: { activePage?: string; focusItem
 }
 
 /* ─── Input area ─── */
-function PanelInput({ onSend }: { onSend: (text: string) => void }) {
+export function PanelInput({ onSend }: { onSend: (text: string) => void }) {
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -1341,94 +2679,270 @@ function PanelInput({ onSend }: { onSend: (text: string) => void }) {
   const hasText = text.trim().length > 0;
 
   return (
-    <div style={{ flexShrink: 0, padding: "0 24px 16px", display: "flex", flexDirection: "column" }}>
+    <div style={{ flexShrink: 0, padding: "8px 16px 16px" }}>
       <div
         style={{
-          background: "#f1f2f5",
-          borderRadius: "8px 8px 0 0",
-          padding: "8px 12px",
           display: "flex",
           alignItems: "center",
           gap: 8,
-          marginBottom: 0,
-          position: "relative",
-          zIndex: 1,
+          background: "#F4F4F1",
+          borderRadius: 16,
+          padding: "10px 14px 10px 18px",
         }}
       >
-        <IconSquareLineSquareDashed size="small" color="icon-secondary" />
-        <span style={{ fontSize: 12, fontWeight: 400, color: "#222428", lineHeight: 1.5 }}>
-          Select objects on the canvas to add context
-        </span>
+        <textarea
+          ref={textareaRef}
+          value={text}
+          onChange={(e) => {
+            setText(e.target.value);
+            e.target.style.height = "auto";
+            e.target.style.height = Math.min(e.target.scrollHeight, 80) + "px";
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
+          placeholder="What shall we do next?"
+          style={{
+            flex: 1,
+            border: "none",
+            outline: "none",
+            resize: "none",
+            fontSize: 14,
+            fontWeight: 400,
+            color: "#222428",
+            lineHeight: 1.4,
+            fontFamily: "var(--font-noto)",
+            background: "transparent",
+            minHeight: 20,
+            maxHeight: 80,
+            overflow: "auto",
+            '::placeholder': { color: '#6F7489' },
+          } as any}
+          rows={1}
+        />
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          {/* Mic icon - 16px */}
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ cursor: "pointer", flexShrink: 0 }}>
+            <path d="M8 1a2 2 0 0 0-2 2v4a2 2 0 0 0 4 0V3a2 2 0 0 0-2-2Z" stroke="#222428" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 7a4 4 0 0 1-8 0M8 11v3.5M6 14.5h4" stroke="#222428" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          {/* AI icon */}
+          {hasText ? (
+            <div
+              onClick={handleSend}
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 14,
+                background: "#222428",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M2 6h8M10 6L6.5 2.5M10 6L6.5 9.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          ) : (
+            <img src="/icon-voice-llm.png" width={25} height={25} alt="AI" style={{ cursor: "pointer" }} />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Sub-view: Related Evidence ─── */
+function RelatedEvidenceView({ itemLabel, onBack }: { itemLabel: string; onBack: () => void }) {
+  const allItems = [...roadmapData, ...sampleData];
+  const item = allItems.find(r => {
+    const keywords = (itemLabel || '').toLowerCase().split(/\s+/).filter(w => w.length > 3);
+    return keywords.filter(w => r.title.toLowerCase().includes(w)).length >= 1;
+  });
+  const quotes = item ? (customerQuotes[item.id] || []) : [];
+
+  const cardStyles: { icon: string; bg: string; stars?: number }[] = [
+    { icon: '⚑', bg: '#EFE9FF', stars: undefined },
+    { icon: '⚑', bg: '#FFF0E0', stars: 2 },
+    { icon: '♡', bg: '#EAFAEA', stars: undefined },
+    { icon: '⚑', bg: '#FFF0E0', stars: 2 },
+  ];
+
+  const mockCards = [
+    { text: `Mobile navigation issues are creating friction in the user experience, making it difficult for users to find key features and complete task efficiently, leading t...`, author: "John Doe, CPO" },
+    { text: `"The app successfully performs the intended actions, but the overall experience feels slow and unresponsive. Each tap is followed by a noticeabl..."`, author: "John Doe, CPO" },
+    { text: `I'm really impressed with how well this works. The system automatically categorizes my transactions in real time and does it very accurately. It makes trackin...`, author: "John Doe, CPO" },
+    { text: `"The app successfully performs the intended actions, but the overall experience feels slow and unresponsive. Each tap is followed by a noticeabl..."`, author: "John Doe, CPO" },
+  ];
+
+  const cards = quotes.length > 0
+    ? quotes.map((q, i) => ({ text: q.quote, author: `${q.company}, ${q.role}`, style: cardStyles[i % cardStyles.length] }))
+    : mockCards.map((m, i) => ({ text: m.text, author: m.author, style: cardStyles[i % cardStyles.length] }));
+
+  return (
+    <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
+      {/* Back nav */}
+      <div
+        onClick={onBack}
+        style={{ display: "flex", alignItems: "center", gap: 8, padding: "14px 24px", cursor: "pointer" }}
+      >
+        <IconArrowLeft size="small" color="icon-secondary" />
+        <span style={{ fontSize: 14, fontWeight: 500, color: "#4262FF" }}>Related evidence</span>
       </div>
 
+      {/* Cards */}
+      <div style={{ padding: "0 16px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
+        {cards.map((card, i) => (
+          <div key={i} style={{ background: card.style.bg, borderRadius: 16, padding: "16px 20px" }}>
+            {/* Top row: icon + actions */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <span style={{ fontSize: 18, lineHeight: 1 }}>{card.style.icon}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ fontSize: 16, color: "#6f7489", cursor: "pointer", lineHeight: 1 }}>⋮</span>
+                <span style={{ fontSize: 14, color: "#6f7489", cursor: "pointer", lineHeight: 1 }}>✕</span>
+              </div>
+            </div>
+            {/* Stars (if applicable) */}
+            {card.style.stars !== undefined && (
+              <div style={{ marginBottom: 8, fontSize: 13, letterSpacing: 2 }}>
+                {'★'.repeat(card.style.stars)}{'☆'.repeat(5 - card.style.stars)}
+              </div>
+            )}
+            {/* Text */}
+            <div style={{ fontSize: 14, color: "#222428", lineHeight: 1.6, marginBottom: 6 }}>
+              {card.text.length > 150 ? card.text.slice(0, 150) + '...' : card.text}
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: "#222428", textDecoration: "underline", cursor: "pointer", marginBottom: 8 }}>
+              Show more.
+            </div>
+            {/* Author */}
+            <div style={{ fontSize: 13, color: "#6f7489" }}>{card.author}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Sub-view: View Details (Feedback detail) ─── */
+function ViewDetailsView({ itemLabel, onBack }: { itemLabel: string; onBack: () => void }) {
+  const allItems = [...roadmapData, ...sampleData];
+  const item = allItems.find(r => {
+    const keywords = (itemLabel || '').toLowerCase().split(/\s+/).filter(w => w.length > 3);
+    return keywords.filter(w => r.title.toLowerCase().includes(w)).length >= 1;
+  });
+  const quotes = item ? (customerQuotes[item.id] || []) : [];
+  const firstQuote = quotes[0];
+  const personName = firstQuote?.role?.split(',')[0]?.trim() || 'John Doe';
+  const personTitle = firstQuote?.role?.split(',')[1]?.trim() || 'CPO';
+  const company = firstQuote?.company || item?.companies?.[0] || 'Insights';
+
+  return (
+    <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
+      {/* Back nav */}
       <div
-        style={{
-          border: `1px solid ${hasText ? "#4262FF" : "#e0e2e8"}`,
-          borderRadius: 8,
-          background: "#fff",
-          position: "relative",
-          zIndex: 2,
-          transition: "border-color 0.15s",
-        }}
+        onClick={onBack}
+        style={{ display: "flex", alignItems: "center", gap: 8, padding: "14px 24px", cursor: "pointer" }}
       >
-        <div style={{ padding: "12px 16px 4px" }}>
-          <textarea
-            ref={textareaRef}
-            value={text}
-            onChange={(e) => {
-              setText(e.target.value);
-              e.target.style.height = "auto";
-              e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder="Ask about your roadmap..."
-            style={{
-              width: "100%",
-              border: "none",
-              outline: "none",
-              resize: "none",
-              fontSize: 14,
-              fontWeight: 400,
-              color: "#222428",
-              lineHeight: 1.4,
-              fontFamily: "var(--font-noto)",
-              background: "transparent",
-              minHeight: 24,
-              maxHeight: 120,
-              overflow: "auto",
-            }}
-            rows={1}
-          />
+        <IconArrowLeft size="small" color="icon-secondary" />
+        <span style={{ fontSize: 14, fontWeight: 500, color: "#4262FF" }}>Feedback</span>
+      </div>
+
+      <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
+        {/* Person header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <span style={{ color: "#fff", fontSize: 20, fontWeight: 700 }}>{personName[0]}</span>
+            </div>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#222428" }}>{personName}</div>
+              <div style={{ fontSize: 13, color: "#38A169" }}>{personTitle}</div>
+            </div>
+          </div>
+          <IconChevronDown size="small" color="icon-secondary" />
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px 8px" }}>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <IconButton aria-label="Add" variant="ghost" size="medium"><IconPlus /></IconButton>
+        {/* Metadata rows */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 14, color: "#6f7489" }}>Source</span>
+            <div style={{ width: 28, height: 28, borderRadius: 6, background: "#F1F2F5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <IconInsights size="small" color="icon-secondary" />
+            </div>
           </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 14, color: "#6f7489" }}>Company</span>
+            <div style={{ width: 28, height: 28, borderRadius: 6, background: "#4262FF", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>{company[0]}</span>
+            </div>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 14, color: "#6f7489" }}>Participants</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#D69E2E", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ color: "#fff", fontSize: 11, fontWeight: 700 }}>J</span>
+              </div>
+              <span style={{ fontSize: 13, color: "#222428" }}>James Watson</span>
+              <span style={{ fontSize: 12, color: "#6f7489", background: "#F1F2F5", borderRadius: 4, padding: "1px 6px" }}>+2</span>
+            </div>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 14, color: "#6f7489" }}>Feedback date</span>
+            <span style={{ fontSize: 14, fontWeight: 500, color: "#222428" }}>Aug 14</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 14, color: "#6f7489" }}>Feedback type</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <span style={{ fontSize: 14, fontWeight: 500, color: "#222428" }}>User request</span>
+              <IconInsights size="small" color="icon-secondary" />
+            </div>
+          </div>
+        </div>
 
-          <div
-            onClick={handleSend}
-            style={{
-              background: hasText ? "#4262FF" : "#e9eaef",
-              borderRadius: 20,
-              width: 32,
-              height: 32,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: hasText ? "pointer" : "default",
-              transition: "background 0.15s",
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M1.5 7L12.5 7M12.5 7L7.5 2M12.5 7L7.5 12" stroke={hasText ? "#fff" : "#AEB2C0"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
+        {/* Search */}
+        <div style={{ background: "#FFFFFF", borderRadius: 8, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8, border: "1px solid #E9EAEF" }}>
+          <span style={{ fontSize: 14, color: "#AEB2C0" }}>🔍</span>
+          <span style={{ fontSize: 14, color: "#AEB2C0" }}>Search keywords...</span>
+        </div>
+
+        {/* Transcript */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Highlighted quote */}
+          {firstQuote && (
+            <div style={{ background: "#EFE9FF", borderRadius: 12, padding: "14px 16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "#222428" }}>{personName}</span>
+                  <span style={{ fontSize: 12, color: "#6f7489" }}>00:01</span>
+                </div>
+                <span style={{ fontSize: 14, color: "#6f7489", cursor: "pointer" }}>⎘</span>
+              </div>
+              <div style={{ fontSize: 14, color: "#222428", lineHeight: 1.6 }}>"{firstQuote.quote}" — {personTitle}, {company}</div>
+            </div>
+          )}
+
+          {/* Additional transcript entries */}
+          {[
+            { speaker: "Dave Gertner", time: "00:05", text: "I spent ten minutes this morning just trying to remember which sub-account our client project lives in." },
+            { speaker: personName, time: "00:05", text: "Oh my god, same. I always feel like I'm in the wrong place." },
+            { speaker: "David Gertner", time: "00:05", text: "Yeah. I'm not sure." },
+            { speaker: personName, time: "00:05", text: "We have a. In person. I kind of feel like I recognize your face. Maybe from slack maybe." },
+            { speaker: "David Gertner", time: "00:05", text: "Yeah. I'm not sure." },
+          ].map((entry, i) => (
+            <div key={i}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 2 }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "#222428" }}>{entry.speaker}</span>
+                <span style={{ fontSize: 12, fontStyle: "italic", color: "#6f7489" }}>{entry.time}</span>
+              </div>
+              <div style={{ fontSize: 14, color: "#222428", lineHeight: 1.6 }}>{entry.text}</div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -1436,12 +2950,41 @@ function PanelInput({ onSend }: { onSend: (text: string) => void }) {
 }
 
 /* ─── Main export ─── */
-export default function AiPanelSolutionReview({ onClose, activePage, focusItemId }: { onClose?: () => void; activePage?: string; focusItemId?: string } = {}) {
+export default function AiPanelSolutionReview({ onClose, activePage, focusItemId, onApplyReprioritize, onApplySwap }: { onClose?: () => void; activePage?: string; focusItemId?: string; onApplyReprioritize?: (itemId: string, newPriority: string, reason: string) => void; onApplySwap?: (cutId: string, addId: string, reason: string) => void } = {}) {
+  const [panelView, setPanelView] = useState<'chat' | 'related-evidence' | 'view-details'>('chat');
+  const [viewContext, setViewContext] = useState('');
+
+  const handleNavigate = (view: string, context?: string) => {
+    setPanelView(view as any);
+    setViewContext(context || '');
+  };
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", maxWidth: "100%", background: "#fff", borderRadius: 8 }}>
-      <AiGradientDefs />
-      <PanelHeader onClose={onClose} />
-      <PanelBody activePage={activePage} focusItemId={focusItemId} />
-    </div>
+    <NavigateContext.Provider value={handleNavigate}>
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        width: "100%",
+        maxWidth: "100%",
+        background: "#FFFFFF",
+        border: "0.5px solid #E9EAEF",
+        boxShadow: "0px 2px 4px rgba(34, 36, 40, 0.08)",
+        borderRadius: 8,
+      }}>
+        <AiGradientDefs />
+        <PanelHeader onClose={onClose} />
+        {/* Keep PanelBody always mounted so chat state is preserved */}
+        <div style={{ display: panelView === 'chat' ? 'flex' : 'none', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+          <PanelBody activePage={activePage} focusItemId={focusItemId} onApplyReprioritize={onApplyReprioritize} onApplySwap={onApplySwap} />
+        </div>
+        {panelView === 'related-evidence' && (
+          <RelatedEvidenceView itemLabel={viewContext} onBack={() => setPanelView('chat')} />
+        )}
+        {panelView === 'view-details' && (
+          <ViewDetailsView itemLabel={viewContext} onBack={() => setPanelView('chat')} />
+        )}
+      </div>
+    </NavigateContext.Provider>
   );
 }
