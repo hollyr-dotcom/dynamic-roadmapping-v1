@@ -82,6 +82,7 @@ export const CARDS: {
     description: '~793 projected monthly mentions make this the highest-volume theme in March, up 23% month-over-month. It correlates directly to an existing P0 roadmap item that may need to be pulled forward.',
     confidence: '90%',
     primaryAction: 'Reprioritize',
+    secondaryAction: 'Dive deeper',
   },
   {
     id: '2',
@@ -103,6 +104,7 @@ export const CARDS: {
     description: '~874 projected monthly mentions make rich text the single highest-volume theme in March, rising for three consecutive months. Current cells are plain text only, breaking use cases like mini-specs, meeting notes, and workshop content.',
     confidence: '85%',
     primaryAction: 'Reprioritize',
+    secondaryAction: 'Dive deeper',
   },
   {
     id: '4',
