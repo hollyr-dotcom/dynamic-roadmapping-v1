@@ -13,7 +13,7 @@ import {
   IconSlidersY,
   IconBoard,
   IconSquaresTwoOverlap,
-  IconDocFormat,
+  IconEyeOpen,
   IconInformationMarkCircle,
   Chip,
   Tooltip,
@@ -721,7 +721,7 @@ function FeedbackCard({
           {[
             { icon: <IconBoard size="small" />, label: 'Add to board', onClick: () => setMenuOpen(false) },
             { icon: <IconSquaresTwoOverlap size="small" />, label: 'Copy', onClick: () => setMenuOpen(false) },
-            { icon: <IconDocFormat size="small" />, label: 'View in transcript', onClick: () => setMenuOpen(false) },
+            { icon: <IconEyeOpen size="small" />, label: 'View details', onClick: () => { onSelect(); setMenuOpen(false) } },
           ].map(({ icon, label, onClick }) => (
             <button
               key={label}

@@ -32,6 +32,7 @@ import {
   IconArticle,
   IconLink,
   IconClock,
+  IconHeart,
 } from '@mirohq/design-system'
 
 const TAG_BG: Record<string, string> = {
@@ -86,6 +87,13 @@ function TagIcon({ label }: { label: string }) {
 
 // ── Demo feed data ────────────────────────────────────────────────────────────
 
+const CARD_SOCIAL: Record<string, { likes: number; likers: string[] }> = {
+  '1': { likes: 21, likers: [avatarSarah, avatarKyra, avatarMarcus] },
+  '2': { likes: 17, likers: [avatarVihar, avatarPriya] },
+  '3': { likes: 24, likers: [avatarMarcus, avatarSarah, avatarDaniel] },
+  '4': { likes: 8,  likers: [avatarKyra, avatarJordan] },
+}
+
 const AI_BULLETS = [
   'C26 scope is locked: 3–5 cards, Miro + Glean data, EPD-only beta by end of May.',
   'Home evolution strategy landed on the middle path. Alpha feedback flagged card UX and signal quality as the main issues.',
@@ -100,6 +108,8 @@ const DEMO_POSTS = [
     timestamp: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString(),
     title: 'C26 scope is finalized, here\'s where we landed',
     body: 'We\'re going with the middle path: a feed with 3–5 cards powered by Miro signals and Glean. Not a reskin, not the full new-Miro vision. Alpha feedback is in and card UX + signal quality are the main pain points. The card-disappearing bug is a blocker.\n\nChristian is splitting the agent architecture so retrieval and ranking aren\'t bottlenecked in one call. Demo for stakeholders is Thursday.',
+    likes: 14,
+    likers: [avatarSarah, avatarKyra, avatarMarcus],
   },
   {
     id: 'p2',
@@ -108,6 +118,8 @@ const DEMO_POSTS = [
     timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     title: 'Alpha is live, here\'s what we\'re learning',
     body: 'We shipped the internal alpha last Thursday to ~30 EPD users. Early signal relevance feedback is positive but the card UX is getting torn apart. Masha is pulling the feedback together and I\'ll triage it into Sprint 16.\n\nBig open question: should we ship the fan card layout or switch to the vertical stack that a few testers are asking for? Akshan is mocking up both options on the Feed Content Design board.',
+    likes: 9,
+    likers: [avatarVihar, avatarPriya, avatarDaniel],
   },
   {
     id: 'p3',
@@ -116,6 +128,8 @@ const DEMO_POSTS = [
     timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
     title: 'Sprint 16 priorities are locked',
     body: 'Three items from alpha triage made it into Sprint 16:\n\n🔴 Card-disappearing bug (blocker)\n🟡 Signal accuracy improvements for Glean sources\n🟡 Card layout redesign\n\nEverything else is deferred to Sprint 17. Christian is leading the architecture split this sprint.',
+    likes: 6,
+    likers: [avatarMarcus, avatarSarah],
   },
 ]
 
@@ -602,8 +616,11 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onG
         {card.description}
       </p>
 
+      {/* Like footer */}
+      <LikeFooter likes={CARD_SOCIAL[card.id]?.likes ?? 0} likers={CARD_SOCIAL[card.id]?.likers ?? []} />
+
       {/* Actions — visible on hover */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, visibility: hovered ? 'visible' : 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, visibility: hovered || menuOpen ? 'visible' : 'hidden' }}>
         <button
           onClick={onPrimaryAction}
           style={{ height: 32, padding: '0 12px', fontSize: 14, fontFamily: BODY_FONT, fontWeight: 600, borderRadius: 8, border: 'none', backgroundColor: '#EEEEEB', color: TEXT_PRIMARY, cursor: 'pointer' }}
@@ -618,6 +635,31 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onG
             {card.secondaryAction}
           </button>
         )}
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={e => { e.stopPropagation(); setMenuOpen(o => !o) }}
+            style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: menuOpen ? '#EEEEEB' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT_SECONDARY }}
+            onMouseEnter={e => { if (!menuOpen) (e.currentTarget as HTMLElement).style.backgroundColor = HOVER_BG }}
+            onMouseLeave={e => { if (!menuOpen) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
+          >
+            <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
+          </button>
+          {menuOpen && (
+            <div
+              ref={menuRef}
+              onMouseLeave={() => setMenuOpen(false)}
+              style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 9999, background: 'white', borderRadius: 8, width: 224, padding: 8, boxShadow: '0px 2px 8px rgba(34,36,40,0.12), 0px 0px 12px rgba(34,36,40,0.04)' }}
+            >
+              {[
+                { icon: <IconHeart size="small" />, label: 'Like' },
+                { icon: <IconBoard size="small" />, label: 'Add to board' },
+                { icon: <IconSquaresTwoOverlap size="small" />, label: 'Copy' },
+              ].map(({ icon, label }) => (
+                <SignalMenuRow key={label} icon={icon} label={label} onClick={() => setMenuOpen(false)} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -625,19 +667,57 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onG
 
 function PostItem({ post, index = 0 }: { post: typeof DEMO_POSTS[number]; index?: number }) {
   const [hovered, setHovered] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const fadeRef = useFadeIn(index * 80)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [menuOpen])
+
   return (
     <div ref={fadeRef}
-      style={{ backgroundColor: '#fff', borderRadius: 20, padding: 16, display: 'flex', flexDirection: 'column', gap: 10, boxShadow: hovered ? CARD_SHADOW : 'none', transition: 'box-shadow 0.15s ease, opacity 0.4s ease, transform 0.4s ease' }}
+      style={{ backgroundColor: '#fff', borderRadius: 20, padding: 16, display: 'flex', flexDirection: 'column', gap: 10, boxShadow: hovered ? CARD_SHADOW : 'none', transition: 'box-shadow 0.15s ease, opacity 0.4s ease, transform 0.4s ease', zIndex: menuOpen ? 100 : undefined }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       {/* Author row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, height: 36 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <img src={post.avatar} alt={post.author} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-        <div>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: BODY_FONT, fontWeight: 600, fontSize: 14, color: TEXT_PRIMARY, lineHeight: 1.4 }}>{post.author}</div>
           <div style={{ fontFamily: BODY_FONT, fontSize: 10, color: TEXT_MUTED, lineHeight: 1.5 }}>{relativeTime(post.timestamp)}</div>
+        </div>
+        {/* Three-dots menu */}
+        <div style={{ position: 'relative', visibility: hovered || menuOpen ? 'visible' : 'hidden', flexShrink: 0 }}>
+          <button
+            onClick={e => { e.stopPropagation(); setMenuOpen(o => !o) }}
+            style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: menuOpen ? '#EEEEEB' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT_SECONDARY }}
+            onMouseEnter={e => { if (!menuOpen) (e.currentTarget as HTMLElement).style.backgroundColor = HOVER_BG }}
+            onMouseLeave={e => { if (!menuOpen) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
+          >
+            <IconDotsThreeVertical css={{ width: 16, height: 16 }} />
+          </button>
+          {menuOpen && (
+            <div
+              ref={menuRef}
+              onMouseLeave={() => setMenuOpen(false)}
+              style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 9999, background: 'white', borderRadius: 8, width: 224, padding: 8, boxShadow: '0px 2px 8px rgba(34,36,40,0.12), 0px 0px 12px rgba(34,36,40,0.04)' }}
+            >
+              {[
+                { icon: <IconHeart size="small" />, label: 'Like' },
+                { icon: <IconBoard size="small" />, label: 'Add to board' },
+                { icon: <IconSquaresTwoOverlap size="small" />, label: 'Copy' },
+              ].map(({ icon, label }) => (
+                <SignalMenuRow key={label} icon={icon} label={label} onClick={() => setMenuOpen(false)} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
       {/* Title */}
@@ -650,6 +730,9 @@ function PostItem({ post, index = 0 }: { post: typeof DEMO_POSTS[number]; index?
       <p style={{ fontFamily: BODY_FONT, fontSize: 14, color: TEXT_SECONDARY, margin: 0, lineHeight: 1.5, whiteSpace: 'pre-line' }}>
         {post.body}
       </p>
+
+      {/* Like footer */}
+      <LikeFooter likes={post.likes} likers={post.likers} />
     </div>
   )
 }
