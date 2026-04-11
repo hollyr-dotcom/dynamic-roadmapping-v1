@@ -463,7 +463,7 @@ export function JiraDetailPanel({ row, onClose }: JiraDetailPanelProps) {
                 {option === 'Center' && (
                   <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
                     <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
-                    <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="#222428"/>
+                    <rect x="6" y="2.5" width="5" height="7" rx="0.8" fill="#222428"/>
                   </svg>
                 )}
                 {option === 'Fullscreen' && (

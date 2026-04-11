@@ -1,16 +1,37 @@
-import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
-import type { SpaceRow } from '@spaces/shared'
-import { companyARR } from '@spaces/shared'
-import { Button, IconDotsThreeVertical, DropdownMenu, IconSquaresTwoOverlap, IconBoard, IconEyeOpen, IconInsightsSearch, IconInformationMarkCircle, IconTasks } from '@mirohq/design-system'
+import React, { useState, useEffect, useRef } from 'react'
+import avatarVihar from '../../assets/vihar.png'
+import avatarSarah from '../../assets/sarah-chen.png'
+import avatarKyra from '../../assets/kyra-osei.png'
+import avatarMarcus from '../../assets/marcus-chen.png'
+import avatarPriya from '../../assets/priya-sharma.png'
+import avatarDaniel from '../../assets/daniel-park.png'
+import avatarJordan from '../../assets/jordan-lee.png'
+import { CARDS, MATCH_TAG_STYLE } from './overview-data'
+import type { CardIcon } from './overview-data'
 import {
-  IconSparksFilled,
-  IconSmileyChat,
-  IconGlobe,
+  Button,
+  IconDotsThreeVertical,
+  DropdownMenu,
+  IconSquaresTwoOverlap,
+  IconBoard,
+  IconEyeOpen,
+  IconInsightsSearch,
+  IconInformationMarkCircle,
+  IconTasks,
+  IconChartLine,
+  IconChartProgress,
+  IconSparks,
+  IconLightning,
+  IconChatTwo,
   IconArrowDown,
-  IconExclamationPointCircle,
   IconCross,
   IconPlus,
   IconTimelineFormat,
+  IconRocket,
+  IconClusterAi,
+  IconArticle,
+  IconLink,
+  IconClock,
 } from '@mirohq/design-system'
 
 const TAG_BG: Record<string, string> = {
@@ -22,6 +43,15 @@ const TAG_BG: Record<string, string> = {
   Weakening: '#DEDAFF',
 }
 
+function IconThreeColumnsVertical() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2"  y="4" width="5" height="16" rx="1.5" fill="#3C3F4A" />
+      <rect x="9.5" y="4" width="5" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="17" y="4" width="5" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  )
+}
 
 function GiftIcon() {
   return (
@@ -37,18 +67,10 @@ function GiftIcon() {
 
 function confidenceBorderColor(confidence: string): string {
   const pct = parseInt(confidence)
-  if (pct >= 95) return '#ADF0C7' // green — very high
-  if (pct >= 88) return '#C6DCFF' // blue — high
-  if (pct >= 75) return '#FFF6B6' // yellow — moderate
-  return '#F8D3AF'                 // orange — low
-}
-
-export function confidenceTagStyle(confidence: string): { bg: string; text: string } {
-  const pct = parseInt(confidence)
-  if (pct >= 95) return { bg: '#DCFFF1', text: '#1C6B4A' } // green subtle
-  if (pct >= 88) return { bg: '#DAEAFF', text: '#0055CC' } // blue subtle
-  if (pct >= 80) return { bg: '#FFF8D6', text: '#7F5F01' } // yellow subtle
-  return { bg: '#FFE2BD', text: '#A54800' }                 // orange subtle
+  if (pct >= 95) return '#ADF0C7'
+  if (pct >= 88) return '#C6DCFF'
+  if (pct >= 75) return '#FFF6B6'
+  return '#F8D3AF'
 }
 
 function TagIcon({ label }: { label: string }) {
@@ -61,62 +83,89 @@ function TagIcon({ label }: { label: string }) {
   return null
 }
 
-export const CARD_SUMMARIES: Record<string, string> = {
-  '1': 'This is the highest-volume theme with ~793 projected monthly mentions in March. Customers report board-wide lag, stuck loading spinners, frozen editing, and browser tab crashes when tables exceed 100–300 rows. This directly correlates with the existing roadmap item "I can work easily with large tables without significantly degrading the performance of my browser" (P0) and the item about going beyond 1000 rows and 50 fields. The volume and severity of this feedback — including total browser crashes and lost work — suggests this should remain a top priority and may need acceleration. The issue is compounded during collaborative sessions and large paste operations.',
-  '2': 'Broken paste from Excel, Google Sheets, CSV, Word, and Confluence is a massive pain point with projected ~652 monthly mentions. The most critical sub-issue is that large pastes are silently truncated to 5 rows, forcing users to manually add rows and re-paste in chunks. Beyond truncation, data collapses into single cells, formatting is stripped, and rich text (bullets, links, bold) is flattened. No current roadmap item addresses paste/import fidelity. This is a foundational gap — customers cannot reliably get data into tables, which undermines adoption of all downstream table features.',
-  '3': 'Cell formatting limitations are the highest-volume theme at ~874 projected monthly mentions in March. Customers consistently ask for bullets/numbered lists, bold text, and clickable links within cells. Current cells are essentially plain text, which breaks use cases like mini-specs, acceptance criteria, meeting notes, and workshop content. This is not covered by any existing roadmap item. The demand spans diverse user personas (PMs, facilitators, planners) and is strongly tied to paste fidelity issues — even if paste is fixed, cells need to support the rich content.',
-  '4': 'Users are reporting that AI-generated tables appear instantly and unexpectedly overwrite their existing content without warning or preview. The lack of opt-in controls means mistakes are hard to reverse, eroding trust in the AI feature. Feedback consistently asks for a suggestion-only mode — where the AI proposes a table structure before inserting it — with a visible preview and explicit confirmation step before any changes are applied.',
+
+// ── Demo feed data ────────────────────────────────────────────────────────────
+
+const AI_BULLETS = [
+  'C26 scope is locked: 3–5 cards, Miro + Glean data, EPD-only beta by end of May.',
+  'Home evolution strategy landed on the middle path. Alpha feedback flagged card UX and signal quality as the main issues.',
+  'Christian is splitting the agent architecture to fix the performance bottleneck. Demo for stakeholders is Thursday.',
+]
+
+const DEMO_POSTS = [
+  {
+    id: 'p1',
+    author: 'Vihar',
+    avatar: avatarVihar,
+    timestamp: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString(),
+    title: 'C26 scope is finalized, here\'s where we landed',
+    body: 'We\'re going with the middle path: a feed with 3–5 cards powered by Miro signals and Glean. Not a reskin, not the full new-Miro vision. Alpha feedback is in and card UX + signal quality are the main pain points. The card-disappearing bug is a blocker.\n\nChristian is splitting the agent architecture so retrieval and ranking aren\'t bottlenecked in one call. Demo for stakeholders is Thursday.',
+  },
+  {
+    id: 'p2',
+    author: 'Jordan Lee',
+    avatar: avatarJordan,
+    timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    title: 'Alpha is live, here\'s what we\'re learning',
+    body: 'We shipped the internal alpha last Thursday to ~30 EPD users. Early signal relevance feedback is positive but the card UX is getting torn apart. Masha is pulling the feedback together and I\'ll triage it into Sprint 16.\n\nBig open question: should we ship the fan card layout or switch to the vertical stack that a few testers are asking for? Akshan is mocking up both options on the Feed Content Design board.',
+  },
+  {
+    id: 'p3',
+    author: 'Daniel Park',
+    avatar: avatarDaniel,
+    timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    title: 'Sprint 16 priorities are locked',
+    body: 'Three items from alpha triage made it into Sprint 16:\n\n🔴 Card-disappearing bug (blocker)\n🟡 Signal accuracy improvements for Glean sources\n🟡 Card layout redesign\n\nEverything else is deferred to Sprint 17. Christian is leading the architecture split this sprint.',
+  },
+]
+
+const DEMO_LINKS = [
+  { id: 'l1', label: '#home-feed', icon: 'slack' as const },
+  { id: 'l2', label: '#feed-alpha', icon: 'slack' as const },
+  { id: 'l3', label: 'Feed Design', icon: 'figma' as const },
+  { id: 'l4', label: 'FEED-Sprint 16', icon: 'jira' as const },
+  { id: 'l5', label: 'Feed Content Design', icon: 'miro' as const },
+]
+
+const DEMO_RECENTLY_UPDATED = [
+  { id: 'r1', emoji: '📋', title: 'Sprint Retrospective', by: 'Jamie Park', ts: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
+  { id: 'r2', emoji: '📋', title: 'User Research Findings', by: 'Marcus Chen', ts: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString() },
+  { id: 'r3', emoji: '🗺️', title: 'Product Roadmap 2026', by: 'Sarah Chen', ts: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString() },
+]
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function relativeTime(ts: string): string {
+  const diff = Date.now() - new Date(ts).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  const days = Math.floor(hrs / 24)
+  if (days === 1) return 'Yesterday'
+  if (days < 7) return `${days}d ago`
+  return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-export { CARD_SUMMARIES as OVERVIEW_CARD_SUMMARIES }
-
-export const OVERVIEW_ROWS: Record<string, SpaceRow> = {
-  '1': { id: 'ov1', title: 'Accelerate large-table performance improvements — boards become unusable at ~100+ rows', description: 'Customers report board-wide lag, stuck loading spinners, frozen editing, and browser tab crashes when tables exceed 100–300 rows.', mentions: 793, customers: 284, estRevenue: 4200, companies: ['Figma', 'Atlassian', 'Notion', 'Stripe'], priority: 'now' },
-  '2': { id: 'ov2', title: 'Fix paste and CSV import fidelity — especially the 5-row truncation bug', description: 'Large pastes are silently truncated to 5 rows, forcing users to manually add rows and re-paste in chunks. Data collapses into single cells and formatting is stripped.', mentions: 652, customers: 198, estRevenue: 3100, companies: ['Google', 'Dropbox', 'Asana', 'Linear'], priority: 'now' },
-  '3': { id: 'ov3', title: 'Add rich text editing inside table cells (bullets, bold, links)', description: 'Current cells are essentially plain text, breaking use cases like mini-specs, acceptance criteria, meeting notes, and workshop content.', mentions: 874, customers: 312, estRevenue: 3800, companies: ['Miro', 'Notion', 'Atlassian', 'Figma'], priority: 'now' },
-  '4': { id: 'ov4', title: 'Rein in AI table creation — make it suggestion-only with preview and opt-in controls', description: 'AI-generated tables appear instantly and unexpectedly overwrite existing content without warning or preview, eroding trust in the AI feature.', mentions: 241, customers: 89, estRevenue: 1900, companies: ['Slack', 'Airbnb', 'Google', 'Spotify'], priority: 'now' },
+function updatedLabel(ts: string): string {
+  const diff = Date.now() - new Date(ts).getTime()
+  const hrs = Math.floor(diff / 3600000)
+  if (hrs < 24) return 'Today'
+  if (hrs < 48) return 'Yesterday'
+  return relativeTime(ts)
 }
 
-// Register top-requester data for overview rows so buildFlow2 can render "Top requesters"
-companyARR['ov1'] = [
-  { company: 'Atlassian', arr: 240, contacts: 15 },
-  { company: 'Stripe',    arr: 200, contacts: 8  },
-  { company: 'Figma',     arr: 85,  contacts: 12 },
-  { company: 'Notion',    arr: 48,  contacts: 6  },
-]
-companyARR['ov2'] = [
-  { company: 'Google',   arr: 500, contacts: 22 },
-  { company: 'Dropbox',  arr: 95,  contacts: 9  },
-  { company: 'Asana',    arr: 62,  contacts: 7  },
-  { company: 'Linear',   arr: 32,  contacts: 5  },
-]
-companyARR['ov3'] = [
-  { company: 'Miro',      arr: 110, contacts: 18 },
-  { company: 'Atlassian', arr: 240, contacts: 14 },
-  { company: 'Notion',    arr: 48,  contacts: 11 },
-  { company: 'Figma',     arr: 85,  contacts: 9  },
-]
-companyARR['ov4'] = [
-  { company: 'Slack',   arr: 145, contacts: 10 },
-  { company: 'Google',  arr: 500, contacts: 7  },
-  { company: 'Airbnb',  arr: 120, contacts: 5  },
-  { company: 'Spotify', arr: 175, contacts: 4  },
-]
+// ── Sub-components ────────────────────────────────────────────────────────────
 
-function TypewriterText({ text, speed = 55 }: { text: string; speed?: number }) {
-  const words = text.split(' ')
-  const [count, setCount] = useState(0)
-  useEffect(() => {
-    if (count >= words.length) return
-    const t = setTimeout(() => setCount(c => c + 1), speed)
-    return () => clearTimeout(t)
-  }, [count, words.length, speed])
+function SlackIcon() {
   return (
-    <span style={{ position: 'relative', display: 'block' }}>
-      {/* Invisible full text holds the final height from the start */}
-      <span style={{ visibility: 'hidden', userSelect: 'none' }} aria-hidden="true">{text}</span>
-      <span style={{ position: 'absolute', inset: 0 }}>{words.slice(0, count).join(' ')}</span>
-    </span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <path d="M8.77 3C8.77 1.79 9.73 0.83 10.94 0.83C12.15 0.83 13.11 1.79 13.11 3V8.77C13.11 9.98 12.15 10.94 10.94 10.94C9.73 10.94 8.77 9.98 8.77 8.77V3Z" fill="#E01E5A"/>
+      <path d="M3 13.06C1.79 13.06 0.83 12.1 0.83 10.89C0.83 9.68 1.79 8.72 3 8.72H8.77C9.98 8.72 10.94 9.68 10.94 10.89C10.94 12.1 9.98 13.06 8.77 13.06H3Z" fill="#36C5F0"/>
+      <path d="M15.23 21C15.23 22.21 14.27 23.17 13.06 23.17C11.85 23.17 10.89 22.21 10.89 21V15.23C10.89 14.02 11.85 13.06 13.06 13.06C14.27 13.06 15.23 14.02 15.23 15.23V21Z" fill="#2EB67D"/>
+      <path d="M21 10.89C22.21 10.89 23.17 11.85 23.17 13.06C23.17 14.27 22.21 15.23 21 15.23H15.23C14.02 15.23 13.06 14.27 13.06 13.06C13.06 11.85 14.02 10.89 15.23 10.89H21Z" fill="#ECB22E"/>
+    </svg>
   )
 }
 
@@ -385,7 +434,15 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onG
 
 
   return (
-    <div className="flex flex-col items-center w-full h-full select-none pt-10">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <path d="M8 24C10.21 24 12 22.21 12 20V16H8C5.79 16 4 17.79 4 20C4 22.21 5.79 24 8 24Z" fill="#0ACF83"/>
+      <path d="M4 12C4 9.79 5.79 8 8 8H12V16H8C5.79 16 4 14.21 4 12Z" fill="#A259FF"/>
+      <path d="M4 4C4 1.79 5.79 0 8 0H12V8H8C5.79 8 4 6.21 4 4Z" fill="#F24E1E"/>
+      <path d="M12 0H16C18.21 0 20 1.79 20 4C20 6.21 18.21 8 16 8H12V0Z" fill="#FF7262"/>
+      <path d="M20 12C20 14.21 18.21 16 16 16C13.79 16 12 14.21 12 12C12 9.79 13.79 8 16 8C18.21 8 20 9.79 20 12Z" fill="#1ABCFE"/>
+    </svg>
+  )
+}
 
       {/* Carousel viewport */}
       <div className="relative w-full" style={{ minHeight: 340, overflow: 'clip', overflowClipMargin: '40px' }}>
@@ -540,7 +597,255 @@ export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onG
         )}
       </div>
 
+      {/* Body */}
+      <p style={{ fontFamily: BODY_FONT, fontSize: 14, color: TEXT_SECONDARY, margin: 0, lineHeight: 1.5 }}>
+        {card.description}
+      </p>
 
+      {/* Actions — visible on hover */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, visibility: hovered ? 'visible' : 'hidden' }}>
+        <button
+          onClick={onPrimaryAction}
+          style={{ height: 32, padding: '0 12px', fontSize: 14, fontFamily: BODY_FONT, fontWeight: 600, borderRadius: 8, border: 'none', backgroundColor: '#EEEEEB', color: TEXT_PRIMARY, cursor: 'pointer' }}
+        >
+          {card.primaryAction}
+        </button>
+        {card.secondaryAction && (
+          <button
+            onClick={onSecondaryAction}
+            style={{ height: 32, padding: '0 12px', fontSize: 14, fontFamily: BODY_FONT, fontWeight: 600, borderRadius: 8, border: 'none', backgroundColor: 'transparent', color: TEXT_PRIMARY, cursor: 'pointer' }}
+          >
+            {card.secondaryAction}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function PostItem({ post, index = 0 }: { post: typeof DEMO_POSTS[number]; index?: number }) {
+  const [hovered, setHovered] = useState(false)
+  const fadeRef = useFadeIn(index * 80)
+  return (
+    <div ref={fadeRef}
+      style={{ backgroundColor: '#fff', borderRadius: 20, padding: 16, display: 'flex', flexDirection: 'column', gap: 10, boxShadow: hovered ? CARD_SHADOW : 'none', transition: 'box-shadow 0.15s ease, opacity 0.4s ease, transform 0.4s ease' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Author row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, height: 36 }}>
+        <img src={post.avatar} alt={post.author} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+        <div>
+          <div style={{ fontFamily: BODY_FONT, fontWeight: 600, fontSize: 14, color: TEXT_PRIMARY, lineHeight: 1.4 }}>{post.author}</div>
+          <div style={{ fontFamily: BODY_FONT, fontSize: 10, color: TEXT_MUTED, lineHeight: 1.5 }}>{relativeTime(post.timestamp)}</div>
+        </div>
+      </div>
+      {/* Title */}
+      {post.title && (
+        <h5 style={{ fontFamily: HEADING_FONT, fontWeight: 600, fontSize: 16, color: TEXT_PRIMARY, margin: 0, lineHeight: 1.5, fontFeatureSettings: "'ss01'" }}>
+          {post.title}
+        </h5>
+      )}
+      {/* Body */}
+      <p style={{ fontFamily: BODY_FONT, fontSize: 14, color: TEXT_SECONDARY, margin: 0, lineHeight: 1.5, whiteSpace: 'pre-line' }}>
+        {post.body}
+      </p>
+    </div>
+  )
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
+export function OverviewPage({ onDiveDeeper, onAddToRoadmap, onReprioritize, onBgColorChange, onGoToBacklog, bgRef }: { onDiveDeeper?: (cardId: string) => void; onAddToRoadmap?: (cardId: string) => void; onReprioritize?: (cardId: string) => void; onBgColorChange?: (color: string) => void; onGoToBacklog?: () => void; bgRef?: React.RefObject<HTMLElement> }) {
+  const [feedTab, setFeedTab] = useState<'all' | 'posts' | 'signals'>('all')
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set())
+
+  const visibleSignals = CARDS.filter(c => !dismissed.has(c.id))
+
+  useEffect(() => {
+    onBgColorChange?.('#FBFAF7')
+    if (bgRef?.current) {
+      bgRef.current.style.backgroundImage = 'none'
+      bgRef.current.style.backgroundSize = ''
+      bgRef.current.style.backgroundPosition = ''
+    }
+  }, [onBgColorChange, bgRef])
+
+  const tabBtn = (tab: 'all' | 'posts' | 'signals'): React.CSSProperties => ({
+    height: 32, padding: '0 12px', fontSize: 14, fontFamily: BODY_FONT, fontWeight: 600,
+    borderRadius: 8, border: 'none', cursor: 'pointer',
+    backgroundColor: feedTab === tab ? '#222428' : 'transparent',
+    color: feedTab === tab ? '#fff' : TEXT_SECONDARY,
+    transition: 'background-color 0.12s ease, color 0.12s ease',
+  })
+
+  const MEMBERS = [avatarVihar, avatarSarah, avatarKyra, avatarMarcus, avatarPriya]
+
+  return (
+    <div style={{ width: '100%', padding: '40px 80px 80px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ width: '100%', maxWidth: 980 }}>
+
+      {/* ── Space header ── */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+          {/* Left: emoji + title + description */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <button
+              style={{ width: 64, height: 64, borderRadius: 20, backgroundColor: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 12px rgba(34,36,40,0.04), 0 2px 8px rgba(34,36,40,0.12)', flexShrink: 0 }}
+            >
+              <span style={{ fontSize: 38, lineHeight: 1 }}>🚀</span>
+            </button>
+            <div style={{ fontFamily: HEADING_FONT, fontWeight: 500, fontSize: 52, color: TEXT_PRIMARY, letterSpacing: '-2px', lineHeight: 1.2, fontFeatureSettings: "'ss01'" }}>
+              Project Galaxy
+            </div>
+            <div style={{ fontFamily: BODY_FONT, fontSize: 18, color: TEXT_SECONDARY, lineHeight: 1.5 }}>
+              Next-gen product roadmap, backlog management, and cross-team planning
+            </div>
+          </div>
+          {/* Right: Share + Create */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, paddingTop: 8 }}>
+            <button
+              style={{ height: 40, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 4, borderRadius: 8, fontSize: 16, fontFamily: BODY_FONT, fontWeight: 600, border: '1px solid rgba(255,255,255,0)', backgroundColor: '#EEEEEB', color: TEXT_PRIMARY, cursor: 'pointer' }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/><path d="M19 8v6M22 11h-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+              Share
+            </button>
+            <button
+              style={{ height: 40, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 4, fontSize: 16, fontFamily: BODY_FONT, fontWeight: 600, borderRadius: 8, border: 'none', backgroundColor: '#2A2923', color: '#fff', cursor: 'pointer' }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 4V20M4 12H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+              Create
+            </button>
+          </div>
+        </div>
+        {/* Member avatars */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {MEMBERS.map((src, i) => (
+            <img
+              key={src} src={src} alt=""
+              style={{ width: 32, height: 32, borderRadius: '9999px', objectFit: 'cover', border: '2px solid #FBFAF7', marginLeft: i > 0 ? -8 : 0, position: 'relative', zIndex: MEMBERS.length - i, flexShrink: 0 }}
+            />
+          ))}
+          <span style={{ fontFamily: BODY_FONT, fontSize: 12, fontWeight: 500, color: TEXT_SECONDARY, marginLeft: 6 }}>+6</span>
+        </div>
+      </div>
+
+      {/* ── Two-column layout ── */}
+      <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+
+        {/* Left column (644px) */}
+        <div style={{ width: 644, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+          {/* Summary widget */}
+          <div style={{ backgroundColor: WIDGET_BG, borderRadius: 24, padding: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <IconClusterAi css={{ width: 20, height: 20, color: TEXT_SECONDARY, flexShrink: 0 }} />
+              <h4 style={{ fontFamily: HEADING_FONT, fontWeight: 600, fontSize: 16, color: TEXT_PRIMARY, margin: 0, fontFeatureSettings: "'ss01'" }}>
+                Here's what's happening
+              </h4>
+            </div>
+            <ul style={{ margin: 0, padding: '0 0 0 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {AI_BULLETS.map((b, i) => (
+                <li key={i} style={{ fontFamily: BODY_FONT, fontSize: 14, color: TEXT_SECONDARY, lineHeight: 1.5 }}>{b}</li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Feed widget */}
+          <div style={{ backgroundColor: WIDGET_BG, borderRadius: 24, padding: 24 }}>
+            {/* Heading */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <IconArticle css={{ width: 20, height: 20, color: TEXT_SECONDARY, flexShrink: 0 }} />
+              <h4 style={{ fontFamily: HEADING_FONT, fontWeight: 600, fontSize: 16, color: TEXT_PRIMARY, margin: 0, fontFeatureSettings: "'ss01'" }}>Feed</h4>
+            </div>
+            {/* Tabs */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 20 }}>
+              {(['all', 'posts', 'signals'] as const).map(tab => (
+                <button key={tab} style={tabBtn(tab)} onClick={() => setFeedTab(tab)}>
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
+            </div>
+            {/* Items */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {(feedTab === 'all' || feedTab === 'signals') && visibleSignals.map((card, i) => (
+                <SignalItem
+                  key={card.id}
+                  card={card}
+                  index={i}
+                  onDismiss={() => setDismissed(prev => new Set(prev).add(card.id))}
+                  onPrimaryAction={() => {
+                    if (card.primaryAction === 'Add to roadmap') { onAddToRoadmap?.(card.id); setDismissed(prev => new Set(prev).add(card.id)) }
+                    else if (card.primaryAction === 'Reprioritize') onReprioritize?.(card.id)
+                    else if (card.primaryAction === 'Dive deeper') onDiveDeeper?.(card.id)
+                  }}
+                  onSecondaryAction={card.secondaryAction ? () => onDiveDeeper?.(card.id) : undefined}
+                />
+              ))}
+              {(feedTab === 'all' || feedTab === 'posts') && DEMO_POSTS.map((post, i) => (
+                <PostItem key={post.id} post={post} index={visibleSignals.length + i} />
+              ))}
+              {feedTab === 'signals' && visibleSignals.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                  <p style={{ fontFamily: BODY_FONT, fontSize: 14, color: TEXT_SECONDARY, margin: 0 }}>All signals reviewed</p>
+                  <button onClick={() => onGoToBacklog?.()} style={{ marginTop: 12, fontFamily: BODY_FONT, fontSize: 14, fontWeight: 600, color: '#4262ff', background: 'none', border: 'none', cursor: 'pointer' }}>
+                    Go to ideas →
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right column (hug content) */}
+        <div style={{ flex: '0 0 auto', width: 280, display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+          {/* Links widget */}
+          <div style={{ backgroundColor: WIDGET_BG, borderRadius: 24, padding: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <IconLink css={{ width: 20, height: 20, color: TEXT_SECONDARY, flexShrink: 0 }} />
+              <h4 style={{ fontFamily: HEADING_FONT, fontWeight: 600, fontSize: 16, color: TEXT_PRIMARY, margin: 0, fontFeatureSettings: "'ss01'" }}>Links</h4>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {DEMO_LINKS.map(link => (
+                <a key={link.id} href="#" onClick={e => e.preventDefault()}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 8px', borderRadius: 8, textDecoration: 'none', color: TEXT_SECONDARY, fontFamily: BODY_FONT, fontSize: 12 }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = HOVER_BG }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
+                >
+                  <LinkIcon type={link.icon} />
+                  <span>{link.label}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Recently Updated widget */}
+          <div style={{ backgroundColor: WIDGET_BG, borderRadius: 24, padding: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <IconClock css={{ width: 20, height: 20, color: TEXT_SECONDARY, flexShrink: 0 }} />
+              <h4 style={{ fontFamily: HEADING_FONT, fontWeight: 600, fontSize: 16, color: TEXT_PRIMARY, margin: 0, fontFeatureSettings: "'ss01'" }}>Recently updated</h4>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {DEMO_RECENTLY_UPDATED.map(item => (
+                <div key={item.id}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 8px', borderRadius: 8, cursor: 'pointer' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = HOVER_BG }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
+                >
+                  <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{item.emoji}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: BODY_FONT, fontSize: 14, color: TEXT_PRIMARY, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
+                    <div style={{ fontFamily: BODY_FONT, fontSize: 12, color: TEXT_MUTED, marginTop: 2 }}>{updatedLabel(item.ts)} by {item.by}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </div>
+      </div>
     </div>
   )
 }

@@ -11,7 +11,7 @@ import {
   IconInsights,
   IconSparks,
 } from '@mirohq/design-system'
-import { CARDS, OVERVIEW_ROWS, MATCH_TAG_STYLE, confidenceTagStyle } from '../page/OverviewPage'
+import { CARDS, OVERVIEW_ROWS, MATCH_TAG_STYLE, confidenceTagStyle } from '../page/overview-data'
 import { MENU_WIDTH } from '../page/ViewTabsToolbar'
 
 interface SuggestionsTableProps {

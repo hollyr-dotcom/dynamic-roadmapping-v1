@@ -516,7 +516,7 @@ export function App() {
   }
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden" style={{ backgroundColor: activePage === 'overview' ? '#FBFAF7' : '#ffffff' }}>
+    <div ref={overviewRootRef} className="relative w-screen h-screen overflow-hidden" style={{ backgroundColor: activePage === 'overview' ? overviewBgColor : '#ffffff', backgroundImage: activePage !== 'overview' ? 'none' : undefined, transition: 'background-color 0.6s ease' }}>
       {/* Main app layout — scales down when canvas opens */}
       <div
         className="flex w-full h-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
@@ -548,9 +548,11 @@ export function App() {
         </div>
         {/* Scroll area — database title scrolls away, tabs stick under header */}
         <div ref={scrollRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-y-auto overflow-x-auto page-scroll flex flex-col${pageTransitioning ? ' page-transitioning-out' : ''}`}>
-          <div className="sticky left-0 z-[45]" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
-            <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} disableControls={emptyVariant === 'disabled' && !hasData} centered={activePage === 'overview'} />
-          </div>
+          {activePage !== 'overview' && (
+            <div className="sticky left-0 z-[45]" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
+              <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} disableControls={emptyVariant === 'disabled' && !hasData} centered={false} />
+            </div>
+          )}
           {activePage !== 'overview' && (
             <div className={`sticky top-0 left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
               <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} showImportPopover={showImportPopover} onDismissImportPopover={() => setShowImportPopover(false)} hideControls={emptyVariant === 'hidden' && !hasData} disableControls={emptyVariant === 'disabled' && !hasData} onOpenAiSidekick={() => { setSidekickSource('toolbar'); toggleSidebar('ai-sidekick') }} />
@@ -656,7 +658,7 @@ export function App() {
               pointerEvents: activeSidebar === 'ai-sidekick' ? 'auto' : 'none',
               transition: 'opacity 300ms cubic-bezier(0.16,1,0.3,1), transform 300ms cubic-bezier(0.16,1,0.3,1)',
             }}
-            onClick={isCenter ? closeSidebar : undefined}
+            onClick={isFullscreenOverlay ? closeSidebar : undefined}
           >
             {isHalfscreen ? (
               <div className="h-full flex" style={{ paddingTop: 24, paddingBottom: 24, paddingLeft: 12, paddingRight: 12 }}>
@@ -697,7 +699,7 @@ export function App() {
             <div
               className="rounded-xl overflow-hidden h-full"
               style={{ width: skWidth, boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)', background: '#fff' }}
-              onClick={isCenter ? (e: React.MouseEvent) => e.stopPropagation() : undefined}
+              onClick={isFullscreenOverlay ? (e: React.MouseEvent) => e.stopPropagation() : undefined}
             >
               <AiPanelSolutionReview
                 key={sidekickKey}
@@ -795,7 +797,9 @@ export function App() {
         />
       )}
 
-      {/* Right sidebar — fixed overlay, slides in over the top nav */}
+      {/* Right sidebar — fixed overlay, slides in from right.
+          Right=460px, Halfscreen=50vw (both slide in, floating style)
+          Fullscreen=75vw rendered via portal in RowDetailPanel */}
       <div
         className="fixed top-0 right-0 h-full z-50"
         style={{

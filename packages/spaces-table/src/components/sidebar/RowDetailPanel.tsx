@@ -11,8 +11,7 @@ import {
   IconWarning,
   Chip,
   Tooltip,
-  IconHeart,
-  IconFlag,
+
 
   IconStarFilled,
   IconChevronDown,
@@ -46,16 +45,6 @@ import {
 import { JiraLogo } from '../JiraLogo'
 import AiPanelSolutionReview, { PanelHeader as SidekickHeader, PanelInput as SidekickInput } from './AiPanelSolutionReview'
 
-function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
-  const size = (props as { width?: number }).width ?? 24
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-block', flexShrink: 0 }}>
-      <circle cx="12" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5"/>
-      <path d="M5 19c0-3.314 3.134-6 7-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      <path d="M15 15l4 4M19 15l-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    </svg>
-  )
-}
 
 const MDS_AVATAR_COLORS: Record<string, { bg: string; fg: string }> = {
   '#D1F09F': { bg: '#ADF0C7', fg: '#067429' },
@@ -536,7 +525,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 {selectedLayout === 'Halfscreen' && (
                   <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
                     <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                    <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
+                    <rect x="6" y="2.5" width="5" height="7" rx="0.8" fill="currentColor"/>
                   </svg>
                 )}
                 {selectedLayout === 'Right' && (
@@ -594,7 +583,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     {selectedLayout === 'Halfscreen' && (
                       <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
                         <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                        <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
+                        <rect x="6" y="2.5" width="5" height="7" rx="0.8" fill="currentColor"/>
                       </svg>
                     )}
                     {selectedLayout === 'Right' && (
@@ -1274,7 +1263,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 {option === 'Halfscreen' && (
                   <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
                     <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
-                    <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="#222428"/>
+                    <rect x="6" y="2.5" width="5" height="7" rx="0.8" fill="#222428"/>
                   </svg>
                 )}
                 {option === 'Fullscreen' && (

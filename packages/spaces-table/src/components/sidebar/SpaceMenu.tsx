@@ -12,7 +12,7 @@ import {
 } from '@mirohq/design-system'
 
 const pages = [
-  { id: 'overview', label: 'Overview', icon: IconRectanglesTwoLinesFour },
+  { id: 'overview', label: 'Signals', icon: IconRectanglesTwoLinesFour },
   { id: 'backlog', label: 'Backlog', icon: IconLightbulb },
   { id: 'roadmap', label: 'Roadmap', icon: IconRocket },
 ]
