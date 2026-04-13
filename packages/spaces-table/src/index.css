@@ -271,6 +271,10 @@ tbody tr.row-selected td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
 .kanban-scroll { scrollbar-width: none; }
 .kanban-scroll::-webkit-scrollbar { display: none; }
 
+/* ── Hidden scrollbar for overview carousel ─────────── */
+.overview-scroll { scrollbar-width: none; }
+.overview-scroll::-webkit-scrollbar { display: none; }
+
 /* ── Miro canvas dot grid ────────────────────────────── */
 .canvas-dot-grid {
   background-color: #F2F2F2;

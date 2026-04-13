@@ -35,7 +35,7 @@ import { JiraLogo } from '../JiraLogo'
 export const MENU_WIDTH = 220
 
 export type SidebarId = 'space-menu' | 'ai-sidekick' | 'view-settings' | 'row-detail' | 'jira'
-export type ViewType = 'table' | 'kanban' | 'timeline'
+export type ViewType = 'table' | 'kanban' | 'timeline' | 'suggestions'
 
 export interface TabConfig {
   id: string
@@ -462,7 +462,7 @@ export function ViewTabsToolbar({ tabs, activeSidebar, onToggleSidebar, activeTa
                         filteredTabs.map((tab: TabConfig, index: number) => {
                           const isActive = tab.id === activeTab
                           const isDragging = dragIndex === index
-                          const IconComponent = { table: IconTable, kanban: IconKanban, timeline: IconTimelineFormat }[tab.type]
+                          const IconComponent = { table: IconTable, kanban: IconKanban, timeline: IconTimelineFormat, suggestions: IconInsights }[tab.type]
 
                           // Compute vertical shift for live-reorder preview
                           let shift = 0

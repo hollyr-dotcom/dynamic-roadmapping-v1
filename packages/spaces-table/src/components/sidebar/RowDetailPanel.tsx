@@ -11,8 +11,7 @@ import {
   IconWarning,
   Chip,
   Tooltip,
-  IconHeart,
-  IconFlag,
+
 
   IconStarFilled,
   IconChevronDown,
@@ -30,7 +29,7 @@ import {
   IconInsights,
   IconBoard,
   IconSquaresTwoOverlap,
-  IconDocFormat,
+  IconEyeOpen,
   IconSparksFilled,
   IconChevronLeft,
   IconMagnifyingGlass,
@@ -46,16 +45,6 @@ import {
 import { JiraLogo } from '../JiraLogo'
 import AiPanelSolutionReview, { PanelHeader as SidekickHeader, PanelInput as SidekickInput } from './AiPanelSolutionReview'
 
-function IconUserTickDown({ css: _css, ...props }: { css?: unknown; width?: number; height?: number }) {
-  const size = (props as { width?: number }).width ?? 24
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-block', flexShrink: 0 }}>
-      <circle cx="12" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5"/>
-      <path d="M5 19c0-3.314 3.134-6 7-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      <path d="M15 15l4 4M19 15l-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    </svg>
-  )
-}
 
 const MDS_AVATAR_COLORS: Record<string, { bg: string; fg: string }> = {
   '#D1F09F': { bg: '#ADF0C7', fg: '#067429' },
@@ -536,7 +525,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 {selectedLayout === 'Halfscreen' && (
                   <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
                     <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                    <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
+                    <rect x="6" y="2.5" width="5" height="7" rx="0.8" fill="currentColor"/>
                   </svg>
                 )}
                 {selectedLayout === 'Right' && (
@@ -594,7 +583,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                     {selectedLayout === 'Halfscreen' && (
                       <svg width="16" height="14" viewBox="0 0 14 12" fill="none">
                         <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
-                        <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="currentColor"/>
+                        <rect x="6" y="2.5" width="5" height="7" rx="0.8" fill="currentColor"/>
                       </svg>
                     )}
                     {selectedLayout === 'Right' && (
@@ -1274,7 +1263,7 @@ export function RowDetailPanel({ row, onClose, initialCompany, onAddToBoard, onR
                 {option === 'Halfscreen' && (
                   <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
                     <rect x="0.6" y="0.6" width="12.8" height="10.8" rx="1.4" stroke="#222428" strokeWidth="1.2"/>
-                    <rect x="3.5" y="2.5" width="7" height="7" rx="0.8" fill="#222428"/>
+                    <rect x="6" y="2.5" width="5" height="7" rx="0.8" fill="#222428"/>
                   </svg>
                 )}
                 {option === 'Fullscreen' && (
@@ -1915,6 +1904,16 @@ function AppStoreReviewDetail({
             <SourceLogoChip source={card.source ?? 'App Store'} />
           </div>
         </div>
+        {(() => {
+          const bc = card.borderColor ?? ''
+          const typeLabel = bc === '#D1F09F' ? 'User praise' : bc === '#d4bbff' ? 'User request' : 'User problem'
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+              <span style={LABEL}>Feedback type</span>
+              <div style={{ backgroundColor: '#f1f2f5', color: '#222428', borderRadius: 6, padding: '0 8px', height: 28, display: 'inline-flex', alignItems: 'center', fontSize: 14, fontFamily: "'Open Sans', sans-serif" }}>{typeLabel}</div>
+            </div>
+          )
+        })()}
         {card.companies[0] && (
           <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
             <span style={LABEL}>Company</span>
@@ -2164,7 +2163,7 @@ export function FeedbackCard({
           {[
             { icon: <IconBoard size="small" />, label: 'Add to board', onClick: () => { onAddToBoard?.(); setMenuOpen(false) } },
             { icon: <IconSquaresTwoOverlap size="small" />, label: 'Copy', onClick: () => setMenuOpen(false) },
-            { icon: <IconDocFormat size="small" />, label: 'View in transcript', onClick: () => setMenuOpen(false) },
+            { icon: <IconEyeOpen size="small" />, label: 'View details', onClick: () => { (onViewCall ?? onSelect)(); setMenuOpen(false) } },
           ].map(({ icon, label, onClick }) => (
             <button
               key={label}
@@ -2429,6 +2428,16 @@ function SurveyFeedbackDetail({
           <span style={LABEL}>Source</span>
           <SourceLogoChip source="SurveyMonkey" />
         </div>
+        {(() => {
+          const bc = card.borderColor ?? ''
+          const typeLabel = bc === '#D1F09F' ? 'User praise' : bc === '#d4bbff' ? 'User request' : 'User problem'
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+              <span style={LABEL}>Feedback type</span>
+              <div style={DATE_CHIP}>{typeLabel}</div>
+            </div>
+          )
+        })()}
         <div style={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
           <span style={LABEL}>Survey started</span>
           <div style={DATE_CHIP}>{card.date}</div>

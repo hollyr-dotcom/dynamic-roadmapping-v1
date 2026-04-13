@@ -47,11 +47,12 @@ export function KanbanColumn({ config, rows, fields, selectedCardId, onSelectCar
         >
           <div className="flex items-center gap-1">
             <span
-              className="inline-flex items-center justify-center font-body text-[14px] whitespace-nowrap"
+              className="inline-flex items-center justify-center font-body text-[12px] whitespace-nowrap"
               style={{
                 height: 28,
                 padding: '4px 8px',
                 borderRadius: 6,
+                fontWeight: 600,
                 backgroundColor: config.tagBg,
                 color: config.tagText,
               }}

@@ -16,8 +16,16 @@ export function StatusCell({ value }: StatusCellProps) {
   const style = STATUS_STYLES[value]
   return (
     <span
-      className="inline-flex items-center rounded px-2.5 py-1 text-xs font-body font-medium"
-      style={{ backgroundColor: style.bg, color: style.text }}
+      className="inline-flex items-center justify-center font-body whitespace-nowrap"
+      style={{
+        fontSize: 14,
+        fontWeight: 600,
+        height: 28,
+        padding: '4px 8px',
+        borderRadius: 6,
+        backgroundColor: style.bg,
+        color: style.text,
+      }}
     >
       {style.label}
     </span>

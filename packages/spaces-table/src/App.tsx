@@ -7,6 +7,7 @@ import { TopNavBar } from './components/page/TopNavBar'
 import { DatabaseTitle } from './components/page/DatabaseTitle'
 import { ViewTabsToolbar, type SidebarId, type TabConfig, type ViewType } from './components/page/ViewTabsToolbar'
 import { DataTable } from './components/table'
+import { SuggestionsTable } from './components/table/SuggestionsTable'
 import { KanbanBoard } from './components/kanban'
 import { TimelinePlaceholder } from './components/timeline'
 import { SidebarShell } from './components/sidebar/SidebarShell'
@@ -58,6 +59,7 @@ const PAGE_CONFIGS: Record<PageId, PageConfig> = {
     tabs: [
       { id: 'all-items', label: 'All ideas', type: 'table' },
       { id: 'prioritization', label: 'Prioritization', type: 'kanban' },
+      { id: 'suggestions', label: 'Suggestions', type: 'suggestions' },
     ],
     defaultTab: 'all-items',
   },
@@ -77,7 +79,7 @@ const ROADMAP_KANBAN_COLUMNS: Priority[] = ['now', 'next', 'later']
 
 export function App() {
   const [scrollFade, setScrollFade] = useState(0)
-  const [view, setView] = useState<'home' | 'app'>('home')
+  const [view, setView] = useState<'home' | 'app'>('app')
   const [isInitialLoad, setIsInitialLoad] = useState(false)
   const [emptyVariant] = useState<'hidden' | 'disabled'>('disabled')
   const [spaceName, setSpaceName] = useState('Project Galaxy')
@@ -86,7 +88,9 @@ export function App() {
   const [showImportPopover, setShowImportPopover] = useState(false)
   const [showSharePopover, setShowSharePopover] = useState(false)
   const [showShareDialog, setShowShareDialog] = useState(false)
-  const [activePage, setActivePage] = useState<PageId>('backlog')
+  const [activePage, setActivePage] = useState<PageId>('overview')
+  const [overviewBgColor, setOverviewBgColor] = useState('#F2F4FC')
+  const overviewRootRef = useRef<HTMLDivElement>(null)
   const [databaseTitle, setDatabaseTitle] = useState('Backlog')
   const [activeSidebar, setActiveSidebar] = useState<SidebarId | null>(null)
   const [pendingImport, setPendingImport] = useState<'jira' | 'miro' | 'csv' | 'backlog' | null>(null)
@@ -176,6 +180,24 @@ export function App() {
   const toggleSidebar = useCallback((id: SidebarId) =>
     setActiveSidebar((prev) => (prev === id ? null : id)), [])
 
+  // When the AI icon or keyboard shortcut opens the sidekick without a specific context,
+  // reset all sidekick state so PanelBody remounts and shows the welcome screen.
+  const toggleSidebarFromToolbar = useCallback((id: SidebarId) => {
+    if (id === 'ai-sidekick') {
+      setActiveSidebar(prev => {
+        if (prev === 'ai-sidekick') return null
+        setSidekickFocusItemId(undefined)
+        setSidekickReprioritizeCardId(undefined)
+        setSidekickDiveDeepCardId(undefined)
+        setSidekickContextMessage(undefined)
+        setSidekickKey(k => k + 1)
+        return 'ai-sidekick'
+      })
+    } else {
+      toggleSidebar(id)
+    }
+  }, [toggleSidebar])
+
   const toggleCanvas = useCallback(() => {
     setCanvasOpen(prev => {
       if (!prev) {
@@ -256,7 +278,7 @@ export function App() {
 
       if (meta && e.key === 'k') {
         e.preventDefault()
-        toggleSidebar('ai-sidekick')
+        toggleSidebarFromToolbar('ai-sidekick')
       }
       // View settings sidebar disabled
       // if (meta && e.key === ',') {
@@ -272,7 +294,7 @@ export function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [toggleSidebar, canvasOpen, zoom, zoomTo, widgets, selectedWidgetId])
 
-  const closeSidebar = () => { setActiveSidebar(null); setIsJiraDetailOpen(false); setPanelLayout('Right'); setSidekickFocusItemId(undefined) }
+  const closeSidebar = () => { setActiveSidebar(null); setIsJiraDetailOpen(false); setPanelLayout('Right'); setSidekickFocusItemId(undefined); setSidekickReprioritizeCardId(undefined) }
 
   // Wire up global close for Sidekick panel
   useEffect(() => {
@@ -319,7 +341,7 @@ export function App() {
 
   const handleAddView = useCallback((type: ViewType) => {
     const currentTabs = pageTabs[activePage]
-    const typeLabels: Record<ViewType, string> = { table: 'Table', kanban: 'Kanban', timeline: 'Timeline' }
+    const typeLabels: Record<ViewType, string> = { table: 'Table', kanban: 'Kanban', timeline: 'Timeline', suggestions: 'Suggestions' }
     const baseLabel = typeLabels[type]
     const existingLabels = new Set(currentTabs.map(t => t.label))
     let label = baseLabel
@@ -494,7 +516,7 @@ export function App() {
   }
 
   return (
-    <div className="relative w-screen h-screen bg-white overflow-hidden">
+    <div ref={overviewRootRef} className="relative w-screen h-screen overflow-hidden" style={{ backgroundColor: activePage === 'overview' ? overviewBgColor : '#ffffff', backgroundImage: activePage !== 'overview' ? 'none' : undefined, transition: 'background-color 0.6s ease' }}>
       {/* Main app layout — scales down when canvas opens */}
       <div
         className="flex w-full h-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
@@ -521,13 +543,16 @@ export function App() {
             onToggleMenu={() => toggleSidebar('space-menu')}
             showSharePopover={showSharePopover}
             onDismissSharePopover={() => setShowSharePopover(false)}
+            transparent={activePage === 'overview'}
           />
         </div>
         {/* Scroll area — database title scrolls away, tabs stick under header */}
         <div ref={scrollRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-y-auto overflow-x-auto page-scroll flex flex-col${pageTransitioning ? ' page-transitioning-out' : ''}`}>
-          <div className="sticky left-0 z-[45]" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
-            <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} disableControls={emptyVariant === 'disabled' && !hasData} centered={activePage === 'overview'} />
-          </div>
+          {activePage !== 'overview' && (
+            <div className="sticky left-0 z-[45]" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
+              <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} disableControls={emptyVariant === 'disabled' && !hasData} centered={false} />
+            </div>
+          )}
           {activePage !== 'overview' && (
             <div className={`sticky top-0 left-0 ${kanbanCardSelected ? 'z-0' : 'z-20'}`} onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
               <ViewTabsToolbar tabs={currentTabs} activeSidebar={activeSidebar} onToggleSidebar={toggleSidebar} activeTab={activeTab} onTabChange={setActiveTab} onAddView={handleAddView} onRenameTab={handleRenameTab} onDuplicateTab={handleDuplicateTab} onDeleteTab={handleDeleteTab} onReorderTabs={handleReorderTabs} newColumnMenuOpen={newColumnMenuOpen} onNewColumnMenuOpenChange={setNewColumnMenuOpen} companyFilter={companyFilter} onClearCompanyFilter={(name) => setCompanyFilter(prev => prev.filter(n => n !== name))} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} showImportPopover={showImportPopover} onDismissImportPopover={() => setShowImportPopover(false)} hideControls={emptyVariant === 'hidden' && !hasData} disableControls={emptyVariant === 'disabled' && !hasData} onOpenAiSidekick={() => { setSidekickSource('toolbar'); toggleSidebar('ai-sidekick') }} />
@@ -563,6 +588,9 @@ export function App() {
           )}
           {activeTabConfig?.type === 'timeline' && (
             <TimelinePlaceholder key={activeTab} data={roadmapItems} parentScrollRef={scrollRef} onRowClick={(row) => { setSidekickFocusItemId(row.id); setActiveSidebar('ai-sidekick') }} onMoveToRoadmap={handleMoveToRoadmap} showMoveToRoadmap={activePage === 'backlog'} onBarSelectedChange={setKanbanCardSelected} ghostRowId={ghostRowId ?? undefined} onBarPlaced={(rowId, startDate, endDate) => { setSelectedRowDates({ startDate, endDate }); setGhostRowId(null) }} />
+          )}
+          {activeTabConfig?.type === 'suggestions' && (
+            <SuggestionsTable onRowClick={(_row, _description, cardId) => { setSidekickReprioritizeCardId(cardId); setSidekickContextMessage(undefined); setSidekickKey(k => k + 1); setActiveSidebar('ai-sidekick') }} />
           )}
           </>)}
         </div>
@@ -630,7 +658,7 @@ export function App() {
               pointerEvents: activeSidebar === 'ai-sidekick' ? 'auto' : 'none',
               transition: 'opacity 300ms cubic-bezier(0.16,1,0.3,1), transform 300ms cubic-bezier(0.16,1,0.3,1)',
             }}
-            onClick={isCenter ? closeSidebar : undefined}
+            onClick={isFullscreenOverlay ? closeSidebar : undefined}
           >
             {isHalfscreen ? (
               <div className="h-full flex" style={{ paddingTop: 24, paddingBottom: 24, paddingLeft: 12, paddingRight: 12 }}>
@@ -671,7 +699,7 @@ export function App() {
             <div
               className="rounded-xl overflow-hidden h-full"
               style={{ width: skWidth, boxShadow: '0px 8px 24px 0px rgba(12,12,13,0.12), 0px 1px 4px 0px rgba(12,12,13,0.08)', background: '#fff' }}
-              onClick={isCenter ? (e: React.MouseEvent) => e.stopPropagation() : undefined}
+              onClick={isFullscreenOverlay ? (e: React.MouseEvent) => e.stopPropagation() : undefined}
             >
               <AiPanelSolutionReview
                 key={sidekickKey}
@@ -769,7 +797,9 @@ export function App() {
         />
       )}
 
-      {/* Right sidebar — fixed overlay, slides in over the top nav */}
+      {/* Right sidebar — fixed overlay, slides in from right.
+          Right=460px, Halfscreen=50vw (both slide in, floating style)
+          Fullscreen=75vw rendered via portal in RowDetailPanel */}
       <div
         className="fixed top-0 right-0 h-full z-50"
         style={{
