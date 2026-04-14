@@ -509,12 +509,12 @@ function ImpactEstimates({ mentions, customers, revenue }: { mentions: number; c
           <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Unique Customers</div>
         </div>
         <div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{customers}</div>
-          <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Total Users</div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>${revenue}K</div>
+          <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Addressable ARR</div>
         </div>
         <div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>${revenue}K</div>
-          <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Impacted Customer ARR</div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{Math.round(revenue / Math.max(customers, 1))}K</div>
+          <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>ARR per Customer</div>
         </div>
       </div>
     </div>
@@ -783,7 +783,7 @@ function buildFlow1Initial(): MessageContent {
   }
 
   if (disagreements.length === 0 && noQuotes.length === 0) {
-    text += `\nNo gaps found.`;
+    text += `\nGood alignment — your top items match the evidence. Check back after your next round of customer calls.`;
   }
 
   // Card: impact estimates + ranked table
@@ -801,12 +801,12 @@ function buildFlow1Initial(): MessageContent {
             <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Unique Customers</div>
           </div>
           <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{totalCustomers}</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Total Users</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{formattedARR}</div>
+            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Combined ARR</div>
           </div>
           <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{formattedARR}</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Impacted Customer ARR</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{q2.length}</div>
+            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Q2 Items</div>
           </div>
         </div>
       </div>
@@ -932,12 +932,39 @@ function buildUC1Theme(requestedTheme?: string): MessageContent {
     recommendation = `Keep current investment level. No urgency to change.`;
   }
 
-  const text = `## ${t.name}\n\n${verdict}\n\n${recommendation}\n\n─── Items ─────────────────────────\n${t.items.map(item => {
-    const onRM = roadmapData.find(r => r.id === item.id);
-    const trend = getTrend(item.id);
-    const status = onRM ? `${item.priority}, ${onRM.status || 'planning'}` : 'Not on roadmap';
-    return `• **${item.title}** — ${trendLabel(trend?.direction || 'stable')}, ${status}`;
-  }).join('\n')}`;
+  const text = `## ${t.name}\n\n${verdict}\n\n${recommendation}`;
+
+  // Theme card: items by trend + roadmap status
+  const themeCards: React.ReactNode[] = [
+    <div key="theme-items" style={{ border: "1px solid #E9EAEF", borderRadius: 12, background: "#FFFFFF", overflow: "hidden" }}>
+      <div style={{ padding: "12px 20px", borderBottom: "1px solid #E9EAEF", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>{t.name}</span>
+        <span style={{ fontSize: 12, color: "#6f7489" }}>${t.combinedARR}K combined ARR</span>
+      </div>
+      {t.items.map((item, i) => {
+        const onRM = roadmapData.find(r => r.id === item.id);
+        const trend = getTrend(item.id);
+        const dir = trend?.direction || 'stable';
+        const trendColor = dir === 'growing' ? '#38A169' : dir === 'declining' ? '#E53E3E' : '#6f7489';
+        return (
+          <div key={item.id} style={{ padding: "10px 20px", borderBottom: i < t.items.length - 1 ? "1px solid #f1f2f5" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, color: "#222428", lineHeight: 1.4 }}>{item.title}</div>
+              <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                {!onRM && <span style={{ fontSize: 11, fontWeight: 600, color: "#E53E3E", background: "#FFF5F5", borderRadius: 4, padding: "1px 6px" }}>Not on roadmap</span>}
+                {onRM && <span style={{ fontSize: 11, color: "#6f7489", background: "#F1F2F5", borderRadius: 4, padding: "1px 6px" }}>{onRM.priority}</span>}
+                <span style={{ fontSize: 11, fontWeight: 600, color: trendColor }}>{trendLabel(dir)}</span>
+              </div>
+            </div>
+            <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12 }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#222428" }}>${item.estRevenue}K</span>
+              <div style={{ fontSize: 12, color: "#6f7489" }}>{item.customers} accounts</div>
+            </div>
+          </div>
+        );
+      })}
+    </div>,
+  ];
 
   // Context-aware pills: promote only if theme is healthy, demote if dying
   const allDeclining = decliningItems.length === t.items.length;
@@ -959,6 +986,7 @@ function buildUC1Theme(requestedTheme?: string): MessageContent {
 
   return {
     text,
+    cards: themeCards,
     loadingSteps: ["Scanning for patterns…", "Grouping by theme…"],
     pills: buildGuardedPills('architect', rawPills, { allDeclining, recommendedAction: allDeclining ? 'demote' : promotable ? 'promote' : null }),
     intentRoot: 'architect',
@@ -1028,26 +1056,37 @@ function buildFlow1Worried(): MessageContent {
     .filter(s => evidenceScore(s) > evidenceScore(q2[q2.length - 1] || s))
     .slice(0, 2);
 
-  // Assess overall risk level
-  const riskCount = depPairs.length + noQuotes.length + decliningQ2.length + backlogBlindSpots.length;
-  const riskLevel = riskCount >= 5 ? 'Your Q2 has real exposure.' : riskCount >= 2 ? 'A couple of things to watch.' : 'Your Q2 is in good shape.';
-
-  let text = `## What should worry you\n\n${riskLevel}`;
-
-  if (depPairs.length > 0) {
-    text += `\n\n─── Dependency risk ────────────────\n${depPairs.length} blocking chains. If ${depPairs[0].from.title.split(' ').slice(0, 4).join(' ')} slips, ${depPairs[0].to.title.split(' ').slice(0, 4).join(' ')} is stuck too.`;
-  }
-
+  // Rank risks by urgency — PM sees the top 2 first
+  const risks: { label: string; detail: string; urgency: number }[] = [];
   if (decliningQ2.length > 0) {
-    text += `\n\n─── Fading demand ─────────────────\n${decliningQ2.map(item => `• ${item.title} — demand is declining but still ${item.priority} priority`).join('\n')}`;
+    const topDeclining = decliningQ2.sort((a, b) => b.estRevenue - a.estRevenue)[0];
+    risks.push({ label: 'Fading demand', detail: `${decliningQ2.length} Q2 items have declining demand. Biggest: **${topDeclining.title}** ($${topDeclining.estRevenue}K) — move it down or validate with customers.`, urgency: decliningQ2.reduce((s, i) => s + i.estRevenue, 0) });
   }
-
   if (noQuotes.length > 0) {
-    text += `\n\n─── Blind bets ────────────────────\n${noQuotes.length} Q2 items have zero customer quotes. You're investing based on numbers alone — if the numbers are wrong, there's no qualitative signal to catch it.`;
+    const blindARR = noQuotes.reduce((s, r) => s + r.estRevenue, 0);
+    risks.push({ label: 'Blind bets', detail: `${noQuotes.length} Q2 items ($${blindARR}K) have zero customer quotes — you're investing based on numbers alone. Schedule interviews.`, urgency: blindARR });
   }
-
+  if (depPairs.length > 0) {
+    risks.push({ label: 'Dependency chains', detail: `${depPairs.length} blocking chains. If **${depPairs[0].from.title.split(' ').slice(0, 4).join(' ')}** slips, **${depPairs[0].to.title.split(' ').slice(0, 4).join(' ')}** is stuck too.`, urgency: depPairs.length * 100 });
+  }
   if (backlogBlindSpots.length > 0) {
-    text += `\n\n─── Missed opportunities ──────────\n${backlogBlindSpots.map(item => `• ${item.title} — stronger evidence than some Q2 items but not on your roadmap`).join('\n')}`;
+    risks.push({ label: 'Missed opportunities', detail: `${backlogBlindSpots.map(item => `**${item.title}**`).join(' and ')} have stronger evidence than some Q2 items but aren't on your roadmap.`, urgency: backlogBlindSpots.reduce((s, i) => s + i.estRevenue, 0) });
+  }
+  risks.sort((a, b) => b.urgency - a.urgency);
+
+  const riskCount = risks.length;
+  let text = `## What needs your attention\n\n`;
+
+  if (riskCount === 0) {
+    text += `Your Q2 is in good shape. No major risks found.`;
+  } else {
+    // Lead with "fix these first"
+    text += `Fix these ${Math.min(riskCount, 2)} first:\n\n`;
+    text += risks.slice(0, 2).map((r, i) => `${i + 1}. **${r.label}** — ${r.detail}`).join('\n\n');
+    if (risks.length > 2) {
+      text += `\n\n─── Also worth knowing ────────────\n`;
+      text += risks.slice(2).map(r => `• **${r.label}** — ${r.detail}`).join('\n');
+    }
   }
 
   return {
@@ -1091,12 +1130,12 @@ function buildFlow1BacklogRanked(): MessageContent {
             <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Unique Customers</div>
           </div>
           <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{totalCustomers}</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Total Users</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{formattedARR}</div>
+            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Combined ARR</div>
           </div>
           <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{formattedARR}</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Impacted Customer ARR</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{backlogOnly.length}</div>
+            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Backlog Items</div>
           </div>
         </div>
       </div>
@@ -1167,12 +1206,12 @@ function buildFlow2(itemId: string): MessageContent {
             <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Unique Customers</div>
           </div>
           <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{item.customers}</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Total Users</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>${item.estRevenue}K</div>
+            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Addressable ARR</div>
           </div>
           <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>${item.estRevenue}K</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Impacted Customer ARR</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{arr.length}</div>
+            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Requesting Companies</div>
           </div>
         </div>
       </div>
@@ -1806,7 +1845,7 @@ function buildUC2Mismatch(): MessageContent {
   }
 
   const text = findings.length === 0
-    ? `## Plan vs demand\n\nYour priorities match customer demand. No gaps found.`
+    ? `## Plan vs demand\n\nYour priorities match customer demand — well done. Check back after your next wave of customer research to see if anything shifted.`
     : `## Plan vs demand\n\n${findings.length} gaps between your plan and what customers want. Biggest: **${findings[0].item.title}**.\n\n─── Mismatches ────────────────────\n${findings.map((f) => {
         return `• **${f.item.title}** — ${typeLabels[f.type]}. ${mismatchRootCause(f)}`;
       }).join('\n')}`;
@@ -2209,7 +2248,7 @@ function buildUC5Drift(): MessageContent {
   // Build text
   let text = '';
   if (top.length === 0) {
-    text = `## What shifted\n\nNothing drifted. Your roadmap still matches demand.`;
+    text = `## What shifted\n\nNothing drifted — your roadmap still matches demand. You're in a good spot. Check back in a week or after your next customer calls.`;
   } else {
     text = `## What shifted\n\n${top.length} things shifted in the last 4 weeks:\n\n─── What changed ──────────────────\n`;
     text += top.map((f, i) => `${i + 1}. ${f.narrative}`).join('\n\n');
@@ -2777,7 +2816,7 @@ interface Message {
   loadingSteps?: string[];
 }
 
-function PanelBody({ activePage, focusItemId, onApplyReprioritize, onApplySwap }: { activePage?: string; focusItemId?: string; onApplyReprioritize?: (itemId: string, newPriority: string, reason: string) => void; onApplySwap?: (cutId: string, addId: string, reason: string) => void }) {
+function PanelBody({ activePage, focusItemId, contextUserMessage, onApplyReprioritize, onApplySwap }: { activePage?: string; focusItemId?: string; contextUserMessage?: string; onApplyReprioritize?: (itemId: string, newPriority: string, reason: string) => void; onApplySwap?: (cutId: string, addId: string, reason: string) => void }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -2800,6 +2839,15 @@ function PanelBody({ activePage, focusItemId, onApplyReprioritize, onApplySwap }
       }
     }
   }, [focusItemId]);
+
+  // Auto-trigger from floating prompt bar (contextUserMessage)
+  const contextTriggeredRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (contextUserMessage && contextUserMessage !== contextTriggeredRef.current) {
+      contextTriggeredRef.current = contextUserMessage;
+      handleChatSend(contextUserMessage);
+    }
+  }, [contextUserMessage]);
 
   // Track if user has scrolled up manually
   const userScrolledUpRef = useRef(false);
@@ -3476,7 +3524,7 @@ function ViewDetailsView({ itemLabel, onBack }: { itemLabel: string; onBack: () 
 }
 
 /* ─── Main export ─── */
-export default function AiPanelSolutionReview({ onClose, activePage, focusItemId, onApplyReprioritize, onApplySwap, liveRoadmapItems, liveBacklogItems }: { onClose?: () => void; activePage?: string; focusItemId?: string; onApplyReprioritize?: (itemId: string, newPriority: string, reason: string) => void; onApplySwap?: (cutId: string, addId: string, reason: string) => void; liveRoadmapItems?: SpaceRow[]; liveBacklogItems?: SpaceRow[] } = {}) {
+export default function AiPanelSolutionReview({ onClose, activePage, focusItemId, contextUserMessage, onApplyReprioritize, onApplySwap, liveRoadmapItems, liveBacklogItems }: { onClose?: () => void; activePage?: string; focusItemId?: string; contextUserMessage?: string; onApplyReprioritize?: (itemId: string, newPriority: string, reason: string) => void; onApplySwap?: (cutId: string, addId: string, reason: string) => void; liveRoadmapItems?: SpaceRow[]; liveBacklogItems?: SpaceRow[] } = {}) {
   // Sync live state so all builders see applied changes
   syncLiveState(liveRoadmapItems || _staticRoadmap, liveBacklogItems || _staticBacklog);
 
@@ -3505,7 +3553,7 @@ export default function AiPanelSolutionReview({ onClose, activePage, focusItemId
         <PanelHeader onClose={onClose} />
         {/* Keep PanelBody always mounted so chat state is preserved */}
         <div style={{ display: panelView === 'chat' ? 'flex' : 'none', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-          <PanelBody activePage={activePage} focusItemId={focusItemId} onApplyReprioritize={onApplyReprioritize} onApplySwap={onApplySwap} />
+          <PanelBody activePage={activePage} focusItemId={focusItemId} contextUserMessage={contextUserMessage} onApplyReprioritize={onApplyReprioritize} onApplySwap={onApplySwap} />
         </div>
         {panelView === 'related-evidence' && (
           <RelatedEvidenceView itemLabel={viewContext} onBack={() => setPanelView('chat')} />
