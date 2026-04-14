@@ -1416,8 +1416,20 @@ function buildAltCut(): MessageContent {
     return `• **${shortTitle(r.item.title, 35)}** — $${r.item.estRevenue}K, ${r.item.customers} customers. ${risk}.`;
   }).join('\n');
 
+  // Change card for the safest cut
+  const cards: React.ReactNode[] = [];
+  if (safest) {
+    cards.push(<ChangeCard key="alt-cut-card" changes={ranked.slice(0, 3).map(r => ({
+      item: r.item.title,
+      from: r.item.priority,
+      to: 'later',
+      reason: r.deps.blocks.length > 0 ? 'blocks other items — risky' : r.hasQuotes ? 'has customer quotes' : r.trend?.direction === 'declining' ? 'declining demand — safest' : 'weakest evidence',
+    }))} />);
+  }
+
   return {
     text,
+    cards,
     pills: [
       ...(safest ? [{ label: `Move ${shortTitle(safest.item.title, 20)} down`, key: `reprioritize-demote-${safest.item.id}` }] : []),
       { label: "Where is my roadmap out of sync?", key: "uc2-mismatch" },
@@ -2156,6 +2168,26 @@ function buildUC5Drift(): MessageContent {
 
   const dataForAI5 = { driftItems: top.map(f => ({ title: f.item.title, type: f.type, revenue: f.item.estRevenue, customers: f.item.customers, trend: f.trend.direction, mentionsDelta: f.trend.mentionsDelta, narrative: f.narrative, action: f.action })) };
 
+  // Change cards for actionable drift items
+  const driftCards: React.ReactNode[] = [];
+  const actionableChanges = top.filter(f => f.severity !== 'info').map(f => {
+    const onRM = roadmapData.find(r => r.id === f.item.id);
+    if (f.type === 'surging' && !onRM) {
+      return { item: f.item.title, from: 'Not on roadmap', to: 'Add to roadmap', reason: `$${f.item.estRevenue}K ARR, ${f.item.customers} accounts, +${f.trend.mentionsDelta} mentions` };
+    } else if (f.type === 'surging' && onRM) {
+      return { item: f.item.title, from: onRM.priority, to: 'now', reason: `$${f.item.estRevenue}K ARR, ${f.item.customers} accounts, growing demand` };
+    } else if (f.type === 'fading') {
+      return { item: f.item.title, from: onRM?.priority || f.item.priority, to: 'later', reason: `${Math.abs(f.trend.mentionsDelta)} fewer mentions, declining demand` };
+    } else if (f.type === 'new-signal') {
+      return { item: f.item.title, from: 'Not on roadmap', to: 'Consider adding', reason: `$${f.item.estRevenue}K ARR, +${f.trend.mentionsDelta} mentions, emerging signal` };
+    }
+    return null;
+  }).filter(Boolean) as { item: string; from: string; to: string; reason: string }[];
+
+  if (actionableChanges.length > 0) {
+    driftCards.push(<ChangeCard key="drift-changes" changes={actionableChanges} />);
+  }
+
   // Context-aware pills based on top action candidates
   const surgingNotOnRoadmap = top.find(f => f.type === 'surging' && !roadmapData.find(r => r.id === f.item.id));
   const surgingUnderPrioritized = top.find(f => f.type === 'surging' && roadmapData.find(r => r.id === f.item.id) && f.item.priority !== 'now');
@@ -2182,6 +2214,7 @@ function buildUC5Drift(): MessageContent {
 
   return {
     text,
+    cards: driftCards,
     textPromise: generateNarrative({ useCase: "uc5", structuredData: dataForAI5, fallbackText: text }).then(r => r.fromAI ? text + '\n\n' + r.text : text),
     loadingSteps: [
       "Comparing current vs 4 weeks ago…",
