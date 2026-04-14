@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { IconCursor, IconCursorFilled, IconRocket } from '@mirohq/design-system'
+import { IconBoard, IconCursor, IconCursorFilled, IconRocket } from '@mirohq/design-system'
 
 const EASE = 'cubic-bezier(0.16, 1, 0.3, 1)'
 
@@ -218,8 +218,8 @@ function AiCursorIcon({ hovered }: { hovered: boolean }) {
   )
 }
 
-/* ─── Work on this — gray filled button with AI cursor icon ─── */
-export function WorkOnThisButton2({ onClick }: { onClick?: () => void }) {
+/* ─── Work on this (sketch) — gray filled button with AI cursor icon ─── */
+export function WorkOnThisButtonSketch({ onClick }: { onClick?: () => void }) {
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -243,6 +243,36 @@ export function WorkOnThisButton2({ onClick }: { onClick?: () => void }) {
       onClick={onClick}
     >
       <AiCursorIcon hovered={hovered} />
+      <span style={{ lineHeight: 1, whiteSpace: 'nowrap' }}>Work on this</span>
+    </button>
+  )
+}
+
+/* ─── Work on this — gray filled button with board icon ─── */
+export function WorkOnThisButton2({ onClick }: { onClick?: () => void }) {
+  const [hovered, setHovered] = useState(false)
+
+  return (
+    <button
+      className="relative flex items-center cursor-pointer"
+      style={{
+        border: '1px solid rgba(255,255,255,0)',
+        borderRadius: 8,
+        padding: '0 12px',
+        height: 32,
+        gap: 4,
+        background: hovered ? '#e4e4e0' : '#eeeeeb',
+        fontSize: 14,
+        fontWeight: 600,
+        color: '#222428',
+        fontFamily: 'var(--font-noto)',
+        transition: `background 200ms ${EASE}`,
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={onClick}
+    >
+      <IconBoard css={{ width: 16, height: 16, flexShrink: 0 }} />
       <span style={{ lineHeight: 1, whiteSpace: 'nowrap' }}>Work on this</span>
     </button>
   )
