@@ -1925,27 +1925,27 @@ function buildUC4Summary(audience: 'leadership' | 'engineering' | 'cs', dateRang
       const shipped = grouped.status.filter(c => c.to === 'done');
       const accelerated = grouped.priority.filter(c => priorityNum(c.to!) > priorityNum(c.from!));
       const paused = grouped.priority.filter(c => priorityNum(c.to!) < priorityNum(c.from!));
-      if (started.length > 0) bullets.push(`**Start (${started.length}):** ${started.map(c => { const d = getDeps(c.item!.id); return `${c.item!.title}${d.blocks.length > 0 ? ` (blocks ${d.blocks.map(b => shortTitle(b.title, 15)).join(', ')})` : ''}`; }).join('; ')}`);
-      if (accelerated.length > 0) bullets.push(`**Accelerate (${accelerated.length}):** ${accelerated.map(c => `${c.item!.title} (${c.from} → ${c.to})`).join('; ')}. Needs eng allocation.`);
-      if (paused.length > 0) bullets.push(`**Pause (${paused.length}):** ${paused.map(c => `${c.item!.title} (${c.from} → ${c.to})`).join('; ')}. Free up capacity.`);
-      if (grouped.scope.length > 0) bullets.push(`**Rescope (${grouped.scope.length}):** ${grouped.scope.map(c => `${c.item!.title} — "${c.from}" → "${c.to}"`).join('; ')}. Re-estimate effort.`);
-      if (shipped.length > 0) bullets.push(`**Shipped (${shipped.length}):** ${shipped.map(c => c.item!.title).join(', ')}`);
-      if (grouped.removed.length > 0) bullets.push(`**Stop (${grouped.removed.length}):** ${grouped.removed.map(c => c.item!.title).join(', ')}. Halt active work.`);
+      if (started.length > 0) bullets.push(`**Now in progress (${started.length}):** ${started.map(c => { const d = getDeps(c.item!.id); return `${c.item!.title}${d.blocks.length > 0 ? ` (blocks ${d.blocks.map(b => shortTitle(b.title, 15)).join(', ')})` : ''}`; }).join('; ')}. Plan capacity.`);
+      if (accelerated.length > 0) bullets.push(`**Moved up (${accelerated.length}):** ${accelerated.map(c => `${c.item!.title} (${c.from} → ${c.to})`).join('; ')}. Needs eng allocation.`);
+      if (paused.length > 0) bullets.push(`**Moved down (${paused.length}):** ${paused.map(c => `${c.item!.title} (${c.from} → ${c.to})`).join('; ')}. Free up that capacity.`);
+      if (grouped.scope.length > 0) bullets.push(`**Scope changed (${grouped.scope.length}):** ${grouped.scope.map(c => `${c.item!.title} — "${c.from}" → "${c.to}"`).join('; ')}. Re-estimate effort.`);
+      if (shipped.length > 0) bullets.push(`**Shipped (${shipped.length}):** ${shipped.map(c => c.item!.title).join(', ')}. Close out remaining tickets.`);
+      if (grouped.removed.length > 0) bullets.push(`**Removed (${grouped.removed.length}):** ${grouped.removed.map(c => c.item!.title).join(', ')}. Halt active work.`);
     } else {
       for (const c of changes.slice(0, 5)) {
         const deps = getDeps(c.item!.id);
         const depNote = deps.blocks.length > 0 ? ` Blocks ${deps.blocks.map(d => shortTitle(d.title, 20)).join(', ')}.` : '';
         if (c.changeType === 'status-changed' && c.to === 'in-progress') {
-          bullets.push(`**Start:** ${c.item!.title} — begin capacity planning.${depNote}`);
+          bullets.push(`**Now in progress:** ${c.item!.title} — plan capacity.${depNote}`);
         } else if (c.changeType === 'status-changed' && c.to === 'done') {
-          bullets.push(`**Shipped:** ${c.item!.title} — close out any remaining tickets.${depNote}`);
+          bullets.push(`**Shipped:** ${c.item!.title} — close out remaining tickets.${depNote}`);
         } else if (c.changeType === 'scope-changed') {
-          bullets.push(`**Rescope:** ${c.item!.title} — from "${c.from}" to "${c.to}". Re-estimate effort.`);
+          bullets.push(`**Scope changed:** ${c.item!.title} — from "${c.from}" to "${c.to}". Re-estimate effort.`);
         } else if (c.changeType === 'priority-changed') {
           const up = priorityNum(c.to!) > priorityNum(c.from!);
-          bullets.push(`**${up ? 'Accelerate' : 'Pause'}:** ${c.item!.title} — ${c.from} → ${c.to}.${up ? ' Needs eng allocation.' : ' Free up that capacity.'}${depNote}`);
+          bullets.push(`**${up ? 'Moved up' : 'Moved down'}:** ${c.item!.title} — ${c.from} → ${c.to}.${up ? ' Needs eng allocation.' : ' Free up that capacity.'}${depNote}`);
         } else if (c.changeType === 'removed') {
-          bullets.push(`**Stop:** ${c.item!.title} — removed from roadmap. Halt any active work.${depNote}`);
+          bullets.push(`**Removed:** ${c.item!.title} — removed from roadmap. Halt active work.${depNote}`);
         }
       }
     }
@@ -2016,72 +2016,150 @@ function buildUC4Summary(audience: 'leadership' | 'engineering' | 'cs', dateRang
    ═══════════════════════════════════════════════════════════════ */
 
 function buildUC5Drift(): MessageContent {
-  const flags: { item: SpaceRow; trend: typeof demandTrend[number]; issue: string; action: string }[] = [];
+  type DriftFlag = {
+    item: SpaceRow;
+    trend: typeof demandTrend[number];
+    type: 'surging' | 'fading' | 'new-signal' | 'scope-shift' | 'theme';
+    narrative: string;
+    action: string;
+    magnitude: number;
+    severity: 'critical' | 'warning' | 'info';
+  };
 
-  // Growing demand but plan unchanged
-  for (const trend of demandTrend.filter(t => t.direction === 'growing' && t.mentionsDelta >= 10)) {
+  const flags: DriftFlag[] = [];
+  const allItems = [...roadmapData.filter(r => r.status !== 'done'), ...sampleData.filter(s => !roadmapData.find(r => r.title === s.title))];
+
+  // 1. Surging demand — growing items where the plan hasn't kept up
+  for (const trend of demandTrend.filter(t => t.direction === 'growing' && t.mentionsDelta >= 8)) {
     const item = getItem(trend.itemId);
     if (!item) continue;
     const onRoadmap = roadmapData.find(r => r.id === item.id);
+
+    // Compute before/after magnitude
+    const prevMentions = Math.max(0, item.mentions - trend.mentionsDelta);
+    const prevCustomers = Math.max(1, Math.round(item.customers * (prevMentions / Math.max(item.mentions, 1))));
+    const prevARR = Math.max(0, Math.round(item.estRevenue * (prevMentions / Math.max(item.mentions, 1))));
+
     if (!onRoadmap) {
-      flags.push({ item, trend, issue: `Demand grew +${trend.mentionsDelta} mentions but not on your roadmap`, action: 'Consider adding to roadmap' });
+      flags.push({
+        item, trend, type: 'surging', magnitude: trend.mentionsDelta,
+        severity: trend.mentionsDelta >= 15 ? 'critical' : 'warning',
+        narrative: `**${item.title}** went from a blip to a real signal — was ~$${prevARR}K/${prevCustomers} accounts, now $${item.estRevenue}K/${item.customers} accounts. Still not on your roadmap.`,
+        action: `needs a decision on whether to roadmap it`,
+      });
     } else if (onRoadmap.priority !== 'now') {
-      flags.push({ item, trend, issue: `Demand grew +${trend.mentionsDelta} mentions but still ${onRoadmap.priority} priority`, action: 'Consider promoting' });
+      const rank = allItems.map(i => ({ i, s: evidenceScore(i) })).sort((a, b) => b.s - a.s).findIndex(s => s.i.id === item.id) + 1;
+      flags.push({
+        item, trend, type: 'surging', magnitude: trend.mentionsDelta,
+        severity: trend.mentionsDelta >= 15 ? 'critical' : 'warning',
+        narrative: `**${item.title}** added ~$${item.estRevenue - prevARR}K ARR and ${item.customers - prevCustomers} new accounts — now $${item.estRevenue}K from ${item.customers} accounts, your #${rank} signal. Still ${onRoadmap.priority} priority.`,
+        action: `is under-prioritized relative to its evidence`,
+      });
     }
   }
 
-  // Declining demand but still prioritized
+  // 2. Fading demand — declining items still getting investment
   for (const trend of demandTrend.filter(t => t.direction === 'declining' && t.mentionsDelta <= -4)) {
     const item = getItem(trend.itemId);
     if (!item) continue;
     const onRoadmap = roadmapData.find(r => r.id === item.id);
     if (onRoadmap && (onRoadmap.priority === 'now' || onRoadmap.priority === 'next')) {
-      flags.push({ item, trend, issue: `Demand dropped ${trend.mentionsDelta} mentions but still ${onRoadmap.priority} priority`, action: 'Consider deprioritizing' });
+      const recency = recencyLabel(trend.itemId);
+      const recencyNote = recency ? `, last mention ${recency}` : ', no recent mentions';
+      flags.push({
+        item, trend, type: 'fading', magnitude: Math.abs(trend.mentionsDelta),
+        severity: Math.abs(trend.mentionsDelta) >= 6 ? 'warning' : 'info',
+        narrative: `**${item.title}** went quiet — ${Math.abs(trend.mentionsDelta)} fewer mentions, trend turned declining${recencyNote}. Still ${onRoadmap.priority} in your plan.`,
+        action: `may not be worth ${onRoadmap.priority} priority anymore`,
+      });
     }
   }
 
-  // Scope changes from history
-  const scopeChanges = itemHistory.filter(h => h.changeType === 'scope-changed');
-  for (const sc of scopeChanges) {
+  // 3. New signals — backlog items with strong current evidence but not on roadmap
+  const backlogStrong = sampleData
+    .filter(s => !roadmapData.find(r => r.title === s.title))
+    .filter(s => {
+      const trend = getTrend(s.id);
+      return trend && trend.direction === 'growing' && s.estRevenue >= 100 && s.customers >= 10;
+    })
+    .filter(s => !flags.find(f => f.item.id === s.id)); // skip already flagged
+  for (const item of backlogStrong.slice(0, 2)) {
+    const trend = getTrend(item.id)!;
+    flags.push({
+      item, trend, type: 'new-signal', magnitude: trend.mentionsDelta,
+      severity: item.estRevenue >= 200 ? 'critical' : 'warning',
+      narrative: `**${item.title}** is building momentum — $${item.estRevenue}K from ${item.customers} accounts with +${trend.mentionsDelta} new mentions. Not on your roadmap yet.`,
+      action: `deserves a look — the signal is strong enough to act on`,
+    });
+  }
+
+  // 4. Scope shifts from history
+  const recentScope = itemHistory.filter(h => h.changeType === 'scope-changed' && new Date(h.date) >= new Date('2026-03-01'));
+  for (const sc of recentScope) {
     const item = getItem(sc.itemId);
     const trend = getTrend(sc.itemId);
-    if (item && trend) {
-      flags.push({ item, trend, issue: `Scope changed from "${sc.from}" to "${sc.to}"`, action: 'Review if scope matches current demand' });
+    if (item && trend && !flags.find(f => f.item.id === item.id)) {
+      flags.push({
+        item, trend, type: 'scope-shift', magnitude: 5,
+        severity: 'info',
+        narrative: `**${item.title}** was rescoped from "${sc.from}" to "${sc.to}". ${sc.reason || 'Review if the narrower scope still addresses the core demand.'}`,
+        action: `check if the rescoped version still matches what customers are asking for`,
+      });
     }
   }
 
-  // Sort by magnitude
-  flags.sort((a, b) => Math.abs(b.trend.mentionsDelta) - Math.abs(a.trend.mentionsDelta));
-  const top = flags.slice(0, 5);
+  // Sort by magnitude (biggest shifts first)
+  flags.sort((a, b) => b.magnitude - a.magnitude);
+  const top = flags.slice(0, 6);
 
-  // Severity bucketing based on magnitude
-  const bucketed = top.map(f => {
-    const magnitude = Math.abs(f.trend.mentionsDelta);
-    const severity = magnitude >= 15 ? 'critical' : magnitude >= 8 ? 'warning' : 'info';
-    const severityLabel = severity === 'critical' ? '🔴' : severity === 'warning' ? '🟡' : '🔵';
-    return { ...f, severity, severityLabel };
-  });
+  // 5. Theme connections — find items that share keyword themes
+  const themeKeywords: Record<string, string> = {
+    'security': 'security & access', 'permission': 'security & access', 'fraud': 'security & access',
+    'investment': 'investment & portfolio', 'portfolio': 'investment & portfolio',
+    'savings': 'savings & budgeting', 'budget': 'savings & budgeting',
+    'currency': 'multi-currency & FX', 'multi': 'multi-currency & FX',
+  };
+  const themeItems: Record<string, DriftFlag[]> = {};
+  for (const f of top) {
+    for (const word of f.item.title.toLowerCase().split(/\s+/)) {
+      const theme = themeKeywords[word];
+      if (theme) {
+        if (!themeItems[theme]) themeItems[theme] = [];
+        if (!themeItems[theme].find(t => t.item.id === f.item.id)) themeItems[theme].push(f);
+      }
+    }
+  }
+  // Add theme note to last item in a multi-item theme
+  for (const [theme, items] of Object.entries(themeItems)) {
+    if (items.length >= 2) {
+      const lastItem = items[items.length - 1];
+      const otherNames = items.filter(i => i.item.id !== lastItem.item.id).map(i => shortTitle(i.item.title, 25));
+      lastItem.narrative += ` Combined with ${otherNames.join(' and ')}, the ${theme} theme keeps getting louder.`;
+    }
+  }
 
-  const criticalCount = bucketed.filter(b => b.severity === 'critical').length;
-  const warningCount = bucketed.filter(b => b.severity === 'warning').length;
+  // Build text
+  let text = '';
+  if (top.length === 0) {
+    text = `## What shifted\n\nNothing drifted. Your roadmap still matches demand.`;
+  } else {
+    text = `## What shifted\n\n${top.length} things shifted in the last 4 weeks:\n\n─── What changed ──────────────────\n`;
+    text += top.map((f, i) => `${i + 1}. ${f.narrative}`).join('\n\n');
 
-  let summaryLine = '';
-  if (criticalCount > 0) summaryLine = `${criticalCount} need immediate attention`;
-  if (warningCount > 0) summaryLine += `${summaryLine ? ', ' : ''}${warningCount} worth watching`;
-  if (!summaryLine) summaryLine = 'Minor shifts — nothing urgent';
+    // Action summary — identify the clearest action candidates
+    const actionable = top.filter(f => f.severity === 'critical' || f.severity === 'warning');
+    if (actionable.length > 0) {
+      text += `\n\n─── What you should do ────────────\n`;
+      text += actionable.map(f => `• **${shortTitle(f.item.title, 30)}** ${f.action}.`).join('\n');
+    }
+  }
 
-  const text = top.length === 0
-    ? `## What shifted\n\nNothing drifted. Your roadmap still matches demand.`
-    : `## What shifted\n\n${top.length} ${top.length === 1 ? 'item has' : 'items have'} drifted. ${summaryLine}.\n\n─── Items to review ───────────────\n${bucketed.map((f) =>
-        `• ${f.severityLabel} **${f.item.title}** — ${f.issue}. *${f.action}.*`
-      ).join('\n')}`;
+  const dataForAI5 = { driftItems: top.map(f => ({ title: f.item.title, type: f.type, revenue: f.item.estRevenue, customers: f.item.customers, trend: f.trend.direction, mentionsDelta: f.trend.mentionsDelta, narrative: f.narrative, action: f.action })) };
 
-  const dataForAI5 = { driftItems: top.map(f => ({ title: f.item.title, revenue: f.item.estRevenue, customers: f.item.customers, trend: f.trend.direction, mentionsDelta: f.trend.mentionsDelta, issue: f.issue, action: f.action })) };
-
-  // Context-aware pills: growing items → promote, declining items → demote
-  const growingDrift = top.find(f => f.trend.direction === 'growing' && f.item.priority !== 'now');
-  const decliningDrift = top.find(f => f.trend.direction === 'declining' && (f.item.priority === 'now' || f.item.priority === 'next'));
-  const topAction = growingDrift ? 'promote' as const : decliningDrift ? 'demote' as const : null;
+  // Context-aware pills based on top action candidates
+  const surgingNotOnRoadmap = top.find(f => f.type === 'surging' && !roadmapData.find(r => r.id === f.item.id));
+  const surgingUnderPrioritized = top.find(f => f.type === 'surging' && roadmapData.find(r => r.id === f.item.id) && f.item.priority !== 'now');
+  const fadingOverPrioritized = top.find(f => f.type === 'fading');
 
   const rawPills: { label: string; key: string }[] = top.length === 0
     ? [
@@ -2089,9 +2167,16 @@ function buildUC5Drift(): MessageContent {
         { label: "Am I betting on the right things?", key: "flow1-initial" },
       ]
     : [
-        ...(growingDrift ? [{ label: `Promote ${shortTitle(growingDrift.item.title, 20)}`, key: `reprioritize-promote-${growingDrift.item.id}` }] : []),
-        ...(decliningDrift && !growingDrift ? [{ label: `Move ${shortTitle(decliningDrift.item.title, 20)} down`, key: `reprioritize-demote-${decliningDrift.item.id}` }] : []),
-        { label: "Where is my roadmap out of sync?", key: "uc2-mismatch" },
+        // Compound action: promote + demote if both exist
+        ...(surgingUnderPrioritized && fadingOverPrioritized ? [{
+          label: `Promote ${shortTitle(surgingUnderPrioritized.item.title, 15)} and demote ${shortTitle(fadingOverPrioritized.item.title, 15)}`,
+          key: `apply-swap-${fadingOverPrioritized.item.id}-${surgingUnderPrioritized.item.id}`,
+        }] : [
+          ...(surgingUnderPrioritized ? [{ label: `Promote ${shortTitle(surgingUnderPrioritized.item.title, 20)}`, key: `reprioritize-promote-${surgingUnderPrioritized.item.id}` }] : []),
+          ...(fadingOverPrioritized ? [{ label: `Move ${shortTitle(fadingOverPrioritized.item.title, 20)} down`, key: `reprioritize-demote-${fadingOverPrioritized.item.id}` }] : []),
+        ]),
+        ...(surgingNotOnRoadmap ? [{ label: `Add ${shortTitle(surgingNotOnRoadmap.item.title, 20)} to roadmap`, key: `reprioritize-promote-${surgingNotOnRoadmap.item.id}` }] : []),
+        ...(top[0] ? [{ label: `Show full evidence for ${shortTitle(top[0].item.title, 20)}`, key: `flow2-${top[0].item.id}` }] : []),
         { label: "Rank everything by evidence", key: "flow1-initial" },
       ];
 
@@ -2099,11 +2184,14 @@ function buildUC5Drift(): MessageContent {
     text,
     textPromise: generateNarrative({ useCase: "uc5", structuredData: dataForAI5, fallbackText: text }).then(r => r.fromAI ? text + '\n\n' + r.text : text),
     loadingSteps: [
-      "Comparing current vs historical demand…",
-      "Identifying drift patterns…",
+      "Comparing current vs 4 weeks ago…",
+      "Detecting new signals…",
+      "Checking theme momentum…",
       "Ranking by urgency…",
     ],
-    pills: buildGuardedPills('debug', rawPills, { recommendedAction: topAction }),
+    pills: buildGuardedPills('debug', rawPills, {
+      recommendedAction: surgingUnderPrioritized ? 'promote' : fadingOverPrioritized ? 'demote' : null,
+    }),
     intentRoot: 'debug',
   };
 }
