@@ -917,7 +917,7 @@ function buildUC1Theme(requestedTheme?: string): MessageContent {
   let recommendation = '';
   if (decliningItems.length === t.items.length) {
     verdict = `This theme is dying. All ${t.items.length} items show declining demand — customers are moving on.`;
-    recommendation = `Consider pulling back investment here and reallocating to growing themes.`;
+    recommendation = `Pull back investment here and reallocate to growing themes.`;
   } else if (decliningItems.length > 0 && growingItems.length > 0) {
     verdict = `Mixed signals. Some items in this theme are growing while others are fading — the demand is shifting, not disappearing.`;
     recommendation = `Double down on the growing items and consider descoping the declining ones.`;
@@ -926,7 +926,7 @@ function buildUC1Theme(requestedTheme?: string): MessageContent {
     recommendation = `The combined signal ($${t.combinedARR}K from ${t.totalCustomers} customers) is strong enough to justify a dedicated initiative.`;
   } else if (growingItems.length === t.items.length) {
     verdict = `This theme is accelerating. Every item is growing — customers are converging on this need.`;
-    recommendation = `This is your strongest cluster. Consider treating it as a single initiative rather than separate items.`;
+    recommendation = `This is your strongest cluster. Treat it as a single initiative rather than separate items.`;
   } else {
     verdict = `Stable demand across ${t.items.length} items. Customers consistently want this but it's not getting louder.`;
     recommendation = `Keep current investment level. No urgency to change.`;
@@ -1000,7 +1000,7 @@ function buildFlow1NoEvidence(): MessageContent {
       "Checking Insights research data…",
     ],
     pills: [
-      { label: "What's the strongest signal we're ignoring?", key: "strongest-ignored" },
+      { label: "Show me backlog items we're ignoring", key: "strongest-ignored" },
       { label: "Am I betting on the right things for Q2?", key: "flow1-initial" },
     ],
   };
@@ -1592,8 +1592,44 @@ function buildApplyConfirmation(itemId: string, newPriority: string): MessageCon
   const item = getItem(itemId);
   if (!item) return { text: "Item not found." };
 
+  const oldPriority = item.priority;
+  const deps = getDeps(itemId);
+  const trend = getTrend(itemId);
+  const promoted = priorityNum(newPriority) > priorityNum(oldPriority);
+
+  // Impact summary
+  const impacts: string[] = [];
+  if (promoted && deps.blocks.length > 0) {
+    impacts.push(`Unblocks ${deps.blocks.map(d => `**${shortTitle(d.title, 25)}**`).join(' and ')}`);
+  }
+  if (!promoted && deps.dependsOn.length > 0) {
+    impacts.push(`**${deps.dependsOn.map(d => shortTitle(d.title, 25)).join(' and ')}** depend on this — check with eng`);
+  }
+  if (promoted) {
+    impacts.push(`+$${item.estRevenue}K ARR now in ${newPriority} priority`);
+  }
+
+  const impactText = impacts.length > 0
+    ? `\n\n─── Impact ────────────────────────\n${impacts.map(i => `• ${i}`).join('\n')}`
+    : '';
+
+  // Notify line — specific to audience
+  const notifyLine = promoted
+    ? `Tell engineering — this changes sprint capacity. ${newPriority === 'now' ? 'Needs allocation immediately.' : 'Plan for upcoming cycle.'}`
+    : `Let the team know this is deprioritized. Free up any active capacity.`;
+
+  const cards: React.ReactNode[] = [
+    <ChangeCard key="applied-change" changes={[{
+      item: item.title,
+      from: oldPriority,
+      to: newPriority,
+      reason: `$${item.estRevenue}K ARR, ${item.customers} accounts, ${trend ? trendLabel(trend.direction) : 'stable'}`,
+    }]} />,
+  ];
+
   return {
-    text: `## Change applied\n\n**${item.title}** is now *${newPriority}*.\n\nYou may want to let your team know — especially if this changes sprint scope or timelines. You can also write a summary for stakeholders.`,
+    text: `## Change applied\n\n**${item.title}** moved from *${oldPriority}* to *${newPriority}*.\n\n${notifyLine}${impactText}`,
+    cards,
     pills: [
       { label: "Write an update for leadership", key: "uc4-leadership" },
       { label: "What else needs attention?", key: "uc5-drift" },
@@ -1607,12 +1643,32 @@ function buildApplySwap(cutId: string, addId: string): MessageContent {
   const addItem = getItem(addId);
   if (!cutItem || !addItem) return { text: "Items not found." };
 
+  const netARR = addItem.estRevenue - cutItem.estRevenue;
+  const netCust = addItem.customers - cutItem.customers;
+  const cutDeps = getDeps(cutId);
+  const addDeps = getDeps(addId);
+
+  const impacts: string[] = [];
+  if (cutDeps.blocks.length > 0) impacts.push(`**${cutDeps.blocks.map(d => shortTitle(d.title, 20)).join(', ')}** may be affected — ${shortTitle(cutItem.title, 20)} was blocking them`);
+  if (addDeps.dependsOn.length > 0) impacts.push(`**${shortTitle(addItem.title, 20)}** depends on ${addDeps.dependsOn.map(d => shortTitle(d.title, 20)).join(', ')} — make sure those ship first`);
+
+  const impactSection = impacts.length > 0
+    ? `\n\n─── Watch out ─────────────────────\n${impacts.map(i => `• ${i}`).join('\n')}`
+    : '';
+
+  const cards: React.ReactNode[] = [
+    <ChangeCard key="swap-applied" changes={[
+      { item: cutItem.title, from: cutItem.priority, to: 'later', reason: `Freed capacity` },
+      { item: addItem.title, from: roadmapData.find(r => r.id === addId) ? addItem.priority : 'Not on roadmap', to: 'now (Q2)', reason: `$${addItem.estRevenue}K ARR, ${addItem.customers} accounts` },
+    ]} />,
+  ];
+
   return {
-    text: `Done. Here's what changed:\n\n• **${cutItem.title}** moved from *${cutItem.priority}* to *later*\n• **${addItem.title}** moved to *now* (Q2)\n\nBoth changes are logged with evidence attribution. Your roadmap timeline has been updated.\n\n*Net impact: +$${addItem.estRevenue - cutItem.estRevenue}K addressable ARR, ${addItem.customers - cutItem.customers >= 0 ? '+' : ''}${addItem.customers - cutItem.customers} accounts.*`,
+    text: `## Swap applied\n\nNet impact: ${netARR >= 0 ? '+' : ''}$${netARR}K addressable ARR, ${netCust >= 0 ? '+' : ''}${netCust} accounts.\n\nTell engineering about the capacity shift — ${shortTitle(cutItem.title, 20)} is paused, ${shortTitle(addItem.title, 20)} needs allocation.${impactSection}`,
+    cards,
     pills: [
       { label: "Write a trade-off summary for leadership", key: "uc4-leadership" },
       { label: "What else needs attention?", key: "uc5-drift" },
-      { label: "Undo this change", key: "flow1-initial" },
     ],
   };
 }
@@ -1692,7 +1748,7 @@ function buildUC2Mismatch(): MessageContent {
       } else if (s.item.estRevenue < 100) {
         insight = ' The revenue impact is small relative to other Q2 items.';
       } else if (!recency || recency.includes('Feb') || recency.includes('Jan')) {
-        insight = ' No recent mentions — this may be a stale priority.';
+        insight = ' No recent mentions — this is a stale priority.';
       }
       findings.push({
         type: 'over-invested',
@@ -1737,7 +1793,7 @@ function buildUC2Mismatch(): MessageContent {
     const recency = recencyLabel(f.item.id);
     if (f.type === 'over-invested') {
       if (trend?.direction === 'declining') return `Demand has been dropping — likely a stale priority that hasn't been revisited.`;
-      if (f.item.customers < 20) return `Only ${f.item.customers} accounts are asking — may have been elevated by a single loud voice.`;
+      if (f.item.customers < 20) return `Only ${f.item.customers} accounts are asking — likely elevated by a single loud voice.`;
       if (recency && (recency.includes('Jan') || recency.includes('Feb'))) return `Last mentioned ${recency} — no recent signals to justify its position.`;
       return `Evidence doesn't match its priority — review whether this was a gut call or data-driven.`;
     } else if (f.type === 'under-invested') {
@@ -1761,7 +1817,7 @@ function buildUC2Mismatch(): MessageContent {
     const topChanges = findings.slice(0, 2).map(f => ({
       item: f.item.title,
       from: f.type === 'missing' ? 'Not on roadmap' : `${f.item.priority}`,
-      to: f.type === 'over-invested' ? 'Consider moving down' : f.type === 'missing' ? 'Add to roadmap' : 'Consider moving up',
+      to: f.type === 'over-invested' ? 'Move down' : f.type === 'missing' ? 'Add to roadmap' : 'Move up',
       reason: typeLabels[f.type],
     }));
     changeCards.push(<ChangeCard key="uc2-changes" changes={topChanges} />);
@@ -2082,7 +2138,7 @@ function buildUC5Drift(): MessageContent {
         item, trend, type: 'fading', magnitude: Math.abs(trend.mentionsDelta),
         severity: Math.abs(trend.mentionsDelta) >= 6 ? 'warning' : 'info',
         narrative: `**${item.title}** went quiet — ${Math.abs(trend.mentionsDelta)} fewer mentions, trend turned declining${recencyNote}. Still ${onRoadmap.priority} in your plan.`,
-        action: `may not be worth ${onRoadmap.priority} priority anymore`,
+        action: `isn't worth ${onRoadmap.priority} priority anymore`,
       });
     }
   }
@@ -2179,7 +2235,7 @@ function buildUC5Drift(): MessageContent {
     } else if (f.type === 'fading') {
       return { item: f.item.title, from: onRM?.priority || f.item.priority, to: 'later', reason: `${Math.abs(f.trend.mentionsDelta)} fewer mentions, declining demand` };
     } else if (f.type === 'new-signal') {
-      return { item: f.item.title, from: 'Not on roadmap', to: 'Consider adding', reason: `$${f.item.estRevenue}K ARR, +${f.trend.mentionsDelta} mentions, emerging signal` };
+      return { item: f.item.title, from: 'Not on roadmap', to: 'Add to roadmap', reason: `$${f.item.estRevenue}K ARR, +${f.trend.mentionsDelta} mentions, emerging signal` };
     }
     return null;
   }).filter(Boolean) as { item: string; from: string; to: string; reason: string }[];
