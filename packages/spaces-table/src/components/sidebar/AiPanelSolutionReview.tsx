@@ -1791,11 +1791,46 @@ function buildUC2Mismatch(): MessageContent {
    UC4: SUMMARIZE CHANGES FOR AUDIENCE
    ═══════════════════════════════════════════════════════════════ */
 
-function buildUC4Summary(audience: 'leadership' | 'engineering' | 'cs'): MessageContent {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - 30);
-  const recent = itemHistory.filter(h => new Date(h.date) >= cutoff);
+function buildUC4Summary(audience: 'leadership' | 'engineering' | 'cs', dateRange?: string): MessageContent {
+  // Parse date range — default to 30 days
+  const now = new Date('2026-04-10'); // fixed for demo consistency
+  let cutoff = new Date(now);
+  let rangeLabel = 'last 30 days';
 
+  if (dateRange) {
+    const lower = dateRange.toLowerCase();
+    if (lower.includes('week') || lower.includes('7 day')) {
+      cutoff.setDate(cutoff.getDate() - 7);
+      rangeLabel = 'this week';
+    } else if (lower.includes('2 week') || lower.includes('two week') || lower.includes('14 day')) {
+      cutoff.setDate(cutoff.getDate() - 14);
+      rangeLabel = 'last 2 weeks';
+    } else if (lower.includes('quarter') || lower.includes('90 day') || lower.includes('3 month')) {
+      cutoff.setDate(cutoff.getDate() - 90);
+      rangeLabel = 'this quarter';
+    } else if (lower.includes('month') || lower.includes('30 day')) {
+      cutoff.setDate(cutoff.getDate() - 30);
+      rangeLabel = 'last month';
+    } else {
+      // Try to parse "since March 8" / "since 2026-03-08"
+      const sinceMatch = lower.match(/since\s+(.+)/);
+      if (sinceMatch) {
+        const parsed = new Date(sinceMatch[1]);
+        if (!isNaN(parsed.getTime())) {
+          cutoff = parsed;
+          const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          rangeLabel = `since ${months[parsed.getMonth()]} ${parsed.getDate()}`;
+        }
+      }
+    }
+  } else {
+    cutoff.setDate(cutoff.getDate() - 30);
+  }
+
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dateHeader = `${months[cutoff.getMonth()]} ${cutoff.getDate()} – ${months[now.getMonth()]} ${now.getDate()}`;
+
+  const recent = itemHistory.filter(h => new Date(h.date) >= cutoff);
   const changes = recent.map(h => {
     const item = getItem(h.itemId);
     return { ...h, item };
@@ -1803,88 +1838,176 @@ function buildUC4Summary(audience: 'leadership' | 'engineering' | 'cs'): Message
 
   const audienceLabels = { leadership: 'Leadership', engineering: 'Engineering', cs: 'Customer Success' };
 
-  // Build narrative per audience
+  // Group changes when >5 by type
+  const grouped = {
+    priority: changes.filter(c => c.changeType === 'priority-changed'),
+    status: changes.filter(c => c.changeType === 'status-changed'),
+    scope: changes.filter(c => c.changeType === 'scope-changed'),
+    added: changes.filter(c => c.changeType === 'added'),
+    removed: changes.filter(c => c.changeType === 'removed'),
+  };
+
+  const shouldGroup = changes.length > 5;
+
+  // Compute net ARR impact
+  const promotedARR = grouped.priority.filter(c => priorityNum(c.to!) > priorityNum(c.from!)).reduce((s, c) => s + (c.item?.estRevenue || 0), 0);
+  const demotedARR = grouped.priority.filter(c => priorityNum(c.to!) < priorityNum(c.from!)).reduce((s, c) => s + (c.item?.estRevenue || 0), 0);
+  const addedARR = grouped.added.reduce((s, c) => s + (c.item?.estRevenue || 0), 0);
+  const removedARR = grouped.removed.reduce((s, c) => s + (c.item?.estRevenue || 0), 0);
+  const netARR = promotedARR + addedARR - demotedARR - removedARR;
+
+  // Find biggest open risk: high priority + weak evidence
+  const q2Items = roadmapData.filter(r => r.priority === 'now' && r.status !== 'done');
+  const allScored = [...roadmapData.filter(r => r.status !== 'done'), ...sampleData].map(i => ({ item: i, score: evidenceScore(i) })).sort((a, b) => b.score - a.score);
+  const weakestQ2 = q2Items.map(item => ({
+    item,
+    score: evidenceScore(item),
+    rank: allScored.findIndex(s => s.item.id === item.id) + 1,
+  })).sort((a, b) => a.score - b.score)[0];
+
   let intro = '';
   const bullets: string[] = [];
 
   if (audience === 'leadership') {
-    // Leadership cares about: strategic direction, ARR impact, risk to goals
     const totalARRImpact = changes.reduce((sum, c) => sum + (c.item?.estRevenue || 0), 0);
-    intro = `## Q2 roadmap update\n\n${changes.length} changes affecting ~$${totalARRImpact}K in addressable ARR.\n\n─── What shifted and why ──────────`;
-    for (const c of changes.slice(0, 5)) {
-      if (c.changeType === 'priority-changed') {
-        const direction = priorityNum(c.to!) > priorityNum(c.from!) ? 'Elevated' : 'Deprioritized';
-        bullets.push(`**${c.item!.title}** ($${c.item!.estRevenue}K ARR) — ${direction}. ${c.reason}`);
-      } else if (c.changeType === 'status-changed') {
-        bullets.push(`**${c.item!.title}** ($${c.item!.estRevenue}K ARR) — now ${c.to}. ${c.reason}`);
-      } else if (c.changeType === 'added') {
-        bullets.push(`**${c.item!.title}** ($${c.item!.estRevenue}K ARR) — added to roadmap based on customer demand. ${c.reason}`);
-      } else if (c.changeType === 'removed') {
-        bullets.push(`**${c.item!.title}** — removed. ${c.reason} This frees capacity for higher-impact work.`);
-      } else if (c.changeType === 'scope-changed') {
-        bullets.push(`**${c.item!.title}** — scope adjusted from "${c.from}" to "${c.to}". ${c.reason}`);
+    intro = `## Q2 Roadmap Update (${dateHeader})\n\n${changes.length} changes worth flagging:\n\n─── What shifted and why ──────────`;
+
+    if (shouldGroup) {
+      // Grouped format
+      if (grouped.priority.length > 0) {
+        const elevated = grouped.priority.filter(c => priorityNum(c.to!) > priorityNum(c.from!));
+        const deprioritized = grouped.priority.filter(c => priorityNum(c.to!) < priorityNum(c.from!));
+        if (elevated.length > 0) bullets.push(`**${elevated.length} items elevated:** ${elevated.map(c => `${c.item!.title} (${c.from} → ${c.to}, $${c.item!.estRevenue}K)`).join('; ')}`);
+        if (deprioritized.length > 0) bullets.push(`**${deprioritized.length} items deprioritized:** ${deprioritized.map(c => `${c.item!.title} (${c.from} → ${c.to})`).join('; ')}`);
+      }
+      if (grouped.added.length > 0) bullets.push(`**${grouped.added.length} added to roadmap:** ${grouped.added.map(c => `${c.item!.title} ($${c.item!.estRevenue}K)`).join('; ')}`);
+      if (grouped.removed.length > 0) bullets.push(`**${grouped.removed.length} removed:** ${grouped.removed.map(c => c.item!.title).join(', ')}`);
+      if (grouped.scope.length > 0) bullets.push(`**${grouped.scope.length} scope changes:** ${grouped.scope.map(c => `${c.item!.title} — "${c.from}" → "${c.to}"`).join('; ')}`);
+      if (grouped.status.length > 0) {
+        const shipped = grouped.status.filter(c => c.to === 'done');
+        const started = grouped.status.filter(c => c.to === 'in-progress');
+        if (shipped.length > 0) bullets.push(`**${shipped.length} shipped:** ${shipped.map(c => c.item!.title).join(', ')}`);
+        if (started.length > 0) bullets.push(`**${started.length} started:** ${started.map(c => c.item!.title).join(', ')}`);
+      }
+    } else {
+      for (const c of changes.slice(0, 5)) {
+        if (c.changeType === 'priority-changed') {
+          const direction = priorityNum(c.to!) > priorityNum(c.from!) ? 'moved up' : 'moved down';
+          bullets.push(`**${c.item!.title}** ${direction} from ${c.from} to ${c.to} ($${c.item!.estRevenue}K ARR, ${c.item!.customers} accounts). ${c.reason}`);
+        } else if (c.changeType === 'status-changed' && c.to === 'done') {
+          bullets.push(`**${c.item!.title}** shipped ($${c.item!.estRevenue}K ARR). ${c.reason}`);
+        } else if (c.changeType === 'status-changed') {
+          bullets.push(`**${c.item!.title}** now ${c.to} ($${c.item!.estRevenue}K ARR). ${c.reason}`);
+        } else if (c.changeType === 'added') {
+          bullets.push(`**${c.item!.title}** added to roadmap ($${c.item!.estRevenue}K ARR, ${c.item!.customers} accounts). ${c.reason}`);
+        } else if (c.changeType === 'removed') {
+          bullets.push(`**${c.item!.title}** archived. ${c.reason}`);
+        } else if (c.changeType === 'scope-changed') {
+          bullets.push(`**${c.item!.title}** rescoped from "${c.from}" to "${c.to}". ${c.reason}`);
+        }
       }
     }
+
+    // Net impact + risk line
+    const netLine = netARR >= 0
+      ? `Net: Q2 is ${netARR > 50 ? 'significantly ' : ''}more aligned with customer evidence than before.`
+      : `Net: Q2 shifted $${Math.abs(netARR)}K away from evidence-backed items — worth a check.`;
+    const riskLine = weakestQ2
+      ? ` Biggest open risk: **${shortTitle(weakestQ2.item.title, 30)}** is now priority but ranks #${weakestQ2.rank} by evidence ($${weakestQ2.item.estRevenue}K, ${weakestQ2.item.customers} accounts).`
+      : '';
+    bullets.push(`${netLine}${riskLine}`);
+
   } else if (audience === 'engineering') {
-    // Eng cares about: what to start/stop, capacity impact, dependencies
-    intro = `## Q2 engineering update\n\n${changes.length} changes that affect your sprint planning.\n\n─── Action items ──────────────────`;
-    for (const c of changes.slice(0, 5)) {
-      const deps = getDeps(c.item!.id);
-      const depNote = deps.blocks.length > 0 ? ` Blocks ${deps.blocks.map(d => shortTitle(d.title, 20)).join(', ')}.` : '';
-      if (c.changeType === 'status-changed' && c.to === 'in-progress') {
-        bullets.push(`**Start:** ${c.item!.title} — begin capacity planning.${depNote}`);
-      } else if (c.changeType === 'scope-changed') {
-        bullets.push(`**Rescope:** ${c.item!.title} — from "${c.from}" to "${c.to}". Re-estimate effort.`);
-      } else if (c.changeType === 'priority-changed') {
-        const up = priorityNum(c.to!) > priorityNum(c.from!);
-        bullets.push(`**${up ? 'Accelerate' : 'Pause'}:** ${c.item!.title} — ${c.from} → ${c.to}.${up ? ' Needs eng allocation.' : ' Free up that capacity.'}${depNote}`);
-      } else if (c.changeType === 'removed') {
-        bullets.push(`**Stop:** ${c.item!.title} — removed from roadmap. Halt any active work.${depNote}`);
+    intro = `## Q2 Engineering Update (${dateHeader})\n\n${changes.length} changes that affect your sprint planning.\n\n─── Action items ──────────────────`;
+
+    if (shouldGroup) {
+      const started = grouped.status.filter(c => c.to === 'in-progress');
+      const shipped = grouped.status.filter(c => c.to === 'done');
+      const accelerated = grouped.priority.filter(c => priorityNum(c.to!) > priorityNum(c.from!));
+      const paused = grouped.priority.filter(c => priorityNum(c.to!) < priorityNum(c.from!));
+      if (started.length > 0) bullets.push(`**Start (${started.length}):** ${started.map(c => { const d = getDeps(c.item!.id); return `${c.item!.title}${d.blocks.length > 0 ? ` (blocks ${d.blocks.map(b => shortTitle(b.title, 15)).join(', ')})` : ''}`; }).join('; ')}`);
+      if (accelerated.length > 0) bullets.push(`**Accelerate (${accelerated.length}):** ${accelerated.map(c => `${c.item!.title} (${c.from} → ${c.to})`).join('; ')}. Needs eng allocation.`);
+      if (paused.length > 0) bullets.push(`**Pause (${paused.length}):** ${paused.map(c => `${c.item!.title} (${c.from} → ${c.to})`).join('; ')}. Free up capacity.`);
+      if (grouped.scope.length > 0) bullets.push(`**Rescope (${grouped.scope.length}):** ${grouped.scope.map(c => `${c.item!.title} — "${c.from}" → "${c.to}"`).join('; ')}. Re-estimate effort.`);
+      if (shipped.length > 0) bullets.push(`**Shipped (${shipped.length}):** ${shipped.map(c => c.item!.title).join(', ')}`);
+      if (grouped.removed.length > 0) bullets.push(`**Stop (${grouped.removed.length}):** ${grouped.removed.map(c => c.item!.title).join(', ')}. Halt active work.`);
+    } else {
+      for (const c of changes.slice(0, 5)) {
+        const deps = getDeps(c.item!.id);
+        const depNote = deps.blocks.length > 0 ? ` Blocks ${deps.blocks.map(d => shortTitle(d.title, 20)).join(', ')}.` : '';
+        if (c.changeType === 'status-changed' && c.to === 'in-progress') {
+          bullets.push(`**Start:** ${c.item!.title} — begin capacity planning.${depNote}`);
+        } else if (c.changeType === 'status-changed' && c.to === 'done') {
+          bullets.push(`**Shipped:** ${c.item!.title} — close out any remaining tickets.${depNote}`);
+        } else if (c.changeType === 'scope-changed') {
+          bullets.push(`**Rescope:** ${c.item!.title} — from "${c.from}" to "${c.to}". Re-estimate effort.`);
+        } else if (c.changeType === 'priority-changed') {
+          const up = priorityNum(c.to!) > priorityNum(c.from!);
+          bullets.push(`**${up ? 'Accelerate' : 'Pause'}:** ${c.item!.title} — ${c.from} → ${c.to}.${up ? ' Needs eng allocation.' : ' Free up that capacity.'}${depNote}`);
+        } else if (c.changeType === 'removed') {
+          bullets.push(`**Stop:** ${c.item!.title} — removed from roadmap. Halt any active work.${depNote}`);
+        }
       }
     }
+
   } else {
-    // CS cares about: what to tell customers, timeline expectations, shipped features
-    intro = `## Customer-facing update\n\n${changes.length} changes your accounts may ask about.\n\n─── Talking points ────────────────`;
-    for (const c of changes.slice(0, 5)) {
-      const accountCount = c.item!.customers;
-      if (c.changeType === 'status-changed' && c.to === 'done') {
-        bullets.push(`**Shipped:** ${c.item!.title} — reach out to the ${accountCount} accounts that requested this.`);
-      } else if (c.changeType === 'priority-changed' && c.to === 'now') {
-        bullets.push(`**Coming soon:** ${c.item!.title} — ${accountCount} accounts asked for this. Now top priority for Q2.`);
-      } else if (c.changeType === 'added') {
-        bullets.push(`**New on roadmap:** ${c.item!.title} — ${accountCount} accounts requested it. Now officially planned.`);
-      } else if (c.changeType === 'scope-changed') {
-        bullets.push(`**Scope change:** ${c.item!.title} — adjusted to "${c.to}". Set expectations with the ${accountCount} accounts tracking this.`);
-      } else if (c.changeType === 'removed') {
-        bullets.push(`**Deprioritized:** ${c.item!.title} — prepare talking points for ${accountCount} accounts that were expecting this.`);
+    intro = `## Customer-Facing Update (${dateHeader})\n\n${changes.length} changes your accounts may ask about.\n\n─── Talking points ────────────────`;
+
+    if (shouldGroup) {
+      const shipped = grouped.status.filter(c => c.to === 'done');
+      const comingSoon = grouped.priority.filter(c => c.to === 'now');
+      const newItems = grouped.added;
+      const deprioritized = [...grouped.priority.filter(c => priorityNum(c.to!) < priorityNum(c.from!)), ...grouped.removed];
+      if (shipped.length > 0) bullets.push(`**Shipped (${shipped.length}):** ${shipped.map(c => `${c.item!.title} (${c.item!.customers} accounts)`).join('; ')}. Reach out to affected accounts.`);
+      if (comingSoon.length > 0) bullets.push(`**Coming soon (${comingSoon.length}):** ${comingSoon.map(c => `${c.item!.title} (${c.item!.customers} accounts)`).join('; ')}. Accounts can expect progress.`);
+      if (newItems.length > 0) bullets.push(`**New on roadmap (${newItems.length}):** ${newItems.map(c => `${c.item!.title} (${c.item!.customers} accounts)`).join('; ')}`);
+      if (deprioritized.length > 0) bullets.push(`**Deprioritized (${deprioritized.length}):** ${deprioritized.map(c => c.item!.title).join(', ')}. Prepare talking points for affected accounts.`);
+      if (grouped.scope.length > 0) bullets.push(`**Scope adjusted (${grouped.scope.length}):** ${grouped.scope.map(c => `${c.item!.title} — now "${c.to}"`).join('; ')}. Set expectations.`);
+    } else {
+      for (const c of changes.slice(0, 5)) {
+        const accountCount = c.item!.customers;
+        if (c.changeType === 'status-changed' && c.to === 'done') {
+          bullets.push(`**Shipped:** ${c.item!.title} — reach out to the ${accountCount} accounts that requested this.`);
+        } else if (c.changeType === 'priority-changed' && c.to === 'now') {
+          bullets.push(`**Coming soon:** ${c.item!.title} — ${accountCount} accounts asked for this. Now top priority for Q2.`);
+        } else if (c.changeType === 'priority-changed') {
+          const up = priorityNum(c.to!) > priorityNum(c.from!);
+          bullets.push(`**${up ? 'Moving up' : 'Deprioritized'}:** ${c.item!.title} — ${accountCount} accounts tracking this. ${up ? 'Progress expected sooner.' : 'Prepare talking points.'}`);
+        } else if (c.changeType === 'added') {
+          bullets.push(`**New on roadmap:** ${c.item!.title} — ${accountCount} accounts requested it. Now officially planned.`);
+        } else if (c.changeType === 'scope-changed') {
+          bullets.push(`**Scope change:** ${c.item!.title} — adjusted to "${c.to}". Set expectations with the ${accountCount} accounts tracking this.`);
+        } else if (c.changeType === 'removed') {
+          bullets.push(`**Deprioritized:** ${c.item!.title} — prepare talking points for ${accountCount} accounts that were expecting this.`);
+        }
       }
     }
   }
 
   if (bullets.length === 0) {
-    bullets.push('No significant changes in the last 30 days.');
+    bullets.push(`No significant changes in the ${rangeLabel}.`);
   }
 
-  const text = `${intro}\n${bullets.map(b => `• ${b}`).join('\n')}`;
-
-  // No card — the text IS the artifact the PM will copy-paste
+  const text = `${intro}\n${bullets.map((b, i) => `${i + 1}. ${b}`).join('\n')}`;
 
   const otherAudiences = (['leadership', 'engineering', 'cs'] as const).filter(a => a !== audience);
 
-  const dataForAI4 = { audience, changes: recent.map(h => ({ date: h.date, item: getItem(h.itemId)?.title, changeType: h.changeType, from: h.from, to: h.to, reason: h.reason })) };
+  const dataForAI4 = { audience, dateRange: rangeLabel, changes: recent.map(h => ({ date: h.date, item: getItem(h.itemId)?.title, changeType: h.changeType, from: h.from, to: h.to, reason: h.reason })) };
 
   return {
     text,
     textPromise: generateNarrative({ useCase: "uc4", structuredData: dataForAI4, fallbackText: text }).then(r => r.fromAI ? text + '\n\n' + r.text : text),
     loadingSteps: [
       "Scanning change history…",
+      `Filtering ${rangeLabel}…`,
       `Framing for ${audienceLabels[audience]}…`,
     ],
-    pills: [
+    pills: buildGuardedPills('architect', [
       { label: "Copy to clipboard", key: `copy-summary` },
       { label: `Rewrite for ${audienceLabels[otherAudiences[0]]}`, key: `uc4-${otherAudiences[0]}` },
       { label: `Rewrite for ${audienceLabels[otherAudiences[1]]}`, key: `uc4-${otherAudiences[1]}` },
-    ],
+    ], { recommendedAction: null }),
+    intentRoot: 'architect',
   };
 }
 
@@ -2001,11 +2124,15 @@ function routeInputRegex(text: string): MessageContent {
   // UC2: Plan vs demand mismatch
   if (/out of sync|mismatch|where.*wrong|over.?invest|under.?invest|sync.*demand|what.*missing|am i missing/i.test(lower)) return buildUC2Mismatch();
 
-  // UC4: Summarize changes for audience
-  if (/summarize|summary|update.*leadership|leadership.*update|write.*leadership/i.test(lower)) return buildUC4Summary('leadership');
-  if (/update.*eng|eng.*update|write.*eng|what.*changed.*eng/i.test(lower)) return buildUC4Summary('engineering');
-  if (/update.*cs|cs.*update|tell.*customer|customer success/i.test(lower)) return buildUC4Summary('cs');
-  if (/what changed|what.*different|changes.*since/i.test(lower)) return buildUC4Summary('leadership');
+  // UC4: Summarize changes for audience (with optional date range extraction)
+  const extractDateRange = (t: string): string | undefined => {
+    const m = t.match(/(?:this week|last (?:week|month|quarter)|since .+?(?:\d{4}|\d{1,2})|this month|this quarter|\d+ days?)/i);
+    return m ? m[0] : undefined;
+  };
+  if (/summarize|summary|update.*leadership|leadership.*update|write.*leadership/i.test(lower)) return buildUC4Summary('leadership', extractDateRange(lower));
+  if (/update.*eng|eng.*update|write.*eng|what.*changed.*eng/i.test(lower)) return buildUC4Summary('engineering', extractDateRange(lower));
+  if (/update.*cs|cs.*update|tell.*customer|customer success/i.test(lower)) return buildUC4Summary('cs', extractDateRange(lower));
+  if (/what changed|what.*different|changes.*since/i.test(lower)) return buildUC4Summary('leadership', extractDateRange(lower));
 
   // UC5: Drift detection
   if (/drift|hasn.?t.*looked|needs attention|stale|anything.*know|shifted|what.*changed.*since.*last/i.test(lower)) return buildUC5Drift();
@@ -2128,7 +2255,7 @@ function routeInputRegex(text: string): MessageContent {
 
 /* ─── Map AI-classified intent to builder ─── */
 function mapIntentToBuilder(classified: ClassifiedIntent): MessageContent {
-  const { intent, itemName, itemName2, audience, action } = classified;
+  const { intent, itemName, itemName2, audience, action, dateRange } = classified;
 
   // Strict item matching — requires real keyword overlap, not loose substring
   const findItem = (name?: string) => {
@@ -2192,7 +2319,7 @@ function mapIntentToBuilder(classified: ClassifiedIntent): MessageContent {
     case 'cut':
       return buildAltCut();
     case 'summarize':
-      return buildUC4Summary((audience as 'leadership' | 'engineering' | 'cs') || 'leadership');
+      return buildUC4Summary((audience as 'leadership' | 'engineering' | 'cs') || 'leadership', dateRange);
     case 'drift':
       return buildUC5Drift();
     case 'deep-dive':
@@ -2599,7 +2726,17 @@ function PanelBody({ activePage, focusItemId, onApplyReprioritize, onApplySwap }
     // Copy to clipboard
     if (pill.key === 'copy-summary') {
       const lastAi = [...messages].reverse().find(m => m.role === 'ai');
-      if (lastAi) navigator.clipboard?.writeText(lastAi.text.replace(/\*\*/g, '').replace(/\*/g, ''));
+      if (lastAi) {
+        // Strip markdown formatting for clean paste into Slack/email
+        const clean = lastAi.text
+          .replace(/^## /gm, '')              // strip ## headers
+          .replace(/^─+.*─+$/gm, '')          // strip ─── section dividers
+          .replace(/\*\*/g, '')               // strip bold markers
+          .replace(/\*/g, '')                 // strip italic markers
+          .replace(/\n{3,}/g, '\n\n')         // collapse excess newlines
+          .trim();
+        navigator.clipboard?.writeText(clean);
+      }
       addAiResponse(routePillKey(pill.key), pill.label);
       return;
     }

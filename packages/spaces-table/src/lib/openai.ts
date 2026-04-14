@@ -64,6 +64,7 @@ export interface ClassifiedIntent {
   itemName2?: string;
   audience?: string;
   action?: string;
+  dateRange?: string;
 }
 
 export async function classifyIntent(
@@ -99,6 +100,7 @@ Return ONLY a JSON object with these fields:
 - "itemName": the FULL title of the item from the lists above, if the user mentions one (optional)
 - "itemName2": ONLY for "swap" intent — the FULL title of the second item (optional)
 - "audience": for "summarize" only — "leadership", "engineering", or "cs" (optional)
+- "dateRange": for "summarize" only — the time period mentioned (e.g., "this week", "last month", "since March 8", "this quarter") (optional)
 
 CRITICAL RULES:
 1. "add-to-q2" vs "swap": If the user mentions ONE item to add/fast-track/trade-off for, use "add-to-q2". Use "swap" ONLY if user names BOTH a cut item AND an add item.
@@ -146,7 +148,11 @@ summarize:
 - "Write an update for engineering" → {"intent":"summarize","audience":"engineering"}
 - "What should CS tell customers?" → {"intent":"summarize","audience":"cs"}
 - "Tell my boss what changed" → {"intent":"summarize","audience":"leadership"}
-- "What happened on the roadmap this month?" → {"intent":"summarize","audience":"leadership"}
+- "What happened on the roadmap this month?" → {"intent":"summarize","audience":"leadership","dateRange":"last month"}
+- "Write a leadership update on Q2 changes since last month" → {"intent":"summarize","audience":"leadership","dateRange":"last month"}
+- "Summarize what changed this week for the eng team" → {"intent":"summarize","audience":"engineering","dateRange":"this week"}
+- "What should CS tell customers about Q2?" → {"intent":"summarize","audience":"cs"}
+- "What changed since March 8?" → {"intent":"summarize","audience":"leadership","dateRange":"since March 8"}
 
 drift:
 - "Has anything drifted?" → {"intent":"drift"}
