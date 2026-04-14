@@ -1029,6 +1029,7 @@ function buildFlow1NoEvidence(): MessageContent {
     ],
     pills: [
       { label: "Show me backlog items we're ignoring", key: "strongest-ignored" },
+      { label: "Deep dive into Savings & budgeting", key: "uc1-theme-Savings & budgeting" },
       { label: "Am I betting on the right things for Q2?", key: "flow1-initial" },
     ],
   };
