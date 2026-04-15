@@ -2639,7 +2639,7 @@ function renderTextWithLinks(text: string): React.ReactNode[] {
     // Data/detail line: starts with 3+ spaces (indented under a numbered item)
     if (line.startsWith('   ') && !trimmed.startsWith('•') && !trimmed.startsWith('-')) {
       elements.push(
-        <div key={`d-${i}`} style={{ fontSize: 13, color: "#6f7489", lineHeight: 1.5, paddingLeft: 28 }}>
+        <div key={`d-${i}`} style={{ fontSize: 13, color: "#6f7489", lineHeight: '150%', letterSpacing: 0, paddingLeft: 28, fontFamily: "'Open Sans', sans-serif" }}>
           {renderInlineFormatting(trimmed)}
         </div>
       );
@@ -2650,7 +2650,7 @@ function renderTextWithLinks(text: string): React.ReactNode[] {
     if (trimmed.startsWith('• ') || trimmed.startsWith('- ')) {
       const bulletText = trimmed.slice(2);
       elements.push(
-        <div key={`b-${i}`} style={{ display: "flex", gap: 8, fontSize: 14, color: "#222428", lineHeight: 1.55, paddingLeft: 4 }}>
+        <div key={`b-${i}`} style={{ display: "flex", gap: 8, fontSize: 14, color: "#222428", lineHeight: '150%', letterSpacing: 0, paddingLeft: 4, fontFamily: "'Open Sans', sans-serif" }}>
           <span style={{ color: "#9096A4", flexShrink: 0 }}>•</span>
           <span>{renderInlineFormatting(bulletText)}</span>
         </div>
@@ -2662,7 +2662,7 @@ function renderTextWithLinks(text: string): React.ReactNode[] {
     const numMatch = trimmed.match(/^(\d+)\.\s+(.+)$/);
     if (numMatch) {
       elements.push(
-        <div key={`n-${i}`} style={{ display: "flex", gap: 8, fontSize: 14, color: "#222428", lineHeight: 1.55, paddingLeft: 4 }}>
+        <div key={`n-${i}`} style={{ display: "flex", gap: 8, fontSize: 14, color: "#222428", lineHeight: '150%', letterSpacing: 0, paddingLeft: 4, fontFamily: "'Open Sans', sans-serif" }}>
           <span style={{ color: "#9096A4", flexShrink: 0, minWidth: 18, fontVariantNumeric: "tabular-nums" }}>{numMatch[1]}.</span>
           <span style={{ fontWeight: 500 }}>{renderInlineFormatting(numMatch[2])}</span>
         </div>
@@ -2670,9 +2670,9 @@ function renderTextWithLinks(text: string): React.ReactNode[] {
       continue;
     }
 
-    // Regular paragraph text
+    // Regular paragraph text — Miro DS body: 14px, 150% line-height, 0 letter-spacing
     elements.push(
-      <div key={`t-${i}`} style={{ fontSize: 14, color: "#222428", lineHeight: 1.6 }}>
+      <div key={`t-${i}`} style={{ fontSize: 14, color: "#222428", lineHeight: '150%', letterSpacing: 0, fontFamily: "'Open Sans', sans-serif" }}>
         {renderInlineFormatting(trimmed)}
       </div>
     );
@@ -2681,81 +2681,69 @@ function renderTextWithLinks(text: string): React.ReactNode[] {
   return elements;
 }
 
-/* ─── Inline formatting: **bold** and *italic* ─── */
-/* ─── Simple link icon (blue, no dropdown) ─── */
-function LinkIcon() {
-  const chipId = useRef(`link-${Math.random().toString(36).slice(2, 6)}`).current;
-  const open = useGlobalDropdown(chipId);
-  const ref = useRef<HTMLSpanElement>(null);
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const navigate = useContext(NavigateContext);
-
-  useEffect(() => {
-    if (!open) return;
-    let active = false;
-    const t = setTimeout(() => { active = true; }, 200);
-    const handler = (e: MouseEvent) => {
-      if (!active) return;
-      const target = e.target as Node;
-      if (ref.current?.contains(target)) return;
-      if (dropdownRef.current?.contains(target)) return;
-      setGlobalDropdown(null);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => { clearTimeout(t); document.removeEventListener("mousedown", handler); };
-  }, [open]);
-
+/* ─── Inline source chip (replaces LinkIcon) ─── */
+function SourceChip({ label }: { label?: string }) {
   return (
-    <span ref={ref} style={{ position: "relative", display: "inline-flex", verticalAlign: "middle", marginLeft: 4 }}>
-      <span
-        onClick={(e) => { e.stopPropagation(); setGlobalDropdown(open ? null : chipId); }}
-        style={{ display: "inline-flex", cursor: "pointer", background: open ? "#CADAFF" : "#E8EEFF", borderRadius: 4, padding: 2, transition: "background 150ms" }}
-      >
-        <IconLink size="small" color="#3859FF" />
-      </span>
-      {open && (() => {
-        const rect = ref.current?.getBoundingClientRect();
-        if (!rect) return null;
-        const items = [
-          { icon: <IconBoard size="small" />, text: "Add to board", onClick: () => setGlobalDropdown(null) },
-          { icon: <IconSquaresTwoOverlap size="small" />, text: "Copy", onClick: () => setGlobalDropdown(null) },
-          { icon: <IconEyeOpen size="small" />, text: "View details", onClick: () => { setGlobalDropdown(null); navigate('view-details', ''); } },
-          { icon: <IconInsights size="small" />, text: "Related evidence", onClick: () => { setGlobalDropdown(null); navigate('related-evidence', ''); } },
-        ];
-        return createPortal(
-          <div
-            ref={(el) => { dropdownRef.current = el; }}
-            style={{
-              position: "fixed",
-              top: rect.bottom + 4,
-              left: rect.left,
-              background: "#FFFFFF",
-              border: "0.5px solid #E9EAEF",
-              borderRadius: 8,
-              boxShadow: "0px 2px 4px rgba(34, 36, 40, 0.08)",
-              padding: "4px 0",
-              zIndex: 99999,
-              minWidth: 180,
-            }}
-          >
-            {items.map((item, i) => (
-              <div
-                key={i}
-                onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); item.onClick(); }}
-                onMouseEnter={e => (e.currentTarget.style.background = "#F7F8FA")}
-                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", cursor: "pointer", fontSize: 14, color: "#222428" }}
-              >
-                <span style={{ display: "flex", color: "#6f7489" }}>{item.icon}</span>
-                {item.text}
-              </div>
-            ))}
-          </div>,
-          document.body
-        );
-      })()}
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+        marginLeft: 4,
+        padding: "2px 8px",
+        fontSize: 12,
+        fontWeight: 600,
+        color: "#6f7489",
+        background: "#F1F2F5",
+        borderRadius: 4,
+        verticalAlign: "middle",
+        cursor: "pointer",
+        lineHeight: 1.4,
+        whiteSpace: "nowrap",
+      }}
+    >
+      <IconTable css={{ width: 12, height: 12, color: '#6f7489' } as any} />
+      {label || "Roadmap table"}
     </span>
   );
+}
+
+/* ─── Sources section (collapsible, shown after response) ─── */
+function SourcesSection() {
+  const [expanded, setExpanded] = useState(false);
+  const sources = [
+    { icon: <IconTable css={{ width: 14, height: 14, color: '#6f7489' } as any} />, name: "Roadmap table" },
+    { icon: <IconTable css={{ width: 14, height: 14, color: '#6f7489' } as any} />, name: "Backlog table" },
+    { icon: <IconInsights css={{ width: 14, height: 14, color: '#6f7489' } as any} />, name: "Insights evidence" },
+    { icon: <IconChatLinesTwo css={{ width: 14, height: 14, color: '#6f7489' } as any} />, name: "Customer quotes" },
+  ];
+
+  return (
+    <div style={{ marginTop: 12 }}>
+      <div
+        onClick={() => setExpanded(!expanded)}
+        style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#6f7489" }}
+      >
+        Sources ({sources.length})
+        <IconChevronDown size="small" color="icon-secondary" css={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 200ms', width: 14, height: 14 } as any} />
+      </div>
+      {expanded && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+          {sources.map((s, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "#222428", padding: "6px 0" }}>
+              {s.icon}
+              {s.name}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Legacy alias for LinkIcon references ─── */
+function LinkIcon() {
+  return <SourceChip />;
 }
 
 function renderInlineFormatting(text: string): React.ReactNode {
@@ -3183,6 +3171,11 @@ function PanelBody({ activePage, focusItemId, contextUserMessage, onApplyReprior
                     {card}
                   </div>
                 ))}
+
+                {/* Sources section — after cards, before pills */}
+                {(!shouldStream || streamedSet.has(msg.id)) && isLastAiMessage && (
+                  <SourcesSection />
+                )}
 
                 {/* Pills now render above the prompt bar, not here */}
               </React.Fragment>
