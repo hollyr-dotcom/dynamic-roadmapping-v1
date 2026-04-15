@@ -766,7 +766,9 @@ function buildFlow1Initial(): MessageContent {
   const onRoadmapCount = top5.filter(s => s.onRoadmap).length;
   const notOnRoadmapCount = top5.length - onRoadmapCount;
 
+  // Concise: answer + top 3 + one key finding. Depth behind pills.
   let text = `## Your Q2 priorities by evidence\n\n`;
+
   if (notOnRoadmapCount > 0) {
     const notOnRoadmapItems = top5.filter(s => !s.onRoadmap).map(s => `**${s.item.title}**`);
     text += `${onRoadmapCount} of your top 5 are on the roadmap. ${notOnRoadmapItems.join(', ')} ${notOnRoadmapCount === 1 ? 'isn\'t' : 'aren\'t'} — that's a gap worth closing.`;
@@ -774,74 +776,30 @@ function buildFlow1Initial(): MessageContent {
     text += `All top 5 are on your roadmap. Priorities align with demand.`;
   }
 
+  // Top 3 only — keep it scannable
+  text += `\n\n─── Top 3 by evidence ─────────────\n${top5.slice(0, 3).map(({ item, trend, onRoadmap }, i) => {
+    const dir = trend?.direction || 'stable';
+    const trendText = dir === 'growing' ? '{{green:↑ growing}}' : dir === 'declining' ? '{{red:↓ declining}}' : '→ stable';
+    const statusTag = !onRoadmap ? ' · {{red:not on roadmap}}' : '';
+    return `${i + 1}. ${item.title}\n   $${item.estRevenue}K · ${item.customers} accounts · ${trendText}${statusTag}`;
+  }).join('\n\n')}`;
+
+  // One key finding — the most important thing to act on
   if (disagreements.length > 0) {
-    text += `\n\n─── What stands out ───────────────\n${disagreements.slice(0, 2).map(d => `• ${d}`).join('\n')}`;
+    text += `\n\n${disagreements[0]}`;
+  } else if (noQuotes.length > 0) {
+    text += `\n\n${noQuotes.length} items need validation — no direct customer feedback yet.`;
+  } else {
+    text += `\n\nGood alignment. Check back after your next round of customer calls.`;
   }
-
-  if (noQuotes.length > 0) {
-    text += `\n\n─── No customer quotes ────────────\n${noQuotes.map(item => `• ${('jiraKey' in item ? (item as any).jiraKey + ' ' : '')}**${item.title}** — ${item.mentions} mentions, ${item.customers} customers but no verbatim feedback`).join('\n')}`;
-  }
-
-  if (disagreements.length === 0 && noQuotes.length === 0) {
-    text += `\nGood alignment — your top items match the evidence. Check back after your next round of customer calls.`;
-  }
-
-  // Card: impact estimates + ranked table
-  const cards: React.ReactNode[] = [
-    <div key="combined" style={{ borderRadius: 12, background: "#FFFFFF", border: "1px solid #E9EAEF", overflow: "hidden" }}>
-      <div style={{ padding: "16px 20px" }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#222428", marginBottom: 16 }}>Impact estimates</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px 16px" }}>
-          <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{totalMentions}</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Total Mentions</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{totalCustomers}</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Unique Customers</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{formattedARR}</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Combined ARR</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{q2.length}</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Q2 Items</div>
-          </div>
-        </div>
-      </div>
-      <div style={{ borderTop: "1px solid #F1F2F5" }}>
-        <div style={{ padding: "12px 20px", borderBottom: "1px solid #E9EAEF" }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>Top 5 by evidence strength</span>
-        </div>
-        {top5.map(({ item, trend, onRoadmap }) => {
-          const recency = recencyLabel(item.id);
-          return (
-            <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "10px 20px", borderBottom: "1px solid #f1f2f5" }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 400, color: "#222428", lineHeight: 1.4 }}>{item.title}</div>
-                {!onRoadmap && (
-                  <span style={{ display: "inline-block", fontSize: 11, fontWeight: 600, color: "#E53E3E", background: "#FFF5F5", borderRadius: 4, padding: "1px 6px", marginTop: 4 }}>Not on roadmap</span>
-                )}
-              </div>
-              <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12 }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "#222428", lineHeight: 1.4 }}>${item.estRevenue}K</span>
-                <div style={{ fontSize: 12, color: "#6f7489", fontWeight: 400 }}>{item.customers} accounts · {trendLabel(trend?.direction || 'stable')}</div>
-                {recency && <div style={{ fontSize: 11, color: "#AEB2C0", fontWeight: 400 }}>Last mentioned {recency}</div>}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>,
-  ];
 
   // Build pills — include promote if there's a disagreement
   const promotable = disagreements.length > 0 ? scored.find(s => s.priorityNum <= 2 && scored.indexOf(s) < 5) : null;
   const pills: { label: string; key: string }[] = [
-    ...(promotable ? [{ label: "Reprioritize based on this ranking", key: `reprioritize-promote-${promotable.item.id}` }] : []),
-    ...(themes.length > 0 ? [{ label: `Deep dive into ${themes[0].name}`, key: `uc1-theme-${themes[0].name}` }] : []),
-    { label: "Show items with weak evidence", key: "no-evidence" },
+    ...(noQuotes.length > 0 ? [{ label: `${noQuotes.length} items need validation`, key: "no-evidence" }] : []),
+    ...(disagreements.length > 1 ? [{ label: "What else stands out?", key: "uc2-mismatch" }] : []),
+    ...(themes.length > 0 ? [{ label: `Explore ${themes[0].name} theme`, key: `uc1-theme-${themes[0].name}` }] : []),
+    ...(promotable ? [{ label: "What should I reprioritize?", key: `reprioritize-promote-${promotable.item.id}` }] : []),
   ];
 
   const dataForAI = { top5: top5.map(s => ({ title: s.item.title, revenue: s.item.estRevenue, customers: s.item.customers, trend: s.trend?.direction, priority: s.item.priority })), disagreements: disagreements.slice(0, 2), themes: themes.slice(0, 1).map(t => ({ name: t.name, count: t.items.length, arr: t.combinedARR })), noQuoteCount: noQuotes.length };
@@ -851,7 +809,6 @@ function buildFlow1Initial(): MessageContent {
     textPromise: generateNarrative({ useCase: "uc1", structuredData: dataForAI, fallbackText: text }).then(r =>
       r.fromAI ? text + '\n\n' + r.text : text
     ),
-    cards,
     loadingSteps: [
       "Reading Roadmap and Backlog tables…",
       "Scoring by evidence strength…",
@@ -1408,9 +1365,9 @@ function buildAddToQ2(addItemId: string): MessageContent {
     text += `You'd need to move something down.`;
   }
 
-  text += `\n\n─── Other options ─────────────────\n${cutCandidates.slice(1, 4).map((c, i) =>
-    `• **${c.item.title}** — $${c.item.estRevenue}K, ${c.item.customers} customers. ${c.safetyLabel}.`
-  ).join('\n')}`;
+  if (cutCandidates.length > 1) {
+    text += `\n\n${cutCandidates.length - 1} other options available if you'd rather cut something else.`;
+  }
 
   const dataForAI3 = { adding: { title: addItem.title, revenue: addItem.estRevenue, trend: addTrend?.direction }, recommendedCut: recommended ? { title: recommended.item.title, revenue: recommended.item.estRevenue, trend: recommended.trend?.direction, safetyLabel: recommended.safetyLabel } : null, allOptions: cutCandidates.map(c => ({ title: c.item.title, safetyLabel: c.safetyLabel })) };
 
@@ -1845,11 +1802,13 @@ function buildUC2Mismatch(): MessageContent {
     }
   }
 
+  // Concise: top 2 findings. Full list behind pill.
+  const showFindings = findings.slice(0, 2);
   const text = findings.length === 0
-    ? `## Plan vs demand\n\nYour priorities match customer demand — well done. Check back after your next wave of customer research to see if anything shifted.`
-    : `## Plan vs demand\n\n${findings.length} gaps between your plan and what customers want. Biggest: **${findings[0].item.title}**.\n\n─── Mismatches ────────────────────\n${findings.map((f) => {
-        return `• **${f.item.title}** — ${typeLabels[f.type]}. ${mismatchRootCause(f)}`;
-      }).join('\n')}`;
+    ? `## Plan vs demand\n\nYour priorities match customer demand — well done. Check back after your next wave of customer research.`
+    : `## Plan vs demand\n\n${findings.length} gaps found. Biggest: **${findings[0].item.title}**.\n\n${showFindings.map((f) => {
+        return `• **${f.item.title}** — ${typeLabels[f.type]}.\n   ${mismatchRootCause(f)}`;
+      }).join('\n\n')}${findings.length > 2 ? `\n\n*+${findings.length - 2} more gaps — deep dive to see all.*` : ''}`;
 
   // Change card for the top actionable finding
   const changeCards: React.ReactNode[] = [];
@@ -2246,19 +2205,19 @@ function buildUC5Drift(): MessageContent {
     }
   }
 
-  // Build text
+  // Build text — concise: top 3 items + action line. Full list behind pill.
   let text = '';
   if (top.length === 0) {
-    text = `## What shifted\n\nNothing drifted — your roadmap still matches demand. You're in a good spot. Check back in a week or after your next customer calls.`;
+    text = `## What shifted\n\nNothing drifted — your roadmap still matches demand. Check back in a week or after your next customer calls.`;
   } else {
-    text = `## What shifted\n\n${top.length} things shifted in the last 4 weeks:\n\n─── What changed ──────────────────\n`;
-    text += top.map((f, i) => `${i + 1}. ${f.narrative}`).join('\n\n');
-
-    // Action summary — identify the clearest action candidates
     const actionable = top.filter(f => f.severity === 'critical' || f.severity === 'warning');
-    if (actionable.length > 0) {
-      text += `\n\n─── What you should do ────────────\n`;
-      text += actionable.map(f => `• **${shortTitle(f.item.title, 30)}** ${f.action}.`).join('\n');
+    const showCount = Math.min(top.length, 3);
+
+    text = `## What shifted\n\n${top.length} things shifted. ${actionable.length > 0 ? `${actionable.length} need your attention.` : 'Minor shifts — nothing urgent.'}\n\n`;
+    text += top.slice(0, showCount).map((f, i) => `${i + 1}. ${f.narrative}`).join('\n\n');
+
+    if (top.length > showCount) {
+      text += `\n\n*+${top.length - showCount} more — ask to see the full list.*`;
     }
   }
 
@@ -2647,15 +2606,15 @@ function renderTextWithLinks(text: string): React.ReactNode[] {
 
     // Empty line = spacing
     if (trimmed === '') {
-      elements.push(<div key={`sp-${i}`} style={{ height: 8 }} />);
+      elements.push(<div key={`sp-${i}`} style={{ height: 10 }} />);
       continue;
     }
 
-    // Section header: --- Title ---
+    // Section header: ─── Title ───
     const sectionMatch = trimmed.match(/^───\s*(.+?)\s*───+$/);
     if (sectionMatch) {
       elements.push(
-        <div key={`sec-${i}`} style={{ fontSize: 11, fontWeight: 700, color: "#6f7489", textTransform: "uppercase", letterSpacing: "0.5px", marginTop: 12, marginBottom: 4 }}>
+        <div key={`sec-${i}`} style={{ fontSize: 11, fontWeight: 700, color: "#9096A4", textTransform: "uppercase", letterSpacing: "0.8px", marginTop: 16, marginBottom: 6 }}>
           {sectionMatch[1]}
         </div>
       );
@@ -2665,8 +2624,18 @@ function renderTextWithLinks(text: string): React.ReactNode[] {
     // Main header: ## Title
     if (trimmed.startsWith('## ')) {
       elements.push(
-        <div key={`h-${i}`} style={{ fontSize: 15, fontWeight: 700, color: "#222428", marginBottom: 4, fontFamily: "var(--font-roobert)", fontFeatureSettings: "'ss01'" }}>
+        <div key={`h-${i}`} style={{ fontSize: 16, fontWeight: 700, color: "#222428", marginBottom: 6, lineHeight: 1.3 }}>
           {trimmed.slice(3)}
+        </div>
+      );
+      continue;
+    }
+
+    // Data/detail line: starts with 3+ spaces (indented under a numbered item)
+    if (line.startsWith('   ') && !trimmed.startsWith('•') && !trimmed.startsWith('-')) {
+      elements.push(
+        <div key={`d-${i}`} style={{ fontSize: 13, color: "#6f7489", lineHeight: 1.5, paddingLeft: 28 }}>
+          {renderInlineFormatting(trimmed)}
         </div>
       );
       continue;
@@ -2676,8 +2645,8 @@ function renderTextWithLinks(text: string): React.ReactNode[] {
     if (trimmed.startsWith('• ') || trimmed.startsWith('- ')) {
       const bulletText = trimmed.slice(2);
       elements.push(
-        <div key={`b-${i}`} style={{ display: "flex", gap: 8, fontSize: 14, color: "#222428", lineHeight: 1.5, paddingLeft: 4 }}>
-          <span style={{ color: "#6f7489", flexShrink: 0 }}>•</span>
+        <div key={`b-${i}`} style={{ display: "flex", gap: 8, fontSize: 14, color: "#222428", lineHeight: 1.55, paddingLeft: 4 }}>
+          <span style={{ color: "#9096A4", flexShrink: 0 }}>•</span>
           <span>{renderInlineFormatting(bulletText)}</span>
         </div>
       );
@@ -2688,15 +2657,15 @@ function renderTextWithLinks(text: string): React.ReactNode[] {
     const numMatch = trimmed.match(/^(\d+)\.\s+(.+)$/);
     if (numMatch) {
       elements.push(
-        <div key={`n-${i}`} style={{ display: "flex", gap: 8, fontSize: 14, color: "#222428", lineHeight: 1.5, paddingLeft: 4 }}>
-          <span style={{ color: "#6f7489", flexShrink: 0, minWidth: 16 }}>{numMatch[1]}.</span>
-          <span>{renderInlineFormatting(numMatch[2])}</span>
+        <div key={`n-${i}`} style={{ display: "flex", gap: 8, fontSize: 14, color: "#222428", lineHeight: 1.55, paddingLeft: 4 }}>
+          <span style={{ color: "#9096A4", flexShrink: 0, minWidth: 18, fontVariantNumeric: "tabular-nums" }}>{numMatch[1]}.</span>
+          <span style={{ fontWeight: 500 }}>{renderInlineFormatting(numMatch[2])}</span>
         </div>
       );
       continue;
     }
 
-    // Regular text with inline formatting
+    // Regular paragraph text
     elements.push(
       <div key={`t-${i}`} style={{ fontSize: 14, color: "#222428", lineHeight: 1.6 }}>
         {renderInlineFormatting(trimmed)}
@@ -2785,23 +2754,30 @@ function LinkIcon() {
 }
 
 function renderInlineFormatting(text: string): React.ReactNode {
-  const parts = text.split(/(\*\*.*?\*\*|\*[^*]+\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      const inner = part.slice(2, -2);
-      // Short bold (2 words or less, or ends with :) = label, no link icon
-      const isLabel = inner.split(/\s+/).length <= 2 || inner.endsWith(':');
-      if (isLabel) {
-        return <span key={i} style={{ fontWeight: 700 }}>{inner}</span>;
+  // First pass: extract color tokens {{green:text}} / {{red:text}}
+  const colorSplit = text.split(/(\{\{(?:green|red):[^}]+\}\})/g);
+  const colorParsed = colorSplit.map((segment, si) => {
+    const colorMatch = segment.match(/^\{\{(green|red):(.+)\}\}$/);
+    if (colorMatch) {
+      const color = colorMatch[1] === 'green' ? '#38A169' : '#E53E3E';
+      return <span key={`c${si}`} style={{ color, fontWeight: 600 }}>{colorMatch[2]}</span>;
+    }
+    // Second pass: parse bold/italic within non-color segments
+    const parts = segment.split(/(\*\*.*?\*\*|\*[^*]+\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        const inner = part.slice(2, -2);
+        const isLabel = inner.split(/\s+/).length <= 2 || inner.endsWith(':');
+        if (isLabel) return <span key={`${si}-${i}`} style={{ fontWeight: 700 }}>{inner}</span>;
+        return <span key={`${si}-${i}`}><span style={{ fontWeight: 700 }}>{inner}</span><LinkIcon /></span>;
       }
-      // Item reference = bold + link icon
-      return <span key={i}><span style={{ fontWeight: 700 }}>{inner}</span><LinkIcon /></span>;
-    }
-    if (part.startsWith('*') && part.endsWith('*')) {
-      return <span key={i} style={{ color: "#6f7489" }}>{part.slice(1, -1)}</span>;
-    }
-    return <span key={i}>{part}</span>;
+      if (part.startsWith('*') && part.endsWith('*')) {
+        return <span key={`${si}-${i}`} style={{ color: "#6f7489" }}>{part.slice(1, -1)}</span>;
+      }
+      return <span key={`${si}-${i}`}>{part}</span>;
+    });
   });
+  return colorParsed;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -2824,7 +2800,9 @@ function PanelBody({ activePage, focusItemId, contextUserMessage, onApplyReprior
   const [activeLoadingSteps, setActiveLoadingSteps] = useState<string[]>([]);
   const [streamedSet] = useState(() => new Set<number>());
   const [selectedFollowUp, setSelectedFollowUp] = useState<string | null>(null);
-  const [, forceUpdate] = useState(0);
+  const [activePills, setActivePills] = useState<{ label: string; key: string }[]>([]);
+  const [pillsDismissed, setPillsDismissed] = useState(false);
+  const [streamCompleteCounter, forceUpdate] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const msgIdRef = useRef(0);
 
@@ -2883,11 +2861,17 @@ function PanelBody({ activePage, focusItemId, contextUserMessage, onApplyReprior
   useEffect(() => {
     const newUserMsg = messages.length > prevMsgCount.current && messages[messages.length - 1]?.role === 'user';
     if (newUserMsg) {
-      userScrolledUpRef.current = false; // user just sent a message, follow the conversation
+      userScrolledUpRef.current = false;
+    }
+    // Update active pills from latest AI message — only after streaming completes
+    const lastAi = [...messages].reverse().find(m => m.role === 'ai');
+    if (lastAi?.pills && lastAi.pills.length > 0 && streamedSet.has(lastAi.id)) {
+      setActivePills(lastAi.pills);
+      setPillsDismissed(false);
     }
     prevMsgCount.current = messages.length;
     scrollToBottom();
-  }, [messages.length, isTyping, isLoading]);
+  }, [messages.length, isTyping, isLoading, streamCompleteCounter]);
 
   // MutationObserver — auto-scroll only if user is near bottom
   useEffect(() => {
@@ -3195,35 +3179,7 @@ function PanelBody({ activePage, focusItemId, contextUserMessage, onApplyReprior
                   </div>
                 ))}
 
-                {/* Follow-up checkboxes — only on the latest AI message */}
-                {isLastAiMessage && (!shouldStream || streamedSet.has(msg.id)) && msg.pills && msg.pills.length > 0 && (
-                  <div style={{ animation: "fadeSlideIn 400ms ease-out 200ms both" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                      {msg.pills.map(pill => (
-                        <CheckboxOption
-                          key={pill.key}
-                          label={pill.label}
-                          checked={selectedFollowUp === pill.key}
-                          onChange={(checked) => setSelectedFollowUp(checked ? pill.key : null)}
-                        />
-                      ))}
-                    </div>
-                    {selectedFollowUp && (
-                      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
-                        <Button
-                          size="medium"
-                          variant="primary"
-                          onPress={() => {
-                            const pill = msg.pills!.find(p => p.key === selectedFollowUp);
-                            if (pill) handlePillClick(pill);
-                          }}
-                        >
-                          Go
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
+                {/* Pills now render above the prompt bar, not here */}
               </React.Fragment>
             );
           })}
@@ -3234,6 +3190,68 @@ function PanelBody({ activePage, focusItemId, contextUserMessage, onApplyReprior
           {/* Typing dots removed — loading steps are sufficient */}
         </div>
       </div>
+      {/* Chip pills above prompt bar — fixed bottom zone */}
+      {activePills.length > 0 && !pillsDismissed && !isLoading && !isTyping && (
+        <div style={{ flexShrink: 0, padding: "8px 16px 4px", position: "relative", animation: "fadeSlideIn 300ms ease-out both" }}>
+          {/* Dismiss X — top right */}
+          <button
+            onClick={() => setPillsDismissed(true)}
+            style={{
+              position: "absolute",
+              top: 8,
+              right: 16,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 24,
+              height: 24,
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "#656B81",
+              padding: 0,
+            }}
+          >
+            <IconCross size="small" />
+          </button>
+          {/* Pill chips */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, paddingRight: 36 }}>
+            {activePills.map(pill => (
+              <button
+                key={pill.key}
+                onClick={() => { setPillsDismissed(true); handlePillClick(pill); }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "8px 12px",
+                  maxWidth: 260,
+                  height: 37,
+                  background: "#FFFFFF",
+                  border: "1px solid #E7E7E5",
+                  boxShadow: "0px 2px 4px rgba(34, 36, 40, 0.08)",
+                  borderRadius: 16,
+                  cursor: "pointer",
+                  fontSize: 13,
+                  fontWeight: 400,
+                  color: "#222428",
+                  fontFamily: "'Open Sans', sans-serif",
+                  lineHeight: 1.3,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  transition: "box-shadow 150ms, border-color 150ms",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = "0px 4px 8px rgba(34,36,40,0.12)"; e.currentTarget.style.borderColor = "#D0D0CE"; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = "0px 2px 4px rgba(34,36,40,0.08)"; e.currentTarget.style.borderColor = "#E7E7E5"; }}
+              >
+                <span style={{ color: "#656B81", flexShrink: 0, fontSize: 14 }}>→</span>
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{pill.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <PanelInput onSend={handleChatSend} />
     </>
   );
