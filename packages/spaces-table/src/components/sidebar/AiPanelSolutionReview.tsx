@@ -975,12 +975,12 @@ function buildFlow1NoEvidence(): MessageContent {
 
   const bulletLines = noQuotes.map(item => {
     const trend = getTrend(item.id);
-    const risk = trend?.direction === 'declining' ? 'declining demand — highest risk' : trend?.direction === 'growing' ? 'growing demand — validate soon' : 'stable';
-    return `• **${item.title}** — $${item.estRevenue}K, ${risk}`;
-  }).join('\n');
+    const riskColor = trend?.direction === 'declining' ? '{{red:declining — highest risk}}' : trend?.direction === 'growing' ? '{{green:growing — validate soon}}' : '→ stable';
+    return `• ${item.title}\n   $${item.estRevenue}K · ${item.customers} accounts · ${riskColor}`;
+  }).join('\n\n');
 
   return {
-    text: `## Blind bets in your Q2\n\n$${totalBlindARR}K of your Q2 ARR has no customer quotes behind it. If the quantitative signals are misleading, you won't catch it until it's too late.\n\n─── What to do ────────────────────\nSchedule customer interviews for these ${noQuotes.length} items — starting with **${highestBlind.title}** ($${highestBlind.estRevenue}K), your biggest unvalidated bet.\n\n─── Items ─────────────────────────\n${bulletLines}`,
+    text: `## Needs validation\n\n$${totalBlindARR}K of your Q2 ARR has no direct customer feedback behind it.\n\n─── What to do ────────────────────\nSchedule customer interviews for these ${noQuotes.length} items — starting with **${highestBlind.title}**, your biggest unvalidated bet.\n\n─── Items ─────────────────────────\n${bulletLines}`,
     loadingSteps: [
       "Scanning customer evidence…",
       "Checking Insights research data…",
@@ -1019,17 +1019,17 @@ function buildFlow1Worried(): MessageContent {
   const risks: { label: string; detail: string; urgency: number }[] = [];
   if (decliningQ2.length > 0) {
     const topDeclining = decliningQ2.sort((a, b) => b.estRevenue - a.estRevenue)[0];
-    risks.push({ label: 'Fading demand', detail: `${decliningQ2.length} Q2 items have declining demand. Biggest: **${topDeclining.title}** ($${topDeclining.estRevenue}K) — move it down or validate with customers.`, urgency: decliningQ2.reduce((s, i) => s + i.estRevenue, 0) });
+    risks.push({ label: 'Fading demand', detail: `${decliningQ2.length} Q2 items have {{red:declining}} demand.\n   Biggest: ${topDeclining.title} ($${topDeclining.estRevenue}K) — move it down or validate.`, urgency: decliningQ2.reduce((s, i) => s + i.estRevenue, 0) });
   }
   if (noQuotes.length > 0) {
     const blindARR = noQuotes.reduce((s, r) => s + r.estRevenue, 0);
-    risks.push({ label: 'Blind bets', detail: `${noQuotes.length} Q2 items ($${blindARR}K) have zero customer quotes — you're investing based on numbers alone. Schedule interviews.`, urgency: blindARR });
+    risks.push({ label: 'Needs validation', detail: `${noQuotes.length} Q2 items ($${blindARR}K) have no direct customer feedback.\n   Schedule interviews to validate these bets.`, urgency: blindARR });
   }
   if (depPairs.length > 0) {
-    risks.push({ label: 'Dependency chains', detail: `${depPairs.length} blocking chains. If **${depPairs[0].from.title.split(' ').slice(0, 4).join(' ')}** slips, **${depPairs[0].to.title.split(' ').slice(0, 4).join(' ')}** is stuck too.`, urgency: depPairs.length * 100 });
+    risks.push({ label: 'Dependency chains', detail: `${depPairs.length} blocking chains.\n   If ${depPairs[0].from.title.split(' ').slice(0, 4).join(' ')} slips, ${depPairs[0].to.title.split(' ').slice(0, 4).join(' ')} is stuck too.`, urgency: depPairs.length * 100 });
   }
   if (backlogBlindSpots.length > 0) {
-    risks.push({ label: 'Missed opportunities', detail: `${backlogBlindSpots.map(item => `**${item.title}**`).join(' and ')} have stronger evidence than some Q2 items but aren't on your roadmap.`, urgency: backlogBlindSpots.reduce((s, i) => s + i.estRevenue, 0) });
+    risks.push({ label: 'Missed opportunities', detail: `${backlogBlindSpots.map(item => item.title).join(' and ')} have stronger evidence than some Q2 items.\n   Not on your roadmap yet.`, urgency: backlogBlindSpots.reduce((s, i) => s + i.estRevenue, 0) });
   }
   risks.sort((a, b) => b.urgency - a.urgency);
 
@@ -1409,10 +1409,10 @@ function buildAltCut(): MessageContent {
     text += `**${safest.item.title}** is the safest — ${reason}, nothing depends on it.\n\n`;
   }
   text += `─── All options by risk ────────────\n`;
-  text += ranked.slice(0, 4).map((r, i) => {
-    const risk = r.deps.blocks.length > 0 ? 'blocks other items' : r.hasQuotes ? 'has customer quotes' : 'clean — no dependencies or quotes';
-    return `• **${shortTitle(r.item.title, 35)}** — $${r.item.estRevenue}K, ${r.item.customers} customers. ${risk}.`;
-  }).join('\n');
+  text += ranked.slice(0, 3).map((r, i) => {
+    const risk = r.deps.blocks.length > 0 ? '{{red:blocks other items}}' : r.hasQuotes ? 'has customer quotes' : '{{green:clean — no dependencies or quotes}}';
+    return `${i + 1}. ${r.item.title}\n   $${r.item.estRevenue}K · ${r.item.customers} accounts · ${risk}`;
+  }).join('\n\n');
 
   // Change card for the safest cut
   const cards: React.ReactNode[] = [];
@@ -1693,9 +1693,13 @@ function getTrend(id: string) {
   return demandTrend.find(t => t.itemId === id);
 }
 
-/* ─── Helper: trend label ─── */
+/* ─── Helper: trend label (plain text — for cards/JSX) ─── */
 function trendLabel(dir: string): string {
   return dir === 'growing' ? '↑ growing' : dir === 'declining' ? '↓ declining' : '→ stable';
+}
+/* ─── Helper: colored trend (for text rendered by renderTextWithLinks) ─── */
+function colorTrend(dir: string): string {
+  return dir === 'growing' ? '{{green:↑ growing}}' : dir === 'declining' ? '{{red:↓ declining}}' : '→ stable';
 }
 
 /* ─── Helper: recency label ─── */
@@ -1752,7 +1756,7 @@ function buildUC2Mismatch(): MessageContent {
         type: 'over-invested',
         item: s.item,
         severity: Math.abs(severity),
-        detail: `**${s.item.title}** is *${s.item.priority}* but ranks #${s.evidenceRank} by evidence — $${s.item.estRevenue}K, ${s.item.customers} customers, ${trendLabel(trend?.direction || 'stable')}${recency ? `, last mentioned ${recency}` : ''}.${insight}`,
+        detail: `${s.item.title} — *${s.item.priority}* but ranks #${s.evidenceRank} by evidence.\n   $${s.item.estRevenue}K · ${s.item.customers} accounts · ${colorTrend(trend?.direction || 'stable')}${recency ? ` · ${recency}` : ''}${insight ? `\n   ${insight.trim()}` : ''}`,
       });
     }
   }
@@ -1775,7 +1779,7 @@ function buildUC2Mismatch(): MessageContent {
         type,
         item: s.item,
         severity: Math.abs(severity),
-        detail: `**${s.item.title}** ${s.onRoadmap ? `is only *${s.item.priority}*` : 'isn\'t on your roadmap'} but has $${s.item.estRevenue}K revenue from ${s.item.customers} customers, ${trendLabel(trend?.direction || 'stable')}${recency ? `, last mentioned ${recency}` : ''}.${insight}`,
+        detail: `${s.item.title} — ${s.onRoadmap ? `only *${s.item.priority}*` : '{{red:not on roadmap}}'} but strong evidence.\n   $${s.item.estRevenue}K · ${s.item.customers} accounts · ${colorTrend(trend?.direction || 'stable')}${recency ? ` · ${recency}` : ''}${insight ? `\n   ${insight.trim()}` : ''}`,
       });
     }
   }
@@ -1941,37 +1945,37 @@ function buildUC4Summary(audience: 'leadership' | 'engineering' | 'cs', dateRang
     intro = `## Q2 Roadmap Update (${dateHeader})\n\n${changes.length} changes worth flagging:\n\n─── What shifted and why ──────────`;
 
     if (shouldGroup) {
-      // Grouped format
+      // Grouped format — each item on its own indented line
       if (grouped.priority.length > 0) {
         const elevated = grouped.priority.filter(c => priorityNum(c.to!) > priorityNum(c.from!));
         const deprioritized = grouped.priority.filter(c => priorityNum(c.to!) < priorityNum(c.from!));
-        if (elevated.length > 0) bullets.push(`**${elevated.length} items elevated:** ${elevated.map(c => `${c.item!.title} (${c.from} → ${c.to}, $${c.item!.estRevenue}K)`).join('; ')}`);
-        if (deprioritized.length > 0) bullets.push(`**${deprioritized.length} items deprioritized:** ${deprioritized.map(c => `${c.item!.title} (${c.from} → ${c.to})`).join('; ')}`);
+        if (elevated.length > 0) bullets.push(`**${elevated.length} {{green:moved up}}:**\n${elevated.map(c => `   ${c.item!.title} · ${c.from} → ${c.to} · $${c.item!.estRevenue}K`).join('\n')}`);
+        if (deprioritized.length > 0) bullets.push(`**${deprioritized.length} {{red:moved down}}:**\n${deprioritized.map(c => `   ${c.item!.title} · ${c.from} → ${c.to}`).join('\n')}`);
       }
-      if (grouped.added.length > 0) bullets.push(`**${grouped.added.length} added to roadmap:** ${grouped.added.map(c => `${c.item!.title} ($${c.item!.estRevenue}K)`).join('; ')}`);
-      if (grouped.removed.length > 0) bullets.push(`**${grouped.removed.length} removed:** ${grouped.removed.map(c => c.item!.title).join(', ')}`);
-      if (grouped.scope.length > 0) bullets.push(`**${grouped.scope.length} scope changes:** ${grouped.scope.map(c => `${c.item!.title} — "${c.from}" → "${c.to}"`).join('; ')}`);
+      if (grouped.added.length > 0) bullets.push(`**${grouped.added.length} added to roadmap:**\n${grouped.added.map(c => `   ${c.item!.title} · $${c.item!.estRevenue}K`).join('\n')}`);
+      if (grouped.removed.length > 0) bullets.push(`**${grouped.removed.length} removed:**\n${grouped.removed.map(c => `   ${c.item!.title}`).join('\n')}`);
+      if (grouped.scope.length > 0) bullets.push(`**${grouped.scope.length} scope changed:**\n${grouped.scope.map(c => `   ${c.item!.title} · "${c.from}" → "${c.to}"`).join('\n')}`);
       if (grouped.status.length > 0) {
         const shipped = grouped.status.filter(c => c.to === 'done');
         const started = grouped.status.filter(c => c.to === 'in-progress');
-        if (shipped.length > 0) bullets.push(`**${shipped.length} shipped:** ${shipped.map(c => c.item!.title).join(', ')}`);
-        if (started.length > 0) bullets.push(`**${started.length} started:** ${started.map(c => c.item!.title).join(', ')}`);
+        if (shipped.length > 0) bullets.push(`**${shipped.length} shipped:**\n${shipped.map(c => `   ${c.item!.title}`).join('\n')}`);
+        if (started.length > 0) bullets.push(`**${started.length} now in progress:**\n${started.map(c => `   ${c.item!.title}`).join('\n')}`);
       }
     } else {
       for (const c of changes.slice(0, 5)) {
         if (c.changeType === 'priority-changed') {
-          const direction = priorityNum(c.to!) > priorityNum(c.from!) ? 'moved up' : 'moved down';
-          bullets.push(`**${c.item!.title}** ${direction} from ${c.from} to ${c.to} ($${c.item!.estRevenue}K ARR, ${c.item!.customers} accounts). ${c.reason}`);
+          const dir = priorityNum(c.to!) > priorityNum(c.from!) ? '{{green:moved up}}' : '{{red:moved down}}';
+          bullets.push(`${c.item!.title} — ${dir} from ${c.from} to ${c.to}\n   $${c.item!.estRevenue}K ARR · ${c.item!.customers} accounts · ${c.reason}`);
         } else if (c.changeType === 'status-changed' && c.to === 'done') {
-          bullets.push(`**${c.item!.title}** shipped ($${c.item!.estRevenue}K ARR). ${c.reason}`);
+          bullets.push(`${c.item!.title} — shipped\n   $${c.item!.estRevenue}K ARR · ${c.reason}`);
         } else if (c.changeType === 'status-changed') {
-          bullets.push(`**${c.item!.title}** now ${c.to} ($${c.item!.estRevenue}K ARR). ${c.reason}`);
+          bullets.push(`${c.item!.title} — now ${c.to}\n   $${c.item!.estRevenue}K ARR · ${c.reason}`);
         } else if (c.changeType === 'added') {
-          bullets.push(`**${c.item!.title}** added to roadmap ($${c.item!.estRevenue}K ARR, ${c.item!.customers} accounts). ${c.reason}`);
+          bullets.push(`${c.item!.title} — added to roadmap\n   $${c.item!.estRevenue}K ARR · ${c.item!.customers} accounts · ${c.reason}`);
         } else if (c.changeType === 'removed') {
-          bullets.push(`**${c.item!.title}** archived. ${c.reason}`);
+          bullets.push(`${c.item!.title} — removed\n   ${c.reason}`);
         } else if (c.changeType === 'scope-changed') {
-          bullets.push(`**${c.item!.title}** rescoped from "${c.from}" to "${c.to}". ${c.reason}`);
+          bullets.push(`${c.item!.title} — scope changed\n   "${c.from}" → "${c.to}" · ${c.reason}`);
         }
       }
     }
