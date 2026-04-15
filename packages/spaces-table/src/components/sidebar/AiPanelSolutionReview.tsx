@@ -762,18 +762,19 @@ function buildFlow1Initial(): MessageContent {
   const noQuotes = q2.filter(r => !customerQuotes[r.id] || customerQuotes[r.id].length === 0);
   const weakEvidence = scored.filter(s => s.priorityNum >= 3 && s.score < scored[Math.floor(scored.length / 2)]?.score);
 
-  // Build structured text
-  const onRoadmapCount = top5.filter(s => s.onRoadmap).length;
-  const notOnRoadmapCount = top5.length - onRoadmapCount;
+  // Build structured text — count from the 3 we show, not all 5
+  const shown = top5.slice(0, 3);
+  const onRoadmapCount = shown.filter(s => s.onRoadmap).length;
+  const notOnRoadmapCount = shown.length - onRoadmapCount;
 
   // Concise: answer + top 3 + one key finding. Depth behind pills.
   let text = `## Your Q2 priorities by evidence\n\n`;
 
   if (notOnRoadmapCount > 0) {
     const notOnRoadmapItems = top5.filter(s => !s.onRoadmap).map(s => `**${s.item.title}**`);
-    text += `${onRoadmapCount} of your top 5 are on the roadmap. ${notOnRoadmapItems.join(', ')} ${notOnRoadmapCount === 1 ? 'isn\'t' : 'aren\'t'} — that's a gap worth closing.`;
+    text += `${onRoadmapCount} of your top 3 are on the roadmap. ${notOnRoadmapItems.join(', ')} ${notOnRoadmapCount === 1 ? 'isn\'t' : 'aren\'t'} — that's a gap worth closing.`;
   } else {
-    text += `All top 5 are on your roadmap. Priorities align with demand.`;
+    text += `Your top 3 are all on your roadmap. Priorities align with demand.`;
   }
 
   // Top 3 only — keep it scannable
