@@ -226,9 +226,9 @@ function CheckboxOption({ label, checked, onChange }: { label: string; checked: 
 /* ─── User message bubble ─── */
 function UserBubble({ text }: { text: string }) {
   return (
-    <div style={{ display: "flex", justifyContent: "flex-end", paddingLeft: 48 }}>
-      <div style={{ background: "#F4F4F1", borderRadius: 16, padding: "12px 16px" }}>
-        <span style={{ fontSize: 14, fontWeight: 400, color: "#222428", lineHeight: 1.5 }}>{text}</span>
+    <div style={{ display: "flex", justifyContent: "flex-end" }}>
+      <div style={{ background: "#F4F4F1", borderRadius: 16, padding: "12px 16px", maxWidth: 260 }}>
+        <span style={{ fontSize: 14, fontWeight: 400, color: "#222428", lineHeight: '150%', fontFamily: "'Open Sans', sans-serif" }}>{text}</span>
       </div>
     </div>
   );
@@ -302,7 +302,7 @@ function AnalysingIndicator({ steps }: { steps?: string[] }) {
         style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "4px 0" }}
       >
         <img src="/logo-spinner.png" alt="" width={20} height={20} style={{ flexShrink: 0 }} />
-        <span style={{ fontSize: 14, fontWeight: 400, color: "#656B81", lineHeight: 1.5 }}>
+        <span style={{ fontSize: 14, fontWeight: 400, color: "#A4A39E", lineHeight: '100%', fontFamily: "'Open Sans', sans-serif" }}>
           {currentStep}
         </span>
         <IconChevronDown size="small" color="icon-secondary" css={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 200ms' } as any} />
@@ -315,9 +315,9 @@ function AnalysingIndicator({ steps }: { steps?: string[] }) {
             <div
               key={i}
               style={{
-                fontSize: 13,
-                color: "#656B81",
-                lineHeight: 1.5,
+                fontSize: 14,
+                color: "#A4A39E",
+                lineHeight: '100%',
                 opacity: i <= revealed ? 1 : 0,
                 transition: "opacity 300ms ease-out",
                 display: "flex",
@@ -355,7 +355,7 @@ function CompletedSteps({ steps }: { steps: string[] }) {
         onClick={() => setExpanded(!expanded)}
         style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "4px 0" }}
       >
-        <span style={{ fontSize: 13, fontWeight: 400, color: "#AEB2C0", lineHeight: 1.5 }}>
+        <span style={{ fontSize: 14, fontWeight: 400, color: "#A4A39E", lineHeight: '100%', fontFamily: "'Open Sans', sans-serif" }}>
           {lastStep}
         </span>
         <IconChevronDown size="small" color="icon-secondary" css={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 200ms' } as any} />
@@ -363,7 +363,7 @@ function CompletedSteps({ steps }: { steps: string[] }) {
       {expanded && (
         <div style={{ marginLeft: 8, borderLeft: "1.5px solid #E9EAEF", paddingLeft: 16, display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
           {steps.map((step, i) => (
-            <div key={i} style={{ fontSize: 13, color: "#AEB2C0", lineHeight: 1.5, display: "flex", alignItems: "center", gap: 8 }}>
+            <div key={i} style={{ fontSize: 14, color: "#A4A39E", lineHeight: '100%', display: "flex", alignItems: "center", gap: 8, fontFamily: "'Open Sans', sans-serif" }}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
                 <circle cx="8" cy="8" r="7" stroke="#AEB2C0" strokeWidth="1" fill="none" />
                 <path d="M5 8l2.5 2.5L11 6" stroke="#AEB2C0" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
