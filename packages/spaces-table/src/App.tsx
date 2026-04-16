@@ -566,6 +566,64 @@ export function App() {
 
   return (
     <div className="relative w-screen h-screen bg-white overflow-hidden">
+      {/* Full-screen Sidekick chat — overview only, covers everything */}
+      {overviewFullChat && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: '#FFFFFF',
+          zIndex: 9999,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}>
+          {/* Header */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '0 12px 0 24px',
+            height: 56,
+            flexShrink: 0,
+            borderBottom: '0.5px solid #E9EAEF',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: '#222428', fontFamily: "'Open Sans', sans-serif" }}>Sidekick</span>
+              <IconChevronDown size="small" color="icon-secondary" />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <IconButton size="medium" variant="ghost-neutral" onPress={() => {}} aria-label="New chat">
+                <IconSquarePencil />
+              </IconButton>
+              <IconButton size="medium" variant="ghost-neutral" onPress={() => {}} aria-label="History">
+                <IconClockCounterClockwise />
+              </IconButton>
+              <IconButton size="medium" variant="ghost-neutral" onPress={() => {}} aria-label="More">
+                <IconDotsThreeVertical />
+              </IconButton>
+              <IconButton size="medium" variant="ghost-neutral" onPress={() => { setOverviewFullChat(false); setActiveSidebar('ai-sidekick'); }} aria-label="Collapse">
+                <IconArrowsInSimple />
+              </IconButton>
+            </div>
+          </div>
+          {/* Chat body — centered 680px column */}
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
+            <div style={{ width: 680, maxWidth: '100%', height: '100%' }}>
+              <AiPanelSolutionReview
+                key={sidekickKey}
+                activePage={activePage}
+                focusItemId={sidekickFocusItemId}
+                contextUserMessage={sidekickContextMessage}
+                onApplyReprioritize={handleApplyReprioritize}
+                onApplySwap={handleApplySwap}
+                liveRoadmapItems={roadmapItems}
+                liveBacklogItems={backlogData}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main app layout — scales down when canvas opens */}
       <div
         className="flex w-full h-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
@@ -609,65 +667,7 @@ export function App() {
             <DataTable key="empty-overview" data={[]} fields={pageFields} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={(title) => { closeSidebar(); setShowSharePopover(false); setOverviewHasData(true); setBacklogData([{ id: 'new-1', title: title || '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]); setTimeout(() => setShowImportPopover(true), 800) }} activePage="overview" animateIn={!isInitialLoad} onEmptyInteract={closeSidebar} />
           )}
 
-          {/* Full-screen Sidekick chat — overview only */}
-          {activePage === 'overview' && overviewFullChat && (
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              background: '#FFFFFF',
-              borderRadius: 24,
-              zIndex: 50,
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-            }}>
-              {/* Header */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '0 12px 0 24px',
-                height: 56,
-                flexShrink: 0,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#222428' }}>Sidekick</span>
-                  <IconChevronDown size="small" color="icon-secondary" />
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <IconButton size="medium" variant="ghost-neutral" onPress={() => {}} aria-label="New chat">
-                    <IconSquarePencil />
-                  </IconButton>
-                  <IconButton size="medium" variant="ghost-neutral" onPress={() => {}} aria-label="History">
-                    <IconClockCounterClockwise />
-                  </IconButton>
-                  <IconButton size="medium" variant="ghost-neutral" onPress={() => {}} aria-label="More">
-                    <IconDotsThreeVertical />
-                  </IconButton>
-                  <IconButton size="medium" variant="ghost-neutral" onPress={() => { setOverviewFullChat(false); setActiveSidebar('ai-sidekick'); }} aria-label="Collapse">
-                    <IconArrowsInSimple />
-                  </IconButton>
-                </div>
-              </div>
-              {/* Chat body — centered 680px column */}
-              <div style={{ flex: 1, display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
-                <div style={{ width: 680, maxWidth: '100%', height: '100%' }}>
-                  <AiPanelSolutionReview
-                    key={sidekickKey}
-                    activePage={activePage}
-                    focusItemId={sidekickFocusItemId}
-                    contextUserMessage={sidekickContextMessage}
-                    onApplyReprioritize={handleApplyReprioritize}
-                    onApplySwap={handleApplySwap}
-                    liveRoadmapItems={roadmapItems}
-                    liveBacklogItems={backlogData}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activePage === 'overview' && overviewHasData && !overviewFullChat && <OverviewPage onDiveDeeper={(cardId) => {
+          {activePage === 'overview' && overviewHasData && <OverviewPage onDiveDeeper={(cardId) => {
                   const row = OVERVIEW_ROWS[cardId] ?? backlogData[0]
                   const card = OVERVIEW_CARDS.find(c => c.id === cardId)
                   const msg = card
