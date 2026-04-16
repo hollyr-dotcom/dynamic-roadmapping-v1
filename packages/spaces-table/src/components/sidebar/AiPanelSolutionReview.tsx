@@ -3056,7 +3056,7 @@ function PanelBody({ activePage, focusItemId, contextUserMessage, onApplyReprior
       >
         {messages.length > 0 && <div style={{ flex: 1 }} />}
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 20, padding: messages.length > 0 ? "0 24px 24px" : "0", flex: messages.length === 0 ? 1 : undefined }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 20, padding: messages.length > 0 ? "0 24px 80px" : "0", flex: messages.length === 0 ? 1 : undefined }}>
 
           {/* Insight card entry point (only before first message) */}
           {messages.length === 0 && (() => {

@@ -674,11 +674,11 @@ export function App() {
                   const msg = card
                     ? `I'm looking at a "${card.matchTag}" signal for "${row.title}" (${card.confidence} confidence). ${card.description} Walk me through the impact and top customers requesting this.`
                     : `Tell me about ${row.title}`
-                  setSidekickFocusItemId(row.id)
+                  setSidekickFocusItemId(undefined)
                   setSidekickContextMessage(msg)
                   setSidekickKey(k => k + 1)
                   setSidekickSource('toolbar')
-                  setActiveSidebar('ai-sidekick')
+                  setOverviewFullChat(true)
                 }} onAddToRoadmap={(cardId) => { const row = OVERVIEW_ROWS[cardId]; if (row) { setMovedRow(row); setRoadmapItems(prev => [...prev, { ...row, id: `r-ov-${cardId}`, status: 'planning', priority: 'next' }]); setShowMoveSnackbar(true) } }} onReprioritize={() => { setActivePage('backlog'); setDatabaseTitle('Backlog'); setActiveTab('prioritization') }} />}
 
           {/* Type-based view renderer — show empty state for any view type when no data */}
