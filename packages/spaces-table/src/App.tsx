@@ -618,6 +618,7 @@ export function App() {
                 onApplySwap={handleApplySwap}
                 liveRoadmapItems={roadmapItems}
                 liveBacklogItems={backlogData}
+                fullScreen
               />
             </div>
           </div>

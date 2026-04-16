@@ -3539,7 +3539,7 @@ function ViewDetailsView({ itemLabel, onBack }: { itemLabel: string; onBack: () 
 }
 
 /* ─── Main export ─── */
-export default function AiPanelSolutionReview({ onClose, activePage, focusItemId, contextUserMessage, onApplyReprioritize, onApplySwap, liveRoadmapItems, liveBacklogItems }: { onClose?: () => void; activePage?: string; focusItemId?: string; contextUserMessage?: string; onApplyReprioritize?: (itemId: string, newPriority: string, reason: string) => void; onApplySwap?: (cutId: string, addId: string, reason: string) => void; liveRoadmapItems?: SpaceRow[]; liveBacklogItems?: SpaceRow[] } = {}) {
+export default function AiPanelSolutionReview({ onClose, activePage, focusItemId, contextUserMessage, onApplyReprioritize, onApplySwap, liveRoadmapItems, liveBacklogItems, fullScreen }: { onClose?: () => void; activePage?: string; focusItemId?: string; contextUserMessage?: string; onApplyReprioritize?: (itemId: string, newPriority: string, reason: string) => void; onApplySwap?: (cutId: string, addId: string, reason: string) => void; liveRoadmapItems?: SpaceRow[]; liveBacklogItems?: SpaceRow[]; fullScreen?: boolean } = {}) {
   // Sync live state so all builders see applied changes
   syncLiveState(liveRoadmapItems || _staticRoadmap, liveBacklogItems || _staticBacklog);
 
@@ -3560,12 +3560,14 @@ export default function AiPanelSolutionReview({ onClose, activePage, focusItemId
         width: "100%",
         maxWidth: "100%",
         background: "#FFFFFF",
-        border: "0.5px solid #E9EAEF",
-        boxShadow: "0px 2px 4px rgba(34, 36, 40, 0.08)",
-        borderRadius: 8,
+        ...(fullScreen ? {} : {
+          border: "0.5px solid #E9EAEF",
+          boxShadow: "0px 2px 4px rgba(34, 36, 40, 0.08)",
+          borderRadius: 8,
+        }),
       }}>
         <AiGradientDefs />
-        <PanelHeader onClose={onClose} />
+        {!fullScreen && <PanelHeader onClose={onClose} />}
         {/* Keep PanelBody always mounted so chat state is preserved */}
         <div style={{ display: panelView === 'chat' ? 'flex' : 'none', flexDirection: 'column', flex: 1, minHeight: 0 }}>
           <PanelBody activePage={activePage} focusItemId={focusItemId} contextUserMessage={contextUserMessage} onApplyReprioritize={onApplyReprioritize} onApplySwap={onApplySwap} />
