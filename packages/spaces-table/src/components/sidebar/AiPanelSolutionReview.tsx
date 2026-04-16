@@ -3044,6 +3044,7 @@ function PanelBody({ activePage, focusItemId, contextUserMessage, onApplyReprior
     <>
       <div
         ref={scrollRef}
+        className="scrollbar-hide"
         style={{
           flex: 1,
           overflowY: "auto",

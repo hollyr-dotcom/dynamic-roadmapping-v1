@@ -674,7 +674,7 @@ export function App() {
                   const msg = card
                     ? `I'm looking at a "${card.matchTag}" signal for "${row.title}" (${card.confidence} confidence). ${card.description} Walk me through the impact and top customers requesting this.`
                     : `Tell me about ${row.title}`
-                  setSidekickFocusItemId(undefined)
+                  setSidekickFocusItemId(row.id)
                   setSidekickContextMessage(msg)
                   setSidekickKey(k => k + 1)
                   setSidekickSource('toolbar')

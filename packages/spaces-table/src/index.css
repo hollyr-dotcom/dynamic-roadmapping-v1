@@ -198,6 +198,10 @@ tbody tr.row-selected td.table-fill { background: transparent; }
 tbody tr.row-selected td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
 
 
+/* ── Hide scrollbar but keep scroll ──────────────────── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
 /* ── Spin animation (thinking indicator) ─────────────── */
 @keyframes spin {
   from { transform: rotate(0deg); }
