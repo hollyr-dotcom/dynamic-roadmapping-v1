@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { Button, IconButton, IconCross, IconArrowUp, Tooltip } from '@mirohq/design-system'
+import { Button, IconButton, IconCross, IconArrowUp, IconChevronDown, IconSquarePencil, IconClockCounterClockwise, IconDotsThreeVertical, IconArrowsInSimple, Tooltip } from '@mirohq/design-system'
 import { ShareSpaceDialog } from './components/page/ShareSpaceDialog'
 import { sampleData, fields, roadmapData, roadmapFields } from '@spaces/shared'
 import type { Priority, SpaceRow, Status } from '@spaces/shared'
@@ -117,6 +117,8 @@ export function App() {
   const [sidekickSource, setSidekickSource] = useState<'toolbar' | 'panel'>('toolbar')
   const [sidekickContextMessage, setSidekickContextMessage] = useState<string | undefined>(undefined)
   const [floatingBarText, setFloatingBarText] = useState('')
+  const [floatingBarThinking, setFloatingBarThinking] = useState(false)
+  const [overviewFullChat, setOverviewFullChat] = useState(false)
   const [sidekickKey, setSidekickKey] = useState(0)
   const [canvasOpen, setCanvasOpen] = useState(false)
   const [navHovered, setNavHovered] = useState(false)
@@ -593,7 +595,7 @@ export function App() {
           />
         </div>
         {/* Scroll area — database title scrolls away, tabs stick under header */}
-        <div ref={scrollRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-y-auto overflow-x-auto page-scroll flex flex-col${pageTransitioning ? ' page-transitioning-out' : ''}`}>
+        <div ref={scrollRef} onScroll={handleScroll} className={`flex-1 min-h-0 overflow-y-auto overflow-x-auto page-scroll flex flex-col relative${pageTransitioning ? ' page-transitioning-out' : ''}`}>
           <div className="sticky left-0 z-[45]" onMouseEnter={() => setNavHovered(true)} onMouseLeave={() => setNavHovered(false)}>
             <DatabaseTitle opacity={1} scrollFade={scrollFade} title={databaseTitle} onTitleChange={setDatabaseTitle} disableControls={emptyVariant === 'disabled' && !hasData} centered={activePage === 'overview'} />
           </div>
@@ -607,7 +609,65 @@ export function App() {
             <DataTable key="empty-overview" data={[]} fields={pageFields} onImportSource={(source) => { setShowSharePopover(false); setShowImportPopover(false); setPendingImport(source); setPendingToast(true); if (source === 'jira') setShowJiraAuth(true) }} onAddRecord={(title) => { closeSidebar(); setShowSharePopover(false); setOverviewHasData(true); setBacklogData([{ id: 'new-1', title: title || '', mentions: 0, customers: 0, estRevenue: 0, companies: [], priority: 'triage' }]); setTimeout(() => setShowImportPopover(true), 800) }} activePage="overview" animateIn={!isInitialLoad} onEmptyInteract={closeSidebar} />
           )}
 
-          {activePage === 'overview' && overviewHasData && <OverviewPage onDiveDeeper={(cardId) => {
+          {/* Full-screen Sidekick chat — overview only */}
+          {activePage === 'overview' && overviewFullChat && (
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              background: '#FFFFFF',
+              borderRadius: 24,
+              zIndex: 50,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+            }}>
+              {/* Header */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '0 12px 0 24px',
+                height: 56,
+                flexShrink: 0,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#222428' }}>Sidekick</span>
+                  <IconChevronDown size="small" color="icon-secondary" />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <IconButton size="medium" variant="ghost-neutral" onPress={() => {}} aria-label="New chat">
+                    <IconSquarePencil />
+                  </IconButton>
+                  <IconButton size="medium" variant="ghost-neutral" onPress={() => {}} aria-label="History">
+                    <IconClockCounterClockwise />
+                  </IconButton>
+                  <IconButton size="medium" variant="ghost-neutral" onPress={() => {}} aria-label="More">
+                    <IconDotsThreeVertical />
+                  </IconButton>
+                  <IconButton size="medium" variant="ghost-neutral" onPress={() => { setOverviewFullChat(false); setActiveSidebar('ai-sidekick'); }} aria-label="Collapse">
+                    <IconArrowsInSimple />
+                  </IconButton>
+                </div>
+              </div>
+              {/* Chat body — centered 680px column */}
+              <div style={{ flex: 1, display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
+                <div style={{ width: 680, maxWidth: '100%', height: '100%' }}>
+                  <AiPanelSolutionReview
+                    key={sidekickKey}
+                    activePage={activePage}
+                    focusItemId={sidekickFocusItemId}
+                    contextUserMessage={sidekickContextMessage}
+                    onApplyReprioritize={handleApplyReprioritize}
+                    onApplySwap={handleApplySwap}
+                    liveRoadmapItems={roadmapItems}
+                    liveBacklogItems={backlogData}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activePage === 'overview' && overviewHasData && !overviewFullChat && <OverviewPage onDiveDeeper={(cardId) => {
                   const row = OVERVIEW_ROWS[cardId] ?? backlogData[0]
                   const card = OVERVIEW_CARDS.find(c => c.id === cardId)
                   const msg = card
@@ -636,8 +696,39 @@ export function App() {
           </>)}
         </div>
 
-        {/* Floating prompt bar — opens Sidekick on type/enter */}
-        {activeSidebar !== 'ai-sidekick' && hasData && (
+        {/* Floating prompt bar — thinking state + opens Sidekick */}
+        {floatingBarThinking && (
+          <div style={{
+            position: 'sticky',
+            bottom: 84,
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            width: 428,
+            height: 48,
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0 16px',
+            background: '#FFFFFF',
+            border: '0.5px solid #E9EAEF',
+            boxShadow: '0px 2px 4px rgba(34, 36, 40, 0.08)',
+            borderRadius: 24,
+            zIndex: 31,
+            gap: 10,
+            animation: 'fadeSlideIn 300ms ease-out both',
+          }} onClick={e => e.stopPropagation()}>
+            <svg width="20" height="20" viewBox="0 0 20 20" style={{ animation: 'spin 1s linear infinite', flexShrink: 0 }}>
+              <circle cx="10" cy="10" r="8" stroke="#AEB2C0" strokeWidth="2" fill="none" strokeDasharray="40 60" strokeLinecap="round" />
+            </svg>
+            <span style={{ fontSize: 14, fontWeight: 400, color: '#656B81', fontFamily: "'Open Sans', sans-serif", flex: 1 }}>Thinking</span>
+            <button
+              onClick={() => { setFloatingBarThinking(false); }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, background: 'none', border: 'none', cursor: 'pointer', color: '#656B81', padding: 0 }}
+            >
+              <IconCross size="small" />
+            </button>
+          </div>
+        )}
+        {activeSidebar !== 'ai-sidekick' && hasData && !overviewFullChat && (
           <div style={{
             position: 'sticky',
             bottom: 12,
@@ -682,11 +773,20 @@ export function App() {
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && floatingBarText.trim()) {
-                    setSidekickContextMessage(floatingBarText.trim());
-                    setSidekickKey(k => k + 1);
-                    setSidekickSource('toolbar');
-                    setActiveSidebar('ai-sidekick');
+                    const msg = floatingBarText.trim();
                     setFloatingBarText('');
+                    setFloatingBarThinking(true);
+                    setTimeout(() => {
+                      setFloatingBarThinking(false);
+                      setSidekickContextMessage(msg);
+                      setSidekickKey(k => k + 1);
+                      setSidekickSource('toolbar');
+                      if (activePage === 'overview') {
+                        setOverviewFullChat(true);
+                      } else {
+                        setActiveSidebar('ai-sidekick');
+                      }
+                    }, 2000);
                   }
                 }}
               />
@@ -699,11 +799,20 @@ export function App() {
                   <div
                     onClick={() => {
                       if (floatingBarText.trim()) {
-                        setSidekickContextMessage(floatingBarText.trim());
-                        setSidekickKey(k => k + 1);
-                        setSidekickSource('toolbar');
-                        setActiveSidebar('ai-sidekick');
+                        const msg = floatingBarText.trim();
                         setFloatingBarText('');
+                        setFloatingBarThinking(true);
+                        setTimeout(() => {
+                          setFloatingBarThinking(false);
+                          setSidekickContextMessage(msg);
+                          setSidekickKey(k => k + 1);
+                          setSidekickSource('toolbar');
+                          if (activePage === 'overview') {
+                            setOverviewFullChat(true);
+                          } else {
+                            setActiveSidebar('ai-sidekick');
+                          }
+                        }, 2000);
                       }
                     }}
                     style={{

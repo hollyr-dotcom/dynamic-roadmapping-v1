@@ -198,6 +198,12 @@ tbody tr.row-selected td.table-fill { background: transparent; }
 tbody tr.row-selected td:has(+ td.table-fill) { border-radius: 0 8px 8px 0; }
 
 
+/* ── Spin animation (thinking indicator) ─────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 /* ── Sidebar content stagger ─────────────────────────── */
 @keyframes item-enter {
   from { transform: translateY(6px); opacity: 0; }
