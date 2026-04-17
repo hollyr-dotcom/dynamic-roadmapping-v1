@@ -2751,9 +2751,10 @@ function PanelBody({ activePage, focusItemId, contextUserMessage, onApplyReprior
   }, [focusItemId]);
 
   // Auto-trigger from floating prompt bar (contextUserMessage)
+  // Skip if focusItemId is set — that already triggers its own response
   const contextTriggeredRef = useRef<string | null>(null);
   useEffect(() => {
-    if (contextUserMessage && contextUserMessage !== contextTriggeredRef.current) {
+    if (contextUserMessage && contextUserMessage !== contextTriggeredRef.current && !focusItemId) {
       contextTriggeredRef.current = contextUserMessage;
       handleChatSend(contextUserMessage);
     }
