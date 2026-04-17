@@ -1073,57 +1073,17 @@ function buildFlow1BacklogRanked(): MessageContent {
   const totalARR = backlogOnly.reduce((s, r) => s + r.item.estRevenue, 0);
   const formattedARR = totalARR >= 1000 ? `$${(totalARR / 1000).toFixed(1)}M` : `$${totalARR}K`;
 
-  const cards: React.ReactNode[] = [
-    <div key="backlog" style={{ borderRadius: 12, background: "#FFFFFF", border: "1px solid #E9EAEF", overflow: "hidden" }}>
-      <div style={{ padding: "16px 20px" }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#222428", marginBottom: 16 }}>Impact estimates</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px 16px" }}>
-          <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{totalMentions}</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Total Mentions</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{totalCustomers}</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Unique Customers</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{formattedARR}</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Combined ARR</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{backlogOnly.length}</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Backlog Items</div>
-          </div>
-        </div>
-      </div>
-      <div style={{ borderTop: "1px solid #F1F2F5" }}>
-        <div style={{ padding: "12px 20px", borderBottom: "1px solid #E9EAEF" }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>Backlog by evidence strength</span>
-        </div>
-        {backlogOnly.slice(0, 6).map(({ item, trend }, i) => {
-          const recency = recencyLabel(item.id);
-          return (
-            <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "10px 20px", borderBottom: i < 5 ? "1px solid #f1f2f5" : "none" }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 400, color: "#222428", lineHeight: 1.4 }}>{item.title}</div>
-              </div>
-              <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12 }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "#222428" }}>${item.estRevenue}K</span>
-                <div style={{ fontSize: 12, color: "#6f7489" }}>{item.customers} accounts · {trendLabel(trend?.direction || 'stable')}</div>
-                {recency && <div style={{ fontSize: 11, color: "#AEB2C0" }}>Last mentioned {recency}</div>}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>,
-  ];
-
   const topItem = backlogOnly[0];
 
+  let text = `## Backlog ranked by evidence\n\n${totalMentions} mentions · ${totalCustomers} customers · ${formattedARR} ARR · ${backlogOnly.length} items not on your roadmap\n\n`;
+  text += `─── Top 5 by evidence ─────────────\n${backlogOnly.slice(0, 5).map(({ item, trend }, i) => {
+    const dir = trend?.direction || 'stable';
+    const trendText = dir === 'growing' ? '{{green:↑ growing}}' : dir === 'declining' ? '{{red:↓ declining}}' : '→ stable';
+    return `${i + 1}. ${item.title}\n   $${item.estRevenue}K · ${item.customers} accounts · ${trendText}`;
+  }).join('\n\n')}`;
+
   return {
-    text: `Your backlog ranked by evidence strength. These aren't on your roadmap yet:`,
-    cards,
+    text,
     loadingSteps: [
       "Reading Backlog table…",
       "Scoring by evidence strength…",
@@ -1145,95 +1105,55 @@ function buildFlow2(itemId: string): MessageContent {
   const deps = getDeps(item.id);
   const jiraKey = 'jiraKey' in item ? (item as any).jiraKey : undefined;
 
-  const cards: React.ReactNode[] = [];
-
-  // Combined: Impact estimates + Top requesters in one block
-  cards.push(
-    <div key="impact-block" style={{ borderRadius: 12, background: "#FFFFFF", border: "1px solid #E9EAEF", overflow: "hidden" }}>
-      {/* Impact estimates 2x2 */}
-      <div style={{ padding: "16px 20px" }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#222428", marginBottom: 16 }}>Impact estimates</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px 16px" }}>
-          <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{item.mentions}</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Total Mentions</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{item.customers}</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Unique Customers</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>${item.estRevenue}K</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Addressable ARR</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#222428", lineHeight: 1 }}>{arr.length}</div>
-            <div style={{ fontSize: 12, color: "#6f7489", marginTop: 4 }}>Requesting Companies</div>
-          </div>
-        </div>
-      </div>
-      {/* Top requesters rows */}
-      {arr.length > 0 && (
-        <div style={{ borderTop: "1px solid #F1F2F5" }}>
-          <div style={{ padding: "12px 20px 4px", fontSize: 13, fontWeight: 700, color: "#222428" }}>Top requesters</div>
-          {arr.slice(0, 4).map((a, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "10px 20px", borderBottom: i < Math.min(arr.length, 4) - 1 ? "1px solid #f1f2f5" : "none" }}>
-              <span style={{ fontSize: 13, color: "#222428" }}>{a.company}</span>
-              <div style={{ textAlign: "right" }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "#222428" }}>${a.arr}K</span>
-                <div style={{ fontSize: 12, color: "#6f7489" }}>{a.contacts} contacts</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-
-  // Feedback cards
-  if (quotes.length > 0) {
-    cards.push(
-      <div key="feedback" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#222428" }}>Feedback</div>
-        {quotes.map((q, i) => (
-          <FeedbackCard key={i} quote={q.quote} role={`${q.company} — ${q.role}`} type={i % 2 === 0 ? 'positive' : 'neutral'} />
-        ))}
-      </div>
-    );
-  }
-
   const depLines: string[] = [];
   if (deps.blocks.length > 0) depLines.push(`Blocks: ${deps.blocks.map(d => shortTitle(d.title, 30)).join(', ')}`);
   if (deps.dependsOn.length > 0) depLines.push(`Depends on: ${deps.dependsOn.map(d => shortTitle(d.title, 30)).join(', ')}`);
   if (deps.related.length > 0) depLines.push(`Related to: ${deps.related.map(d => shortTitle(d.title, 30)).join(', ')}`);
 
-  const depText = depLines.length > 0 ? `\n\n**Cross-table connections:**\n${depLines.map(l => `• ${l}`).join('\n')}` : '\n\nNo blocking dependencies found.';
-
   const trendF2 = getTrend(item.id);
   const onRM = roadmapData.find(r => r.id === item.id);
   const allScored = [...roadmapData.filter(r => r.status !== 'done'), ...sampleData].map(i => ({ item: i, score: evidenceScore(i) })).sort((a, b) => b.score - a.score);
   const rank = allScored.findIndex(s => s.item.id === item.id) + 1;
+  const dir = trendF2?.direction || 'stable';
 
   let verdict = '';
   if (!onRM && rank <= 5) {
-    verdict = `This ranks #${rank} by evidence but isn't on your roadmap. That's a significant gap — consider adding it.`;
-  } else if (onRM && trendF2?.direction === 'declining') {
-    verdict = `Demand is declining. At ${onRM.priority} priority, this may be getting more investment than the evidence supports.`;
-  } else if (onRM && trendF2?.direction === 'growing') {
-    verdict = `Demand is growing and it's already ${onRM.priority} priority. Good alignment — this is a well-placed bet.`;
+    verdict = `This ranks #${rank} by evidence but isn't on your roadmap. Add it.`;
+  } else if (onRM && dir === 'declining') {
+    verdict = `Demand is declining. At ${onRM.priority} priority, this is getting more investment than the evidence supports.`;
+  } else if (onRM && dir === 'growing') {
+    verdict = `Demand is growing and it's already ${onRM.priority} priority. Good alignment.`;
   } else if (rank <= 3) {
-    verdict = `This is one of your strongest items by evidence (#${rank}). ${onRM ? 'Well prioritized.' : 'Not on your roadmap yet.'}`;
+    verdict = `One of your strongest items by evidence (#${rank}). ${onRM ? 'Well prioritized.' : 'Not on your roadmap yet.'}`;
   } else {
     verdict = `Ranks #${rank} by evidence. ${onRM ? `Currently ${onRM.priority} priority.` : 'Not on your roadmap.'}`;
   }
 
-  const fallback = `## ${item.title}\n\n${verdict}${depText}`;
-  const dataForAI = { title: item.title, jiraKey, revenue: item.estRevenue, customers: item.customers, mentions: item.mentions, trend: getTrend(item.id)?.direction, topRequesters: arr.slice(0, 3).map(a => ({ company: a.company, arr: a.arr })), quotes: quotes.map(q => q.quote.slice(0, 80)), deps: depLines };
+  // All text — no cards
+  let text = `## ${item.title}\n\n${verdict}\n\n`;
+  text += `${item.mentions} mentions · ${item.customers} accounts · $${item.estRevenue}K ARR · ${colorTrend(dir)}`;
+
+  if (arr.length > 0) {
+    text += `\n\n─── Top requesters ────────────────\n${arr.slice(0, 4).map(a =>
+      `• ${a.company}\n   $${a.arr}K · ${a.contacts} contacts`
+    ).join('\n\n')}`;
+  }
+
+  if (quotes.length > 0) {
+    text += `\n\n─── Customer feedback ─────────────\n${quotes.slice(0, 2).map(q =>
+      `• "${q.quote}"\n   ${q.company} — ${q.role}`
+    ).join('\n\n')}`;
+  }
+
+  if (depLines.length > 0) {
+    text += `\n\n─── Dependencies ──────────────────\n${depLines.map(l => `• ${l}`).join('\n')}`;
+  }
+
+  const dataForAI = { title: item.title, jiraKey, revenue: item.estRevenue, customers: item.customers, mentions: item.mentions, trend: dir, topRequesters: arr.slice(0, 3).map(a => ({ company: a.company, arr: a.arr })), quotes: quotes.map(q => q.quote.slice(0, 80)), deps: depLines };
 
   return {
-    text: fallback,
-    textPromise: generateNarrative({ useCase: "uc1", structuredData: dataForAI, fallbackText: fallback }).then(r => r.fromAI ? fallback + '\n\n' + r.text : fallback),
-    cards,
+    text,
+    textPromise: generateNarrative({ useCase: "uc1", structuredData: dataForAI, fallbackText: text }).then(r => r.fromAI ? text + '\n\n' + r.text : text),
     loadingSteps: [
       `Reading ${jiraKey || item.id} from Roadmap table…`,
       "Pulling Insights evidence…",
