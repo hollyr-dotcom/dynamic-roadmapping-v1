@@ -76,7 +76,10 @@ export async function classifyIntent(
 
 Classify the user's question into exactly ONE intent.
 
+IMPORTANT: If the message is a greeting (hi, hello, hey), small talk, or doesn't relate to roadmap/product management, return {"intent":"greeting"}. Do NOT force-fit into a roadmap intent.
+
 INTENTS:
+- "greeting" — greetings, small talk, or messages that don't relate to roadmap management (e.g., "hi", "hello", "thanks", "how are you")
 - "rank" — rank/prioritize items by evidence (e.g., "what should I prioritize", "rank my backlog", "strongest signal")
 - "mismatch" — find where plan doesn't match demand (e.g., "where am I wrong", "out of sync", "what am I missing")
 - "add-to-q2" — user wants to ADD one specific item and needs to know what to CUT to make room (e.g., "leadership wants me to add X", "fast-track X", "what do I trade off for X", "customer threatened churn over X")

@@ -2294,6 +2294,18 @@ function buildUC5Drift(): MessageContent {
 function routeInputRegex(text: string): MessageContent {
   const lower = text.toLowerCase().trim();
 
+  // Greetings / short non-roadmap messages
+  if (/^(hi|hello|hey|thanks|thank you|ok|okay|sure|yes|no|how are you|what's up|sup)\.?!?$/i.test(lower)) {
+    return {
+      text: `Hey! I'm your roadmap Sidekick. I can help you prioritize, find gaps, make trade-offs, summarize changes, or check what's drifted. What would you like to explore?`,
+      pills: [
+        { label: "Am I betting on the right things?", key: "flow1-initial" },
+        { label: "Where is my roadmap out of sync?", key: "uc2-mismatch" },
+        { label: "Has anything drifted?", key: "uc5-drift" },
+      ],
+    };
+  }
+
   // UC1: Prioritize by evidence
   if (/betting|right things|q2 overview|q2 items|prioriti[sz]e.*evidence|strongest.*signal|customer signal/i.test(lower)) return buildFlow1Initial();
   if (/no evidence|zero.*evidence|no.*quotes/i.test(lower)) return buildFlow1NoEvidence();
@@ -2481,8 +2493,16 @@ function mapIntentToBuilder(classified: ClassifiedIntent): MessageContent {
   const item2 = findItem(itemName2);
 
   switch (intent) {
+    case 'greeting':
+      return {
+        text: `Hey! I'm your roadmap Sidekick. I can help you prioritize, find gaps, make trade-offs, summarize changes, or check what's drifted. What would you like to explore?`,
+        pills: [
+          { label: "Am I betting on the right things?", key: "flow1-initial" },
+          { label: "Where is my roadmap out of sync?", key: "uc2-mismatch" },
+          { label: "Has anything drifted?", key: "uc5-drift" },
+        ],
+      };
     case 'rank':
-      // If question seems backlog-specific, use backlog ranker
       if (itemName?.toLowerCase().includes('backlog')) return buildFlow1BacklogRanked();
       return buildFlow1Initial();
     case 'mismatch':
