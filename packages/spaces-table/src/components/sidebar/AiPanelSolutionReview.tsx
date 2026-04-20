@@ -1781,6 +1781,39 @@ function buildUC2Mismatch(): MessageContent {
    UC4: SUMMARIZE CHANGES FOR AUDIENCE
    ═══════════════════════════════════════════════════════════════ */
 
+/* ─── Date picker — asks for range before generating summary ─── */
+function buildUC4DatePicker(audience: 'leadership' | 'engineering' | 'cs'): MessageContent {
+  const audienceLabels = { leadership: 'Leadership', engineering: 'Engineering', cs: 'Customer Success' };
+  const now = new Date('2026-04-10');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // Compute dynamic date labels
+  const weekStart = new Date(now); weekStart.setDate(weekStart.getDate() - 7);
+  const twoWeekStart = new Date(now); twoWeekStart.setDate(twoWeekStart.getDate() - 14);
+  const monthStart = new Date(now); monthStart.setDate(monthStart.getDate() - 30);
+
+  // Find "last review" — most recent itemHistory entry
+  const lastReview = itemHistory.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+  const lastReviewDate = lastReview ? new Date(lastReview.date) : monthStart;
+  const lastReviewLabel = `${months[lastReviewDate.getMonth()]} ${lastReviewDate.getDate()}`;
+
+  // Count changes per range so PM knows which has content
+  const countSince = (d: Date) => itemHistory.filter(h => new Date(h.date) >= d).length;
+  const weekCount = countSince(weekStart);
+  const twoWeekCount = countSince(twoWeekStart);
+  const monthCount = countSince(monthStart);
+
+  return {
+    text: `Writing a ${audienceLabels[audience]} update. Do you have a time range in mind?`,
+    pills: [
+      { label: `This week (${weekCount} changes)`, key: `uc4-${audience}-this week` },
+      { label: `Last 2 weeks (${twoWeekCount} changes)`, key: `uc4-${audience}-last 2 weeks` },
+      { label: `Last month (${monthCount} changes)`, key: `uc4-${audience}-last month` },
+      { label: `Since ${lastReviewLabel}`, key: `uc4-${audience}-since ${lastReviewLabel}` },
+    ],
+  };
+}
+
 function buildUC4Summary(audience: 'leadership' | 'engineering' | 'cs', dateRange?: string): MessageContent {
   // Parse date range — default to 30 days
   const now = new Date('2026-04-10'); // fixed for demo consistency
@@ -1994,8 +2027,8 @@ function buildUC4Summary(audience: 'leadership' | 'engineering' | 'cs', dateRang
     ],
     pills: buildGuardedPills('architect', [
       { label: "Copy to clipboard", key: `copy-summary` },
-      { label: `Rewrite for ${audienceLabels[otherAudiences[0]]}`, key: `uc4-${otherAudiences[0]}` },
-      { label: `Rewrite for ${audienceLabels[otherAudiences[1]]}`, key: `uc4-${otherAudiences[1]}` },
+      { label: `Rewrite for ${audienceLabels[otherAudiences[0]]}`, key: `uc4-${otherAudiences[0]}-${rangeLabel}` },
+      { label: `Rewrite for ${audienceLabels[otherAudiences[1]]}`, key: `uc4-${otherAudiences[1]}-${rangeLabel}` },
     ], { recommendedAction: null }),
     intentRoot: 'architect',
   };
@@ -2240,10 +2273,10 @@ function routeInputRegex(text: string): MessageContent {
     const m = t.match(/(?:this week|last (?:week|month|quarter)|since .+?(?:\d{4}|\d{1,2})|this month|this quarter|\d+ days?)/i);
     return m ? m[0] : undefined;
   };
-  if (/summarize|summary|update.*leadership|leadership.*update|write.*leadership/i.test(lower)) return buildUC4Summary('leadership', extractDateRange(lower));
-  if (/update.*eng|eng.*update|write.*eng|what.*changed.*eng/i.test(lower)) return buildUC4Summary('engineering', extractDateRange(lower));
-  if (/update.*cs|cs.*update|tell.*customer|customer success/i.test(lower)) return buildUC4Summary('cs', extractDateRange(lower));
-  if (/what changed|what.*different|changes.*since/i.test(lower)) return buildUC4Summary('leadership', extractDateRange(lower));
+  if (/summarize|summary|update.*leadership|leadership.*update|write.*leadership/i.test(lower)) { const dr = extractDateRange(lower); return dr ? buildUC4Summary('leadership', dr) : buildUC4DatePicker('leadership'); }
+  if (/update.*eng|eng.*update|write.*eng|what.*changed.*eng/i.test(lower)) { const dr = extractDateRange(lower); return dr ? buildUC4Summary('engineering', dr) : buildUC4DatePicker('engineering'); }
+  if (/update.*cs|cs.*update|tell.*customer|customer success/i.test(lower)) { const dr = extractDateRange(lower); return dr ? buildUC4Summary('cs', dr) : buildUC4DatePicker('cs'); }
+  if (/what changed|what.*different|changes.*since/i.test(lower)) { const dr = extractDateRange(lower); return dr ? buildUC4Summary('leadership', dr) : buildUC4DatePicker('leadership'); }
 
   // UC5: Drift detection
   if (/drift|hasn.?t.*looked|needs attention|stale|anything.*know|shifted|what.*changed.*since.*last/i.test(lower)) return buildUC5Drift();
@@ -2437,8 +2470,10 @@ function mapIntentToBuilder(classified: ClassifiedIntent): MessageContent {
       return buildAltCut();
     case 'cut':
       return buildAltCut();
-    case 'summarize':
-      return buildUC4Summary((audience as 'leadership' | 'engineering' | 'cs') || 'leadership', dateRange);
+    case 'summarize': {
+      const aud = (audience as 'leadership' | 'engineering' | 'cs') || 'leadership';
+      return dateRange ? buildUC4Summary(aud, dateRange) : buildUC4DatePicker(aud);
+    }
     case 'drift':
       return buildUC5Drift();
     case 'deep-dive':
@@ -2506,13 +2541,13 @@ function routePillKey(key: string): MessageContent {
       if (underInvested) return buildReprioritize(underInvested.item.id, 'promote');
       return buildFlow1Initial();
     }
-    // UC4
-    case 'uc4-leadership': return buildUC4Summary('leadership');
-    case 'uc4-engineering': return buildUC4Summary('engineering');
-    case 'uc4-cs': return buildUC4Summary('cs');
+    // UC4 — "Rewrite for" pills (no date range → date picker)
+    case 'uc4-leadership': return buildUC4DatePicker('leadership');
+    case 'uc4-engineering': return buildUC4DatePicker('engineering');
+    case 'uc4-cs': return buildUC4DatePicker('cs');
     case 'uc4-biggest': {
       const recent = itemHistory.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-      return recent ? buildFlow2(recent.itemId) : buildUC4Summary('leadership');
+      return recent ? buildFlow2(recent.itemId) : buildUC4DatePicker('leadership');
     }
     // UC5
     case 'uc5-drift': return buildUC5Drift();
@@ -2523,6 +2558,9 @@ function routePillKey(key: string): MessageContent {
         const themeName = key.slice('uc1-theme-'.length);
         return buildUC1Theme(themeName);
       }
+      // UC4 date-range pills: uc4-{audience}-{range}
+      const uc4Match = key.match(/^uc4-(leadership|engineering|cs)-(.+)$/);
+      if (uc4Match) return buildUC4Summary(uc4Match[1] as 'leadership' | 'engineering' | 'cs', uc4Match[2]);
       // Reprioritize actions
       const promoteMatch = key.match(/^reprioritize-promote-(.+)$/);
       if (promoteMatch) return buildReprioritize(promoteMatch[1], 'promote');
